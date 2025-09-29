@@ -2107,8 +2107,8 @@
                     }
                 }
                 
-                // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC和Shift+D）
-                if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'd' || e.key === 'D') && e.shiftKey)) {
+                // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC和Ctrl+U/Command+U）
+                if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'u' || e.key === 'U') && (e.ctrlKey || e.metaKey))) {
                     return;
                 }
                 
@@ -2173,8 +2173,8 @@
                     showHint();
                 }
                 
-                // 答案快捷键：Shift+D键
-                if ((e.key === 'd' || e.key === 'D' || e.code === 'KeyD') && e.shiftKey) {
+                // 答案快捷键：Ctrl+U/Command+U键
+                if ((e.key === 'u' || e.key === 'U' || e.code === 'KeyU') && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault(); // 阻止默认的输入行为
                     e.stopPropagation(); // 阻止事件冒泡
                     showAnswer();
