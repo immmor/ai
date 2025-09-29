@@ -203,6 +203,10 @@
                 <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center">
                     <i class="fa fa-lightbulb-o mr-1 text-amber-500"></i> 提示
                 </button>
+                <!-- 答案按钮 -->
+                <button id="answer-btn" class="text-gray-500 hover:text-blue-500 flex items-center">
+                    <i class="fa fa-check-circle mr-1 text-blue-500"></i> 答案
+                </button>
                 <!-- 加油按钮 -->
                 <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300 select-none">
                     <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
@@ -224,6 +228,16 @@
         <div class="bg-white rounded p-4 w-64">
             <p class="text-sm mb-3" id="hint-text"></p>
             <button id="close-hint" class="w-full py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+                知道了
+            </button>
+        </div>
+    </div>
+
+    <!-- 答案弹窗 -->
+    <div id="answer-modal" class="fixed inset-0 bg-black/20 flex items-center justify-center z-10 hidden">
+        <div class="bg-white rounded p-4 w-64">
+            <p class="text-sm mb-3" id="answer-text"></p>
+            <button id="close-answer" class="w-full py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm">
                 知道了
             </button>
         </div>
@@ -267,6 +281,14 @@
         const popupQueue = [];
         let isPopupShowing = false;
         
+        // 学习状态切换系统
+        let studyMode = 'normal'; // normal, focus, relax
+        const studyModes = {
+            normal: { bg: '', text: '正常模式', icon: 'fa-star' },
+            focus: { bg: 'bg-blue-50', text: '专注模式', icon: 'fa-bolt' },
+            relax: { bg: 'bg-green-50', text: '放松模式', icon: 'fa-leaf' }
+        };
+        
 
         
         // DOM元素
@@ -280,6 +302,10 @@
         const hintModal = document.getElementById('hint-modal');
         const hintTextEl = document.getElementById('hint-text');
         const closeHintBtn = document.getElementById('close-hint');
+        const answerModal = document.getElementById('answer-modal');
+        const answerTextEl = document.getElementById('answer-text');
+        const closeAnswerBtn = document.getElementById('close-answer');
+        const answerBtn = document.getElementById('answer-btn');
         const cheerBtn = document.getElementById('cheer-btn');
         const particlesContainer = document.getElementById('particles-container');
         const cheerAnimation = document.getElementById('cheer-animation');
@@ -314,16 +340,23 @@
             // 创建题目索引数组
             const questionIndices = Array.from({length: questions.length}, (_, i) => i);
             
-            // 随机打乱数组
-            for (let i = questionIndices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+            // 确保id为1的题目（区块链概念记忆）总是第一题
+            const id1Index = questionIndices.findIndex(i => questions[i].id === 1);
+            if (id1Index !== -1 && id1Index !== 0) {
+                // 将id为1的题目移到数组开头
+                [questionIndices[0], questionIndices[id1Index]] = [questionIndices[id1Index], questionIndices[0]];
+            }
+            
+            // 随机打乱剩余题目（从第2个开始）
+            for (let i = questionIndices.length - 1; i > 1; i--) {
+                const j = Math.floor(Math.random() * (i - 1)) + 1;
                 [questionIndices[i], questionIndices[j]] = [questionIndices[j], questionIndices[i]];
             }
             
             randomQuestions = questionIndices;
             currentRandomIndex = 0;
             
-            console.log('随机题目顺序:', randomQuestions.map(i => questions[i].title));
+            console.log('题目顺序:', randomQuestions.map(i => questions[i].title));
         }
         
         // 加载勋章
@@ -1421,7 +1454,7 @@
                 <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500">
                     随机题目 ${index + 1}/${randomQuestions.length}: ${question.title}
                 </div>
-                ${question.content}
+                ${question.type === "sentence" ? '' : question.content}
             `;
             
             // 根据题目类型生成答题区域
@@ -1472,6 +1505,54 @@
                     document.getElementById('answer-input').focus();
                 }, 100);
             }
+            else if (question.type === "sentence") {
+                // 句子记忆题：直接在句子中填空
+                answerContainer.innerHTML = `
+                    <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-700">请在句子中直接点击填空处输入内容</div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div id="sentence-content" class="text-sm leading-relaxed">
+                                ${question.content}
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <button id="fill-submit-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm">
+                                检查填空
+                            </div>
+                        </div>
+                        <div id="sentence-review" class="hidden">
+                            <div class="text-sm text-gray-700 mb-1">现在请重新输入完整句子以加强记忆</div>
+                            <div class="flex">
+                                <input type="text" id="full-sentence-input" class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" placeholder="输入完整句子...">
+                                <button id="sentence-submit-btn" class="bg-primary text-white px-4 py-2 rounded-r hover:bg-primary/90 text-sm">
+                                    提交
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 将填空处转换为可编辑的输入框
+                document.querySelectorAll('.code-blank').forEach((blank, index) => {
+                    const originalText = blank.textContent || '______';
+                    blank.innerHTML = `
+                        <input type="text" class="inline-block w-20 px-2 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" 
+                               data-id="${blank.dataset.id}" 
+                               data-answer="${blank.dataset.answer}"
+                               placeholder="${originalText}"
+                               value="">
+                    `;
+                });
+                
+                // 聚焦第一个填空输入框
+                setTimeout(() => {
+                    const firstInput = document.querySelector('.code-blank input');
+                    if (firstInput) {
+                        firstInput.focus();
+                    }
+                }, 100);
+            }
             
             // 隐藏反馈
             feedbackEl.classList.add('hidden');
@@ -1503,78 +1584,236 @@
                 isCorrect = parseInt(answer) === question.correct;
                 userAnswer = question.options[parseInt(answer)];
             }
+            else if (question.type === "sentence") {
+                // 句子记忆题的特殊处理
+                if (window.sentenceStage === 'fill') {
+                    // 第一阶段：检查所有填空
+                    const blankInputs = document.querySelectorAll('.code-blank input');
+                    let allCorrect = true;
+                    let incorrectBlanks = [];
+                    
+                    // 检查每个填空是否正确
+                    blankInputs.forEach((input, index) => {
+                        const userAnswer = input.value.trim();
+                        const correctAnswer = input.dataset.answer;
+                        
+                        if (userAnswer === correctAnswer) {
+                            // 正确：显示绿色边框
+                            input.classList.remove('border-red-300', 'bg-red-50');
+                            input.classList.add('border-green-300', 'bg-green-50');
+                        } else {
+                            // 错误：显示红色边框
+                            input.classList.remove('border-green-300', 'bg-green-50');
+                            input.classList.add('border-red-300', 'bg-red-50');
+                            allCorrect = false;
+                            incorrectBlanks.push(index + 1);
+                        }
+                    });
+                    
+                    isCorrect = allCorrect;
+                    
+                    if (isCorrect) {
+                        // 播放正确音效
+                        playCorrectSound();
+                        
+                        // 进入第二阶段：重新输入完整句子
+                        window.sentenceStage = 'review';
+                        document.getElementById('sentence-review').classList.remove('hidden');
+                        
+                        // 隐藏填空部分（句子内容、填空输入框和检查按钮），但保留完整句子输入区域
+                        const sentenceContent = document.getElementById('sentence-content');
+                        const fillSubmitBtn = document.getElementById('fill-submit-btn');
+                        
+                        if (sentenceContent) {
+                            sentenceContent.style.display = 'none';
+                        }
+                        if (fillSubmitBtn) {
+                            fillSubmitBtn.style.display = 'none';
+                        }
+                        
+                        // 隐藏所有填空输入框
+                        const fillInputs = document.querySelectorAll('.code-blank input');
+                        fillInputs.forEach(input => {
+                            input.style.display = 'none';
+                        });
+                        
+                        document.getElementById('fill-submit-btn').disabled = true;
+                        document.getElementById('fill-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                        
+                        // 显示完整句子作为参考
+                        showFeedback('所有填空正确！现在请重新输入完整句子以加强记忆', 'success');
+                        
+                        // 聚焦完整句子输入框
+                        setTimeout(() => {
+                            document.getElementById('full-sentence-input').focus();
+                        }, 100);
+                        
+                        // 第一阶段正确，返回false避免进入后续的显示结果处理
+                        return false;
+                    } else {
+                        // 播放错误音效
+                        playWrongSound();
+                        
+                        // 显示错误提示
+                        showFeedback(`第${incorrectBlanks.join(',')}个填空不正确，请检查后重试`, 'error');
+                        return false;
+                    }
+                } else if (window.sentenceStage === 'review') {
+                    // 第二阶段：检查完整句子
+                    userAnswer = userAnswer.trim();
+                    const correctSentence = question.fullSentence;
+                    isCorrect = userAnswer === correctSentence;
+                }
+            }
             
             // 显示结果
             if (isCorrect) {
-                showFeedback(question.explanation, 'success');
-                
-                // 播放正确音效
-                playCorrectSound();
-                
-                // 更新统计信息
-                totalCorrectAnswers++;
-                consecutiveCorrect++;
-                
-                // 奖励经验值
-                const baseXP = 10;
-                let bonusXP = 0;
-                
-                // 连续正确奖励
-                if (consecutiveCorrect >= 3) {
-                    bonusXP += 5;
+                // 对于sentence题型的第一阶段，显示特定反馈
+                if (question.type === "sentence" && window.sentenceStage === 'fill') {
+                    // 第一阶段已经在前面的逻辑中处理了UI更新和阶段转换
+                    // 这里只需要确保不显示错误的反馈信息
+                    // 第一阶段正确的反馈已经在前面显示过了
                 }
-                if (consecutiveCorrect >= 5) {
-                    bonusXP += 10;
+                // 对于sentence题型的第二阶段，显示特殊反馈
+                else if (question.type === "sentence" && window.sentenceStage === 'review') {
+                    showFeedback('恭喜！完整句子输入正确，记忆效果加倍！', 'success');
+                    
+                    // 播放正确音效
+                    playCorrectSound();
+                    
+                    // 更新统计信息
+                    totalCorrectAnswers++;
+                    consecutiveCorrect++;
+                    
+                    // 奖励经验值（加倍奖励）
+                    const baseXP = 20; // 比普通题目多一倍
+                    let bonusXP = 0;
+                    
+                    // 连续正确奖励
+                    if (consecutiveCorrect >= 3) {
+                        bonusXP += 10;
+                    }
+                    if (consecutiveCorrect >= 5) {
+                        bonusXP += 20;
+                    }
+                    
+                    // 快速答题奖励（假设在5秒内完成）
+                    const answerTime = Date.now() - questionStartTime;
+                    if (answerTime < 5000) {
+                        bonusXP += 10;
+                    }
+                    
+                    const totalXP = baseXP + bonusXP;
+                    addXP(totalXP, `句子记忆题正确`);
+                    
+                    // 检查并授予勋章
+                    checkAndAwardBadges();
+                    
+                    // 添加庆祝动画
+                    const rect = questionContainer.getBoundingClientRect();
+                    createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 20);
+                    
+                    // 标记为已完成
+                    if (!completed.includes(questionIndex)) {
+                        completed.push(questionIndex);
+                    }
+                    
+                    // 显示完整句子的正确答案
+                    const correctSentence = question.fullSentence;
+                    const sentenceContentEl = document.getElementById('sentence-content');
+                    if (sentenceContentEl) {
+                        sentenceContentEl.innerHTML = `
+                            <div class="text-green-600 font-medium mb-2">正确答案：</div>
+                            <div class="text-sm leading-relaxed">${correctSentence}</div>
+                        `;
+                    }
+                    
+                    // 禁用提交按钮
+                    document.getElementById('sentence-submit-btn').disabled = true;
+                    document.getElementById('sentence-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                    
+                    // 重置sentence阶段
+                    window.sentenceStage = null;
+                    
+                    // 启用下一题按钮，让用户手动控制跳转
+                    updateButtons();
+                } else {
+                    // 常规正确处理
+                    showFeedback(question.explanation, 'success');
+                    
+                    // 播放正确音效
+                    playCorrectSound();
+                    
+                    // 更新统计信息
+                    totalCorrectAnswers++;
+                    consecutiveCorrect++;
+                    
+                    // 奖励经验值
+                    const baseXP = 10;
+                    let bonusXP = 0;
+                    
+                    // 连续正确奖励
+                    if (consecutiveCorrect >= 3) {
+                        bonusXP += 5;
+                    }
+                    if (consecutiveCorrect >= 5) {
+                        bonusXP += 10;
+                    }
+                    
+                    // 快速答题奖励（假设在5秒内完成）
+                    const answerTime = Date.now() - questionStartTime;
+                    if (answerTime < 5000) {
+                        bonusXP += 5;
+                    }
+                    
+                    const totalXP = baseXP + bonusXP;
+                    addXP(totalXP, `正确答题`);
+                    
+                    // 检查并授予勋章
+                    checkAndAwardBadges();
+                    
+                    // 添加庆祝动画
+                    const rect = questionContainer.getBoundingClientRect();
+                    createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 10);
+                    
+                    // 标记为已完成
+                    if (!completed.includes(questionIndex)) {
+                        completed.push(questionIndex);
+                    }
+                    
+                    // 对于填空题，更新UI显示正确答案
+                    if (question.type === "fill") {
+                        const blankEl = document.querySelector('.code-blank');
+                        blankEl.textContent = blankEl.dataset.answer;
+                        blankEl.classList.add('correct');
+                        blankEl.classList.remove('code-blank', 'ring-2', 'ring-primary');
+                    }
+                    // 对于选择题，标记正确选项
+                    else if (question.type === "select") {
+                        document.querySelectorAll('.option-hover').forEach((el, i) => {
+                            el.classList.remove('border-primary', 'bg-blue-50');
+                            if (i === question.correct) {
+                                el.classList.add('border-success', 'bg-green-50');
+                            }
+                        });
+                    }
+                    
+                    // 禁用提交按钮
+                    if (document.getElementById('submit-btn')) {
+                        document.getElementById('submit-btn').disabled = true;
+                        document.getElementById('submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                    
+                    // 启用下一题按钮，让用户手动控制跳转
+                    updateButtons();
                 }
-                
-                // 快速答题奖励（假设在5秒内完成）
-                const answerTime = Date.now() - questionStartTime;
-                if (answerTime < 5000) {
-                    bonusXP += 5;
-                }
-                
-                const totalXP = baseXP + bonusXP;
-                addXP(totalXP, `正确答题`);
-                
-                // 检查并授予勋章
-                checkAndAwardBadges();
-                
-                // 添加庆祝动画
-                const rect = questionContainer.getBoundingClientRect();
-                createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 10);
-                
-                // 标记为已完成
-                if (!completed.includes(questionIndex)) {
-                    completed.push(questionIndex);
-                }
-                
-                // 对于填空题，更新UI显示正确答案
-                if (question.type === "fill") {
-                    const blankEl = document.querySelector('.code-blank');
-                    blankEl.textContent = blankEl.dataset.answer;
-                    blankEl.classList.add('correct');
-                    blankEl.classList.remove('code-blank', 'ring-2', 'ring-primary');
-                }
-                // 对于选择题，标记正确选项
-                else if (question.type === "select") {
-                    document.querySelectorAll('.option-hover').forEach((el, i) => {
-                        el.classList.remove('border-primary', 'bg-blue-50');
-                        if (i === question.correct) {
-                            el.classList.add('border-success', 'bg-green-50');
-                        }
-                    });
-                }
-                
-                // 禁用提交按钮
-                if (document.getElementById('submit-btn')) {
-                    document.getElementById('submit-btn').disabled = true;
-                    document.getElementById('submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
-                }
-                
-                // 启用下一题按钮，让用户手动控制跳转
-                updateButtons();
             } else {
-                showFeedback('不正确，请再试一次', 'error');
+                // 对于sentence题型的第二阶段，显示特定错误提示
+                if (question.type === "sentence" && window.sentenceStage === 'review') {
+                    showFeedback('完整句子输入不正确，请检查后重试', 'error');
+                } else {
+                    showFeedback('不正确，请再试一次', 'error');
+                }
                 
                 // 播放错误音效
                 playWrongSound();
@@ -1624,6 +1863,45 @@
             }
         }
         
+        // 显示答案
+        function showAnswer() {
+            const questionIndex = randomQuestions[currentRandomIndex];
+            const question = questions[questionIndex];
+            
+            let answerText = '';
+            if (question.type === "fill") {
+                // 填空题：从data-answer属性获取正确答案
+                const blankEl = document.querySelector('.code-blank');
+                const correctAnswer = blankEl ? blankEl.dataset.answer : '未找到答案';
+                answerText = `正确答案：${correctAnswer}`;
+            } else if (question.type === "select") {
+                // 选择题：显示正确选项
+                const correctOption = question.options[question.correct];
+                answerText = `正确答案：${correctOption}`;
+            } else if (question.type === "correct") {
+                // 找错题：显示错误选项
+                answerText = `错误选项：${question.correct}`;
+            } else if (question.type === "sentence") {
+                // 句子记忆题：显示完整句子
+                const correctSentence = question.fullSentence;
+                answerText = `完整句子：${correctSentence}`;
+            } else {
+                // 其他类型题目
+                answerText = `正确答案：${question.correctAnswer || question.answer || '未找到答案'}`;
+            }
+            
+            answerTextEl.textContent = answerText;
+            answerModal.classList.remove('hidden');
+        }
+        
+        // 关闭答案
+        function closeAnswer() {
+            answerModal.classList.add('hidden');
+            if (document.getElementById('answer-input')) {
+                document.getElementById('answer-input').focus();
+            }
+        }
+        
         // 上一题
         function goPrev() {
             if (currentRandomIndex > 0) {
@@ -1666,6 +1944,48 @@
             progressEl.textContent = `${currentRandomIndex + 1}/${randomQuestions.length}`;
         }
         
+        // 切换学习状态
+        function toggleStudyMode() {
+            const modes = ['normal', 'focus', 'relax'];
+            const currentIndex = modes.indexOf(studyMode);
+            const nextIndex = (currentIndex + 1) % modes.length;
+            studyMode = modes[nextIndex];
+            
+            const modeInfo = studyModes[studyMode];
+            const modeBtn = document.getElementById('mode-btn');
+            
+            // 更新按钮显示
+            modeBtn.innerHTML = `<i class="fa ${modeInfo.icon} mr-1 text-blue-500"></i> ${modeInfo.text}`;
+            
+            // 切换背景样式
+            const container = document.querySelector('.min-h-screen');
+            container.className = `min-h-screen ${modeInfo.bg} transition-all duration-500`;
+            
+            // 显示状态切换提示
+            showQuickMessage(`已切换到${modeInfo.text}`, 'info');
+        }
+        
+        // 显示快速消息
+        function showQuickMessage(message, type = 'info') {
+            const messageEl = document.createElement('div');
+            messageEl.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+                type === 'info' ? 'bg-blue-500 text-white' : 
+                type === 'success' ? 'bg-green-500 text-white' : 
+                'bg-gray-500 text-white'
+            }`;
+            messageEl.textContent = message;
+            
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+                messageEl.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(messageEl);
+                }, 300);
+            }, 2000);
+        }
+        
         // 设置事件监听
         function setupEvents() {
             // 事件委托处理动态生成的元素
@@ -1687,16 +2007,37 @@
                     }
                 }
                 
+                // 句子记忆题填空按钮
+                if (e.target.id === 'fill-submit-btn' || e.target.closest('#fill-submit-btn')) {
+                    // 初始化sentence阶段
+                    window.sentenceStage = 'fill';
+                    // 对于sentence题型的第一阶段，传递空字符串即可，因为checkAnswer函数会自己检查所有填空输入框
+                    checkAnswer('');
+                }
+                
+                // 句子记忆题完整句子提交按钮
+                if (e.target.id === 'sentence-submit-btn' || e.target.closest('#sentence-submit-btn')) {
+                    const input = document.getElementById('full-sentence-input');
+                    if (input) {
+                        checkAnswer(input.value);
+                    }
+                }
+                
                 // 加油按钮
                 if (e.target.id === 'cheer-btn' || e.target.closest('#cheer-btn')) {
                     // 短按效果 - 全新炫酷版本
                     createQuickCheerEffect();
                 }
+                
+                // 答案按钮
+                if (e.target.id === 'answer-btn' || e.target.closest('#answer-btn')) {
+                    showAnswer();
+                }
             });
             
             // 打字音效监听
             document.addEventListener('input', (e) => {
-                if (e.target.id === 'answer-input') {
+                if (e.target.id === 'answer-input' || e.target.id === 'full-sentence-input' || e.target.matches('.code-blank input')) {
                     playTypingSound();
                 }
             });
@@ -1716,6 +2057,12 @@
                 
                 // 输入框回车提交（始终有效）
                 if (e.key === 'Enter') {
+                    // 如果答案弹窗显示中，则点击"知道了"按钮
+                    if (!answerModal.classList.contains('hidden')) {
+                        closeAnswerBtn.click();
+                        return;
+                    }
+                    
                     // 如果提示弹窗显示中，则点击"知道了"按钮
                     if (!hintModal.classList.contains('hidden')) {
                         closeHintBtn.click();
@@ -1723,15 +2070,27 @@
                     }
                     
                     // 如果当前有输入框且提交按钮可用，则提交答案
-                    if (document.getElementById('answer-input') && 
-                        !document.getElementById('submit-btn').disabled) {
-                        checkAnswer(document.getElementById('answer-input').value);
-                    }
-                    // 如果当前题目已完成且下一题按钮可用，则跳转到下一题
-                    else if (completed.includes(randomQuestions[currentRandomIndex]) && 
-                             currentRandomIndex < randomQuestions.length - 1) {
-                        goNext();
-                    }
+                if (document.getElementById('answer-input') && 
+                    !document.getElementById('submit-btn').disabled) {
+                    checkAnswer(document.getElementById('answer-input').value);
+                }
+                // 如果当前是句子记忆题的填空阶段且填空提交按钮可用
+                else if (document.querySelector('.code-blank input') && 
+                         !document.getElementById('fill-submit-btn').disabled) {
+                    // 初始化sentence阶段
+                    window.sentenceStage = 'fill';
+                    checkAnswer('');
+                }
+                // 如果当前是句子记忆题的完整句子阶段且提交按钮可用
+                else if (document.getElementById('full-sentence-input') && 
+                         !document.getElementById('sentence-submit-btn').disabled) {
+                    checkAnswer(document.getElementById('full-sentence-input').value);
+                }
+                // 如果当前题目已完成且下一题按钮可用，则跳转到下一题
+                else if (completed.includes(randomQuestions[currentRandomIndex]) && 
+                         currentRandomIndex < randomQuestions.length - 1) {
+                    goNext();
+                }
                 }
                 
                 // ESC键：退出输入状态（始终有效）
@@ -1748,8 +2107,8 @@
                     }
                 }
                 
-                // 如果当前在输入框中，则忽略其他快捷键
-                if (isInInput) {
+                // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC和Shift+D）
+                if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'd' || e.key === 'D') && e.shiftKey)) {
                     return;
                 }
                 
@@ -1814,6 +2173,20 @@
                     showHint();
                 }
                 
+                // 答案快捷键：Shift+D键
+                if ((e.key === 'd' || e.key === 'D' || e.code === 'KeyD') && e.shiftKey) {
+                    e.preventDefault(); // 阻止默认的输入行为
+                    e.stopPropagation(); // 阻止事件冒泡
+                    showAnswer();
+                }
+                
+                // 模式切换快捷键：Shift+M键
+                if ((e.key === 'm' || e.key === 'M' || e.code === 'KeyM') && e.shiftKey) {
+                    e.preventDefault(); // 阻止默认的输入行为
+                    e.stopPropagation(); // 阻止事件冒泡
+                    toggleStudyMode();
+                }
+                
                 // 空格键触发加油效果
                 if (e.key === ' ') {
                     e.preventDefault();
@@ -1845,9 +2218,28 @@
             hintBtn.addEventListener('click', showHint);
             closeHintBtn.addEventListener('click', closeHint);
             
+            // 答案按钮
+        answerBtn.addEventListener('click', showAnswer);
+        closeAnswerBtn.addEventListener('click', closeAnswer);
+        
+        // 学习状态切换按钮
+        const modeBtn = document.createElement('button');
+        modeBtn.id = 'mode-btn';
+        modeBtn.className = 'text-gray-500 hover:text-blue-500 flex items-center transition-all duration-300';
+        modeBtn.innerHTML = '<i class="fa fa-star mr-1 text-blue-500"></i> 正常模式';
+        modeBtn.addEventListener('click', toggleStudyMode);
+        
+        // 将状态切换按钮添加到导航区域
+        const navButtons = document.querySelector('.flex.space-x-3');
+        navButtons.insertBefore(modeBtn, navButtons.children[2]);
+            
             // 点击弹窗背景关闭
             hintModal.addEventListener('click', (e) => {
                 if (e.target === hintModal) closeHint();
+            });
+            
+            answerModal.addEventListener('click', (e) => {
+                if (e.target === answerModal) closeAnswer();
             });
             
             // 上一题/下一题
