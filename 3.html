@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CodeMaster - 编程挑战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        success: '#10B981',
+                        accent: '#8B5CF6'
+                    },
+                    fontFamily: {
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .code-blank {
+                @apply bg-blue-50 border-b-2 border-primary px-1 mx-0.5 min-w-[30px] inline-block;
+            }
+            .code-blank.correct {
+                @apply bg-green-50 border-b-2 border-success;
+            }
+            .option-hover {
+                @apply hover:bg-gray-50 transition-colors;
+            }
+            
+            /* 动画效果 */
+            .animate-pulse-slow {
+                animation: pulse 2s infinite;
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+            
+            /* 游戏化动画 */
+            .animate-glow {
+                animation: glow 2s ease-in-out infinite alternate;
+            }
+            .animate-fireworks {
+                animation: fireworks 2s ease-out forwards;
+            }
+            
+            @keyframes glow {
+                from { box-shadow: 0 0 5px #ff6b35, 0 0 10px #ff8e53, 0 0 15px #ffb142; }
+                to { box-shadow: 0 0 10px #ff6b35, 0 0 20px #ff8e53, 0 0 30px #ffb142; }
+            }
+            
+            @keyframes fireworks {
+                0% { transform: scale(0); opacity: 1; }
+                50% { transform: scale(1.2); opacity: 0.8; }
+                100% { transform: scale(1); opacity: 0; }
+            }
+            
+            /* 经验值获得动画 */
+            .animate-bounce-in {
+                animation: bounceIn 0.5s ease-out;
+            }
+            
+            @keyframes bounceIn {
+                0% { 
+                    transform: scale(0.3) translateY(20px); 
+                    opacity: 0; 
+                }
+                50% { 
+                    transform: scale(1.1) translateY(-5px); 
+                    opacity: 1; 
+                }
+                100% { 
+                    transform: scale(1) translateY(0); 
+                    opacity: 1; 
+                }
+            }
+            
+            /* 勋章容器响应式样式 */
+            @media (max-width: 640px) {
+                #badge-collapsed {
+                    display: flex !important;
+                }
+                #badge-container {
+                    display: none !important;
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    padding: 8px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    z-index: 50;
+                    width: 50px; /* 适当宽度显示勋章 */
+                }
+                #badge-container.expanded {
+                    display: flex !important;
+                    flex-direction: column;
+                    gap: 8px;
+                    align-items: center;
+                }
+            }
+            
+            /* 大屏幕也使用勋字折叠显示 */
+            @media (min-width: 641px) {
+                #badge-collapsed {
+                    display: flex !important;
+                }
+                #badge-container {
+                    display: none !important;
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    padding: 8px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    z-index: 50;
+                    width: 50px; /* 适当宽度显示勋章 */
+                }
+                #badge-container.expanded {
+                    display: flex !important;
+                    flex-direction: column;
+                    gap: 8px;
+                    align-items: center;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white border-b border-gray-200 py-2">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-code text-primary text-lg"></i>
+                <span class="font-bold text-lg">CodeMaster</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- 经验值和等级 -->
+                <div class="flex items-center space-x-2">
+                    <div class="text-xs text-gray-600">
+                        <span id="level">Lv.1</span>
+                        <span id="xp">(0/100)</span>
+                    </div>
+                    <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="xp-bar" class="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <!-- 勋章展示 -->
+                <div class="flex items-center space-x-1">
+                    <!-- 小屏幕折叠显示 -->
+                    <div class="relative">
+                        <div id="badge-collapsed" class="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 text-white text-sm font-bold shadow-lg cursor-pointer transition-all duration-300 hover:scale-110 animate-pulse-slow" title="点击查看勋章">
+                            勋
+                        </div>
+                        <!-- 勋章容器 -->
+                        <div id="badge-container" class="flex space-x-1 transition-all duration-300 badge-container">
+                            <!-- 勋章会动态显示 -->
+                        </div>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-500" id="progress">1/5</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 max-w-md">
+        <!-- 题目容器 -->
+        <div class="bg-white rounded border border-gray-200 mb-6 overflow-hidden" id="question-container">
+            <!-- 题目会动态加载 -->
+        </div>
+        
+        <!-- 答题区域 -->
+        <div id="answer-container" class="mb-6">
+            <!-- 答题区域会动态加载 -->
+        </div>
+        
+        <!-- 反馈区域 -->
+        <div id="feedback" class="mb-6 text-xs hidden"></div>
+        
+        <!-- 导航按钮 -->
+        <div class="flex justify-between text-xs">
+            <div class="flex space-x-3">
+                <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center">
+                    <i class="fa fa-lightbulb-o mr-1 text-amber-500"></i> 提示
+                </button>
+                <!-- 加油按钮 -->
+                <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300">
+                    <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
+                </button>
+            </div>
+            <div class="flex space-x-3">
+                <button id="prev-btn" class="text-gray-500 hover:text-primary opacity-50 cursor-not-allowed">
+                    上一题
+                </button>
+                <button id="next-btn" class="text-gray-500 hover:text-primary">
+                    下一题
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 提示弹窗 -->
+    <div id="hint-modal" class="fixed inset-0 bg-black/20 flex items-center justify-center z-10 hidden">
+        <div class="bg-white rounded p-4 w-64">
+            <p class="text-sm mb-3" id="hint-text"></p>
+            <button id="close-hint" class="w-full py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+                知道了
+            </button>
+        </div>
+    </div>
+
+    <!-- 粒子动画容器 -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- 加油动画容器 -->
+    <div id="cheer-animation" class="fixed inset-0 flex items-center justify-center pointer-events-none z-20 hidden">
+        <div class="text-center">
+            <div class="text-6xl text-yellow-500 mb-4">🔥</div>
+            <div class="text-2xl font-bold text-yellow-600 animate-pulse-slow">加油！继续努力！</div>
+        </div>
+    </div>
+
+    <script>
+        // 题目数据 - 简短多样
+        const questions = [
+            {
+                id: 1,
+                type: "fill",
+                title: "包声明",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">package</span> <span class="code-blank" data-id="1" data-answer="main"></span></div>
+                </div>`,
+                instruction: "填写Go程序的主包名称",
+                hint: "Go语言中可执行程序的包名是\"main\"",
+                explanation: "main包是Go语言中特殊的包名，表示这是一个可以直接运行的程序"
+            },
+            {
+                id: 2,
+                type: "select",
+                title: "结构体定义",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪个选项是正确的区块结构体定义？</p>
+                </div>`,
+                options: [
+                    `type Block { Data string }`,
+                    `struct Block { Data string }`,
+                    `type Block struct { Data string }`,
+                    `def Block: Data string`
+                ],
+                correct: 2, // 索引从0开始
+                explanation: "在Go中，结构体定义格式为：type 名称 struct { 字段 类型 }"
+            },
+            {
+                id: 3,
+                type: "fill",
+                title: "导入语句",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">import</span> <span class="code-blank" data-id="3" data-answer='"fmt"'></span></div>
+                </div>`,
+                instruction: "填写导入fmt包的正确语句（包含引号）",
+                hint: "包名需要用双引号括起来，fmt是格式化输入输出的包",
+                explanation: "import语句用于导入其他包，包名必须放在双引号中"
+            },
+            {
+                id: 4,
+                type: "correct",
+                title: "修正错误",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> main() {</div>
+                    <div class="ml-4">b := Block{data: <span class="text-red-600">"区块数据"</span>}</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "找出代码中的错误并修正（只需要输入错误的部分）",
+                correct: "Data",
+                hint: "Go语言中结构体字段名首字母通常大写",
+                explanation: "Go语言中，结构体字段名首字母大写表示该字段可导出（公共），小写则为私有"
+            },
+            {
+                id: 5,
+                type: "fill",
+                title: "函数定义",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="5" data-answer="(b Block) GetData"></span>() <span class="text-purple-600">string</span> {</div>
+                    <div class="ml-4"><span class="text-blue-600">return</span> b.Data</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写正确的方法接收者和名称，实现获取区块数据的方法",
+                hint: "方法格式：(接收者 类型) 方法名，这里需要定义GetData方法",
+                explanation: "在Go中，方法通过接收者与结构体关联，格式为：func (接收者 类型) 方法名()"
+            },
+            {
+                id: 6,
+                type: "fill",
+                title: "区块链定义",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">type</span> <span class="code-blank" data-id="6" data-answer="Blockchain"></span> []Block</div>
+                </div>`,
+                instruction: "填写区块链类型名称，它是Block的切片",
+                hint: "区块链是由多个区块组成的链条，名称是Blockchain",
+                explanation: "在Go中，我们可以用切片（[]）来表示区块链，它是区块的有序集合"
+            },
+            {
+                id: 7,
+                type: "select",
+                title: "创建区块",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪个选项正确创建了一个新区块？</p>
+                </div>`,
+                options: [
+                    `newBlock = Block{"交易数据"}`,
+                    `newBlock := Block{Data: "交易数据"}`,
+                    `newBlock -> Block("交易数据")`,
+                    `Block newBlock = {"交易数据"}`
+                ],
+                correct: 1,
+                explanation: "在Go中，创建结构体实例使用 变量名 := 结构体名{字段: 值} 的格式"
+            },
+            {
+                id: 8,
+                type: "fill",
+                title: "哈希函数导入",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">import</span> <span class="code-blank" data-id="8" data-answer='"crypto/sha256"'></span></div>
+                </div>`,
+                instruction: "填写导入SHA-256哈希包的语句（包含引号）",
+                hint: "Go中SHA-256哈希功能在crypto/sha256包中",
+                explanation: "crypto/sha256包提供了SHA-256哈希算法实现，是区块链的核心依赖"
+            },
+            {
+                id: 9,
+                type: "correct",
+                title: "修正切片操作",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div>blockchain := Blockchain{genesisBlock}</div>
+                    <div><span class="text-red-600">blockchain += newBlock</span></div>
+                </div>`,
+                instruction: "修正添加区块到区块链的错误代码",
+                correct: "blockchain = append(blockchain, newBlock)",
+                hint: "在Go中，向切片添加元素使用append函数",
+                explanation: "Go中的切片不能使用+=添加元素，必须使用append函数：slice = append(slice, 元素)"
+            },
+            {
+                id: 10,
+                type: "fill",
+                title: "获取最后区块",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> getLastBlock(bc Blockchain) Block {</div>
+                    <div class="ml-4"><span class="text-blue-600">return</span> bc[<span class="code-blank" data-id="10" data-answer="len(bc)-1"></span>]</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写索引值，获取区块链中的最后一个区块",
+                hint: "使用len()函数获取切片长度，索引从0开始",
+                explanation: "区块链的最后一个区块索引是长度减1，因为Go中切片索引从0开始"
+            },
+            {
+                id: 11,
+                type: "select",
+                title: "哈希计算",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪个选项正确计算字符串的SHA-256哈希？</p>
+                </div>`,
+                options: [
+                    `hash := sha256.Hash("data")`,
+                    `hash := sha256.Sum256("data")`,
+                    `hash := sha256.Sum256([]byte("data"))`,
+                    `hash := sha256.Compute("data")`
+                ],
+                correct: 2,
+                explanation: "sha256.Sum256()函数需要字节切片作为参数，所以需要用[]byte()转换字符串"
+            },
+            {
+                id: 12,
+                type: "fill",
+                title: "区块哈希字段",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
+                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
+                    <div class="ml-4"><span class="code-blank" data-id="12" data-answer="Hash"></span> <span class="text-purple-600">string</span></div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写区块结构体的哈希字段名称",
+                hint: "区块通常包含数据和哈希两个字段",
+                explanation: "区块结构体通常包含Data和Hash字段，Hash用于存储区块的哈希值"
+            },
+            {
+                id: 13,
+                type: "select",
+                title: "时间戳导入",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪个包用于获取当前时间戳？</p>
+                </div>`,
+                options: [
+                    `"time"`,
+                    `"timestamp"`,
+                    `"datetime"`,
+                    `"clock"`
+                ],
+                correct: 0,
+                explanation: "Go语言中time包提供了时间相关的功能，包括获取当前时间戳"
+            },
+            {
+                id: 14,
+                type: "fill",
+                title: "时间戳字段",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
+                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
+                    <div class="ml-4">Hash <span class="text-purple-600">string</span></div>
+                    <div class="ml-4"><span class="code-blank" data-id="14" data-answer="Timestamp"></span> <span class="text-purple-600">int64</span></div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写区块结构体的时间戳字段名称",
+                hint: "区块通常包含时间戳来记录创建时间",
+                explanation: "Timestamp字段记录区块创建的时间戳，类型为int64"
+            },
+            {
+                id: 15,
+                type: "correct",
+                title: "修正时间戳获取",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> getTimestamp() <span class="text-purple-600">int64</span> {</div>
+                    <div class="ml-4"><span class="text-red-600">return time.Now()</span></div>
+                    <div>}</div>
+                </div>`,
+                instruction: "修正获取时间戳的函数错误",
+                correct: "return time.Now().Unix()",
+                hint: "time.Now()返回time.Time类型，需要转换为Unix时间戳",
+                explanation: "time.Now().Unix()返回int64类型的Unix时间戳，time.Now()返回的是time.Time类型"
+            },
+            {
+                id: 16,
+                type: "fill",
+                title: "前一个区块哈希",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
+                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
+                    <div class="ml-4">Hash <span class="text-purple-600">string</span></div>
+                    <div class="ml-4">Timestamp <span class="text-purple-600">int64</span></div>
+                    <div class="ml-4"><span class="code-blank" data-id="16" data-answer="PrevHash"></span> <span class="text-purple-600">string</span></div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写前一个区块哈希字段名称",
+                hint: "区块链中每个区块都包含前一个区块的哈希",
+                explanation: "PrevHash字段存储前一个区块的哈希值，这是区块链连接的关键"
+            },
+            {
+                id: 17,
+                type: "select",
+                title: "创世区块",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">创世区块的PrevHash应该是什么？</p>
+                </div>`,
+                options: [
+                    `空字符串""`,
+                    `"0"`,
+                    `当前区块的哈希`,
+                    `随机字符串`
+                ],
+                correct: 0,
+                explanation: "创世区块是区块链的第一个区块，没有前一个区块，所以PrevHash为空字符串"
+            },
+            {
+                id: 18,
+                type: "fill",
+                title: "计算区块哈希",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> calculateHash(b Block) <span class="text-purple-600">string</span> {</div>
+                    <div class="ml-4">data := <span class="text-blue-600">string</span>(b.Data) + <span class="text-blue-600">string</span>(b.PrevHash) + <span class="code-blank" data-id="18" data-answer="fmt.Sprintf(\"%d\", b.Timestamp)"></span></div>
+                    <div class="ml-4">hash := sha256.Sum256([]byte(data))</div>
+                    <div class="ml-4"><span class="text-blue-600">return</span> fmt.Sprintf(<span class="text-green-600">"%x"</span>, hash)</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写时间戳转换为字符串的代码",
+                hint: "使用fmt.Sprintf格式化int64类型的时间戳",
+                explanation: "fmt.Sprintf(\"%d\", b.Timestamp)将int64时间戳转换为字符串"
+            },
+            {
+                id: 19,
+                type: "correct",
+                title: "修正哈希计算",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> calculateHash(b Block) <span class="text-purple-600">string</span> {</div>
+                    <div class="ml-4">data := b.Data + b.PrevHash + <span class="text-red-600">b.Timestamp</span></div>
+                    <div class="ml-4">hash := sha256.Sum256([]byte(data))</div>
+                    <div class="ml-4"><span class="text-blue-600">return</span> fmt.Sprintf(<span class="text-green-600">"%x"</span>, hash)</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "修正哈希计算中的类型错误",
+                correct: "fmt.Sprintf(\"%d\", b.Timestamp)",
+                hint: "不能直接将int64和字符串相加，需要先转换类型",
+                explanation: "int64类型的Timestamp需要先转换为字符串才能与其他字符串拼接"
+            },
+            {
+                id: 20,
+                type: "fill",
+                title: "创建新区块",
+                content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="20" data-answer="createBlock"></span>(data <span class="text-purple-600">string</span>, prevHash <span class="text-purple-600">string</span>) Block {</div>
+                    <div class="ml-4">timestamp := time.Now().Unix()</div>
+                    <div class="ml-4">newBlock := Block{</div>
+                    <div class="ml-8">Data: data,</div>
+                    <div class="ml-8">PrevHash: prevHash,</div>
+                    <div class="ml-8">Timestamp: timestamp,</div>
+                    <div class="ml-8">Hash: <span class="text-green-600">""</span></div>
+                    <div class="ml-4">}</div>
+                    <div class="ml-4">newBlock.Hash = calculateHash(newBlock)</div>
+                    <div class="ml-4"><span class="text-blue-600">return</span> newBlock</div>
+                    <div>}</div>
+                </div>`,
+                instruction: "填写创建新区块的函数名称",
+                hint: "函数名应该描述其功能，比如createBlock",
+                explanation: "createBlock函数接收数据和前一个区块哈希，返回一个新的区块"
+            },
+            {
+                id: 21,
+                type: "select",
+                title: "添加区块到链",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪个选项正确地将新区块添加到区块链？</p>
+                </div>`,
+                options: [
+                    `blockchain = append(blockchain, newBlock)`,
+                    `blockchain.add(newBlock)`,
+                    `blockchain.push(newBlock)`,
+                    `blockchain[len(blockchain)] = newBlock`
+                ],
+                correct: 0,
+                explanation: "在Go中，使用append函数向切片添加元素，返回新的切片"
+            }
+        ];
+        
+        // 当前状态
+        let currentQuestion = 0;
+        let completed = [];
+        let cheerPressTimer = null;
+        let cheerPressStart = 0;
+        let badges = [];
+        let totalCorrectAnswers = 0;
+        let consecutiveCorrect = 0;
+        let randomQuestions = []; // 随机题目数组
+        let currentRandomIndex = 0; // 当前随机题目索引
+        
+        // 游戏化状态
+        let xp = 0;
+        let level = 1;
+        let streakDays = 0;
+        let lastPlayDate = null;
+        let totalPlayTime = 0;
+        let sessionStartTime = Date.now();
+        let questionStartTime = Date.now();
+        
+        // 弹窗队列系统
+        const popupQueue = [];
+        let isPopupShowing = false;
+        
+
+        
+        // DOM元素
+        const questionContainer = document.getElementById('question-container');
+        const answerContainer = document.getElementById('answer-container');
+        const feedbackEl = document.getElementById('feedback');
+        const hintBtn = document.getElementById('hint-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressEl = document.getElementById('progress');
+        const hintModal = document.getElementById('hint-modal');
+        const hintTextEl = document.getElementById('hint-text');
+        const closeHintBtn = document.getElementById('close-hint');
+        const cheerBtn = document.getElementById('cheer-btn');
+        const particlesContainer = document.getElementById('particles-container');
+        const cheerAnimation = document.getElementById('cheer-animation');
+        const badgeContainer = document.getElementById('badge-container');
+        const levelEl = document.getElementById('level');
+        const xpEl = document.getElementById('xp');
+        const xpBar = document.getElementById('xp-bar');
+        
+        // 初始化
+        function init() {
+            // 初始化随机题目数组
+            initRandomQuestions();
+            loadQuestion(currentRandomIndex);
+            setupEvents();
+            loadBadges();
+            loadGameStats();
+            updateGameStats();
+            startSessionTimer();
+            setupBadgeToggle();
+            
+            // 初始化音频上下文（需要用户交互）
+            document.addEventListener('click', function initAudio() {
+                if (Tone.context.state !== 'running') {
+                    Tone.context.resume();
+                }
+                document.removeEventListener('click', initAudio);
+            });
+        }
+        
+        // 初始化随机题目数组
+        function initRandomQuestions() {
+            // 创建题目索引数组
+            const questionIndices = Array.from({length: questions.length}, (_, i) => i);
+            
+            // 随机打乱数组
+            for (let i = questionIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questionIndices[i], questionIndices[j]] = [questionIndices[j], questionIndices[i]];
+            }
+            
+            randomQuestions = questionIndices;
+            currentRandomIndex = 0;
+            
+            console.log('随机题目顺序:', randomQuestions.map(i => questions[i].title));
+        }
+        
+        // 加载勋章
+        function loadBadges() {
+            const savedBadges = localStorage.getItem('goBlockchainBadges');
+            if (savedBadges) {
+                badges = JSON.parse(savedBadges);
+                updateBadgeDisplay();
+            }
+        }
+        
+        // 保存勋章
+        function saveBadges() {
+            localStorage.setItem('goBlockchainBadges', JSON.stringify(badges));
+        }
+        
+        // 更新勋章显示
+        function updateBadgeDisplay() {
+            badgeContainer.innerHTML = '';
+            badges.forEach(badge => {
+                const badgeEl = document.createElement('div');
+                badgeEl.className = 'relative group';
+                badgeEl.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 flex items-center justify-center text-white text-sm shadow-lg cursor-help transform transition-transform duration-300 hover:scale-110 animate-pulse-slow" title="${badge.name}">
+                        <i class="fa ${badge.icon}"></i>
+                    </div>
+                    <div class="absolute top-1/2 right-full transform -translate-y-1/2 mr-2 px-3 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap border border-gray-600">
+                        <div class="font-medium">${badge.name}</div>
+                        <div class="w-2 h-2 bg-gradient-to-r from-yellow-300 to-orange-400 absolute -right-1 top-1/2 transform -translate-y-1/2 rotate-45"></div>
+                    </div>
+                `;
+                badgeContainer.appendChild(badgeEl);
+            });
+            
+            // 更新折叠勋章显示状态
+            updateBadgeCollapsed();
+        }
+        
+        // 更新折叠勋章显示状态
+        function updateBadgeCollapsed() {
+            const badgeCollapsed = document.getElementById('badge-collapsed');
+            if (badges.length > 0) {
+                badgeCollapsed.style.display = 'flex';
+                // 根据勋章数量显示不同样式
+                if (badges.length > 5) {
+                    badgeCollapsed.classList.add('animate-pulse');
+                } else {
+                    badgeCollapsed.classList.remove('animate-pulse');
+                }
+            } else {
+                badgeCollapsed.style.display = 'none';
+            }
+        }
+        
+        // 勋章折叠/展开功能
+        function setupBadgeToggle() {
+            const badgeCollapsed = document.getElementById('badge-collapsed');
+            const badgeContainer = document.getElementById('badge-container');
+            
+            // 点击折叠勋章展开/收起
+            badgeCollapsed.addEventListener('click', (e) => {
+                e.stopPropagation();
+                badgeContainer.classList.toggle('expanded');
+                
+                if (badgeContainer.classList.contains('expanded')) {
+                    // 展开状态：添加旋转动画
+                    badgeCollapsed.style.transform = 'rotate(180deg)';
+                } else {
+                    // 收起状态：恢复原状
+                    badgeCollapsed.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // 点击页面其他地方收起勋章
+            document.addEventListener('click', (e) => {
+                if (!badgeContainer.contains(e.target) && !badgeCollapsed.contains(e.target)) {
+                    badgeContainer.classList.remove('expanded');
+                    badgeCollapsed.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // 阻止勋章容器内的点击事件冒泡
+            badgeContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        // 检查并授予勋章
+        function checkAndAwardBadges() {
+            const newBadges = [];
+            
+            // 首次正确勋章
+            if (totalCorrectAnswers === 1 && !badges.find(b => b.id === 'first_correct')) {
+                newBadges.push({
+                    id: 'first_correct',
+                    name: '首次正确',
+                    icon: 'fa-star',
+                    description: '完成第一道题目'
+                });
+            }
+            
+            // 连续正确勋章
+            if (consecutiveCorrect >= 3 && !badges.find(b => b.id === 'streak_3')) {
+                newBadges.push({
+                    id: 'streak_3',
+                    name: '连续3题正确',
+                    icon: 'fa-bolt',
+                    description: '连续答对3道题目'
+                });
+            }
+            
+            if (consecutiveCorrect >= 5 && !badges.find(b => b.id === 'streak_5')) {
+                newBadges.push({
+                    id: 'streak_5',
+                    name: '连续5题正确',
+                    icon: 'fa-rocket',
+                    description: '连续答对5道题目'
+                });
+            }
+            
+            if (consecutiveCorrect >= 10 && !badges.find(b => b.id === 'streak_10')) {
+                newBadges.push({
+                    id: 'streak_10',
+                    name: '连续10题正确',
+                    icon: 'fa-fire',
+                    description: '连续答对10道题目'
+                });
+            }
+            
+            // 完成所有题目勋章
+            if (completed.length === questions.length && !badges.find(b => b.id === 'all_completed')) {
+                newBadges.push({
+                    id: 'all_completed',
+                    name: '完成所有题目',
+                    icon: 'fa-trophy',
+                    description: '完成所有编程挑战题目'
+                });
+            }
+            
+            // 快速学习者勋章
+            if (totalCorrectAnswers >= 5 && !badges.find(b => b.id === 'fast_learner')) {
+                newBadges.push({
+                    id: 'fast_learner',
+                    name: '快速学习者',
+                    icon: 'fa-flash',
+                    description: '快速完成5道题目'
+                });
+            }
+            
+            // 等级勋章
+            if (level >= 5 && !badges.find(b => b.id === 'level_5')) {
+                newBadges.push({
+                    id: 'level_5',
+                    name: '等级5',
+                    icon: 'fa-gem',
+                    description: '达到等级5'
+                });
+            }
+            
+            if (level >= 10 && !badges.find(b => b.id === 'level_10')) {
+                newBadges.push({
+                    id: 'level_10',
+                    name: '等级10',
+                    icon: 'fa-crown',
+                    description: '达到等级10'
+                });
+            }
+            
+            // 连续登录勋章
+            if (streakDays >= 3 && !badges.find(b => b.id === 'streak_3_days')) {
+                newBadges.push({
+                    id: 'streak_3_days',
+                    name: '连续3天',
+                    icon: 'fa-calendar',
+                    description: '连续3天登录学习'
+                });
+            }
+            
+            if (streakDays >= 7 && !badges.find(b => b.id === 'streak_7_days')) {
+                newBadges.push({
+                    id: 'streak_7_days',
+                    name: '连续7天',
+                    icon: 'fa-calendar-check',
+                    description: '连续7天登录学习'
+                });
+            }
+            
+            // 学习时长勋章
+            if (totalPlayTime >= 60 && !badges.find(b => b.id === 'learner_1h')) {
+                newBadges.push({
+                    id: 'learner_1h',
+                    name: '学习1小时',
+                    icon: 'fa-clock',
+                    description: '累计学习1小时'
+                });
+            }
+            
+            if (totalPlayTime >= 300 && !badges.find(b => b.id === 'learner_5h')) {
+                newBadges.push({
+                    id: 'learner_5h',
+                    name: '学习5小时',
+                    icon: 'fa-hourglass',
+                    description: '累计学习5小时'
+                });
+            }
+            
+            // 添加新勋章并显示动画（使用弹窗队列）
+        newBadges.forEach(badge => {
+            badges.push(badge);
+            showBadgeAnimation(badge);
+            
+            // 勋章奖励经验值
+            addXP(50, `获得勋章: ${badge.name}`);
+        });
+            
+            if (newBadges.length > 0) {
+                saveBadges();
+                updateBadgeDisplay();
+            }
+        }
+        
+        // 弹窗队列管理
+        function showNextPopup() {
+            if (popupQueue.length > 0 && !isPopupShowing) {
+                isPopupShowing = true;
+                const popup = popupQueue.shift();
+                popup();
+                
+                // 3秒后显示下一个弹窗
+                setTimeout(() => {
+                    isPopupShowing = false;
+                    showNextPopup();
+                }, 3000);
+            }
+        }
+        
+        // 显示勋章获得动画
+        function showBadgeAnimation(badge) {
+            popupQueue.push(() => {
+                const animationEl = document.createElement('div');
+                animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
+                animationEl.innerHTML = `
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl max-w-md mx-4 text-white text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 flex items-center justify-center text-white text-2xl animate-glow">
+                            <i class="fa ${badge.icon}"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">获得新勋章！</h3>
+                        <p class="text-lg mb-4">${badge.name}</p>
+                        <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded hover:bg-white/30">
+                            太棒了！
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(animationEl);
+                
+                // 添加按钮点击事件
+                const button = animationEl.querySelector('button');
+                button.addEventListener('click', () => {
+                    if (animationEl.parentElement) {
+                        animationEl.remove();
+                    }
+                });
+                
+                // 播放获得勋章音效
+                playBadgeSound();
+                
+                // 添加彩带效果
+                createConfettiEffect();
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (animationEl.parentElement) {
+                        animationEl.remove();
+                    }
+                }, 3000);
+            });
+            
+            // 启动弹窗队列
+            showNextPopup();
+        }
+        
+        // 加载游戏统计数据
+        function loadGameStats() {
+            const savedStats = localStorage.getItem('goBlockchainGameStats');
+            if (savedStats) {
+                const stats = JSON.parse(savedStats);
+                xp = stats.xp || 0;
+                level = stats.level || 1;
+                streakDays = stats.streakDays || 0;
+                lastPlayDate = stats.lastPlayDate;
+                totalPlayTime = stats.totalPlayTime || 0;
+                
+                // 检查连续登录
+                checkDailyStreak();
+            }
+        }
+        
+        // 保存游戏统计数据
+        function saveGameStats() {
+            const stats = {
+                xp,
+                level,
+                streakDays,
+                lastPlayDate: new Date().toISOString(),
+                totalPlayTime
+            };
+            localStorage.setItem('goBlockchainGameStats', JSON.stringify(stats));
+        }
+        
+        // 检查每日连续登录
+        function checkDailyStreak() {
+            const today = new Date().toDateString();
+            if (lastPlayDate) {
+                const lastDate = new Date(lastPlayDate).toDateString();
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (lastDate === yesterday.toDateString()) {
+                    streakDays++;
+                } else if (lastDate !== today) {
+                    streakDays = 1; // 重新开始
+                }
+            } else {
+                streakDays = 1;
+            }
+        }
+        
+        // 更新游戏统计显示
+        function updateGameStats() {
+            levelEl.textContent = `Lv.${level}`;
+            const xpNeeded = level * 100;
+            xpEl.textContent = `(${xp}/${xpNeeded})`;
+            const xpPercentage = Math.min((xp / xpNeeded) * 100, 100);
+            xpBar.style.width = `${xpPercentage}%`;
+        }
+        
+        // 添加经验值
+        function addXP(amount, reason = '') {
+            const oldLevel = level;
+            xp += amount;
+            
+            // 检查升级
+            const xpNeeded = level * 100;
+            if (xp >= xpNeeded) {
+                level++;
+                xp = xp - xpNeeded;
+                showLevelUpAnimation();
+            }
+            
+            updateGameStats();
+            saveGameStats();
+            
+            // 显示经验值获得动画
+            showXPGainAnimation(amount, reason);
+        }
+        
+        // 显示经验值获得动画
+        function showXPGainAnimation(amount, reason) {
+            const xpEl = document.createElement('div');
+            xpEl.className = 'fixed top-20 right-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold z-40 animate-bounce-in';
+            xpEl.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="text-yellow-300 text-lg">✨</span>
+                    <span class="font-bold">+${amount} XP</span>
+                    ${reason ? `<span class="text-green-100 text-xs">(${reason})</span>` : ''}
+                    <span class="text-yellow-300 text-lg">✨</span>
+                </div>
+            `;
+            
+            // 添加发光效果
+            xpEl.style.boxShadow = '0 0 20px rgba(72, 187, 120, 0.6)';
+            
+            document.body.appendChild(xpEl);
+            
+            // 动画效果：向上漂浮并淡出
+            let opacity = 1;
+            let position = 80; // 初始位置
+            
+            const animate = () => {
+                opacity -= 0.02;
+                position -= 1;
+                
+                xpEl.style.opacity = opacity;
+                xpEl.style.top = `${position}px`;
+                
+                if (opacity <= 0) {
+                    if (xpEl.parentElement) {
+                        xpEl.remove();
+                    }
+                    return;
+                }
+                
+                requestAnimationFrame(animate);
+            };
+            
+            // 延迟开始动画
+            setTimeout(() => {
+                animate();
+            }, 500);
+            
+            // 2秒后强制移除（安全措施）
+            setTimeout(() => {
+                if (xpEl.parentElement) {
+                    xpEl.remove();
+                }
+            }, 2500);
+        }
+        
+        // 显示升级动画
+        function showLevelUpAnimation() {
+            popupQueue.push(() => {
+                const levelUpEl = document.createElement('div');
+                levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
+                levelUpEl.innerHTML = `
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl max-w-md mx-4 text-white text-center">
+        <div class="text-6xl mb-4">🎉</div>
+                        <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
+                        <p class="text-lg mb-4">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
+                        <p class="text-sm opacity-90">继续学习，解锁更多成就！</p>
+                    </div>
+                `;
+                document.body.appendChild(levelUpEl);
+                
+                // 播放升级音效
+                playLevelUpSound();
+                
+                // 添加升级彩带效果
+                createConfettiEffect();
+                
+                setTimeout(() => {
+                    if (levelUpEl.parentElement) {
+                        levelUpEl.remove();
+                    }
+                }, 3000);
+            });
+            
+            // 启动弹窗队列
+            showNextPopup();
+        }
+        
+        // 创建彩带效果
+        function createConfettiEffect() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    confetti.style.cssText = `
+                        position: fixed;
+                        width: 10px;
+                        height: 10px;
+                        background: ${color};
+                        top: -20px;
+                        left: ${Math.random() * 100}vw;
+                        border-radius: 2px;
+                        pointer-events: none;
+                        z-index: 40;
+                        animation: confetti 3s ease-out forwards;
+                    `;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentElement) {
+                            confetti.remove();
+                        }
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+        
+        // 开始会话计时器
+        function startSessionTimer() {
+            sessionStartTime = Date.now();
+            
+            // 每分钟保存一次游戏时间
+            setInterval(() => {
+                totalPlayTime += 1;
+                saveGameStats();
+                
+                // 每5分钟奖励经验值
+                if (totalPlayTime % 5 === 0) {
+                    addXP(5, '坚持学习');
+                }
+            }, 60000); // 每分钟
+        }
+        
+        // 创建粒子效果
+        function createParticle(x, y, type = 'fire') {
+            const particle = document.createElement('div');
+            const size = Math.random() * 10 + 5;
+            
+            particle.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                width: ${size}px;
+                height: ${size}px;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 10;
+            `;
+            
+            if (type === 'fire') {
+                particle.style.background = `radial-gradient(circle, #ff6b35, #ff8e53, #ffb142)`;
+                particle.style.boxShadow = '0 0 10px #ff6b35';
+            } else if (type === 'sparkle') {
+                particle.style.background = `radial-gradient(circle, #f1c40f, #f39c12, #e67e22)`;
+                particle.style.boxShadow = '0 0 8px #f1c40f';
+            }
+            
+            particlesContainer.appendChild(particle);
+            
+            // 粒子动画
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 3 + 2;
+            const vx = Math.cos(angle) * velocity;
+            const vy = Math.sin(angle) * velocity;
+            
+            let opacity = 1;
+            let scale = 1;
+            
+            function animate() {
+                opacity -= 0.02;
+                scale -= 0.02;
+                
+                particle.style.opacity = opacity;
+                particle.style.transform = `translate(${vx * 10}px, ${vy * 10}px) scale(${scale})`;
+                
+                if (opacity <= 0) {
+                    particle.remove();
+                    return;
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // 创建火花效果
+        function createSparkleEffect(x, y, count = 20) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    createParticle(x, y, 'sparkle');
+                }, i * 50);
+            }
+        }
+        
+        // 显示加油动画 - 全新炫酷版本
+        function showCheerAnimation() {
+            cheerAnimation.classList.remove('hidden');
+            
+            // 创建多种炫酷效果
+            createFireworksEffect();
+            createEnergyWaveEffect();
+            createFloatingTextEffect();
+            createGlowingOrbsEffect();
+            createParticleExplosionEffect();
+            
+            // 播放加油音效
+            playCheerSound();
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                cheerAnimation.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // 长按加油功能
+        function startCheerPress(e) {
+            e.preventDefault(); // 防止默认行为
+            cheerPressStart = Date.now();
+            cheerPressTimer = setInterval(() => {
+                const duration = Date.now() - cheerPressStart;
+                
+                // 根据长按时间改变按钮样式
+                if (duration > 1000) {
+                    cheerBtn.classList.add('text-green-500', 'scale-110');
+                    cheerBtn.innerHTML = '<i class="fa fa-fire mr-1 text-red-500 animate-pulse"></i> 加油！';
+                }
+                
+                if (duration > 2000) {
+                    // 触发超炫酷加油动画（无音效）
+                    createCheerEffect();
+                    showCheerAnimation();
+                    
+                    // 重置按钮状态
+                    setTimeout(() => {
+                        cheerBtn.classList.remove('text-green-500', 'scale-110');
+                        cheerBtn.innerHTML = '<i class="fa fa-fire mr-1 text-orange-500"></i> 加油';
+                    }, 3000);
+                    
+                    clearInterval(cheerPressTimer);
+                    cheerPressTimer = null;
+                }
+            }, 100);
+        }
+
+        // 播放打字音效（轻快的键盘音效）
+        function playTypingSound() {
+            // 播放轻快的键盘音效作为打字音效
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "sine"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.1,
+                    sustain: 0.1,
+                    release: 0.1
+                }
+            }).toDestination();
+            
+            // 随机音符，模拟键盘敲击声
+            const notes = ["C5", "D5", "E5", "F5", "G5"];
+            const randomNote = notes[Math.floor(Math.random() * notes.length)];
+            synth.triggerAttackRelease(randomNote, "16n");
+        }
+
+        // 播放正确答题音效
+        function playCorrectSound() {
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "sine"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.2,
+                    sustain: 0.3,
+                    release: 0.2
+                }
+            }).toDestination();
+            
+            // 播放欢快的音调
+            synth.triggerAttackRelease("C6", "8n");
+            setTimeout(() => {
+                synth.triggerAttackRelease("E6", "8n");
+            }, 100);
+            setTimeout(() => {
+                synth.triggerAttackRelease("G6", "8n");
+            }, 200);
+        }
+
+        // 播放错误答题音效
+        function playWrongSound() {
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "sawtooth"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.3,
+                    sustain: 0.1,
+                    release: 0.2
+                }
+            }).toDestination();
+            
+            // 播放低沉的音调
+            synth.triggerAttackRelease("C3", "4n");
+            setTimeout(() => {
+                synth.triggerAttackRelease("A2", "4n");
+            }, 200);
+        }
+
+        // 播放升级音效
+        function playLevelUpSound() {
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "square"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.1,
+                    sustain: 0.2,
+                    release: 0.3
+                }
+            }).toDestination();
+            
+            // 播放庆祝音调
+            synth.triggerAttackRelease("C5", "8n");
+            setTimeout(() => {
+                synth.triggerAttackRelease("E5", "8n");
+            }, 100);
+            setTimeout(() => {
+                synth.triggerAttackRelease("G5", "8n");
+            }, 200);
+            setTimeout(() => {
+                synth.triggerAttackRelease("C6", "8n");
+            }, 300);
+        }
+
+        // 播放获得勋章音效
+        function playBadgeSound() {
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "triangle"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.1,
+                    sustain: 0.3,
+                    release: 0.4
+                }
+            }).toDestination();
+            
+            // 播放清脆的音调
+            synth.triggerAttackRelease("E6", "16n");
+            setTimeout(() => {
+                synth.triggerAttackRelease("G6", "16n");
+            }, 50);
+            setTimeout(() => {
+                synth.triggerAttackRelease("C7", "16n");
+            }, 100);
+            setTimeout(() => {
+                synth.triggerAttackRelease("E7", "16n");
+            }, 150);
+        }
+        
+        // 播放加油音效 - 全新激励版本
+        function playCheerSound() {
+            // 使用更丰富的音色组合
+            const leadSynth = new Tone.Synth({
+                oscillator: {
+                    type: "sine"
+                },
+                envelope: {
+                    attack: 0.01,
+                    decay: 0.2,
+                    sustain: 0.3,
+                    release: 0.5
+                }
+            }).toDestination();
+            
+            const bassSynth = new Tone.Synth({
+                oscillator: {
+                    type: "triangle"
+                },
+                envelope: {
+                    attack: 0.02,
+                    decay: 0.3,
+                    sustain: 0.2,
+                    release: 0.4
+                }
+            }).toDestination();
+            
+            // 播放激励的上升音阶
+            leadSynth.triggerAttackRelease("C4", "8n");
+            bassSynth.triggerAttackRelease("C3", "8n");
+            
+            setTimeout(() => {
+                leadSynth.triggerAttackRelease("E4", "8n");
+                bassSynth.triggerAttackRelease("E3", "8n");
+            }, 100);
+            
+            setTimeout(() => {
+                leadSynth.triggerAttackRelease("G4", "8n");
+                bassSynth.triggerAttackRelease("G3", "8n");
+            }, 200);
+            
+            setTimeout(() => {
+                leadSynth.triggerAttackRelease("C5", "8n");
+                bassSynth.triggerAttackRelease("C4", "8n");
+            }, 300);
+            
+            setTimeout(() => {
+                leadSynth.triggerAttackRelease("E5", "8n");
+            }, 400);
+            
+            setTimeout(() => {
+                leadSynth.triggerAttackRelease("G5", "8n");
+            }, 500);
+            
+            // 添加鼓点效果
+            setTimeout(() => {
+                const drumSynth = new Tone.MembraneSynth().toDestination();
+                drumSynth.triggerAttackRelease("C2", "16n");
+            }, 150);
+            
+            setTimeout(() => {
+                const drumSynth = new Tone.MembraneSynth().toDestination();
+                drumSynth.triggerAttackRelease("C2", "16n");
+            }, 350);
+        }
+        
+        // 创建烟花效果
+        function createFireworksEffect() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'fixed w-2 h-2 rounded-full z-30 animate-fireworks';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.left = Math.random() * 80 + 10 + 'vw';
+                    firework.style.top = Math.random() * 80 + 10 + 'vh';
+                    document.body.appendChild(firework);
+                    
+                    setTimeout(() => {
+                        if (firework.parentElement) {
+                            firework.remove();
+                        }
+                    }, 2000);
+                }, i * 200);
+            }
+        }
+        
+        // 创建能量波效果
+        function createEnergyWaveEffect() {
+            const wave = document.createElement('div');
+            wave.className = 'fixed inset-0 z-20 pointer-events-none';
+            wave.innerHTML = '<div class="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 animate-pulse"></div>';
+            document.body.appendChild(wave);
+            
+            setTimeout(() => {
+                if (wave.parentElement) {
+                    wave.remove();
+                }
+            }, 1500);
+        }
+        
+        // 创建浮动文字效果
+        function createFloatingTextEffect() {
+            const texts = ['加油！', '继续努力！', '太棒了！', '坚持就是胜利！', '你可以的！'];
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const textEl = document.createElement('div');
+                    textEl.className = 'fixed text-white font-bold text-lg z-30 animate-float';
+                    textEl.textContent = texts[Math.floor(Math.random() * texts.length)];
+                    textEl.style.left = Math.random() * 70 + 15 + 'vw';
+                    textEl.style.top = Math.random() * 70 + 15 + 'vh';
+                    textEl.style.color = ['#ff6b6b', '#4ecdc4', '#feca57', '#ff9ff3', '#54a0ff'][Math.floor(Math.random() * 5)];
+                    textEl.style.textShadow = '0 0 10px currentColor, 0 0 20px currentColor';
+                    document.body.appendChild(textEl);
+                    
+                    setTimeout(() => {
+                        if (textEl.parentElement) {
+                            textEl.remove();
+                        }
+                    }, 3000);
+                }, i * 150);
+            }
+        }
+        
+        // 创建发光球体效果
+        function createGlowingOrbsEffect() {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const orb = document.createElement('div');
+                    orb.className = 'fixed rounded-full z-25 animate-glow';
+                    orb.style.width = Math.random() * 40 + 20 + 'px';
+                    orb.style.height = orb.style.width;
+                    orb.style.background = `radial-gradient(circle, ${['#ff6b6b', '#4ecdc4', '#feca57'][Math.floor(Math.random() * 3)]}, transparent)`;
+                    orb.style.left = Math.random() * 85 + 7.5 + 'vw';
+                    orb.style.top = Math.random() * 85 + 7.5 + 'vh';
+                    orb.style.boxShadow = '0 0 20px currentColor, 0 0 40px currentColor';
+                    document.body.appendChild(orb);
+                    
+                    setTimeout(() => {
+                        if (orb.parentElement) {
+                            orb.remove();
+                        }
+                    }, 2500);
+                }, i * 100);
+            }
+        }
+        
+        // 创建粒子爆炸效果
+        function createParticleExplosionEffect() {
+            const rect = cheerAnimation.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createParticle(centerX, centerY, 'sparkle');
+                }, i * 30);
+            }
+        }
+        
+        // 创建快速加油效果（单击效果）
+        function createQuickCheerEffect() {
+            const rect = cheerBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // 播放轻快的加油音效
+            playQuickCheerSound();
+            
+            // 按钮脉冲动画
+            cheerBtn.classList.add('animate-pulse-slow', 'scale-110');
+            cheerBtn.style.color = '#10B981';
+            cheerBtn.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                cheerBtn.classList.remove('animate-pulse-slow', 'scale-110');
+                cheerBtn.style.color = '';
+                cheerBtn.style.transform = '';
+            }, 500);
+            
+            // 创建迷你烟花效果
+            createMiniFireworks(centerX, centerY);
+            
+            // 创建能量光环效果
+            createEnergyRing(centerX, centerY);
+            
+            // 创建文字气泡效果
+            createTextBubble(centerX, centerY);
+            
+            // 创建旋转星星效果
+            createSpinningStars(centerX, centerY);
+        }
+        
+        // 播放快速加油音效
+        function playQuickCheerSound() {
+            const synth = new Tone.Synth({
+                oscillator: {
+                    type: "sine"
+                },
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.1,
+                    sustain: 0.1,
+                    release: 0.2
+                }
+            }).toDestination();
+            
+            // 播放轻快活泼的音调
+            synth.triggerAttackRelease("E5", "16n");
+            setTimeout(() => {
+                synth.triggerAttackRelease("G5", "16n");
+            }, 50);
+            setTimeout(() => {
+                synth.triggerAttackRelease("C6", "16n");
+            }, 100);
+        }
+        
+        // 创建迷你烟花效果
+        function createMiniFireworks(x, y) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#feca57', '#ff9ff3', '#54a0ff'];
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'fixed w-1 h-1 rounded-full z-30 animate-fireworks';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.left = (x + Math.random() * 40 - 20) + 'px';
+                    firework.style.top = (y + Math.random() * 40 - 20) + 'px';
+                    document.body.appendChild(firework);
+                    
+                    setTimeout(() => {
+                        if (firework.parentElement) {
+                            firework.remove();
+                        }
+                    }, 1000);
+                }, i * 100);
+            }
+        }
+        
+        // 创建能量光环效果
+        function createEnergyRing(x, y) {
+            const ring = document.createElement('div');
+            ring.className = 'fixed rounded-full border-2 z-25';
+            ring.style.width = '0px';
+            ring.style.height = '0px';
+            ring.style.borderColor = '#10B981';
+            ring.style.left = x + 'px';
+            ring.style.top = y + 'px';
+            ring.style.transform = 'translate(-50%, -50%)';
+            ring.style.boxShadow = '0 0 10px #10B981';
+            document.body.appendChild(ring);
+            
+            // 光环扩散动画
+            let size = 0;
+            const expand = setInterval(() => {
+                size += 5;
+                ring.style.width = size + 'px';
+                ring.style.height = size + 'px';
+                ring.style.opacity = 1 - (size / 100);
+                
+                if (size > 100) {
+                    clearInterval(expand);
+                    if (ring.parentElement) {
+                        ring.remove();
+                    }
+                }
+            }, 16);
+        }
+        
+        // 创建文字气泡效果
+        function createTextBubble(x, y) {
+            const texts = ['加油！', '坚持！', '努力！', '冲鸭！', '棒！'];
+            const text = texts[Math.floor(Math.random() * texts.length)];
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'fixed text-xs font-bold text-white bg-green-500 px-2 py-1 rounded-full z-30';
+            bubble.textContent = text;
+            bubble.style.left = (x + 30) + 'px';
+            bubble.style.top = (y - 20) + 'px';
+            bubble.style.transform = 'translateY(-20px)';
+            bubble.style.opacity = '0';
+            bubble.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.5)';
+            document.body.appendChild(bubble);
+            
+            // 气泡上升动画
+            let position = -20;
+            const rise = setInterval(() => {
+                position -= 1;
+                bubble.style.transform = `translateY(${position}px)`;
+                bubble.style.opacity = (1 - Math.abs(position) / 50).toString();
+                
+                if (position < -50) {
+                    clearInterval(rise);
+                    if (bubble.parentElement) {
+                        bubble.remove();
+                    }
+                }
+            }, 30);
+        }
+        
+        // 创建旋转星星效果
+        function createSpinningStars(x, y) {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'fixed text-yellow-400 z-30';
+                    star.innerHTML = '★';
+                    star.style.fontSize = '12px';
+                    star.style.left = (x + Math.random() * 30 - 15) + 'px';
+                    star.style.top = (y + Math.random() * 30 - 15) + 'px';
+                    star.style.textShadow = '0 0 8px yellow';
+                    document.body.appendChild(star);
+                    
+                    setTimeout(() => {
+                        if (star.parentElement) {
+                            star.remove();
+                        }
+                    }, 1500);
+                }, i * 200);
+            }
+        }
+        
+        // 超炫酷加油效果
+        function createCheerEffect() {
+            // 创建爆炸粒子效果
+            createExplosionEffect();
+            
+            // 按钮超炫酷动画
+            cheerBtn.classList.add('animate-explosion');
+            cheerBtn.style.textShadow = '0 0 10px #ff6b35, 0 0 20px #ff8e53, 0 0 30px #ffb142';
+            
+            setTimeout(() => {
+                cheerBtn.classList.remove('animate-explosion');
+                cheerBtn.style.textShadow = '';
+            }, 2000);
+        }
+
+        // 创建爆炸粒子效果
+        function createExplosionEffect() {
+            const rect = cheerBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    createParticle(centerX, centerY, 'fire');
+                }, i * 50);
+            }
+        }
+
+
+        
+        function stopCheerPress() {
+            if (cheerPressTimer) {
+                clearInterval(cheerPressTimer);
+                cheerPressTimer = null;
+                
+                // 如果长按时间不足，显示小火花
+                if (Date.now() - cheerPressStart < 1000) {
+                    createSparkleEffect(cheerBtn.getBoundingClientRect().left + 20, cheerBtn.getBoundingClientRect().top + 10, 5);
+                }
+            }
+        }
+        
+        // 加载题目
+        function loadQuestion(index) {
+            // 使用随机题目数组
+            const questionIndex = randomQuestions[index];
+            const question = questions[questionIndex];
+            
+            // 更新题目内容
+            questionContainer.innerHTML = `
+                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500">
+                    随机题目 ${index + 1}/${randomQuestions.length}: ${question.title}
+                </div>
+                ${question.content}
+            `;
+            
+            // 根据题目类型生成答题区域
+            if (question.type === "fill") {
+                answerContainer.innerHTML = `
+                    <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
+                    <div class="flex">
+                        <input type="text" id="answer-input" class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" placeholder="在此输入...">
+                        <button id="submit-btn" class="bg-primary text-white px-4 py-2 rounded-r hover:bg-primary/90 text-sm">
+                            提交
+                        </button>
+                    </div>
+                `;
+                
+                // 高亮填空
+                document.querySelector('.code-blank').classList.add('ring-2', 'ring-primary');
+                
+                // 聚焦输入框
+                setTimeout(() => {
+                    document.getElementById('answer-input').focus();
+                }, 100);
+            } 
+            else if (question.type === "select") {
+                let optionsHtml = '';
+                question.options.forEach((option, i) => {
+                    optionsHtml += `
+                        <div class="border border-gray-200 rounded p-3 mb-2 option-hover cursor-pointer" data-index="${i}">
+                            <div class="font-mono text-sm">${option}</div>
+                        </div>
+                    `;
+                });
+                
+                answerContainer.innerHTML = optionsHtml;
+            }
+            else if (question.type === "correct") {
+                answerContainer.innerHTML = `
+                    <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
+                    <div class="flex">
+                        <input type="text" id="answer-input" class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" placeholder="输入修正后的内容...">
+                        <button id="submit-btn" class="bg-primary text-white px-4 py-2 rounded-r hover:bg-primary/90 text-sm">
+                            修正
+                        </button>
+                    </div>
+                `;
+                
+                // 聚焦输入框
+                setTimeout(() => {
+                    document.getElementById('answer-input').focus();
+                }, 100);
+            }
+            
+            // 隐藏反馈
+            feedbackEl.classList.add('hidden');
+            
+            // 更新按钮状态
+            updateButtons();
+            
+            // 更新进度
+            updateProgress();
+        }
+        
+        // 检查答案
+        function checkAnswer(answer) {
+            const questionIndex = randomQuestions[currentRandomIndex];
+            const question = questions[questionIndex];
+            let isCorrect = false;
+            let userAnswer = answer;
+            
+            // 处理不同题型
+            if (question.type === "fill" || question.type === "correct") {
+                userAnswer = userAnswer.trim();
+                const correctAnswer = question.type === "fill" 
+                    ? document.querySelector('.code-blank').dataset.answer
+                    : question.correct;
+                
+                isCorrect = userAnswer === correctAnswer;
+            } 
+            else if (question.type === "select") {
+                isCorrect = parseInt(answer) === question.correct;
+                userAnswer = question.options[parseInt(answer)];
+            }
+            
+            // 显示结果
+            if (isCorrect) {
+                showFeedback(question.explanation, 'success');
+                
+                // 播放正确音效
+                playCorrectSound();
+                
+                // 更新统计信息
+                totalCorrectAnswers++;
+                consecutiveCorrect++;
+                
+                // 奖励经验值
+                const baseXP = 10;
+                let bonusXP = 0;
+                
+                // 连续正确奖励
+                if (consecutiveCorrect >= 3) {
+                    bonusXP += 5;
+                }
+                if (consecutiveCorrect >= 5) {
+                    bonusXP += 10;
+                }
+                
+                // 快速答题奖励（假设在5秒内完成）
+                const answerTime = Date.now() - questionStartTime;
+                if (answerTime < 5000) {
+                    bonusXP += 5;
+                }
+                
+                const totalXP = baseXP + bonusXP;
+                addXP(totalXP, `正确答题`);
+                
+                // 检查并授予勋章
+                checkAndAwardBadges();
+                
+                // 添加庆祝动画
+                const rect = questionContainer.getBoundingClientRect();
+                createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 10);
+                
+                // 标记为已完成
+                if (!completed.includes(currentQuestion)) {
+                    completed.push(currentQuestion);
+                }
+                
+                // 对于填空题，更新UI显示正确答案
+                if (question.type === "fill") {
+                    const blankEl = document.querySelector('.code-blank');
+                    blankEl.textContent = blankEl.dataset.answer;
+                    blankEl.classList.add('correct');
+                    blankEl.classList.remove('code-blank', 'ring-2', 'ring-primary');
+                }
+                // 对于选择题，标记正确选项
+                else if (question.type === "select") {
+                    document.querySelectorAll('.option-hover').forEach((el, i) => {
+                        el.classList.remove('border-primary', 'bg-blue-50');
+                        if (i === question.correct) {
+                            el.classList.add('border-success', 'bg-green-50');
+                        }
+                    });
+                }
+                
+                // 禁用提交按钮
+                if (document.getElementById('submit-btn')) {
+                    document.getElementById('submit-btn').disabled = true;
+                    document.getElementById('submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                
+                // 启用下一题按钮，让用户手动控制跳转
+                updateButtons();
+            } else {
+                showFeedback('不正确，请再试一次', 'error');
+                
+                // 播放错误音效
+                playWrongSound();
+                
+                // 重置连续正确计数
+                consecutiveCorrect = 0;
+                
+                // 添加错误动画
+                questionContainer.classList.add('shake');
+            setTimeout(() => {
+                questionContainer.classList.remove('shake');
+            }, 500);
+                
+                // 对于选择题，标记错误选项
+                if (question.type === "select") {
+                    const selectedEl = document.querySelector(`.option-hover[data-index="${answer}"]`);
+                    selectedEl.classList.add('border-red-300', 'bg-red-50', 'shake');
+                }
+            }
+            
+            return isCorrect;
+        }
+        
+        // 显示反馈
+        function showFeedback(text, type) {
+            feedbackEl.textContent = text;
+            feedbackEl.classList.remove('hidden', 'text-success', 'text-red-500', 'bg-green-50', 'bg-red-50', 'p-2', 'rounded');
+            feedbackEl.classList.add(
+                type === 'success' ? 'text-success' : 'text-red-500',
+                type === 'success' ? 'bg-green-50' : 'bg-red-50',
+                'p-2', 'rounded'
+            );
+        }
+        
+        // 显示提示
+        function showHint() {
+            const questionIndex = randomQuestions[currentRandomIndex];
+            hintTextEl.textContent = questions[questionIndex].hint;
+            hintModal.classList.remove('hidden');
+        }
+        
+        // 关闭提示
+        function closeHint() {
+            hintModal.classList.add('hidden');
+            if (document.getElementById('answer-input')) {
+                document.getElementById('answer-input').focus();
+            }
+        }
+        
+        // 上一题
+        function goPrev() {
+            if (currentRandomIndex > 0) {
+                currentRandomIndex--;
+                loadQuestion(currentRandomIndex);
+            }
+        }
+        
+        // 下一题
+        function goNext() {
+            if (currentRandomIndex < randomQuestions.length - 1) {
+                currentRandomIndex++;
+                loadQuestion(currentRandomIndex);
+            }
+        }
+        
+        // 更新按钮状态
+        function updateButtons() {
+            // 上一题按钮
+            if (currentRandomIndex > 0) {
+                prevBtn.disabled = false;
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevBtn.disabled = true;
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // 下一题按钮
+            if (currentRandomIndex < randomQuestions.length - 1) {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            progressEl.textContent = `${currentRandomIndex + 1}/${randomQuestions.length}`;
+        }
+        
+        // 设置事件监听
+        function setupEvents() {
+            // 事件委托处理动态生成的元素
+            document.addEventListener('click', (e) => {
+                // 提交按钮
+                if (e.target.id === 'submit-btn' || e.target.closest('#submit-btn')) {
+                    const input = document.getElementById('answer-input');
+                    if (input) {
+                        checkAnswer(input.value);
+                    }
+                }
+                
+                // 选择题选项
+                if (e.target.closest('.option-hover')) {
+                    const questionIndex = randomQuestions[currentRandomIndex];
+                    if (questions[questionIndex].type === "select") {
+                        const option = e.target.closest('.option-hover');
+                        checkAnswer(option.dataset.index);
+                    }
+                }
+                
+                // 加油按钮
+                if (e.target.id === 'cheer-btn' || e.target.closest('#cheer-btn')) {
+                    // 短按效果 - 全新炫酷版本
+                    createQuickCheerEffect();
+                }
+            });
+            
+            // 打字音效监听
+            document.addEventListener('input', (e) => {
+                if (e.target.id === 'answer-input') {
+                    playTypingSound();
+                }
+            });
+            
+            // 加油按钮长按事件
+            cheerBtn.addEventListener('mousedown', startCheerPress);
+            cheerBtn.addEventListener('touchstart', startCheerPress);
+            
+            cheerBtn.addEventListener('mouseup', stopCheerPress);
+            cheerBtn.addEventListener('touchend', stopCheerPress);
+            cheerBtn.addEventListener('mouseleave', stopCheerPress);
+            
+            // 输入框回车提交
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    // 如果当前有输入框且提交按钮可用，则提交答案
+                    if (document.getElementById('answer-input') && 
+                        !document.getElementById('submit-btn').disabled) {
+                        checkAnswer(document.getElementById('answer-input').value);
+                    }
+                    // 如果当前题目已完成且下一题按钮可用，则跳转到下一题
+                    else if (completed.includes(currentQuestion) && 
+                             currentQuestion < questions.length - 1) {
+                        goNext();
+                    }
+                }
+                
+                // 空格键触发加油效果
+                if (e.key === ' ' && !e.target.matches('input, textarea')) {
+                    e.preventDefault();
+                    const rect = cheerBtn.getBoundingClientRect();
+                    createSparkleEffect(rect.left + 20, rect.top + 10, 5);
+                }
+            });
+            
+            // 提示按钮
+            hintBtn.addEventListener('click', showHint);
+            closeHintBtn.addEventListener('click', closeHint);
+            
+            // 点击弹窗背景关闭
+            hintModal.addEventListener('click', (e) => {
+                if (e.target === hintModal) closeHint();
+            });
+            
+            // 上一题/下一题
+            prevBtn.addEventListener('click', goPrev);
+            nextBtn.addEventListener('click', goNext);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
