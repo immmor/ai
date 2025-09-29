@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CodeMaster - 编程挑战</title>
+    <title>Coder - 编程挑战</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+    <script src="questions.js"></script>
     
     <script>
         tailwind.config = {
@@ -151,7 +152,7 @@
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <i class="fa fa-code text-primary text-lg"></i>
-                <span class="font-bold text-lg">CodeMaster</span>
+                <span class="font-bold text-lg">Coder</span>
             </div>
             <div class="flex items-center space-x-4">
                 <!-- 经验值和等级 -->
@@ -203,7 +204,7 @@
                     <i class="fa fa-lightbulb-o mr-1 text-amber-500"></i> 提示
                 </button>
                 <!-- 加油按钮 -->
-                <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300">
+                <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300 select-none">
                     <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
                 </button>
             </div>
@@ -229,324 +230,18 @@
     </div>
 
     <!-- 粒子动画容器 -->
-    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0 select-none"></div>
 
     <!-- 加油动画容器 -->
-    <div id="cheer-animation" class="fixed inset-0 flex items-center justify-center pointer-events-none z-20 hidden">
-        <div class="text-center">
-            <div class="text-6xl text-yellow-500 mb-4">🔥</div>
-            <div class="text-2xl font-bold text-yellow-600 animate-pulse-slow">加油！继续努力！</div>
+    <div id="cheer-animation" class="fixed inset-0 flex items-center justify-center pointer-events-none z-20 hidden select-none">
+        <div class="text-center select-none">
+            <div class="text-6xl text-yellow-500 mb-4 select-none">🔥</div>
+            <div class="text-2xl font-bold text-yellow-600 animate-pulse-slow select-none">加油！继续努力！</div>
         </div>
     </div>
 
     <script>
-        // 题目数据 - 简短多样
-        const questions = [
-            {
-                id: 1,
-                type: "fill",
-                title: "包声明",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">package</span> <span class="code-blank" data-id="1" data-answer="main"></span></div>
-                </div>`,
-                instruction: "填写Go程序的主包名称",
-                hint: "Go语言中可执行程序的包名是\"main\"",
-                explanation: "main包是Go语言中特殊的包名，表示这是一个可以直接运行的程序"
-            },
-            {
-                id: 2,
-                type: "select",
-                title: "结构体定义",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的区块结构体定义？</p>
-                </div>`,
-                options: [
-                    `type Block { Data string }`,
-                    `struct Block { Data string }`,
-                    `type Block struct { Data string }`,
-                    `def Block: Data string`
-                ],
-                correct: 2, // 索引从0开始
-                explanation: "在Go中，结构体定义格式为：type 名称 struct { 字段 类型 }"
-            },
-            {
-                id: 3,
-                type: "fill",
-                title: "导入语句",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">import</span> <span class="code-blank" data-id="3" data-answer='"fmt"'></span></div>
-                </div>`,
-                instruction: "填写导入fmt包的正确语句（包含引号）",
-                hint: "包名需要用双引号括起来，fmt是格式化输入输出的包",
-                explanation: "import语句用于导入其他包，包名必须放在双引号中"
-            },
-            {
-                id: 4,
-                type: "correct",
-                title: "修正错误",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> main() {</div>
-                    <div class="ml-4">b := Block{data: <span class="text-red-600">"区块数据"</span>}</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "找出代码中的错误并修正（只需要输入错误的部分）",
-                correct: "Data",
-                hint: "Go语言中结构体字段名首字母通常大写",
-                explanation: "Go语言中，结构体字段名首字母大写表示该字段可导出（公共），小写则为私有"
-            },
-            {
-                id: 5,
-                type: "fill",
-                title: "函数定义",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="5" data-answer="(b Block) GetData"></span>() <span class="text-purple-600">string</span> {</div>
-                    <div class="ml-4"><span class="text-blue-600">return</span> b.Data</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写正确的方法接收者和名称，实现获取区块数据的方法",
-                hint: "方法格式：(接收者 类型) 方法名，这里需要定义GetData方法",
-                explanation: "在Go中，方法通过接收者与结构体关联，格式为：func (接收者 类型) 方法名()"
-            },
-            {
-                id: 6,
-                type: "fill",
-                title: "区块链定义",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">type</span> <span class="code-blank" data-id="6" data-answer="Blockchain"></span> []Block</div>
-                </div>`,
-                instruction: "填写区块链类型名称，它是Block的切片",
-                hint: "区块链是由多个区块组成的链条，名称是Blockchain",
-                explanation: "在Go中，我们可以用切片（[]）来表示区块链，它是区块的有序集合"
-            },
-            {
-                id: 7,
-                type: "select",
-                title: "创建区块",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确创建了一个新区块？</p>
-                </div>`,
-                options: [
-                    `newBlock = Block{"交易数据"}`,
-                    `newBlock := Block{Data: "交易数据"}`,
-                    `newBlock -> Block("交易数据")`,
-                    `Block newBlock = {"交易数据"}`
-                ],
-                correct: 1,
-                explanation: "在Go中，创建结构体实例使用 变量名 := 结构体名{字段: 值} 的格式"
-            },
-            {
-                id: 8,
-                type: "fill",
-                title: "哈希函数导入",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">import</span> <span class="code-blank" data-id="8" data-answer='"crypto/sha256"'></span></div>
-                </div>`,
-                instruction: "填写导入SHA-256哈希包的语句（包含引号）",
-                hint: "Go中SHA-256哈希功能在crypto/sha256包中",
-                explanation: "crypto/sha256包提供了SHA-256哈希算法实现，是区块链的核心依赖"
-            },
-            {
-                id: 9,
-                type: "correct",
-                title: "修正切片操作",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div>blockchain := Blockchain{genesisBlock}</div>
-                    <div><span class="text-red-600">blockchain += newBlock</span></div>
-                </div>`,
-                instruction: "修正添加区块到区块链的错误代码",
-                correct: "blockchain = append(blockchain, newBlock)",
-                hint: "在Go中，向切片添加元素使用append函数",
-                explanation: "Go中的切片不能使用+=添加元素，必须使用append函数：slice = append(slice, 元素)"
-            },
-            {
-                id: 10,
-                type: "fill",
-                title: "获取最后区块",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> getLastBlock(bc Blockchain) Block {</div>
-                    <div class="ml-4"><span class="text-blue-600">return</span> bc[<span class="code-blank" data-id="10" data-answer="len(bc)-1"></span>]</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写索引值，获取区块链中的最后一个区块",
-                hint: "使用len()函数获取切片长度，索引从0开始",
-                explanation: "区块链的最后一个区块索引是长度减1，因为Go中切片索引从0开始"
-            },
-            {
-                id: 11,
-                type: "select",
-                title: "哈希计算",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确计算字符串的SHA-256哈希？</p>
-                </div>`,
-                options: [
-                    `hash := sha256.Hash("data")`,
-                    `hash := sha256.Sum256("data")`,
-                    `hash := sha256.Sum256([]byte("data"))`,
-                    `hash := sha256.Compute("data")`
-                ],
-                correct: 2,
-                explanation: "sha256.Sum256()函数需要字节切片作为参数，所以需要用[]byte()转换字符串"
-            },
-            {
-                id: 12,
-                type: "fill",
-                title: "区块哈希字段",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
-                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
-                    <div class="ml-4"><span class="code-blank" data-id="12" data-answer="Hash"></span> <span class="text-purple-600">string</span></div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写区块结构体的哈希字段名称",
-                hint: "区块通常包含数据和哈希两个字段",
-                explanation: "区块结构体通常包含Data和Hash字段，Hash用于存储区块的哈希值"
-            },
-            {
-                id: 13,
-                type: "select",
-                title: "时间戳导入",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个包用于获取当前时间戳？</p>
-                </div>`,
-                options: [
-                    `"time"`,
-                    `"timestamp"`,
-                    `"datetime"`,
-                    `"clock"`
-                ],
-                correct: 0,
-                explanation: "Go语言中time包提供了时间相关的功能，包括获取当前时间戳"
-            },
-            {
-                id: 14,
-                type: "fill",
-                title: "时间戳字段",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
-                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
-                    <div class="ml-4">Hash <span class="text-purple-600">string</span></div>
-                    <div class="ml-4"><span class="code-blank" data-id="14" data-answer="Timestamp"></span> <span class="text-purple-600">int64</span></div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写区块结构体的时间戳字段名称",
-                hint: "区块通常包含时间戳来记录创建时间",
-                explanation: "Timestamp字段记录区块创建的时间戳，类型为int64"
-            },
-            {
-                id: 15,
-                type: "correct",
-                title: "修正时间戳获取",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> getTimestamp() <span class="text-purple-600">int64</span> {</div>
-                    <div class="ml-4"><span class="text-red-600">return time.Now()</span></div>
-                    <div>}</div>
-                </div>`,
-                instruction: "修正获取时间戳的函数错误",
-                correct: "return time.Now().Unix()",
-                hint: "time.Now()返回time.Time类型，需要转换为Unix时间戳",
-                explanation: "time.Now().Unix()返回int64类型的Unix时间戳，time.Now()返回的是time.Time类型"
-            },
-            {
-                id: 16,
-                type: "fill",
-                title: "前一个区块哈希",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">type</span> Block <span class="text-blue-600">struct</span> {</div>
-                    <div class="ml-4">Data <span class="text-purple-600">string</span></div>
-                    <div class="ml-4">Hash <span class="text-purple-600">string</span></div>
-                    <div class="ml-4">Timestamp <span class="text-purple-600">int64</span></div>
-                    <div class="ml-4"><span class="code-blank" data-id="16" data-answer="PrevHash"></span> <span class="text-purple-600">string</span></div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写前一个区块哈希字段名称",
-                hint: "区块链中每个区块都包含前一个区块的哈希",
-                explanation: "PrevHash字段存储前一个区块的哈希值，这是区块链连接的关键"
-            },
-            {
-                id: 17,
-                type: "select",
-                title: "创世区块",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">创世区块的PrevHash应该是什么？</p>
-                </div>`,
-                options: [
-                    `空字符串""`,
-                    `"0"`,
-                    `当前区块的哈希`,
-                    `随机字符串`
-                ],
-                correct: 0,
-                explanation: "创世区块是区块链的第一个区块，没有前一个区块，所以PrevHash为空字符串"
-            },
-            {
-                id: 18,
-                type: "fill",
-                title: "计算区块哈希",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> calculateHash(b Block) <span class="text-purple-600">string</span> {</div>
-                    <div class="ml-4">data := <span class="text-blue-600">string</span>(b.Data) + <span class="text-blue-600">string</span>(b.PrevHash) + <span class="code-blank" data-id="18" data-answer="fmt.Sprintf(\"%d\", b.Timestamp)"></span></div>
-                    <div class="ml-4">hash := sha256.Sum256([]byte(data))</div>
-                    <div class="ml-4"><span class="text-blue-600">return</span> fmt.Sprintf(<span class="text-green-600">"%x"</span>, hash)</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写时间戳转换为字符串的代码",
-                hint: "使用fmt.Sprintf格式化int64类型的时间戳",
-                explanation: "fmt.Sprintf(\"%d\", b.Timestamp)将int64时间戳转换为字符串"
-            },
-            {
-                id: 19,
-                type: "correct",
-                title: "修正哈希计算",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> calculateHash(b Block) <span class="text-purple-600">string</span> {</div>
-                    <div class="ml-4">data := b.Data + b.PrevHash + <span class="text-red-600">b.Timestamp</span></div>
-                    <div class="ml-4">hash := sha256.Sum256([]byte(data))</div>
-                    <div class="ml-4"><span class="text-blue-600">return</span> fmt.Sprintf(<span class="text-green-600">"%x"</span>, hash)</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "修正哈希计算中的类型错误",
-                correct: "fmt.Sprintf(\"%d\", b.Timestamp)",
-                hint: "不能直接将int64和字符串相加，需要先转换类型",
-                explanation: "int64类型的Timestamp需要先转换为字符串才能与其他字符串拼接"
-            },
-            {
-                id: 20,
-                type: "fill",
-                title: "创建新区块",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="20" data-answer="createBlock"></span>(data <span class="text-purple-600">string</span>, prevHash <span class="text-purple-600">string</span>) Block {</div>
-                    <div class="ml-4">timestamp := time.Now().Unix()</div>
-                    <div class="ml-4">newBlock := Block{</div>
-                    <div class="ml-8">Data: data,</div>
-                    <div class="ml-8">PrevHash: prevHash,</div>
-                    <div class="ml-8">Timestamp: timestamp,</div>
-                    <div class="ml-8">Hash: <span class="text-green-600">""</span></div>
-                    <div class="ml-4">}</div>
-                    <div class="ml-4">newBlock.Hash = calculateHash(newBlock)</div>
-                    <div class="ml-4"><span class="text-blue-600">return</span> newBlock</div>
-                    <div>}</div>
-                </div>`,
-                instruction: "填写创建新区块的函数名称",
-                hint: "函数名应该描述其功能，比如createBlock",
-                explanation: "createBlock函数接收数据和前一个区块哈希，返回一个新的区块"
-            },
-            {
-                id: 21,
-                type: "select",
-                title: "添加区块到链",
-                content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确地将新区块添加到区块链？</p>
-                </div>`,
-                options: [
-                    `blockchain = append(blockchain, newBlock)`,
-                    `blockchain.add(newBlock)`,
-                    `blockchain.push(newBlock)`,
-                    `blockchain[len(blockchain)] = newBlock`
-                ],
-                correct: 0,
-                explanation: "在Go中，使用append函数向切片添加元素，返回新的切片"
-            }
-        ];
+        // script引入js
         
         // 当前状态
         let currentQuestion = 0;
@@ -871,7 +566,7 @@
                 const animationEl = document.createElement('div');
                 animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 animationEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl max-w-md mx-4 text-white text-center">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-6 shadow-2xl w-64 h-64 text-white text-center flex flex-col justify-center">
                         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 flex items-center justify-center text-white text-2xl animate-glow">
                             <i class="fa ${badge.icon}"></i>
                         </div>
@@ -1043,8 +738,8 @@
                 const levelUpEl = document.createElement('div');
                 levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 levelUpEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl max-w-md mx-4 text-white text-center">
-        <div class="text-6xl mb-4">🎉</div>
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 shadow-2xl w-50 h-50 text-white text-center flex flex-col justify-center">
+                        <div class="text-6xl mb-4">🎉</div>
                         <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
                         <p class="text-lg mb-4">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
                         <p class="text-sm opacity-90">继续学习，解锁更多成就！</p>
@@ -1422,7 +1117,7 @@
             for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
                     const firework = document.createElement('div');
-                    firework.className = 'fixed w-2 h-2 rounded-full z-30 animate-fireworks';
+                    firework.className = 'fixed w-2 h-2 rounded-full z-30 animate-fireworks select-none';
                     firework.style.background = colors[Math.floor(Math.random() * colors.length)];
                     firework.style.left = Math.random() * 80 + 10 + 'vw';
                     firework.style.top = Math.random() * 80 + 10 + 'vh';
@@ -1458,7 +1153,7 @@
             for (let i = 0; i < 15; i++) {
                 setTimeout(() => {
                     const textEl = document.createElement('div');
-                    textEl.className = 'fixed text-white font-bold text-lg z-30 animate-float';
+                    textEl.className = 'fixed text-white font-bold text-lg z-30 animate-float select-none';
                     textEl.textContent = texts[Math.floor(Math.random() * texts.length)];
                     textEl.style.left = Math.random() * 70 + 15 + 'vw';
                     textEl.style.top = Math.random() * 70 + 15 + 'vh';
@@ -1480,7 +1175,7 @@
             for (let i = 0; i < 12; i++) {
                 setTimeout(() => {
                     const orb = document.createElement('div');
-                    orb.className = 'fixed rounded-full z-25 animate-glow';
+                    orb.className = 'fixed rounded-full z-25 animate-glow select-none';
                     orb.style.width = Math.random() * 40 + 20 + 'px';
                     orb.style.height = orb.style.width;
                     orb.style.background = `radial-gradient(circle, ${['#ff6b6b', '#4ecdc4', '#feca57'][Math.floor(Math.random() * 3)]}, transparent)`;
@@ -1575,7 +1270,7 @@
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     const firework = document.createElement('div');
-                    firework.className = 'fixed w-1 h-1 rounded-full z-30 animate-fireworks';
+                    firework.className = 'fixed w-1 h-1 rounded-full z-30 animate-fireworks select-none';
                     firework.style.background = colors[Math.floor(Math.random() * colors.length)];
                     firework.style.left = (x + Math.random() * 40 - 20) + 'px';
                     firework.style.top = (y + Math.random() * 40 - 20) + 'px';
@@ -1593,7 +1288,7 @@
         // 创建能量光环效果
         function createEnergyRing(x, y) {
             const ring = document.createElement('div');
-            ring.className = 'fixed rounded-full border-2 z-25';
+            ring.className = 'fixed rounded-full border-2 z-25 select-none';
             ring.style.width = '0px';
             ring.style.height = '0px';
             ring.style.borderColor = '#10B981';
@@ -1626,7 +1321,7 @@
             const text = texts[Math.floor(Math.random() * texts.length)];
             
             const bubble = document.createElement('div');
-            bubble.className = 'fixed text-xs font-bold text-white bg-green-500 px-2 py-1 rounded-full z-30';
+            bubble.className = 'fixed text-xs font-bold text-white bg-green-500 px-2 py-1 rounded-full z-30 select-none';
             bubble.textContent = text;
             bubble.style.left = (x + 30) + 'px';
             bubble.style.top = (y - 20) + 'px';
@@ -1656,7 +1351,7 @@
             for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
                     const star = document.createElement('div');
-                    star.className = 'fixed text-yellow-400 z-30';
+                    star.className = 'fixed text-yellow-400 z-30 select-none';
                     star.innerHTML = '★';
                     star.style.fontSize = '12px';
                     star.style.left = (x + Math.random() * 30 - 15) + 'px';
@@ -1849,8 +1544,8 @@
                 createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 10);
                 
                 // 标记为已完成
-                if (!completed.includes(currentQuestion)) {
-                    completed.push(currentQuestion);
+                if (!completed.includes(questionIndex)) {
+                    completed.push(questionIndex);
                 }
                 
                 // 对于填空题，更新UI显示正确答案
@@ -2014,26 +1709,135 @@
             cheerBtn.addEventListener('touchend', stopCheerPress);
             cheerBtn.addEventListener('mouseleave', stopCheerPress);
             
-            // 输入框回车提交
+            // 键盘快捷键监听
             document.addEventListener('keydown', (e) => {
+                // 检查是否在输入框中，如果是则只允许Enter键生效
+                const isInInput = e.target.matches('input, textarea');
+                
+                // 输入框回车提交（始终有效）
                 if (e.key === 'Enter') {
+                    // 如果提示弹窗显示中，则点击"知道了"按钮
+                    if (!hintModal.classList.contains('hidden')) {
+                        closeHintBtn.click();
+                        return;
+                    }
+                    
                     // 如果当前有输入框且提交按钮可用，则提交答案
                     if (document.getElementById('answer-input') && 
                         !document.getElementById('submit-btn').disabled) {
                         checkAnswer(document.getElementById('answer-input').value);
                     }
                     // 如果当前题目已完成且下一题按钮可用，则跳转到下一题
-                    else if (completed.includes(currentQuestion) && 
-                             currentQuestion < questions.length - 1) {
+                    else if (completed.includes(randomQuestions[currentRandomIndex]) && 
+                             currentRandomIndex < randomQuestions.length - 1) {
                         goNext();
                     }
                 }
                 
+                // ESC键：退出输入状态（始终有效）
+                if (e.key === 'Escape') {
+                    // 如果当前在输入框中，则移除焦点
+                    if (isInInput) {
+                        e.target.blur();
+                        return;
+                    }
+                    // 如果提示弹窗显示中，则关闭提示
+                    if (!hintModal.classList.contains('hidden')) {
+                        closeHint();
+                        return;
+                    }
+                }
+                
+                // 如果当前在输入框中，则忽略其他快捷键
+                if (isInInput) {
+                    return;
+                }
+                
+                // A键长按处理（仅在非输入状态有效）
+                if (e.key === 'a' || e.key === 'A') {
+                    // 如果是第一次按下A键，开始长按计时
+                    if (!e.repeat) {
+                        cheerPressStart = Date.now();
+                        cheerPressTimer = setInterval(() => {
+                            const duration = Date.now() - cheerPressStart;
+                            
+                            // 根据长按时间改变按钮样式
+                            if (duration > 1000) {
+                                cheerBtn.classList.add('text-green-500', 'scale-110');
+                                cheerBtn.innerHTML = '<i class="fa fa-fire mr-1 text-red-500 animate-pulse"></i> 加油！';
+                            }
+                            
+                            if (duration > 2000) {
+                                // 触发超炫酷加油动画（无音效）
+                                createCheerEffect();
+                                showCheerAnimation();
+                                
+                                // 重置按钮状态
+                                setTimeout(() => {
+                                    cheerBtn.classList.remove('text-green-500', 'scale-110');
+                                    cheerBtn.innerHTML = '<i class="fa fa-fire mr-1 text-orange-500"></i> 加油';
+                                }, 3000);
+                                
+                                clearInterval(cheerPressTimer);
+                                cheerPressTimer = null;
+                            }
+                        }, 100);
+                    }
+                    // 如果是重复按键，不处理
+                    return;
+                }
+                
+                // 选择题快捷键：1-4数字键选择答案
+                if (['1', '2', '3', '4'].includes(e.key)) {
+                    const questionIndex = randomQuestions[currentRandomIndex];
+                    if (questions[questionIndex].type === "select") {
+                        const optionIndex = parseInt(e.key) - 1;
+                        const option = document.querySelector(`.option-hover[data-index="${optionIndex}"]`);
+                        if (option) {
+                            checkAnswer(optionIndex);
+                        }
+                    }
+                }
+                
+                // 上一题快捷键：p键
+                if (e.key === 'p' || e.key === 'P') {
+                    goPrev();
+                }
+                
+                // 下一题快捷键：n键
+                if (e.key === 'n' || e.key === 'N') {
+                    goNext();
+                }
+                
+                // 提示快捷键：h键
+                if (e.key === 'h' || e.key === 'H') {
+                    showHint();
+                }
+                
                 // 空格键触发加油效果
-                if (e.key === ' ' && !e.target.matches('input, textarea')) {
+                if (e.key === ' ') {
                     e.preventDefault();
                     const rect = cheerBtn.getBoundingClientRect();
                     createSparkleEffect(rect.left + 20, rect.top + 10, 5);
+                }
+            });
+            
+            // A键释放处理
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'a' || e.key === 'A') {
+                    if (cheerPressTimer) {
+                        clearInterval(cheerPressTimer);
+                        cheerPressTimer = null;
+                        
+                        // 如果长按时间小于1秒，触发短按效果
+                        if (Date.now() - cheerPressStart < 1000) {
+                            createQuickCheerEffect();
+                        }
+                        
+                        // 重置按钮状态
+                        cheerBtn.classList.remove('text-green-500', 'scale-110');
+                        cheerBtn.innerHTML = '<i class="fa fa-fire mr-1 text-orange-500"></i> 加油';
+                    }
                 }
             });
             
