@@ -1,14 +1,15 @@
 const questions = [
             {
                 id: 1,
-                type: "fill",
-                title: "包声明",
-                content: `<div class="p-4 font-mono text-sm">
-                    <div><span class="text-blue-600">package</span> <span class="code-blank" data-id="1" data-answer="main"></span></div>
+                type: "sentence",
+                title: "区块链概念记忆",
+                content: `<div class="p-4 text-sm">
+                    <p class="mb-4">区块链是一种<span class="code-blank" data-id="1-1" data-answer="分布式"></span>的<span class="code-blank" data-id="1-2" data-answer="账本"></span>技术，通过<span class="code-blank" data-id="1-3" data-answer="密码学"></span>保证数据的<span class="code-blank" data-id="1-4" data-answer="不可篡改"></span>和<span class="code-blank" data-id="1-5" data-answer="可追溯"></span>。</p>
                 </div>`,
-                instruction: "填写Go程序的主包名称",
-                hint: "Go语言中可执行程序的包名是\"main\"",
-                explanation: "main包是Go语言中特殊的包名，表示这是一个可以直接运行的程序"
+                instruction: "填写正确的词语完成区块链概念定义",
+                hint: "区块链的核心特性包括分布式、不可篡改、可追溯等",
+                explanation: "区块链是一种分布式账本技术，通过密码学保证数据的不可篡改和可追溯性，这是区块链的核心概念",
+                fullSentence: "区块链是一种分布式的账本技术，通过密码学保证数据的不可篡改和可追溯。"
             },
             {
                 id: 2,
@@ -2468,6 +2469,42 @@ const questions = [
         explanation: "回答离职原因需避免“抱怨前公司”（选项1）或“仅谈薪资”（选项3），核心是“展现正向动机”：选项2将离职原因与“技术成长”“目标公司优势”结合，既体现个人追求，也暗示对新公司的认可，让面试官认为候选人是“为了发展而来”，而非“为了逃避问题”"
     },
     {
+        id: 162,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币化的<span class="code-blank" data-id="162-1" data-answer="底层资产"></span>可以是<span class="code-blank" data-id="162-2" data-answer="房地产"></span>、<span class="code-blank" data-id="162-3" data-answer="艺术品"></span>或<span class="code-blank" data-id="162-4" data-answer="应收账款"></span>等现实世界资产。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA底层资产定义",
+        hint: "RWA代币化的底层资产可以是房地产、艺术品或应收账款等现实世界资产",
+        explanation: "RWA代币化的底层资产可以是房地产、艺术品或应收账款等现实世界资产，这是RWA代币化的基础",
+        fullSentence: "RWA代币化的底层资产可以是房地产、艺术品或应收账款等现实世界资产。"
+    },
+    {
+        id: 163,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="163-1" data-answer="法律结构"></span>通常采用<span class="code-blank" data-id="163-2" data-answer="特殊目的实体"></span>来隔离<span class="code-blank" data-id="163-3" data-answer="风险"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA法律结构定义",
+        hint: "RWA代币的法律结构通常采用特殊目的实体来隔离风险",
+        explanation: "RWA代币的法律结构通常采用特殊目的实体来隔离风险，确保资产安全",
+        fullSentence: "RWA代币的法律结构通常采用特殊目的实体来隔离风险。"
+    },
+    {
+        id: 164,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="164-1" data-answer="审计要求"></span>包括<span class="code-blank" data-id="164-2" data-answer="定期审计"></span>、<span class="code-blank" data-id="164-3" data-answer="资产验证"></span>和<span class="code-blank" data-id="164-4" data-answer="合规检查"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA审计要求定义",
+        hint: "RWA代币的审计要求包括定期审计、资产验证和合规检查",
+        explanation: "RWA代币的审计要求包括定期审计、资产验证和合规检查，确保代币的真实性",
+        fullSentence: "RWA代币的审计要求包括定期审计、资产验证和合规检查。"
+    },
+    {
         id: 165,
         type: "select",
         title: "区块链后端场景",
@@ -3701,5 +3738,365 @@ const questions = [
         correct: "未处理error状态，若合约调用失败会导致组件崩溃",
         hint: "React Query请求需覆盖loading、success、error三种状态",
         explanation: "区块链合约调用可能因网络问题、tokenId不存在等失败，代码中仅处理了isLoading状态，未处理error状态，失败时nft为undefined，访问nft.image会触发报错，应添加if (error) return <div>加载失败: {error.message}</div>"
+    },
+    {
+        id: 249,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">智能合约是存储在<span class="code-blank" data-id="249-1" data-answer="区块链"></span>上的<span class="code-blank" data-id="249-2" data-answer="自执行"></span>代码，当<span class="code-blank" data-id="249-3" data-answer="预设条件"></span>满足时<span class="code-blank" data-id="249-4" data-answer="自动执行"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成智能合约概念定义",
+        hint: "智能合约的核心特性包括区块链存储、自执行、条件触发等",
+        explanation: "智能合约是存储在区块链上的自执行代码，当预设条件满足时自动执行，这是智能合约的核心概念",
+        fullSentence: "智能合约是存储在区块链上的自执行代码，当预设条件满足时自动执行。"
+    },
+    {
+        id: 250,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">去中心化应用（DApp）是运行在<span class="code-blank" data-id="250-1" data-answer="去中心化网络"></span>上的<span class="code-blank" data-id="250-2" data-answer="应用程序"></span>，使用<span class="code-blank" data-id="250-3" data-answer="智能合约"></span>作为<span class="code-blank" data-id="250-4" data-answer="后端逻辑"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成DApp概念定义",
+        hint: "DApp的核心特性包括去中心化网络、智能合约后端等",
+        explanation: "去中心化应用（DApp）是运行在去中心化网络上的应用程序，使用智能合约作为后端逻辑，这是DApp的核心概念",
+        fullSentence: "去中心化应用（DApp）是运行在去中心化网络上的应用程序，使用智能合约作为后端逻辑。"
+    },
+    {
+        id: 251,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">共识机制是区块链网络中<span class="code-blank" data-id="251-1" data-answer="节点"></span>之间达成<span class="code-blank" data-id="251-2" data-answer="数据一致性"></span>的<span class="code-blank" data-id="251-3" data-answer="算法"></span>，确保<span class="code-blank" data-id="251-4" data-answer="交易有效性"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成共识机制概念定义",
+        hint: "共识机制的核心包括节点协作、数据一致性、算法验证等",
+        explanation: "共识机制是区块链网络中节点之间达成数据一致性的算法，确保交易有效性，这是共识机制的核心概念",
+        fullSentence: "共识机制是区块链网络中节点之间达成数据一致性的算法，确保交易有效性。"
+    },
+    {
+        id: 252,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">工作量证明（PoW）是一种<span class="code-blank" data-id="252-1" data-answer="计算密集型"></span>的共识机制，要求<span class="code-blank" data-id="252-2" data-answer="矿工"></span>解决<span class="code-blank" data-id="252-3" data-answer="复杂数学问题"></span>来<span class="code-blank" data-id="252-4" data-answer="验证交易"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成PoW概念定义",
+        hint: "PoW的核心特性包括计算密集型、矿工参与、数学问题验证等",
+        explanation: "工作量证明（PoW）是一种计算密集型的共识机制，要求矿工解决复杂数学问题来验证交易，这是PoW的核心概念",
+        fullSentence: "工作量证明（PoW）是一种计算密集型的共识机制，要求矿工解决复杂数学问题来验证交易。"
+    },
+    {
+        id: 253,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">权益证明（PoS）是一种<span class="code-blank" data-id="253-1" data-answer="持币量"></span>为基础的共识机制，根据<span class="code-blank" data-id="253-2" data-answer="代币持有量"></span>和<span class="code-blank" data-id="253-3" data-answer="持币时间"></span>来选择<span class="code-blank" data-id="253-4" data-answer="验证节点"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成PoS概念定义",
+        hint: "PoS的核心特性包括持币量基础、代币持有量、验证节点选择等",
+        explanation: "权益证明（PoS）是一种持币量为基础的共识机制，根据代币持有量和持币时间来选择验证节点，这是PoS的核心概念",
+        fullSentence: "权益证明（PoS）是一种持币量为基础的共识机制，根据代币持有量和持币时间来选择验证节点。"
+    },
+    {
+        id: 254,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">默克尔树是一种<span class="code-blank" data-id="254-1" data-answer="哈希树"></span>结构，用于<span class="code-blank" data-id="254-2" data-answer="高效验证"></span>大量数据的<span class="code-blank" data-id="254-3" data-answer="完整性"></span>，每个<span class="code-blank" data-id="254-4" data-answer="叶子节点"></span>对应一个交易哈希。</p>
+        </div>`,
+        instruction: "填写正确的词语完成默克尔树概念定义",
+        hint: "默克尔树的核心特性包括哈希树结构、高效验证、完整性检查等",
+        explanation: "默克尔树是一种哈希树结构，用于高效验证大量数据的完整性，每个叶子节点对应一个交易哈希，这是默克尔树的核心概念",
+        fullSentence: "默克尔树是一种哈希树结构，用于高效验证大量数据的完整性，每个叶子节点对应一个交易哈希。"
+    },
+    {
+        id: 255,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">零知识证明是一种<span class="code-blank" data-id="255-1" data-answer="密码学"></span>技术，允许<span class="code-blank" data-id="255-2" data-answer="证明者"></span>向<span class="code-blank" data-id="255-3" data-answer="验证者"></span>证明某个<span class="code-blank" data-id="255-4" data-answer="陈述"></span>为真，而<span class="code-blank" data-id="255-5" data-answer="不泄露"></span>任何额外信息。</p>
+        </div>`,
+        instruction: "填写正确的词语完成零知识证明概念定义",
+        hint: "零知识证明的核心特性包括密码学技术、证明者验证者交互、信息保密等",
+        explanation: "零知识证明是一种密码学技术，允许证明者向验证者证明某个陈述为真，而不泄露任何额外信息，这是零知识证明的核心概念",
+        fullSentence: "零知识证明是一种密码学技术，允许证明者向验证者证明某个陈述为真，而不泄露任何额外信息。"
+    },
+    {
+        id: 256,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">非同质化代币（NFT）是<span class="code-blank" data-id="256-1" data-answer="独一无二"></span>的<span class="code-blank" data-id="256-2" data-answer="数字资产"></span>，每个NFT都有<span class="code-blank" data-id="256-3" data-answer="独特属性"></span>和<span class="code-blank" data-id="256-4" data-answer="所有权记录"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成NFT概念定义",
+        hint: "NFT的核心特性包括独一无二、数字资产、独特属性等",
+        explanation: "非同质化代币（NFT）是独一无二的数字资产，每个NFT都有独特属性和所有权记录，这是NFT的核心概念",
+        fullSentence: "非同质化代币（NFT）是独一无二的数字资产，每个NFT都有独特属性和所有权记录。"
+    },
+    {
+        id: 257,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">跨链技术允许不同<span class="code-blank" data-id="257-1" data-answer="区块链网络"></span>之间的<span class="code-blank" data-id="257-2" data-answer="互操作性"></span>，实现<span class="code-blank" data-id="257-3" data-answer="资产转移"></span>和<span class="code-blank" data-id="257-4" data-answer="信息交换"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成跨链技术概念定义",
+        hint: "跨链技术的核心特性包括区块链网络互操作、资产转移、信息交换等",
+        explanation: "跨链技术允许不同区块链网络之间的互操作性，实现资产转移和信息交换，这是跨链技术的核心概念",
+        fullSentence: "跨链技术允许不同区块链网络之间的互操作性，实现资产转移和信息交换。"
+    },
+    {
+        id: 258,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">Layer 2扩容方案是在<span class="code-blank" data-id="258-1" data-answer="主链"></span>之上构建的<span class="code-blank" data-id="258-2" data-answer="第二层网络"></span>，通过<span class="code-blank" data-id="258-3" data-answer="链下处理"></span>来<span class="code-blank" data-id="258-4" data-answer="提升性能"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成Layer 2概念定义",
+        hint: "Layer 2的核心特性包括主链之上、第二层网络、链下处理等",
+        explanation: "Layer 2扩容方案是在主链之上构建的第二层网络，通过链下处理来提升性能，这是Layer 2的核心概念",
+        fullSentence: "Layer 2扩容方案是在主链之上构建的第二层网络，通过链下处理来提升性能。"
+    },
+    {
+        id: 259,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">闪电网络是一种基于<span class="code-blank" data-id="259-1" data-answer="支付通道"></span>的Layer 2方案，通过<span class="code-blank" data-id="259-2" data-answer="链下交易"></span>实现<span class="code-blank" data-id="259-3" data-answer="快速支付"></span>和<span class="code-blank" data-id="259-4" data-answer="低费用"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成闪电网络概念定义",
+        hint: "闪电网络的核心特性包括支付通道、链下交易、快速支付等",
+        explanation: "闪电网络是一种基于支付通道的Layer 2方案，通过链下交易实现快速支付和低费用，这是闪电网络的核心概念",
+        fullSentence: "闪电网络是一种基于支付通道的Layer 2方案，通过链下交易实现快速支付和低费用。"
+    },
+    {
+        id: 260,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">侧链是与主链<span class="code-blank" data-id="260-1" data-answer="并行运行"></span>的独立区块链，通过<span class="code-blank" data-id="260-2" data-answer="双向锚定"></span>实现与主链的<span class="code-blank" data-id="260-3" data-answer="资产转移"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成侧链概念定义",
+        hint: "侧链的核心特性包括并行运行、双向锚定、资产转移等",
+        explanation: "侧链是与主链并行运行的独立区块链，通过双向锚定实现与主链的资产转移，这是侧链的核心概念",
+        fullSentence: "侧链是与主链并行运行的独立区块链，通过双向锚定实现与主链的资产转移。"
+    },
+    {
+        id: 261,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">状态通道允许参与者在<span class="code-blank" data-id="261-1" data-answer="链下"></span>进行多次交易，只在<span class="code-blank" data-id="261-2" data-answer="通道关闭"></span>时将<span class="code-blank" data-id="261-3" data-answer="最终状态"></span>提交到主链。</p>
+        </div>`,
+        instruction: "填写正确的词语完成状态通道概念定义",
+        hint: "状态通道的核心特性包括链下交易、通道关闭、最终状态提交等",
+        explanation: "状态通道允许参与者在链下进行多次交易，只在通道关闭时将最终状态提交到主链，这是状态通道的核心概念",
+        fullSentence: "状态通道允许参与者在链下进行多次交易，只在通道关闭时将最终状态提交到主链。"
+    },
+    {
+        id: 262,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">Plasma是一种通过<span class="code-blank" data-id="262-1" data-answer="子链"></span>结构实现扩容的方案，将交易<span class="code-blank" data-id="262-2" data-answer="批量处理"></span>后提交到<span class="code-blank" data-id="262-3" data-answer="主链"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成Plasma概念定义",
+        hint: "Plasma的核心特性包括子链结构、批量处理、主链提交等",
+        explanation: "Plasma是一种通过子链结构实现扩容的方案，将交易批量处理后提交到主链，这是Plasma的核心概念",
+        fullSentence: "Plasma是一种通过子链结构实现扩容的方案，将交易批量处理后提交到主链。"
+    },
+    {
+        id: 263,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">Rollup技术将大量交易<span class="code-blank" data-id="263-1" data-answer="打包压缩"></span>成一个<span class="code-blank" data-id="263-2" data-answer="单一证明"></span>，在<span class="code-blank" data-id="263-3" data-answer="主链"></span>上验证以提升<span class="code-blank" data-id="263-4" data-answer="吞吐量"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成Rollup概念定义",
+        hint: "Rollup的核心特性包括打包压缩、单一证明、主链验证等",
+        explanation: "Rollup技术将大量交易打包压缩成一个单一证明，在主链上验证以提升吞吐量，这是Rollup的核心概念",
+        fullSentence: "Rollup技术将大量交易打包压缩成一个单一证明，在主链上验证以提升吞吐量。"
+    },
+    {
+        id: 264,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">Optimistic Rollup采用<span class="code-blank" data-id="264-1" data-answer="乐观验证"></span>机制，假设所有交易都<span class="code-blank" data-id="264-2" data-answer="有效"></span>，仅在<span class="code-blank" data-id="264-3" data-answer="挑战期"></span>内接受欺诈证明。</p>
+        </div>`,
+        instruction: "填写正确的词语完成Optimistic Rollup概念定义",
+        hint: "Optimistic Rollup的核心特性包括乐观验证、有效性假设、挑战期等",
+        explanation: "Optimistic Rollup采用乐观验证机制，假设所有交易都有效，仅在挑战期内接受欺诈证明，这是Optimistic Rollup的核心概念",
+        fullSentence: "Optimistic Rollup采用乐观验证机制，假设所有交易都有效，仅在挑战期内接受欺诈证明。"
+    },
+    {
+        id: 265,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">ZK-Rollup使用<span class="code-blank" data-id="265-1" data-answer="零知识证明"></span>技术，为每批交易生成<span class="code-blank" data-id="265-2" data-answer="有效性证明"></span>，实现<span class="code-blank" data-id="265-3" data-answer="即时最终性"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成ZK-Rollup概念定义",
+        hint: "ZK-Rollup的核心特性包括零知识证明、有效性证明、即时最终性等",
+        explanation: "ZK-Rollup使用零知识证明技术，为每批交易生成有效性证明，实现即时最终性，这是ZK-Rollup的核心概念",
+        fullSentence: "ZK-Rollup使用零知识证明技术，为每批交易生成有效性证明，实现即时最终性。"
+    },
+    {
+        id: 266,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">分片技术将区块链网络<span class="code-blank" data-id="266-1" data-answer="水平分割"></span>成多个<span class="code-blank" data-id="266-2" data-answer="子网络"></span>，每个分片<span class="code-blank" data-id="266-3" data-answer="独立处理"></span>交易。</p>
+        </div>`,
+        instruction: "填写正确的词语完成分片概念定义",
+        hint: "分片的核心特性包括水平分割、子网络、独立处理等",
+        explanation: "分片技术将区块链网络水平分割成多个子网络，每个分片独立处理交易，这是分片技术的核心概念",
+        fullSentence: "分片技术将区块链网络水平分割成多个子网络，每个分片独立处理交易。"
+    },
+    {
+        id: 267,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">状态分片将区块链的<span class="code-blank" data-id="267-1" data-answer="状态数据"></span>分布到不同分片，每个节点只需<span class="code-blank" data-id="267-2" data-answer="存储部分"></span>数据，降低<span class="code-blank" data-id="267-3" data-answer="存储需求"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成状态分片概念定义",
+        hint: "状态分片的核心特性包括状态数据分布、部分存储、降低存储需求等",
+        explanation: "状态分片将区块链的状态数据分布到不同分片，每个节点只需存储部分数据，降低存储需求，这是状态分片的核心概念",
+        fullSentence: "状态分片将区块链的状态数据分布到不同分片，每个节点只需存储部分数据，降低存储需求。"
+    },
+    {
+        id: 268,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">交易分片将<span class="code-blank" data-id="268-1" data-answer="交易处理"></span>分配到不同分片，通过<span class="code-blank" data-id="268-2" data-answer="并行处理"></span>提升整个网络的<span class="code-blank" data-id="268-3" data-answer="吞吐量"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成交易分片概念定义",
+        hint: "交易分片的核心特性包括交易处理分配、并行处理、提升吞吐量等",
+        explanation: "交易分片将交易处理分配到不同分片，通过并行处理提升整个网络的吞吐量，这是交易分片的核心概念",
+        fullSentence: "交易分片将交易处理分配到不同分片，通过并行处理提升整个网络的吞吐量。"
+    },
+    {
+        id: 269,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币化的<span class="code-blank" data-id="279-1" data-answer="合规框架"></span>需要满足<span class="code-blank" data-id="279-2" data-answer="证券法"></span>、<span class="code-blank" data-id="279-3" data-answer="反洗钱"></span>和<span class="code-blank" data-id="279-4" data-answer="KYC"></span>要求。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA合规框架定义",
+        hint: "RWA代币化的合规框架需要满足证券法、反洗钱和KYC要求",
+        explanation: "RWA代币化的合规框架需要满足证券法、反洗钱和KYC要求，确保代币发行的合法性",
+        fullSentence: "RWA代币化的合规框架需要满足证券法、反洗钱和KYC要求。"
+    },
+    {
+        id: 270,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="280-1" data-answer="估值模型"></span>需要考虑<span class="code-blank" data-id="280-2" data-answer="资产现金流"></span>、<span class="code-blank" data-id="280-3" data-answer="市场溢价"></span>和<span class="code-blank" data-id="280-4" data-answer="折现率"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA估值模型定义",
+        hint: "RWA代币的估值模型需要考虑资产现金流、市场溢价和折现率",
+        explanation: "RWA代币的估值模型需要考虑资产现金流、市场溢价和折现率，确保代币定价的合理性",
+        fullSentence: "RWA代币的估值模型需要考虑资产现金流、市场溢价和折现率。"
+    },
+    {
+        id: 271,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="281-1" data-answer="清算机制"></span>确保在<span class="code-blank" data-id="281-2" data-answer="违约情况"></span>下能够<span class="code-blank" data-id="281-3" data-answer="资产变现"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA清算机制定义",
+        hint: "RWA代币的清算机制确保在违约情况下能够资产变现",
+        explanation: "RWA代币的清算机制确保在违约情况下能够资产变现，保护投资者利益",
+        fullSentence: "RWA代币的清算机制确保在违约情况下能够资产变现。"
+    },
+    {
+        id: 272,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="282-1" data-answer="治理结构"></span>包括<span class="code-blank" data-id="282-2" data-answer="投票权"></span>分配、<span class="code-blank" data-id="282-3" data-answer="决策机制"></span>和<span class="code-blank" data-id="282-4" data-answer="提案流程"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA治理结构定义",
+        hint: "RWA代币的治理结构包括投票权分配、决策机制和提案流程",
+        explanation: "RWA代币的治理结构包括投票权分配、决策机制和提案流程，确保社区参与决策",
+        fullSentence: "RWA代币的治理结构包括投票权分配、决策机制和提案流程。"
+    },
+    {
+        id: 273,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="283-1" data-answer="跨链互操作"></span>支持在不同<span class="code-blank" data-id="283-2" data-answer="区块链网络"></span>间的<span class="code-blank" data-id="283-3" data-answer="资产转移"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA跨链互操作定义",
+        hint: "RWA代币的跨链互操作支持在不同区块链网络间的资产转移",
+        explanation: "RWA代币的跨链互操作支持在不同区块链网络间的资产转移，提升代币的流动性",
+        fullSentence: "RWA代币的跨链互操作支持在不同区块链网络间的资产转移。"
+    },
+    {
+        id: 274,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="284-1" data-answer="保险机制"></span>为<span class="code-blank" data-id="284-2" data-answer="底层资产"></span>提供<span class="code-blank" data-id="284-3" data-answer="风险保障"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA保险机制定义",
+        hint: "RWA代币的保险机制为底层资产提供风险保障",
+        explanation: "RWA代币的保险机制为底层资产提供风险保障，增强投资安全性",
+        fullSentence: "RWA代币的保险机制为底层资产提供风险保障。"
+    },
+    {
+        id: 275,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="285-1" data-answer="税务处理"></span>需要考虑<span class="code-blank" data-id="285-2" data-answer="资本利得税"></span>、<span class="code-blank" data-id="285-3" data-answer="所得税"></span>和<span class="code-blank" data-id="285-4" data-answer="跨境税务"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA税务处理定义",
+        hint: "RWA代币的税务处理需要考虑资本利得税、所得税和跨境税务",
+        explanation: "RWA代币的税务处理需要考虑资本利得税、所得税和跨境税务，确保合规纳税",
+        fullSentence: "RWA代币的税务处理需要考虑资本利得税、所得税和跨境税务。"
+    },
+    {
+        id: 276,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="286-1" data-answer="市场流动性"></span>通过<span class="code-blank" data-id="286-2" data-answer="做市商"></span>和<span class="code-blank" data-id="286-3" data-answer="交易平台"></span>来维持。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA市场流动性定义",
+        hint: "RWA代币的市场流动性通过做市商和交易平台来维持",
+        explanation: "RWA代币的市场流动性通过做市商和交易平台来维持，确保代币的买卖顺畅",
+        fullSentence: "RWA代币的市场流动性通过做市商和交易平台来维持。"
+    },
+    {
+        id: 277,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="287-1" data-answer="信息披露"></span>要求包括<span class="code-blank" data-id="287-2" data-answer="定期报告"></span>、<span class="code-blank" data-id="287-3" data-answer="财务数据"></span>和<span class="code-blank" data-id="287-4" data-answer="风险提示"></span>。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA信息披露定义",
+        hint: "RWA代币的信息披露要求包括定期报告、财务数据和风险提示",
+        explanation: "RWA代币的信息披露要求包括定期报告、财务数据和风险提示，确保投资者知情权",
+        fullSentence: "RWA代币的信息披露要求包括定期报告、财务数据和风险提示。"
+    },
+    {
+        id: 278,
+        type: "sentence",
+        title: "RWA概念记忆",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">RWA代币的<span class="code-blank" data-id="288-1" data-answer="退出机制"></span>允许投资者<span class="code-blank" data-id="288-2" data-answer="赎回资产"></span>或<span class="code-blank" data-id="288-3" data-answer="二级市场"></span>出售。</p>
+        </div>`,
+        instruction: "填写正确的词语完成RWA退出机制定义",
+        hint: "RWA代币的退出机制允许投资者赎回资产或二级市场出售",
+        explanation: "RWA代币的退出机制允许投资者赎回资产或二级市场出售，保障投资流动性",
+        fullSentence: "RWA代币的退出机制允许投资者赎回资产或二级市场出售。"
     }
         ];
