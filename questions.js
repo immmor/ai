@@ -4098,5 +4098,17 @@ const questions = [
         hint: "RWA代币的退出机制允许投资者赎回资产或二级市场出售",
         explanation: "RWA代币的退出机制允许投资者赎回资产或二级市场出售，保障投资流动性",
         fullSentence: "RWA代币的退出机制允许投资者赎回资产或二级市场出售。"
+    },
+    {
+        id: 279,
+        type: "sentence",
+        title: "Go区块链后端面试自我介绍",
+        content: `<div class="p-4 text-sm">
+            <p class="mb-4">面试官您好，我是<span class="code-blank" data-id="289-1" data-answer="张三"></span>，拥有<span class="code-blank" data-id="289-2" data-answer="3年"></span>Go语言开发经验，专注于<span class="code-blank" data-id="289-3" data-answer="区块链后端"></span>开发。在上一家公司，我主要负责<span class="code-blank" data-id="289-4" data-answer="联盟链"></span>项目的智能合约开发和<span class="code-blank" data-id="289-5" data-answer="节点服务"></span>架构设计。我熟悉<span class="code-blank" data-id="289-6" data-answer="以太坊"></span>和<span class="code-blank" data-id="289-7" data-answer="Hyperledger Fabric"></span>等主流区块链平台，擅长使用<span class="code-blank" data-id="289-8" data-answer="Go-Ethereum"></span>进行DApp开发。在技术栈方面，我精通<span class="code-blank" data-id="289-9" data-answer="Go并发编程"></span>、<span class="code-blank" data-id="289-10" data-answer="分布式系统"></span>设计和<span class="code-blank" data-id="289-11" data-answer="微服务架构"></span>。我主导过的一个重点项目是<span class="code-blank" data-id="289-12" data-answer="供应链金融平台"></span>，通过智能合约实现了<span class="code-blank" data-id="289-13" data-answer="资产代币化"></span>和<span class="code-blank" data-id="289-14" data-answer="自动清算"></span>功能，将交易处理效率提升了<span class="code-blank" data-id="289-15" data-answer="40%"></span>。我期待在贵公司继续深耕区块链技术，为<span class="code-blank" data-id="289-16" data-answer="去中心化应用"></span>的发展贡献力量。</p>
+        </div>`,
+        instruction: "填写完整的Go区块链后端面试自我介绍",
+        hint: "包含个人信息、工作经验、技术专长、项目经验和职业目标",
+        explanation: "这是一个完整的Go区块链后端面试自我介绍模板，涵盖了个人信息、工作经验、技术专长、项目经验和职业目标等关键要素",
+        fullSentence: "面试官您好，我是张三，拥有3年Go语言开发经验，专注于区块链后端开发。在上一家公司，我主要负责联盟链项目的智能合约开发和节点服务架构设计。我熟悉以太坊和Hyperledger Fabric等主流区块链平台，擅长使用Go-Ethereum进行DApp开发。在技术栈方面，我精通Go并发编程、分布式系统设计和微服务架构。我主导过的一个重点项目是供应链金融平台，通过智能合约实现了资产代币化和自动清算功能，将交易处理效率提升了40%。我期待在贵公司继续深耕区块链技术，为去中心化应用的发展贡献力量。"
     }
         ];
