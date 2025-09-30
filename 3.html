@@ -599,7 +599,7 @@
                 const animationEl = document.createElement('div');
                 animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 animationEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 280px; height: 280px;">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 320px; height: 320px;">
                         <div class="text-6xl mb-4">
                             <i class="fa ${badge.icon}"></i>
                         </div>
@@ -771,7 +771,7 @@
                 const levelUpEl = document.createElement('div');
                 levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 levelUpEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 280px; height: 280px;">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 320px; height: 320px;">
                         <div class="text-6xl mb-4">🎉</div>
                         <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
                         <p class="text-lg mb-2">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
@@ -1401,6 +1401,230 @@
             }
         }
         
+        // 处理sentence类型题目的输入事件
+        function handleSentenceInput(e, currentIndex) {
+            const input = e.target;
+            const value = input.value;
+            
+            console.log('输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
+            
+            // 检查是否是中文输入法正在输入（composition事件）
+            if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
+                console.log('中文输入法正在输入，跳过处理');
+                return;
+            }
+            
+            // 特殊处理：检测中文输入法候选词选择
+            // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
+            if (e.inputType === 'insertText' && value.length > 1) {
+                console.log('检测到中文候选词选择:', value);
+                
+                // 检查是否已经被空格键处理过
+                if (input.dataset.multiCharProcessed === 'true') {
+                    console.log('多字符输入已经被空格键处理过，跳过重复处理');
+                    // 重置标记
+                    input.dataset.multiCharProcessed = 'false';
+                    return;
+                }
+                
+                // 获取所有填空输入框
+                const inputs = document.querySelectorAll('.code-blank input');
+                
+                // 检查是否是有效的中文字符
+                const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                console.log('是否中文字符:', isChineseText);
+                
+                if (isChineseText) {
+                    // 将输入的内容按字符分割
+                    const chars = value.split('');
+                    console.log('分割字符:', chars);
+                    
+                    // 从当前输入框开始填充
+                    for (let i = 0; i < chars.length; i++) {
+                        const targetIndex = currentIndex + i;
+                        if (targetIndex < inputs.length) {
+                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            inputs[targetIndex].value = chars[i];
+                            
+                            // 更新输入框样式
+                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                            inputs[targetIndex].classList.add('border-gray-300');
+                        }
+                    }
+                    
+                    // 清空当前输入框
+                    input.value = '';
+                    
+                    // 聚焦到下一个未填充的输入框
+                    setTimeout(() => {
+                        focusNextEmptyInput(currentIndex + chars.length);
+                    }, 10);
+                    
+                    console.log('中文候选词处理完成');
+                    return;
+                }
+            }
+            
+            // 如果输入的内容超过1个字符，可能是粘贴或快速输入
+            if (value.length > 1) {
+                console.log('检测到多字符输入:', value);
+                // 获取所有填空输入框
+                const inputs = document.querySelectorAll('.code-blank input');
+                
+                // 检查是否是有效的中文字符（非英文字母）
+                const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                console.log('是否中文字符:', isChineseText);
+                
+                if (isChineseText) {
+                    // 将输入的内容按字符分割
+                    const chars = value.split('');
+                    console.log('分割字符:', chars);
+                    
+                    // 从当前输入框开始填充
+                    for (let i = 0; i < chars.length; i++) {
+                        const targetIndex = currentIndex + i;
+                        if (targetIndex < inputs.length) {
+                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            inputs[targetIndex].value = chars[i];
+                            
+                            // 更新输入框样式
+                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                            inputs[targetIndex].classList.add('border-gray-300');
+                        }
+                    }
+                    
+                    // 清空当前输入框
+                    input.value = '';
+                    
+                    // 聚焦到下一个未填充的输入框
+                    setTimeout(() => {
+                        focusNextEmptyInput(currentIndex + chars.length);
+                    }, 10);
+                    
+                    console.log('多字符处理完成');
+                    // 处理完成后立即返回，避免后续逻辑执行
+                    return;
+                }
+                // 如果是英文字母，可能是输入法候选词选择，不处理
+            }
+            
+            // 如果输入了1个字符，自动跳到下一个输入框（仅对中文字符生效）
+            else if (value.length === 1 && /[\u4e00-\u9fff]/.test(value)) {
+                console.log('单字符输入，跳转到下一个输入框');
+                setTimeout(() => {
+                    focusNextEmptyInput(currentIndex + 1);
+                }, 10);
+            }
+        }
+        
+        // 处理sentence类型题目的删除键事件
+        function handleSentenceKeydown(e, currentIndex) {
+            const input = e.target;
+            const value = input.value;
+            
+            // 处理Backspace键删除
+            if (e.key === 'Backspace' && value.length === 0 && currentIndex > 0) {
+                e.preventDefault();
+                
+                // 获取所有填空输入框
+                const inputs = document.querySelectorAll('.code-blank input');
+                
+                // 找到前一个非空的输入框
+                for (let i = currentIndex - 1; i >= 0; i--) {
+                    if (inputs[i].value.trim()) {
+                        // 清空前一个输入框
+                        inputs[i].value = '';
+                        
+                        // 更新输入框样式
+                        inputs[i].classList.remove('border-gray-300');
+                        inputs[i].classList.add('border-red-300', 'bg-red-50');
+                        
+                        // 聚焦到前一个输入框
+                        setTimeout(() => {
+                            inputs[i].focus();
+                        }, 10);
+                        break;
+                    }
+                }
+            }
+            
+            // 处理Delete键删除
+            if (e.key === 'Delete' && value.length === 0 && currentIndex < document.querySelectorAll('.code-blank input').length - 1) {
+                e.preventDefault();
+                
+                // 获取所有填空输入框
+                const inputs = document.querySelectorAll('.code-blank input');
+                
+                // 找到后一个非空的输入框
+                for (let i = currentIndex + 1; i < inputs.length; i++) {
+                    if (inputs[i].value.trim()) {
+                        // 清空后一个输入框
+                        inputs[i].value = '';
+                        
+                        // 更新输入框样式
+                        inputs[i].classList.remove('border-gray-300');
+                        inputs[i].classList.add('border-red-300', 'bg-red-50');
+                        
+                        // 聚焦到后一个输入框
+                        setTimeout(() => {
+                            inputs[i].focus();
+                        }, 10);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 处理sentence类型题目的粘贴事件
+        function handleSentencePaste(e, currentIndex) {
+            e.preventDefault();
+            
+            // 获取粘贴的内容
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            if (pastedText && pastedText.length > 0) {
+                // 获取所有填空输入框
+                const inputs = document.querySelectorAll('.code-blank input');
+                
+                // 将粘贴的内容按字符分割
+                const chars = pastedText.split('');
+                
+                // 从当前输入框开始填充
+                for (let i = 0; i < chars.length; i++) {
+                    const targetIndex = currentIndex + i;
+                    if (targetIndex < inputs.length) {
+                        inputs[targetIndex].value = chars[i];
+                        
+                        // 更新输入框样式
+                        inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                        inputs[targetIndex].classList.add('border-gray-300');
+                    }
+                }
+                
+                // 聚焦到下一个未填充的输入框
+                setTimeout(() => {
+                    focusNextEmptyInput(currentIndex + chars.length);
+                }, 10);
+            }
+        }
+        
+        // 聚焦到下一个未填充的输入框
+        function focusNextEmptyInput(startIndex) {
+            const inputs = document.querySelectorAll('.code-blank input');
+            
+            for (let i = startIndex; i < inputs.length; i++) {
+                if (!inputs[i].value.trim()) {
+                    inputs[i].focus();
+                    return;
+                }
+            }
+            
+            // 如果所有输入框都已填充，聚焦到最后一个
+            if (inputs.length > 0) {
+                inputs[inputs.length - 1].focus();
+            }
+        }
+
         // 超炫酷加油效果
         function createCheerEffect() {
             // 创建爆炸粒子效果
@@ -1523,9 +1747,9 @@
                         </div>
                         <div id="sentence-review" class="hidden">
                             <div class="text-sm text-gray-700 mb-1">现在请重新输入完整句子以加强记忆</div>
-                            <div class="flex">
-                                <input type="text" id="full-sentence-input" class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" placeholder="输入完整句子...">
-                                <button id="sentence-submit-btn" class="bg-primary text-white px-4 py-2 rounded-r hover:bg-primary/90 text-sm">
+                            <input type="text" id="full-sentence-input" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" placeholder="请输入完整句子">
+                            <div class="flex justify-end mt-2">
+                                <button id="sentence-submit-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm">
                                     提交
                                 </button>
                             </div>
@@ -1533,17 +1757,206 @@
                     </div>
                 `;
                 
-                // 将填空处转换为可编辑的输入框
-                document.querySelectorAll('.code-blank').forEach((blank, index) => {
+                // 将填空处转换为可编辑的输入框（每个汉字一个输入框）
+                const allBlanks = document.querySelectorAll('.code-blank');
+                let inputIndex = 0;
+                
+                allBlanks.forEach((blank, blankIndex) => {
                     const originalText = blank.textContent || '______';
-                    blank.innerHTML = `
-                        <input type="text" class="inline-block w-20 px-2 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" 
-                               data-id="${blank.dataset.id}" 
-                               data-answer="${blank.dataset.answer}"
-                               placeholder="${originalText}"
-                               value="">
-                    `;
+                    const answer = blank.dataset.answer || '';
+                    
+                    // 清空当前填空处
+                    blank.innerHTML = '';
+                    
+                    // 为每个汉字创建一个输入框
+                    for (let i = 0; i < answer.length; i++) {
+                        const char = answer[i];
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'inline-block w-8 px-1 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary';
+                        input.dataset.id = `${blank.dataset.id}-${i}`;
+                        input.dataset.answer = char;
+                        input.dataset.blankIndex = blankIndex;
+                        input.dataset.charIndex = i;
+                        input.placeholder = '_';
+                        input.value = '';
+                        // input.maxLength = 10;
+                        
+                        blank.appendChild(input);
+                        
+                        // 添加事件监听器
+                        addInputEventListener(input, inputIndex);
+                        inputIndex++;
+                    }
                 });
+                
+                function addInputEventListener(input, index) {
+                    console.log('为输入框', index, '添加事件监听器');
+                    
+                    input.addEventListener('input', function(e) {
+                        console.log('input事件触发，输入框:', index);
+                        // 检查是否应该阻止input事件处理
+                        if (input.dataset.preventInput === 'true') {
+                            console.log('阻止input事件处理，跳过');
+                            return;
+                        }
+                        handleSentenceInput(e, index);
+                    });
+                    
+                    input.addEventListener('paste', function(e) {
+                        console.log('paste事件触发，输入框:', index);
+                        handleSentencePaste(e, index);
+                    });
+                    
+                    // 添加删除键事件监听器
+                    input.addEventListener('keydown', function(e) {
+                        console.log('keydown事件触发，输入框:', index, '按键:', e.key);
+                        
+                        // 特殊处理：中文输入法候选词选择（空格键确认）
+                        if (e.key === ' ' && input.dataset.composing === 'true') {
+                            console.log('检测到中文候选词选择确认（空格键）');
+                            // 阻止默认的空格键行为
+                            e.preventDefault();
+                            
+                            // 标记已经处理了中文候选词选择
+                            input.dataset.spaceProcessed = 'true';
+                            // 标记已经处理了多字符输入，防止handleSentenceInput中的重复处理
+                            input.dataset.multiCharProcessed = 'true';
+                            
+                            // 延迟处理，确保输入框值已更新
+                            setTimeout(() => {
+                                const value = input.value;
+                                console.log('候选词选择后输入框值:', value);
+                                
+                                // 检查是否是多个字符（中文候选词）
+                                if (value.length > 1) {
+                                    console.log('检测到多字符候选词:', value);
+                                    // 获取所有填空输入框
+                                    const inputs = document.querySelectorAll('.code-blank input');
+                                    
+                                    // 检查是否是有效的中文字符
+                                    const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                                    console.log('是否中文字符:', isChineseText);
+                                    
+                                    if (isChineseText) {
+                                        // 将输入的内容按字符分割
+                                        const chars = value.split('');
+                                        console.log('分割字符:', chars);
+                                        
+                                        // 从当前输入框开始填充
+                                        for (let i = 0; i < chars.length; i++) {
+                                            const targetIndex = index + i;
+                                            if (targetIndex < inputs.length) {
+                                                console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                                inputs[targetIndex].value = chars[i];
+                                                
+                                                // 更新输入框样式
+                                                inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                                                inputs[targetIndex].classList.add('border-gray-300');
+                                            }
+                                        }
+                                        
+                                        // 注意：不再清空当前输入框，保留第一个字符
+                                        // input.value = '';
+                                        
+                                        // 聚焦到下一个未填充的输入框
+                                        setTimeout(() => {
+                                            focusNextEmptyInput(index + chars.length);
+                                        }, 10);
+                                        
+                                        console.log('中文候选词处理完成');
+                                        // 阻止后续的input事件处理
+                                        input.dataset.preventInput = 'true';
+                                        setTimeout(() => {
+                                            input.dataset.preventInput = 'false';
+                                        }, 200);
+                                        return;
+                                    }
+                                }
+                                
+                                // 如果没有检测到多字符，正常处理
+                                console.log('空格键处理后未检测到多字符，正常处理');
+                                handleSentenceInput(e, index);
+                            }, 100); // 增加延迟到100ms，确保输入框值已更新
+                        }
+                        
+                        handleSentenceKeydown(e, index);
+                    });
+                    
+                    // 添加中文输入法事件监听器
+                    input.addEventListener('compositionstart', function(e) {
+                        console.log('compositionstart: 中文输入开始，输入框:', index);
+                        input.dataset.composing = 'true';
+                    });
+                    
+                    input.addEventListener('compositionend', function(e) {
+                        console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
+                        input.dataset.composing = 'false';
+                        
+                        // 检查是否已经被空格键处理过
+                        if (input.dataset.spaceProcessed === 'true') {
+                            console.log('已经被空格键处理过，跳过compositionend处理');
+                            input.dataset.spaceProcessed = 'false'; // 重置标记
+                            return;
+                        }
+                        
+                        // 延迟处理，确保输入框值已更新（增加延迟时间）
+                        setTimeout(() => {
+                            const value = input.value;
+                            console.log('compositionend延迟检查，输入框值:', value);
+                            
+                            // 检查是否是多个字符（中文输入法候选词选择）
+                            if (value.length > 1) {
+                                console.log('检测到多字符候选词选择:', value);
+                                // 获取所有填空输入框
+                                const inputs = document.querySelectorAll('.code-blank input');
+                                
+                                // 检查是否是有效的中文字符
+                                const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                                console.log('是否中文字符:', isChineseText);
+                                
+                                if (isChineseText) {
+                                    // 将输入的内容按字符分割
+                                    const chars = value.split('');
+                                    console.log('分割字符:', chars);
+                                    
+                                    // 从当前输入框开始填充
+                                    for (let i = 0; i < chars.length; i++) {
+                                        const targetIndex = index + i;
+                                        if (targetIndex < inputs.length) {
+                                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                            inputs[targetIndex].value = chars[i];
+                                            
+                                            // 更新输入框样式
+                                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                                            inputs[targetIndex].classList.add('border-gray-300');
+                                        }
+                                    }
+                                    
+                                    // 注意：不再清空当前输入框，保留第一个字符
+                                    // input.value = '';
+                                    
+                                    // 聚焦到下一个未填充的输入框
+                                    setTimeout(() => {
+                                        focusNextEmptyInput(index + chars.length);
+                                    }, 10);
+                                    
+                                    console.log('中文候选词处理完成');
+                                    return;
+                                }
+                            }
+                            
+                            // 如果没有检测到多字符，或者不是中文字符，正常处理
+                            // 但需要检查输入框是否已经被清空（多字符处理已完成）
+                            if (input.value.trim() !== '') {
+                                console.log('正常处理单字符输入');
+                                handleSentenceInput(e, index);
+                            } else {
+                                console.log('输入框已被清空，跳过处理');
+                            }
+                        }, 100); // 增加延迟到100ms，确保输入框值已更新
+                    });
+                }
                 
                 // 聚焦第一个填空输入框
                 setTimeout(() => {
@@ -1631,6 +2044,18 @@
                             fillSubmitBtn.style.display = 'none';
                         }
                         
+                        // 隐藏提示文本"请在句子中直接点击填空处输入内容"
+                        const clickHintText = document.querySelector('.text-sm.text-gray-700');
+                        if (clickHintText) {
+                            clickHintText.style.display = 'none';
+                        }
+                        
+                        // 隐藏包含句子内容的灰色背景容器
+                        const sentenceContainer = document.querySelector('.p-3.bg-gray-50.rounded-lg');
+                        if (sentenceContainer) {
+                            sentenceContainer.style.display = 'none';
+                        }
+                        
                         // 隐藏所有填空输入框
                         const fillInputs = document.querySelectorAll('.code-blank input');
                         fillInputs.forEach(input => {
@@ -1645,7 +2070,10 @@
                         
                         // 聚焦完整句子输入框
                         setTimeout(() => {
-                            document.getElementById('full-sentence-input').focus();
+                            const fullSentenceInput = document.getElementById('full-sentence-input');
+                            if (fullSentenceInput) {
+                                fullSentenceInput.focus();
+                            }
                         }, 100);
                         
                         // 第一阶段正确，返回false避免进入后续的显示结果处理
@@ -1659,10 +2087,12 @@
                         return false;
                     }
                 } else if (window.sentenceStage === 'review') {
-                    // 第二阶段：检查完整句子
-                    userAnswer = userAnswer.trim();
-                    const correctSentence = question.fullSentence;
-                    isCorrect = userAnswer === correctSentence;
+                    // 第二阶段：检查完整句子输入
+                    const fullSentenceInput = document.getElementById('full-sentence-input');
+                    if (fullSentenceInput) {
+                        userAnswer = fullSentenceInput.value.trim();
+                        isCorrect = userAnswer === question.fullSentence;
+                    }
                 }
             }
             
@@ -2245,6 +2675,458 @@
             // 上一题/下一题
             prevBtn.addEventListener('click', goPrev);
             nextBtn.addEventListener('click', goNext);
+        }
+        
+
+               
+        // 为第二阶段输入框添加复杂的事件监听器（支持中文输入法）
+        function addStage2InputEventListener(input, index) {
+            console.log('为第二阶段输入框', index, '添加事件监听器');
+            
+            input.addEventListener('input', function(e) {
+                console.log('第二阶段input事件触发，输入框:', index);
+                // 检查是否应该阻止input事件处理
+                if (input.dataset.preventInput === 'true') {
+                    console.log('阻止input事件处理，跳过');
+                    return;
+                }
+                handleStage2Input(e, index);
+            });
+            
+            input.addEventListener('paste', function(e) {
+                console.log('第二阶段paste事件触发，输入框:', index);
+                handleStage2Paste(e, index);
+            });
+            
+            // 添加删除键事件监听器
+            input.addEventListener('keydown', function(e) {
+                console.log('第二阶段keydown事件触发，输入框:', index, '按键:', e.key);
+                
+                // 特殊处理：中文输入法候选词选择（空格键确认）
+                if (e.key === ' ' && input.dataset.composing === 'true') {
+                    console.log('检测到中文候选词选择确认（空格键）');
+                    // 阻止默认的空格键行为
+                    e.preventDefault();
+                    
+                    // 标记已经处理了中文候选词选择
+                    input.dataset.spaceProcessed = 'true';
+                    // 标记已经处理了多字符输入，防止handleStage2Input中的重复处理
+                    input.dataset.multiCharProcessed = 'true';
+                    
+                    // 延迟处理，确保输入框值已更新
+                    setTimeout(() => {
+                        const value = input.value;
+                        console.log('候选词选择后输入框值:', value);
+                        
+                        // 检查是否是多个字符（中文候选词）
+                        if (value.length > 1) {
+                            console.log('检测到多字符候选词:', value);
+                            // 获取所有第二阶段输入框
+                            const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                            
+                            // 检查是否是有效的中文字符
+                            const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                            console.log('是否中文字符:', isChineseText);
+                            
+                            if (isChineseText) {
+                                // 将输入的内容按字符分割
+                                const chars = value.split('');
+                                console.log('分割字符:', chars);
+                                
+                                // 从当前输入框开始填充
+                                for (let i = 0; i < chars.length; i++) {
+                                    const targetIndex = index + i;
+                                    if (targetIndex < inputs.length) {
+                                        console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                        inputs[targetIndex].value = chars[i];
+                                        
+                                        // 更新输入框样式
+                                        inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                                        inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
+                                        
+                                        // 播放正确音效
+                                        playCorrectSound();
+                                    }
+                                }
+                                
+                                // 清空当前输入框
+                                input.value = '';
+                                
+                                // 聚焦到下一个输入框
+                                setTimeout(() => {
+                                    focusStage2NextInput(index + chars.length);
+                                }, 10);
+                                
+                                console.log('中文候选词处理完成');
+                                // 阻止后续的input事件处理
+                                input.dataset.preventInput = 'true';
+                                setTimeout(() => {
+                                    input.dataset.preventInput = 'false';
+                                }, 200);
+                                return;
+                            }
+                        }
+                        
+                        // 如果没有检测到多字符，正常处理
+                        console.log('空格键处理后未检测到多字符，正常处理');
+                        handleStage2Input(e, index);
+                    }, 100); // 增加延迟到100ms，确保输入框值已更新
+                }
+                
+                handleStage2Keydown(e, index);
+            });
+            
+            // 添加中文输入法事件监听器
+            input.addEventListener('compositionstart', function(e) {
+                console.log('compositionstart: 中文输入开始，输入框:', index);
+                input.dataset.composing = 'true';
+            });
+            
+            input.addEventListener('compositionend', function(e) {
+                console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
+                input.dataset.composing = 'false';
+                
+                // 检查是否已经被空格键处理过
+                if (input.dataset.spaceProcessed === 'true') {
+                    console.log('已经被空格键处理过，跳过compositionend处理');
+                    input.dataset.spaceProcessed = 'false'; // 重置标记
+                    return;
+                }
+                
+                // 延迟处理，确保输入框值已更新（增加延迟时间）
+                setTimeout(() => {
+                    const value = input.value;
+                    console.log('compositionend延迟检查，输入框值:', value);
+                    
+                    // 检查是否是多个字符（中文输入法候选词选择）
+                    if (value.length > 1) {
+                        console.log('检测到多字符候选词选择:', value);
+                        // 获取所有第二阶段输入框
+                        const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                        
+                        // 检查是否是有效的中文字符
+                        const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                        console.log('是否中文字符:', isChineseText);
+                        
+                        if (isChineseText) {
+                            // 将输入的内容按字符分割
+                            const chars = value.split('');
+                            console.log('分割字符:', chars);
+                            
+                            // 从当前输入框开始填充
+                            for (let i = 0; i < chars.length; i++) {
+                                const targetIndex = index + i;
+                                if (targetIndex < inputs.length) {
+                                    console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                    inputs[targetIndex].value = chars[i];
+                                    
+                                    // 更新输入框样式
+                                    inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                                    inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
+                                    
+                                    // 播放正确音效
+                                    playCorrectSound();
+                                }
+                            }
+                            
+                            // 清空当前输入框
+                            input.value = '';
+                            
+                            // 聚焦到下一个输入框
+                            setTimeout(() => {
+                                focusStage2NextInput(index + chars.length);
+                            }, 10);
+                            
+                            console.log('中文候选词处理完成');
+                            return;
+                        }
+                    }
+                    
+                    // 如果没有检测到多字符，或者不是中文字符，正常处理
+                    // 但需要检查输入框是否已经被清空（多字符处理已完成）
+                    if (input.value.trim() !== '') {
+                        console.log('正常处理单字符输入');
+                        handleStage2Input(e, index);
+                    } else {
+                        console.log('输入框已被清空，跳过处理');
+                    }
+                }, 100); // 增加延迟到100ms，确保输入框值已更新
+            });
+        }
+        
+        // 第二阶段输入处理函数
+        function handleStage2Input(e, currentIndex) {
+            const input = e.target;
+            const value = input.value;
+            
+            console.log('第二阶段输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
+            
+            // 调试：检查多字符处理条件
+            console.log('多字符处理条件检查:');
+            console.log('  - value.length > 1:', value.length > 1);
+            console.log('  - e.inputType === \'insertText\':', e.inputType === 'insertText');
+            console.log('  - 组合条件:', e.inputType === 'insertText' && value.length > 1);
+            
+            // 检查是否是中文输入法正在输入（composition事件）
+            if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
+                console.log('中文输入法正在输入，跳过处理');
+                return;
+            }
+            
+            // 特殊处理：检测中文输入法候选词选择
+            // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
+            if (e.inputType === 'insertText' && value.length > 1) {
+                console.log('检测到中文候选词选择:', value);
+                
+                // 检查是否已经被空格键处理过
+                if (input.dataset.multiCharProcessed === 'true') {
+                    console.log('多字符输入已经被空格键处理过，跳过重复处理');
+                    // 重置标记
+                    input.dataset.multiCharProcessed = 'false';
+                    return;
+                }
+                
+                // 获取所有第二阶段输入框
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                
+                // 检查是否是有效的中文字符
+                const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                console.log('是否中文字符:', isChineseText);
+                
+                if (isChineseText) {
+                    // 将输入的内容按字符分割
+                    const chars = value.split('');
+                    console.log('分割字符:', chars);
+                    
+                    // 从当前输入框开始填充
+                    for (let i = 0; i < chars.length; i++) {
+                        const targetIndex = currentIndex + i;
+                        if (targetIndex < inputs.length) {
+                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            inputs[targetIndex].value = chars[i];
+                            
+                            // 更新输入框样式
+                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                            inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
+                            
+                            // 播放正确音效
+                            playCorrectSound();
+                        }
+                    }
+                    
+                    // 清空当前输入框
+                    input.value = '';
+                    
+                    // 聚焦到下一个输入框
+                    setTimeout(() => {
+                        focusStage2NextInput(currentIndex + chars.length);
+                    }, 10);
+                    
+                    console.log('中文候选词处理完成');
+                    return;
+                }
+            }
+            
+            // 如果输入的内容超过1个字符，可能是粘贴或快速输入
+            if (value.length > 1) {
+                console.log('检测到多字符输入:', value);
+                // 获取所有第二阶段输入框
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                
+                // 检查是否是有效的中文字符（非英文字母）
+                const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                console.log('是否中文字符:', isChineseText);
+                
+                if (isChineseText) {
+                    // 将输入的内容按字符分割
+                    const chars = value.split('');
+                    console.log('分割字符:', chars);
+                    
+                    // 从当前输入框开始填充
+                    for (let i = 0; i < chars.length; i++) {
+                        const targetIndex = currentIndex + i;
+                        if (targetIndex < inputs.length) {
+                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            inputs[targetIndex].value = chars[i];
+                            
+                            // 更新输入框样式
+                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                            inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
+                            
+                            // 播放正确音效
+                            playCorrectSound();
+                        }
+                    }
+                    
+                    // 清空当前输入框
+                    input.value = '';
+                    
+                    // 聚焦到下一个输入框
+                    setTimeout(() => {
+                        focusStage2NextInput(currentIndex + chars.length);
+                    }, 10);
+                    
+                    console.log('多字符处理完成');
+                    // 处理完成后立即返回，避免后续逻辑执行
+                    return;
+                }
+                // 如果是英文字母，可能是输入法候选词选择，不处理
+            }
+            
+            // 如果输入了1个字符，自动跳到下一个输入框（仅对中文字符生效）
+            else if (value.length === 1 && /[\u4e00-\u9fff]/.test(value)) {
+                console.log('单字符输入，跳转到下一个输入框');
+                setTimeout(() => {
+                    focusStage2NextInput(currentIndex + 1);
+                }, 10);
+            }
+            
+            // 单字符输入的验证逻辑
+            if (value.length === 1) {
+                const expected = input.dataset.expected;
+                const userInput = value.trim();
+                
+                if (userInput === expected) {
+                    // 正确：显示绿色边框
+                    input.classList.remove('border-red-300', 'bg-red-50');
+                    input.classList.add('border-green-300', 'bg-green-50');
+                    // 播放正确音效
+                    playCorrectSound();
+                } else {
+                    // 错误：显示红色边框
+                    input.classList.remove('border-green-300', 'bg-green-50');
+                    input.classList.add('border-red-300', 'bg-red-50');
+                    // 播放错误音效
+                    playWrongSound();
+                }
+            }
+        }
+        
+        // 第二阶段粘贴处理函数
+        function handleStage2Paste(e, currentIndex) {
+            e.preventDefault();
+            
+            // 获取粘贴的内容
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            if (pastedText && pastedText.length > 0) {
+                // 获取所有第二阶段输入框
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                
+                // 将粘贴的内容按字符分割
+                const chars = pastedText.split('');
+                
+                // 从当前输入框开始填充
+                for (let i = 0; i < chars.length; i++) {
+                    const targetIndex = currentIndex + i;
+                    if (targetIndex < inputs.length) {
+                        inputs[targetIndex].value = chars[i];
+                        
+                        // 更新输入框样式
+                        const expected = inputs[targetIndex].dataset.expected;
+                        if (chars[i] === expected) {
+                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
+                            inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
+                            // 播放正确音效
+                            playCorrectSound();
+                        } else {
+                            inputs[targetIndex].classList.remove('border-green-300', 'bg-green-50');
+                            inputs[targetIndex].classList.add('border-red-300', 'bg-red-50');
+                            // 播放错误音效
+                            playWrongSound();
+                        }
+                    }
+                }
+                
+                // 聚焦到下一个输入框
+                setTimeout(() => {
+                    focusStage2NextInput(currentIndex + chars.length);
+                }, 10);
+            }
+        }
+        
+        // 第二阶段键盘按下处理函数
+        function handleStage2Keydown(e, currentIndex) {
+            const input = e.target;
+            const value = input.value;
+            
+            // 处理Backspace键删除
+            if (e.key === 'Backspace' && value.length === 0 && currentIndex > 0) {
+                e.preventDefault();
+                
+                // 获取所有第二阶段输入框
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                
+                // 找到前一个非空的输入框
+                for (let i = currentIndex - 1; i >= 0; i--) {
+                    if (inputs[i].value.trim()) {
+                        // 清空前一个输入框
+                        inputs[i].value = '';
+                        
+                        // 更新输入框样式
+                        inputs[i].classList.remove('border-gray-300');
+                        inputs[i].classList.add('border-red-300', 'bg-red-50');
+                        
+                        // 聚焦到前一个输入框
+                        setTimeout(() => {
+                            inputs[i].focus();
+                        }, 10);
+                        break;
+                    }
+                }
+            }
+            
+            // 处理Delete键删除
+            if (e.key === 'Delete' && value.length === 0 && currentIndex < document.querySelectorAll('#full-sentence-blanks input').length - 1) {
+                e.preventDefault();
+                
+                // 获取所有第二阶段输入框
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                
+                // 找到后一个非空的输入框
+                for (let i = currentIndex + 1; i < inputs.length; i++) {
+                    if (inputs[i].value.trim()) {
+                        // 清空后一个输入框
+                        inputs[i].value = '';
+                        
+                        // 更新输入框样式
+                        inputs[i].classList.remove('border-gray-300');
+                        inputs[i].classList.add('border-red-300', 'bg-red-50');
+                        
+                        // 聚焦到后一个输入框
+                        setTimeout(() => {
+                            inputs[i].focus();
+                        }, 10);
+                        break;
+                    }
+                }
+            }
+            
+            // 方向键处理
+            if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                inputs[currentIndex - 1].focus();
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' && currentIndex < document.querySelectorAll('#full-sentence-blanks input').length - 1) {
+                const inputs = document.querySelectorAll('#full-sentence-blanks input');
+                inputs[currentIndex + 1].focus();
+                e.preventDefault();
+            }
+        }
+        
+        // 聚焦到第二阶段的下一个输入框
+        function focusStage2NextInput(startIndex) {
+            const inputs = document.querySelectorAll('#full-sentence-blanks input');
+            for (let i = startIndex; i < inputs.length; i++) {
+                if (inputs[i].value === '') {
+                    inputs[i].focus();
+                    return;
+                }
+            }
+            // 如果所有输入框都已填充，聚焦到最后一个
+            if (inputs.length > 0) {
+                inputs[inputs.length - 1].focus();
+            }
         }
         
         // 初始化
