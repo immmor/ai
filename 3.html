@@ -6,8 +6,8 @@
     <title>Coder - 编程挑战</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+    <script src="howler.min.js"></script>
+    <script src="Tone.min.js"></script>
     <script src="questions.js"></script>
     
     <script>
@@ -599,12 +599,12 @@
                 const animationEl = document.createElement('div');
                 animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 animationEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-6 shadow-2xl w-64 h-64 text-white text-center flex flex-col justify-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 flex items-center justify-center text-white text-2xl animate-glow">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 320px; height: 320px;">
+                        <div class="text-6xl mb-4">
                             <i class="fa ${badge.icon}"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-2">获得新勋章！</h3>
-                        <p class="text-lg mb-4">${badge.name}</p>
+                        <p class="text-lg mb-2 max-w-[200px]">${badge.name}</p>
                         <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded hover:bg-white/30">
                             太棒了！
                         </button>
@@ -771,11 +771,11 @@
                 const levelUpEl = document.createElement('div');
                 levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 levelUpEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 shadow-2xl w-50 h-50 text-white text-center flex flex-col justify-center">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 320px; height: 320px;">
                         <div class="text-6xl mb-4">🎉</div>
                         <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
-                        <p class="text-lg mb-4">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
-                        <p class="text-sm opacity-90">继续学习，解锁更多成就！</p>
+                        <p class="text-lg mb-2">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
+                        <p class="text-sm opacity-90 max-w-[200px]">继续学习，解锁更多成就！</p>
                     </div>
                 `;
                 document.body.appendChild(levelUpEl);
