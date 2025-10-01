@@ -1439,8 +1439,13 @@
                     const chars = value.split('');
                     console.log('分割字符:', chars);
                     
+                    // 修复：确保当前输入框只保留第一个字符
+                    // 当前输入框的值应该是第一个字符，而不是整个多字符输入
+                    input.value = chars[0];
+                    
                     // 从当前输入框开始填充
-                    for (let i = 0; i < chars.length; i++) {
+                    // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
+                    for (let i = 1; i < chars.length; i++) {
                         const targetIndex = currentIndex + i;
                         if (targetIndex < inputs.length) {
                             console.log('填充到输入框', targetIndex, ':', chars[i]);
@@ -1452,11 +1457,12 @@
                         }
                     }
                     
-                    // 确保第一个字符正确显示：不清空当前输入框
-                    // 只在当前输入框不是第一个字符时才清空
-                    if (currentIndex > 0) {
-                        input.value = '';
-                    }
+                    // 确保字符正确显示：只在当前输入框不是多字符输入的第一个字符时才清空
+                    // 对于多字符输入，第一个字符应该保留在当前输入框
+                    // 修复：对于多字符输入，当前输入框应该保留第一个字符，不应该被清空
+                    // if (currentIndex > 0) {
+                    //     input.value = '';
+                    // }
                     
                     // 聚焦到下一个未填充的输入框
                     setTimeout(() => {
@@ -1484,7 +1490,8 @@
                     console.log('分割字符:', chars);
                     
                     // 从当前输入框开始填充
-                    for (let i = 0; i < chars.length; i++) {
+                    // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
+                    for (let i = 1; i < chars.length; i++) {
                         const targetIndex = currentIndex + i;
                         if (targetIndex < inputs.length) {
                             console.log('填充到输入框', targetIndex, ':', chars[i]);
@@ -1496,11 +1503,12 @@
                         }
                     }
                     
-                    // 确保第一个字符正确显示：不清空当前输入框
-                    // 只在当前输入框不是第一个字符时才清空
-                    if (currentIndex > 0) {
-                        input.value = '';
-                    }
+                    // 确保第一个字符正确显示：对于多字符输入，第一个字符应该保留在当前输入框
+                    // 只有当当前输入框不是多字符输入的第一个字符时才清空
+                    // 修复：对于多字符输入，当前输入框应该保留第一个字符，不应该被清空
+                    // if (currentIndex > 0) {
+                    //     input.value = '';
+                    // }
                     
                     // 聚焦到下一个未填充的输入框
                     setTimeout(() => {
@@ -1740,7 +1748,7 @@
                 answerContainer.innerHTML = `
                     <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
                     <div class="space-y-2">
-                        <div class="text-sm text-gray-700">请在句子中33直接点击填空处输入内容</div>
+                        <div class="text-sm text-gray-700">请在句子中44直接点击填空处输入内容</div>
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <div id="sentence-content" class="text-sm leading-relaxed">
                                 ${question.content}
@@ -1849,8 +1857,12 @@
                                         const chars = value.split('');
                                         console.log('分割字符:', chars);
                                         
+                                        // 修复：确保当前输入框只保留第一个字符
+                                        input.value = chars[0];
+                                        
                                         // 从当前输入框开始填充
-                                        for (let i = 0; i < chars.length; i++) {
+                                        // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
+                                        for (let i = 1; i < chars.length; i++) {
                                             const targetIndex = index + i;
                                             if (targetIndex < inputs.length) {
                                                 console.log('填充到输入框', targetIndex, ':', chars[i]);
@@ -1862,11 +1874,10 @@
                                             }
                                         }
                                         
-                                        // 确保第一个字符正确显示：不清空当前输入框
-                                        // 只在当前输入框是第一个字符时才保留，否则清空
-                                        if (index > 0) {
-                                            input.value = '';
-                                        }
+                                        // 修复：移除清空逻辑，当前输入框已经正确设置为第一个字符
+                                        // if (index > 0) {
+                                        //     input.value = '';
+                                        // }
                                         
                                         // 聚焦到下一个未填充的输入框
                                         setTimeout(() => {
@@ -1929,8 +1940,12 @@
                                     const chars = value.split('');
                                     console.log('分割字符:', chars);
                                     
+                                    // 修复：确保当前输入框只保留第一个字符
+                                    input.value = chars[0];
+                                    
                                     // 从当前输入框开始填充
-                                    for (let i = 0; i < chars.length; i++) {
+                                    // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
+                                    for (let i = 1; i < chars.length; i++) {
                                         const targetIndex = index + i;
                                         if (targetIndex < inputs.length) {
                                             console.log('填充到输入框', targetIndex, ':', chars[i]);
@@ -1942,11 +1957,10 @@
                                         }
                                     }
                                     
-                                    // 确保第一个字符正确显示：不清空当前输入框
-                                    // 只在当前输入框是第一个字符时才保留，否则清空
-                                    if (index > 0) {
-                                        input.value = '';
-                                    }
+                                    // 修复：移除清空逻辑，当前输入框已经正确设置为第一个字符
+                                    // if (index > 0) {
+                                    //     input.value = '';
+                                    // }
                                     
                                     // 聚焦到下一个未填充的输入框
                                     setTimeout(() => {
