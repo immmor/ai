@@ -257,7 +257,7 @@
         <div class="flex justify-between text-xs">
             <div class="flex space-x-3">
                 <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center">
-                    <i class="fa fa-lightbulb-o mr-1 text-amber-500"></i> 提示
+                    <i class="fa fa-lightbulb mr-1 text-amber-500"></i> 提示
                 </button>
                 <!-- 答案按钮 -->
                 <button id="answer-btn" class="text-gray-500 hover:text-blue-500 flex items-center">
@@ -1868,9 +1868,7 @@
             else if (question.type === "sentence") {
                 // 句子记忆题：直接在句子中填空
                 answerContainer.innerHTML = `
-                    <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
                     <div class="space-y-2">
-                        <div class="text-sm text-gray-700">请在句子中直接点击填空处输入内容</div>
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <div id="sentence-content" class="text-sm leading-relaxed">
                                 ${question.content}
@@ -2194,10 +2192,10 @@
                         }
                         
                         // 隐藏提示文本"请在句子中直接点击填空处输入内容"
-                        const clickHintText = document.querySelector('.text-sm.text-gray-700');
-                        if (clickHintText) {
-                            clickHintText.style.display = 'none';
-                        }
+                        // const clickHintText = document.querySelector('.text-sm.text-gray-700');
+                        // if (clickHintText) {
+                        //    clickHintText.style.display = 'none';
+                        // }
                         
                         // 隐藏包含句子内容的灰色背景容器
                         const sentenceContainer = document.querySelector('.p-3.bg-gray-50.rounded-lg');
@@ -2539,30 +2537,6 @@
             // 切换背景样式
             const container = document.querySelector('.min-h-screen');
             container.className = `min-h-screen ${modeInfo.bg} transition-all duration-500`;
-            
-            // 显示状态切换提示
-            showQuickMessage(`已切换到${modeInfo.text}`, 'info');
-        }
-        
-        // 显示快速消息
-        function showQuickMessage(message, type = 'info') {
-            const messageEl = document.createElement('div');
-            messageEl.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 ${
-                type === 'info' ? 'bg-blue-500 text-white' : 
-                type === 'success' ? 'bg-green-500 text-white' : 
-                'bg-gray-500 text-white'
-            }`;
-            messageEl.textContent = message;
-            
-            document.body.appendChild(messageEl);
-            
-            setTimeout(() => {
-                messageEl.style.opacity = '0';
-                messageEl.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(messageEl);
-                }, 300);
-            }, 2000);
         }
         
         // 设置事件监听
