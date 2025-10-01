@@ -91,6 +91,54 @@
                 }
             }
             
+            /* 彩带动画 */
+            @keyframes confetti {
+                0% {
+                    transform: translateY(0) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+            
+            /* 烟花爆炸动画 */
+            @keyframes fireworks {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1.5);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+            
+            /* 庆祝文字浮动动画 */
+            @keyframes celebrateText {
+                0% {
+                    transform: translateY(0) scale(1);
+                    opacity: 0;
+                }
+                20% {
+                    transform: translateY(-20px) scale(1.2);
+                    opacity: 1;
+                }
+                80% {
+                    transform: translateY(-80px) scale(1.1);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translateY(-120px) scale(0.8);
+                    opacity: 0;
+                }
+            }
+            
             /* 反馈区域自动换行样式 */
             #feedback {
                 word-wrap: break-word;
@@ -607,15 +655,17 @@
                 const animationEl = document.createElement('div');
                 animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 animationEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 265px; height: 265px;">
-                        <div class="text-6xl mb-4">
+                    <div class="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center animate-pulse" style="width: 300px; height: 300px; border: 4px solid gold; box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);">
+                        <div class="text-8xl mb-4 animate-bounce">
                             <i class="fa ${badge.icon}"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-2">获得新勋章！</h3>
-                        <p class="text-lg mb-2 max-w-[200px]">${badge.name}</p>
-                        <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded hover:bg-white/30">
-                            太棒了！
+                        <h3 class="text-3xl font-bold mb-2 text-yellow-300">获得新勋章！</h3>
+                        <p class="text-xl mb-2 max-w-[250px]">${badge.name}</p>
+                        <p class="text-sm opacity-90 mb-4">${badge.description}</p>
+                        <button class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 hover:scale-110">
+                            🎉 太棒了！
                         </button>
+                        <div class="mt-4 text-2xl">✨🌟⭐️</div>
                     </div>
                 `;
                 document.body.appendChild(animationEl);
@@ -634,12 +684,17 @@
                 // 添加彩带效果
                 createConfettiEffect();
                 
-                // 3秒后自动移除
+                // 添加额外的烟花效果
+                setTimeout(() => {
+                    createFireworksEffect();
+                }, 500);
+                
+                // 4秒后自动移除
                 setTimeout(() => {
                     if (animationEl.parentElement) {
                         animationEl.remove();
                     }
-                }, 3000);
+                }, 4000);
             });
             
             // 启动弹窗队列
@@ -779,11 +834,12 @@
                 const levelUpEl = document.createElement('div');
                 levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 levelUpEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 265px; height: 265px;">
-                        <div class="text-6xl mb-4">🎉</div>
-                        <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
-                        <p class="text-lg mb-2">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
-                        <p class="text-sm opacity-90 max-w-[200px]">继续学习，解锁更多成就！</p>
+                    <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center animate-pulse" style="width: 300px; height: 300px; border: 4px solid gold; box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);">
+                        <div class="text-8xl mb-4 animate-bounce">🎉</div>
+                        <h3 class="text-3xl font-bold mb-2 text-yellow-300">升级啦！</h3>
+                        <p class="text-xl mb-2">现在你是 <span class="font-bold text-yellow-300 text-2xl">Lv.${level}</span></p>
+                        <p class="text-sm opacity-90 max-w-[250px]">继续学习，解锁更多成就！</p>
+                        <div class="mt-4 text-2xl">✨🌟⭐️</div>
                     </div>
                 `;
                 document.body.appendChild(levelUpEl);
@@ -794,11 +850,16 @@
                 // 添加升级彩带效果
                 createConfettiEffect();
                 
+                // 添加额外的烟花效果
+                setTimeout(() => {
+                    createFireworksEffect();
+                }, 500);
+                
                 setTimeout(() => {
                     if (levelUpEl.parentElement) {
                         levelUpEl.remove();
                     }
-                }, 3000);
+                }, 4000);
             });
             
             // 启动弹窗队列
@@ -807,23 +868,36 @@
         
         // 创建彩带效果
         function createConfettiEffect() {
-            for (let i = 0; i < 50; i++) {
+            // 创建更多彩带粒子
+            for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
-                    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+                    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#ff9f43', '#ff7979', '#badc58', '#686de0'];
                     const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // 随机形状：方形、圆形、三角形
+                    const shapes = ['square', 'circle', 'triangle'];
+                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    
+                    let shapeStyle = '';
+                    if (shape === 'circle') {
+                        shapeStyle = 'border-radius: 50%;';
+                    } else if (shape === 'triangle') {
+                        shapeStyle = 'clip-path: polygon(50% 0%, 0% 100%, 100% 100%); width: 12px; height: 12px;';
+                    }
                     
                     confetti.style.cssText = `
                         position: fixed;
-                        width: 10px;
-                        height: 10px;
+                        width: ${shape === 'triangle' ? '12px' : '10px'};
+                        height: ${shape === 'triangle' ? '12px' : '10px'};
                         background: ${color};
                         top: -20px;
                         left: ${Math.random() * 100}vw;
-                        border-radius: 2px;
+                        ${shapeStyle}
                         pointer-events: none;
                         z-index: 40;
-                        animation: confetti 3s ease-out forwards;
+                        animation: confetti ${2 + Math.random()}s ease-out forwards;
+                        transform: rotate(${Math.random() * 360}deg);
                     `;
                     
                     document.body.appendChild(confetti);
@@ -832,8 +906,48 @@
                         if (confetti.parentElement) {
                             confetti.remove();
                         }
-                    }, 3000);
-                }, i * 50);
+                    }, 4000);
+                }, i * 30);
+            }
+            
+            // 添加烟花效果
+            createFireworksEffect();
+            
+            // 添加庆祝文字效果
+            createCelebrateTextEffect();
+        }
+        
+        // 创建庆祝文字效果
+        function createCelebrateTextEffect() {
+            const texts = ['🎉 太棒了！', '✨ 恭喜！', '🌟 厉害！', '💫 继续加油！', '🎊 真厉害！', '⭐️ 优秀！'];
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const textEl = document.createElement('div');
+                    const text = texts[Math.floor(Math.random() * texts.length)];
+                    
+                    textEl.style.cssText = `
+                        position: fixed;
+                        top: ${Math.random() * 60 + 20}vh;
+                        left: ${Math.random() * 70 + 15}vw;
+                        font-size: ${Math.random() * 10 + 20}px;
+                        font-weight: bold;
+                        color: ${['#ff6b6b', '#4ecdc4', '#feca57', '#ff9ff3', '#686de0'][Math.floor(Math.random() * 5)]};
+                        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+                        pointer-events: none;
+                        z-index: 45;
+                        animation: celebrateText 2s ease-out forwards;
+                    `;
+                    textEl.textContent = text;
+                    
+                    document.body.appendChild(textEl);
+                    
+                    setTimeout(() => {
+                        if (textEl.parentElement) {
+                            textEl.remove();
+                        }
+                    }, 2000);
+                }, i * 200);
             }
         }
         
