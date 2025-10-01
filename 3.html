@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coder - 编程挑战</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="howler.min.js"></script>
     <script src="Tone.min.js"></script>
     <script src="questions.js"></script>
@@ -453,7 +453,7 @@
                 newBadges.push({
                     id: 'first_correct',
                     name: '首次正确',
-                    icon: 'fa-star',
+                    icon: 'fas fa-star',
                     description: '完成第一道题目'
                 });
             }
@@ -463,7 +463,7 @@
                 newBadges.push({
                     id: 'streak_3',
                     name: '连续3题正确',
-                    icon: 'fa-bolt',
+                    icon: 'fas fa-bolt',
                     description: '连续答对3道题目'
                 });
             }
@@ -472,7 +472,7 @@
                 newBadges.push({
                     id: 'streak_5',
                     name: '连续5题正确',
-                    icon: 'fa-rocket',
+                    icon: 'fas fa-rocket',
                     description: '连续答对5道题目'
                 });
             }
@@ -481,7 +481,7 @@
                 newBadges.push({
                     id: 'streak_10',
                     name: '连续10题正确',
-                    icon: 'fa-fire',
+                    icon: 'fas fa-fire',
                     description: '连续答对10道题目'
                 });
             }
@@ -491,7 +491,7 @@
                 newBadges.push({
                     id: 'all_completed',
                     name: '完成所有题目',
-                    icon: 'fa-trophy',
+                    icon: 'fas fa-trophy',
                     description: '完成所有编程挑战题目'
                 });
             }
@@ -501,7 +501,7 @@
                 newBadges.push({
                     id: 'fast_learner',
                     name: '快速学习者',
-                    icon: 'fa-flash',
+                    icon: 'fas fa-bolt',
                     description: '快速完成5道题目'
                 });
             }
@@ -511,7 +511,7 @@
                 newBadges.push({
                     id: 'level_5',
                     name: '等级5',
-                    icon: 'fa-gem',
+                    icon: 'fas fa-gem',
                     description: '达到等级5'
                 });
             }
@@ -520,7 +520,7 @@
                 newBadges.push({
                     id: 'level_10',
                     name: '等级10',
-                    icon: 'fa-crown',
+                    icon: 'fas fa-crown',
                     description: '达到等级10'
                 });
             }
@@ -530,7 +530,7 @@
                 newBadges.push({
                     id: 'streak_3_days',
                     name: '连续3天',
-                    icon: 'fa-calendar',
+                    icon: 'fas fa-calendar',
                     description: '连续3天登录学习'
                 });
             }
@@ -539,7 +539,7 @@
                 newBadges.push({
                     id: 'streak_7_days',
                     name: '连续7天',
-                    icon: 'fa-calendar-check',
+                    icon: 'fas fa-calendar-check',
                     description: '连续7天登录学习'
                 });
             }
@@ -549,7 +549,7 @@
                 newBadges.push({
                     id: 'learner_1h',
                     name: '学习1小时',
-                    icon: 'fa-clock',
+                    icon: 'fas fa-clock',
                     description: '累计学习1小时'
                 });
             }
@@ -558,7 +558,7 @@
                 newBadges.push({
                     id: 'learner_5h',
                     name: '学习5小时',
-                    icon: 'fa-hourglass',
+                    icon: 'fas fa-hourglass',
                     description: '累计学习5小时'
                 });
             }
@@ -599,7 +599,7 @@
                 const animationEl = document.createElement('div');
                 animationEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 animationEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 280px; height: 280px;">
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 265px; height: 265px;">
                         <div class="text-6xl mb-4">
                             <i class="fa ${badge.icon}"></i>
                         </div>
@@ -771,7 +771,7 @@
                 const levelUpEl = document.createElement('div');
                 levelUpEl.className = 'fixed inset-0 flex items-center justify-center z-50';
                 levelUpEl.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 280px; height: 280px;">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-8 shadow-2xl text-white text-center flex flex-col justify-center items-center" style="width: 265px; height: 265px;">
                         <div class="text-6xl mb-4">🎉</div>
                         <h3 class="text-2xl font-bold mb-2">升级啦！</h3>
                         <p class="text-lg mb-2">现在你是 <span class="font-bold text-yellow-300">Lv.${level}</span></p>
