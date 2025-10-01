@@ -1452,8 +1452,11 @@
                         }
                     }
                     
-                    // 清空当前输入框
-                    input.value = '';
+                    // 确保第一个字符正确显示：不清空当前输入框
+                    // 只在当前输入框不是第一个字符时才清空
+                    if (currentIndex > 0) {
+                        input.value = '';
+                    }
                     
                     // 聚焦到下一个未填充的输入框
                     setTimeout(() => {
@@ -1493,8 +1496,11 @@
                         }
                     }
                     
-                    // 清空当前输入框
-                    input.value = '';
+                    // 确保第一个字符正确显示：不清空当前输入框
+                    // 只在当前输入框不是第一个字符时才清空
+                    if (currentIndex > 0) {
+                        input.value = '';
+                    }
                     
                     // 聚焦到下一个未填充的输入框
                     setTimeout(() => {
@@ -1734,7 +1740,7 @@
                 answerContainer.innerHTML = `
                     <div class="text-xs text-gray-500 mb-2">${question.instruction}</div>
                     <div class="space-y-2">
-                        <div class="text-sm text-gray-700">请在句子中11直接点击填空处输入内容</div>
+                        <div class="text-sm text-gray-700">请在句子中22直接点击填空处输入内容</div>
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <div id="sentence-content" class="text-sm leading-relaxed">
                                 ${question.content}
