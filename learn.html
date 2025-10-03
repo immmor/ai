@@ -2807,8 +2807,10 @@
         
         // 显示答案
         function showAnswer() {
+            // 获取当前题库的题目数组
+            const currentQuestions = getCurrentQuestions();
             const questionIndex = randomQuestions[currentRandomIndex];
-            const question = questions[questionIndex];
+            const question = currentQuestions[questionIndex];
             
             // 检查经验值是否足够
             if (xp < 10) {
@@ -3174,8 +3176,7 @@
             hintBtn.addEventListener('click', showHint);
             closeHintBtn.addEventListener('click', closeHint);
             
-            // 答案按钮
-        answerBtn.addEventListener('click', showAnswer);
+            // 答案按钮（已通过事件委托处理，此处移除重复绑定）
         closeAnswerBtn.addEventListener('click', closeAnswer);
         
         // 学习状态切换按钮
