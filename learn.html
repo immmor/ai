@@ -119,6 +119,108 @@
                 }
             }
             
+            /* 红叉动画样式 */
+            .animate-red-x {
+                animation: redXEffect 1.5s ease-out forwards;
+            }
+            
+            @keyframes redXEffect {
+                0% {
+                    transform: scale(0) rotate(0deg);
+                    opacity: 0;
+                }
+                20% {
+                    transform: scale(1.2) rotate(-10deg);
+                    opacity: 1;
+                }
+                40% {
+                    transform: scale(1) rotate(10deg);
+                    opacity: 1;
+                }
+                60% {
+                    transform: scale(1.1) rotate(-5deg);
+                    opacity: 1;
+                }
+                80% {
+                    transform: scale(1) rotate(5deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1.2) rotate(0deg);
+                    opacity: 0;
+                }
+            }
+            
+            .animate-red-x-pulse {
+                animation: redXPulse 0.6s ease-out;
+            }
+            
+            @keyframes redXPulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+                }
+                70% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+                }
+            }
+            
+            /* 绿色对钩动画样式 */
+            .animate-green-check {
+                animation: greenCheckEffect 1.5s ease-out forwards;
+            }
+            
+            @keyframes greenCheckEffect {
+                0% {
+                    transform: scale(0) rotate(-30deg);
+                    opacity: 0;
+                }
+                20% {
+                    transform: scale(1.2) rotate(10deg);
+                    opacity: 1;
+                }
+                40% {
+                    transform: scale(1) rotate(-5deg);
+                    opacity: 1;
+                }
+                60% {
+                    transform: scale(1.1) rotate(5deg);
+                    opacity: 1;
+                }
+                80% {
+                    transform: scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1.2) rotate(0deg);
+                    opacity: 0;
+                }
+            }
+            
+            .animate-green-check-pulse {
+                animation: greenCheckPulse 0.6s ease-out;
+            }
+            
+            @keyframes greenCheckPulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+                }
+                70% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+                }
+            }
+            
             /* 庆祝文字浮动动画 */
             @keyframes celebrateText {
                 0% {
@@ -1144,6 +1246,96 @@
                 synth.triggerAttackRelease("A2", "4n");
             }, 200);
         }
+        
+        // 创建炫酷红叉效果
+        function createRedXEffect() {
+            // 获取题目容器
+            const questionContainer = document.getElementById('question-container');
+            if (!questionContainer) return;
+            
+            // 创建红叉元素
+            const redX = document.createElement('div');
+            redX.className = 'fixed z-50 pointer-events-none animate-red-x';
+            redX.innerHTML = `
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-red-500 rounded-full blur-lg opacity-60"></div>
+                            <div class="relative text-red-500 text-6xl font-bold animate-red-x-pulse">
+                                ✕
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 获取题目容器位置
+            const rect = questionContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // 设置红叉位置
+            redX.style.left = centerX + 'px';
+            redX.style.top = centerY + 'px';
+            redX.style.transform = 'translate(-50%, -50%)';
+            
+            // 添加到页面
+            document.body.appendChild(redX);
+            
+            // 添加震动效果到题目容器
+            questionContainer.classList.add('animate-shake');
+            
+            // 1.5秒后移除红叉元素
+            setTimeout(() => {
+                if (redX.parentElement) {
+                    redX.remove();
+                }
+                questionContainer.classList.remove('animate-shake');
+            }, 1500);
+        }
+        
+        // 创建炫酷绿色对钩效果
+        function createGreenCheckEffect() {
+            // 获取题目容器
+            const questionContainer = document.getElementById('question-container');
+            if (!questionContainer) return;
+            
+            // 创建绿色对钩元素
+            const greenCheck = document.createElement('div');
+            greenCheck.className = 'fixed z-50 pointer-events-none animate-green-check';
+            greenCheck.innerHTML = `
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-green-500 rounded-full blur-lg opacity-60"></div>
+                            <div class="relative text-green-500 text-6xl font-bold animate-green-check-pulse">
+                                ✓
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 获取题目容器位置
+            const rect = questionContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // 设置对钩位置
+            greenCheck.style.left = centerX + 'px';
+            greenCheck.style.top = centerY + 'px';
+            greenCheck.style.transform = 'translate(-50%, -50%)';
+            
+            // 添加到页面
+            document.body.appendChild(greenCheck);
+            
+            // 1.5秒后移除对钩元素
+            setTimeout(() => {
+                if (greenCheck.parentElement) {
+                    greenCheck.remove();
+                }
+            }, 1500);
+        }
 
         // 播放升级音效
         function playLevelUpSound() {
@@ -1644,8 +1836,8 @@
                 // 如果是英文字母，可能是输入法候选词选择，不处理
             }
             
-            // 如果输入了1个字符，自动跳到下一个输入框（仅对中文字符生效）
-            else if (value.length === 1 && /[\u4e00-\u9fff]/.test(value)) {
+            // 如果输入了1个字符，自动跳到下一个输入框（对中文字符和英文字符都生效）
+            else if (value.length === 1) {
                 console.log('单字符输入，跳转到下一个输入框');
                 setTimeout(() => {
                     focusNextEmptyInput(currentIndex + 1);
@@ -2229,6 +2421,9 @@
                         // 播放错误音效
                         playWrongSound();
                         
+                        // 显示炫酷红叉效果
+                        createRedXEffect();
+                        
                         // 显示错误提示
                         showFeedback(`第${incorrectBlanks.join(',')}个填空不正确，请检查后重试`, 'error');
                         return false;
@@ -2257,6 +2452,9 @@
                     
                     // 播放正确音效
                     playCorrectSound();
+                    
+                    // 显示炫酷绿色对钩效果
+                    createGreenCheckEffect();
                     
                     // 更新统计信息
                     totalCorrectAnswers++;
@@ -2320,6 +2518,9 @@
                     
                     // 播放正确音效
                     playCorrectSound();
+                    
+                    // 显示炫酷绿色对钩效果
+                    createGreenCheckEffect();
                     
                     // 更新统计信息
                     totalCorrectAnswers++;
@@ -2394,6 +2595,9 @@
                 
                 // 播放错误音效
                 playWrongSound();
+                
+                // 显示炫酷红叉效果
+                createRedXEffect();
                 
                 // 重置连续正确计数
                 consecutiveCorrect = 0;
@@ -2497,6 +2701,8 @@
         
         // 更新按钮状态
         function updateButtons() {
+            const questionIndex = randomQuestions[currentRandomIndex];
+            
             // 上一题按钮
             if (currentRandomIndex > 0) {
                 prevBtn.disabled = false;
@@ -2506,8 +2712,8 @@
                 prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
             
-            // 下一题按钮
-            if (currentRandomIndex < randomQuestions.length - 1) {
+            // 下一题按钮：只有当前题目已答对且还有下一题时才能跳转
+            if (currentRandomIndex < randomQuestions.length - 1 && completed.includes(questionIndex)) {
                 nextBtn.disabled = false;
                 nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
@@ -2555,6 +2761,10 @@
                 if (e.target.closest('.option-hover')) {
                     const questionIndex = randomQuestions[currentRandomIndex];
                     if (questions[questionIndex].type === "select") {
+                        // 如果当前题目已经答对，则禁止重复答题
+                        if (completed.includes(questionIndex)) {
+                            return;
+                        }
                         const option = e.target.closest('.option-hover');
                         checkAnswer(option.dataset.index);
                     }
@@ -2703,6 +2913,10 @@
                 if (['1', '2', '3', '4'].includes(e.key)) {
                     const questionIndex = randomQuestions[currentRandomIndex];
                     if (questions[questionIndex].type === "select") {
+                        // 如果当前题目已经答对，则禁止重复答题
+                        if (completed.includes(questionIndex)) {
+                            return;
+                        }
                         const optionIndex = parseInt(e.key) - 1;
                         const option = document.querySelector(`.option-hover[data-index="${optionIndex}"]`);
                         if (option) {
@@ -2745,6 +2959,15 @@
                     e.preventDefault();
                     const rect = cheerBtn.getBoundingClientRect();
                     createSparkleEffect(rect.left + 20, rect.top + 10, 5);
+                }
+                
+                // X键触发勋字按钮点击（展开/收起勋章列表）
+                if (e.key === 'x' || e.key === 'X') {
+                    e.preventDefault();
+                    const badgeCollapsed = document.getElementById('badge-collapsed');
+                    if (badgeCollapsed) {
+                        badgeCollapsed.click();
+                    }
                 }
             });
             
