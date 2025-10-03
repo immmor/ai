@@ -2632,12 +2632,13 @@
                     let allCorrect = true;
                     let userAnswer = '';
                     
-                    // 遍历所有子元素（包括输入框和标点符号span）
+                    // 遍历所有子元素（包括输入框、标点符号span和换行符）
                     container.childNodes.forEach((child) => {
                         if (child.nodeType === Node.ELEMENT_NODE) {
                             if (child.tagName === 'INPUT') {
                                 // 输入框：检查字符是否正确
-                                const userChar = child.value.trim();
+                                // 对于空格输入框，不能使用trim()，需要保留空格
+                                const userChar = child.dataset.expected === ' ' ? child.value : child.value.trim();
                                 const correctChar = child.dataset.expected;
                                 
                                 // 构建用户答案
@@ -2656,10 +2657,14 @@
                             } else if (child.tagName === 'SPAN') {
                                 // 标点符号：直接添加到用户答案中
                                 userAnswer += child.textContent;
+                            } else if (child.tagName === 'BR') {
+                                // 换行符：添加到用户答案中
+                                userAnswer += '\n';
                             }
                         }
                     });
                     
+                    // 修复：现在空格也作为输入框，需要精确匹配
                     isCorrect = allCorrect && userAnswer === question.fullSentence;
                 }
             }
@@ -3828,8 +3833,8 @@
                 const isSpace = char === ' ';
                 const isNewline = char === '\n';
                 
-                if (isPunctuation || isSpace || isNewline) {
-                    // 标点符号、空格和换行符直接显示
+                if (isPunctuation || isNewline) {
+                    // 标点符号和换行符直接显示
                     const span = document.createElement('span');
                     span.className = 'inline-block text-gray-700';
                     
@@ -3847,6 +3852,28 @@
                     
                     // 在映射表中标记这个位置不是输入框
                     inputMap[charIndex] = null;
+                } else if (isSpace) {
+                    // 空格创建输入框，让用户必须输入空格
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'inline-block w-4 px-1 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary';
+                    input.dataset.id = `review-${inputIndex}`;
+                    input.dataset.expected = ' '; // 正确答案是空格
+                    input.dataset.charIndex = charIndex; // 保存字符在句子中的位置
+                    input.dataset.inputIndex = inputIndex; // 保存输入框的独立索引
+                    input.placeholder = '␣'; // 使用空格符号作为占位符
+                    input.value = '';
+                    
+                    // 添加事件监听器
+                    addStage2InputEventListener(input, inputIndex);
+                    
+                    container.appendChild(input);
+                    
+                    // 在映射表中记录输入框位置
+                    inputMap[charIndex] = inputIndex;
+                    
+                    // 递增输入框索引
+                    inputIndex++;
                 } else {
                     // 非标点符号、非空格和非换行符创建输入框
                     const input = document.createElement('input');
