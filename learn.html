@@ -393,11 +393,18 @@
 
     <!-- 答案弹窗 -->
     <div id="answer-modal" class="fixed inset-0 bg-black/20 flex items-center justify-center z-10 hidden">
-        <div class="bg-white rounded p-4 w-64">
-            <p class="text-sm mb-3" id="answer-text"></p>
-            <button id="close-answer" class="w-full py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm">
-                知道了
-            </button>
+        <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">答案</h3>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words" id="answer-text"></p>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <button id="close-answer" class="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors">
+                    知道了
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1269,10 +1276,9 @@
                 </div>
             `;
             
-            // 获取题目容器位置
-            const rect = questionContainer.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            // 计算屏幕中心位置（无论滚动到哪里都显示在屏幕中间）
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
             
             // 设置红叉位置
             redX.style.left = centerX + 'px';
@@ -1316,10 +1322,9 @@
                 </div>
             `;
             
-            // 获取题目容器位置
-            const rect = questionContainer.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            // 计算屏幕中心位置（无论滚动到哪里都显示在屏幕中间）
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
             
             // 设置对钩位置
             greenCheck.style.left = centerX + 'px';
@@ -2484,9 +2489,8 @@
                     // 检查并授予勋章
                     checkAndAwardBadges();
                     
-                    // 添加庆祝动画
-                    const rect = questionContainer.getBoundingClientRect();
-                    createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 20);
+                    // 添加庆祝动画（显示在屏幕中间）
+                    createSparkleEffect(window.innerWidth / 2, window.innerHeight / 2, 20);
                     
                     // 标记为已完成
                     if (!completed.includes(questionIndex)) {
@@ -2550,9 +2554,8 @@
                     // 检查并授予勋章
                     checkAndAwardBadges();
                     
-                    // 添加庆祝动画
-                    const rect = questionContainer.getBoundingClientRect();
-                    createSparkleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, 10);
+                    // 添加庆祝动画（显示在屏幕中间）
+                    createSparkleEffect(window.innerWidth / 2, window.innerHeight / 2, 20);
                     
                     // 标记为已完成
                     if (!completed.includes(questionIndex)) {
