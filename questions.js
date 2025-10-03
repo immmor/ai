@@ -7,10 +7,10 @@ const questions = [
                     <div><span class="text-blue-600">package</span> <span class="code-blank" data-id="1-1" data-answer="main"></span></div>
                     <div>&nbsp;</div>
                     <div><span class="text-blue-600">import</span> (</div>
-                    <div>    <span class="code-blank" data-id="1-2" data-answer="crypto/sha256"></span></div>
-                    <div>    <span class="code-blank" data-id="1-3" data-answer="encoding/hex"></span></div>
-                    <div>    <span class="code-blank" data-id="1-4" data-answer="fmt"></span></div>
-                    <div>    <span class="code-blank" data-id="1-5" data-answer="time"></span></div>
+                    <div>    \"<span class="code-blank" data-id="1-2" data-answer="crypto/sha256"></span>\"</div>
+                    <div>    \"<span class="code-blank" data-id="1-3" data-answer="encoding/hex"></span>\"</div>
+                    <div>    \"<span class="code-blank" data-id="1-4" data-answer="fmt"></span>\"</div>
+                    <div>    \"<span class="code-blank" data-id="1-5" data-answer="time"></span>\"</div>
                     <div>)</div>
                     <div>&nbsp;</div>
                     <div><span class="text-blue-600">type</span> <span class="code-blank" data-id="1-6" data-answer="Block"></span> <span class="text-blue-600">struct</span> {</div>
