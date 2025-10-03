@@ -69,5 +69,54 @@ const questionspython = [
         instruction: "填写循环关键字",
         hint: "Python中使用for循环遍历序列",
         explanation: "Python使用for关键字进行循环遍历，range(5)生成0-4的序列"
+    },
+    {
+        id: 7,
+        type: "sentence",
+        title: "Python函数定义",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="7-1" data-answer="def"></span> greet(name):</div>
+                    <div>    <span class="code-blank" data-id="7-2" data-answer="return"></span> f"Hello, {name}!"</div>
+                    <div>result = greet("World")</div>
+                    <div>print(<span class="code-blank" data-id="7-3" data-answer="result"></span>)</div>
+                </div>`,
+        instruction: "填写Python函数定义代码",
+        hint: "函数定义关键字、返回值语句和变量名",
+        explanation: "Python使用def定义函数，return返回值，调用函数后使用变量接收结果",
+        fullSentence: "def greet(name):\n    return f\"Hello, {name}!\"\nresult = greet(\"World\")\nprint(result)"
+    },
+    {
+        id: 8,
+        type: "sentence",
+        title: "Python条件语句",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>x = 10</div>
+                    <div><span class="code-blank" data-id="8-1" data-answer="if"></span> x > 5:</div>
+                    <div>    print("x大于5")</div>
+                    <div><span class="code-blank" data-id="8-2" data-answer="elif"></span> x == 5:</div>
+                    <div>    print("x等于5")</div>
+                    <div><span class="code-blank" data-id="8-3" data-answer="else"></span>:</div>
+                    <div>    print("x小于5")</div>
+                </div>`,
+        instruction: "填写Python条件语句代码",
+        hint: "条件判断关键字",
+        explanation: "Python使用if、elif和else进行条件判断",
+        fullSentence: "x = 10\nif x > 5:\n    print(\"x大于5\")\nelif x == 5:\n    print(\"x等于5\")\nelse:\n    print(\"x小于5\")"
+    },
+    {
+        id: 9,
+        type: "sentence",
+        title: "Python模块导入",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="9-1" data-answer="import"></span> math</div>
+                    <div>result = math.sqrt(16)</div>
+                    <div><span class="code-blank" data-id="9-2" data-answer="from"></span> datetime <span class="code-blank" data-id="9-3" data-answer="import"></span> datetime</div>
+                    <div>now = datetime.now()</div>
+                    <div><span class="code-blank" data-id="9-4" data-answer="import"></span> pandas <span class="code-blank" data-id="9-5" data-answer="as"></span> pd</div>
+                </div>`,
+        instruction: "填写Python模块导入代码",
+        hint: "模块导入关键字和语法",
+        explanation: "Python使用import导入模块，from...import导入特定函数，as起别名",
+        fullSentence: "import math\nresult = math.sqrt(16)\nfrom datetime import datetime\nnow = datetime.now()\nimport pandas as pd"
     }
 ];
