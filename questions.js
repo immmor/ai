@@ -4577,7 +4577,7 @@ const questions = [
         type: "sentence",
         title: "区块链概念记忆",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-4">区块链是一种<span class="code-blank" data-id="1-1" data-answer="分布式"></span>的<span class="code-blank" data-id="1-2" data-answer="账本"></span>技术，通过<span class="code-blank" data-id="1-3" data-answer="密码学"></span>保证数据的<span class="code-blank" data-id="1-4" data-answer="不可篡改"></span>和<span class="code-blank" data-id="1-5" data-answer="可追溯"></span>。</p>
+                    <p class="mb-4">区块链是一种<span class="code-blank" data-id="292-1" data-answer="分布式"></span>的<span class="code-blank" data-id="292-2" data-answer="账本"></span>技术，通过<span class="code-blank" data-id="292-3" data-answer="密码学"></span>保证数据的<span class="code-blank" data-id="292-4" data-answer="不可篡改"></span>和<span class="code-blank" data-id="292-5" data-answer="可追溯"></span>。</p>
                 </div>`,
         instruction: "填写正确的词语完成区块链概念定义",
         hint: "区块链的核心特性包括分布式、不可篡改、可追溯等",
@@ -4585,5 +4585,168 @@ const questions = [
             "区块链是一种分布式账本技术，通过密码学保证数据的不可篡改和可追溯性，这是区块链的核心概念",
         fullSentence:
             "区块链是一种分布式的账本技术，通过密码学保证数据的不可篡改和可追溯。",
+    },
+    {
+        id: 293,
+        type: "fill",
+        title: "ethclient连接创建",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="293-1" data-answer="connectToEthereum"></span>() (*ethclient.Client, error) {</div>
+                    <div>    client, err := <span class="code-blank" data-id="293-2" data-answer="ethclient"></span>.Dial("ws://localhost:8546")</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> client, nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写ethclient连接函数的关键部分",
+        hint: "使用ethclient.Dial方法连接以太坊节点",
+        explanation:
+            "connectToEthereum函数使用ethclient.Dial方法创建与以太坊节点的连接",
+    },
+    {
+        id: 294,
+        type: "fill",
+        title: "获取区块高度",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> getBlockNumber(client *ethclient.Client) (uint64, error) {</div>
+                    <div>    header, err := client.<span class="code-blank" data-id="294-1" data-answer="HeaderByNumber"></span>(context.Background(), nil)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> 0, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> header.Number.Uint64(), nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写获取区块高度的方法名",
+        hint: "使用HeaderByNumber方法获取最新区块头信息",
+        explanation:
+            "getBlockNumber函数通过HeaderByNumber方法获取当前区块高度",
+    },
+    {
+        id: 295,
+        type: "fill",
+        title: "获取账户余额",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> getBalance(client *ethclient.Client, address common.Address) (*big.Int, error) {</div>
+                    <div>    balance, err := client.<span class="code-blank" data-id="295-1" data-answer="BalanceAt"></span>(context.Background(), address, nil)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> balance, nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写获取账户余额的方法名",
+        hint: "使用BalanceAt方法查询指定地址的余额",
+        explanation:
+            "getBalance函数通过BalanceAt方法获取指定以太坊地址的余额",
+    },
+    {
+        id: 296,
+        type: "fill",
+        title: "发送交易",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> sendTransaction(client *ethclient.Client, tx *types.Transaction) error {</div>
+                    <div>    err := client.<span class="code-blank" data-id="296-1" data-answer="SendTransaction"></span>(context.Background(), tx)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写发送交易的方法名",
+        hint: "使用SendTransaction方法发送交易到网络",
+        explanation:
+            "sendTransaction函数通过SendTransaction方法将交易发送到以太坊网络",
+    },
+    {
+        id: 297,
+        type: "fill",
+        title: "字符串处理",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> processString(input string) string {</div>
+                    <div>    trimmed := <span class="code-blank" data-id="297-1" data-answer="strings"></span>.TrimSpace(input)</div>
+                    <div>    lower := <span class="code-blank" data-id="297-2" data-answer="strings"></span>.ToLower(trimmed)</div>
+                    <div>    <span class="text-blue-600">return</span> lower</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写字符串处理相关的包名",
+        hint: "使用strings包进行字符串操作",
+        explanation:
+            "processString函数使用strings包进行字符串的修剪和大小写转换",
+    },
+    {
+        id: 298,
+        type: "fill",
+        title: "JSON序列化",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> marshalData(data interface{}) ([]byte, error) {</div>
+                    <div>    jsonData, err := <span class="code-blank" data-id="298-1" data-answer="json"></span>.Marshal(data)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> jsonData, nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写JSON序列化的包名",
+        hint: "使用json包进行数据的序列化操作",
+        explanation:
+            "marshalData函数使用json包将数据序列化为JSON格式",
+    },
+    {
+        id: 299,
+        type: "fill",
+        title: "文件操作",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> readFile(filename string) ([]byte, error) {</div>
+                    <div>    data, err := <span class="code-blank" data-id="299-1" data-answer="ioutil"></span>.ReadFile(filename)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> data, nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写文件读取的包名",
+        hint: "使用ioutil包进行文件读取操作",
+        explanation:
+            "readFile函数使用ioutil包读取文件内容",
+    },
+    {
+        id: 300,
+        type: "fill",
+        title: "HTTP请求",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> makeHTTPRequest(url string) ([]byte, error) {</div>
+                    <div>    resp, err := <span class="code-blank" data-id="300-1" data-answer="http"></span>.Get(url)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">defer</span> resp.Body.Close()</div>
+                    <div>    body, err := ioutil.ReadAll(resp.Body)</div>
+                    <div>    <span class="text-blue-600">if</span> err != nil {</div>
+                    <div>        <span class="text-blue-600">return</span> nil, err</div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">return</span> body, nil</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写HTTP请求的包名",
+        hint: "使用http包进行HTTP请求操作",
+        explanation:
+            "makeHTTPRequest函数使用http包发送HTTP GET请求",
+    },
+    {
+        id: 301,
+        type: "fill",
+        title: "时间处理",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">func</span> getCurrentTime() string {</div>
+                    <div>    now := <span class="code-blank" data-id="301-1" data-answer="time"></span>.Now()</div>
+                    <div>    formatted := now.Format("2006-01-02 15:04:05")</div>
+                    <div>    <span class="text-blue-600">return</span> formatted</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写时间处理的包名",
+        hint: "使用time包进行时间相关操作",
+        explanation:
+            "getCurrentTime函数使用time包获取当前时间并格式化",
     }
 ];
