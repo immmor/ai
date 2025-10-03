@@ -349,15 +349,12 @@
                         <div class="py-1">
                             <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questions">
                                 <span>Go区块链</span>
-                                <i class="fa fa-check text-blue-500 ml-1 hidden" id="bank-check-questions"></i>
                             </button>
                             <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questionsaiagent">
                                 <span>AI Agent</span>
-                                <i class="fa fa-check text-blue-500 ml-1 hidden" id="bank-check-aiagent"></i>
                             </button>
                             <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questionspython">
                                 <span>Python编程</span>
-                                <i class="fa fa-check text-blue-500 ml-1 hidden" id="bank-check-python"></i>
                             </button>
                         </div>
                     </div>
@@ -366,7 +363,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-6 max-w-md">
+    <main class="container mx-auto px-4 py-6 max-w-md min-h-[calc(100vh-120px)]">
         <!-- 题目容器 -->
         <div class="bg-white rounded border border-gray-200 mb-6 overflow-hidden" id="question-container">
             <!-- 题目会动态加载 -->
@@ -379,32 +376,36 @@
         
         <!-- 反馈区域 -->
         <div id="feedback" class="mb-6 text-xs hidden"></div>
-        
-        <!-- 导航按钮 -->
-        <div class="flex justify-between text-xs">
-            <div class="flex space-x-3">
-                <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center">
-                    <i class="fa fa-lightbulb mr-1 text-amber-500"></i> 提示
-                </button>
-                <!-- 答案按钮 -->
-                <button id="answer-btn" class="text-gray-500 hover:text-blue-500 flex items-center">
-                    <i class="fa fa-check-circle mr-1 text-blue-500"></i> 答案
-                </button>
-                <!-- 加油按钮 -->
-                <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300 select-none">
-                    <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
-                </button>
-            </div>
-            <div class="flex space-x-3">
-                <button id="prev-btn" class="text-gray-500 hover:text-primary opacity-50 cursor-not-allowed">
-                    上一题
-                </button>
-                <button id="next-btn" class="text-gray-500 hover:text-primary">
-                    下一题
-                </button>
+    </main>
+    
+    <!-- 底部导航按钮 -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-10">
+        <div class="container mx-auto px-4 max-w-md">
+            <div class="flex justify-between text-xs">
+                <div class="flex space-x-3">
+                    <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center">
+                        <i class="fa fa-lightbulb mr-1 text-amber-500"></i> 提示
+                    </button>
+                    <!-- 答案按钮 -->
+                    <button id="answer-btn" class="text-gray-500 hover:text-blue-500 flex items-center">
+                        <i class="fa fa-check-circle mr-1 text-blue-500"></i> 答案
+                    </button>
+                    <!-- 加油按钮 -->
+                    <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300 select-none">
+                        <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
+                    </button>
+                </div>
+                <div class="flex space-x-3">
+                    <button id="prev-btn" class="text-gray-500 hover:text-primary opacity-50 cursor-not-allowed">
+                        上一题
+                    </button>
+                    <button id="next-btn" class="text-gray-500 hover:text-primary">
+                        下一题
+                    </button>
+                </div>
             </div>
         </div>
-    </main>
+    </footer>
     
     <!-- 提示弹窗 -->
     <div id="hint-modal" class="fixed inset-0 bg-black/20 flex items-center justify-center z-10 hidden">
@@ -713,15 +714,20 @@
         
         // 更新题库选择按钮的选中状态
         function updateQuestionBankSelection() {
-            // 隐藏所有选中标记
-            document.getElementById('bank-check-questions').classList.add('hidden');
-            document.getElementById('bank-check-aiagent').classList.add('hidden');
+            // 获取所有题库选项
+            const bankOptions = document.querySelectorAll('.question-bank-option');
             
-            // 显示当前选中的题库标记
-            if (currentQuestionBank === 'questions') {
-                document.getElementById('bank-check-questions').classList.remove('hidden');
-            } else {
-                document.getElementById('bank-check-aiagent').classList.remove('hidden');
+            // 重置所有选项的颜色
+            bankOptions.forEach(option => {
+                option.classList.remove('bg-blue-50', 'text-blue-600', 'font-medium');
+                option.classList.add('hover:bg-gray-100');
+            });
+            
+            // 为当前选中的题库添加颜色标记
+            const currentOption = document.querySelector(`.question-bank-option[data-bank="${currentQuestionBank}"]`);
+            if (currentOption) {
+                currentOption.classList.add('bg-blue-50', 'text-blue-600', 'font-medium');
+                currentOption.classList.remove('hover:bg-gray-100');
             }
         }
         
