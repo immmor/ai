@@ -2657,21 +2657,21 @@
                 // 填空题：从data-answer属性获取正确答案
                 const blankEl = document.querySelector('.code-blank');
                 const correctAnswer = blankEl ? blankEl.dataset.answer : '未找到答案';
-                answerText = `正确答案：${correctAnswer}`;
+                answerText = `正确答案：\n${correctAnswer}`;
             } else if (question.type === "select") {
                 // 选择题：显示正确选项
                 const correctOption = question.options[question.correct];
-                answerText = `正确答案：${correctOption}`;
+                answerText = `正确答案：\n${correctOption}`;
             } else if (question.type === "correct") {
                 // 找错题：显示错误选项
-                answerText = `错误选项：${question.correct}`;
+                answerText = `错误选项：\n${question.correct}`;
             } else if (question.type === "sentence") {
                 // 句子记忆题：显示完整句子
                 const correctSentence = question.fullSentence;
-                answerText = `完整句子：${correctSentence}`;
+                answerText = `完整句子：\n${correctSentence}`;
             } else {
                 // 其他类型题目
-                answerText = `正确答案：${question.correctAnswer || question.answer || '未找到答案'}`;
+                answerText = `正确答案：\n${question.correctAnswer || question.answer || '未找到答案'}`;
             }
             
             answerTextEl.textContent = answerText;
