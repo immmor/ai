@@ -9,6 +9,7 @@
     <script src="howler.min.js"></script>
     <script src="Tone.min.js"></script>
     <script src="questions.js"></script>
+    <script src="questionsaiagent.js"></script>
     
     <script>
         tailwind.config = {
@@ -336,7 +337,26 @@
                         </div>
                     </div>
                 </div>
-                <span class="text-xs text-gray-500" id="progress">1/5</span>
+                <!-- 题库选择 -->
+                <div class="relative">
+                    <button id="question-bank-btn" class="text-xs text-gray-500 hover:text-blue-500 flex items-center space-x-1 px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors" title="选择题库">
+                        <span>题库</span>
+                        <i class="fa fa-chevron-down text-xs"></i>
+                    </button>
+                    <!-- 题库下拉菜单 -->
+                    <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-24 bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
+                        <div class="py-1">
+                            <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questions">
+                                <span>Go区块链</span>
+                                <i class="fa fa-check text-blue-500 ml-1 hidden" id="bank-check-questions"></i>
+                            </button>
+                            <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questionsaiagent">
+                                <span>AI Agent</span>
+                                <i class="fa fa-check text-blue-500 ml-1 hidden" id="bank-check-aiagent"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -432,6 +452,7 @@
         let consecutiveCorrect = 0;
         let randomQuestions = []; // 随机题目数组
         let currentRandomIndex = 0; // 当前随机题目索引
+        let currentQuestionBank = 'questions'; // 当前题库，默认使用questions.js
         
         // 游戏化状态
         let xp = 0;
@@ -453,8 +474,6 @@
             focus: { bg: 'bg-blue-50', text: '专注模式', icon: 'fa-bolt' },
             relax: { bg: 'bg-green-50', text: '放松模式', icon: 'fa-leaf' }
         };
-        
-
         
         // DOM元素
         const questionContainer = document.getElementById('question-container');
@@ -490,6 +509,7 @@
             updateGameStats();
             startSessionTimer();
             setupBadgeToggle();
+            setupQuestionBankToggle();
             
             // 初始化音频上下文（需要用户交互）
             document.addEventListener('click', function initAudio() {
@@ -502,11 +522,14 @@
         
         // 初始化随机题目数组
         function initRandomQuestions() {
-            // 创建题目索引数组
-            const questionIndices = Array.from({length: questions.length}, (_, i) => i);
+            // 获取当前题库的题目数组
+            const currentQuestions = getCurrentQuestions();
             
-            // 确保id为1的题目（区块链概念记忆）总是第一题
-            const id1Index = questionIndices.findIndex(i => questions[i].id === 1);
+            // 创建题目索引数组
+            const questionIndices = Array.from({length: currentQuestions.length}, (_, i) => i);
+            
+            // 确保id为1的题目总是第一题
+            const id1Index = questionIndices.findIndex(i => currentQuestions[i].id === 1);
             if (id1Index !== -1 && id1Index !== 0) {
                 // 将id为1的题目移到数组开头
                 [questionIndices[0], questionIndices[id1Index]] = [questionIndices[id1Index], questionIndices[0]];
@@ -521,7 +544,12 @@
             randomQuestions = questionIndices;
             currentRandomIndex = 0;
             
-            console.log('题目顺序:', randomQuestions.map(i => questions[i].title));
+            console.log('题目顺序:', randomQuestions.map(i => currentQuestions[i].title));
+        }
+        
+        // 获取当前题库的题目数组
+        function getCurrentQuestions() {
+            return currentQuestionBank === 'questionsaiagent' ? questionsaiagent : questions;
         }
         
         // 加载勋章
@@ -609,6 +637,77 @@
             });
         }
         
+        // 设置题库选择功能
+        function setupQuestionBankToggle() {
+            const bankBtn = document.getElementById('question-bank-btn');
+            const bankMenu = document.getElementById('question-bank-menu');
+            const bankOptions = document.querySelectorAll('.question-bank-option');
+            
+            // 点击题库按钮显示/隐藏下拉菜单
+            bankBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bankMenu.classList.toggle('hidden');
+            });
+            
+            // 点击题库选项
+            bankOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const bankName = option.dataset.bank;
+                    switchQuestionBank(bankName);
+                    bankMenu.classList.add('hidden');
+                });
+            });
+            
+            // 点击页面其他地方关闭下拉菜单
+            document.addEventListener('click', () => {
+                bankMenu.classList.add('hidden');
+            });
+            
+            // 初始化选中状态
+            updateQuestionBankSelection();
+        }
+        
+        // 切换题库
+        function switchQuestionBank(bankName) {
+            if (currentQuestionBank === bankName) return;
+            
+            // 更新当前题库
+            currentQuestionBank = bankName;
+            
+            // 重置游戏状态
+            currentRandomIndex = 0;
+            completed = [];
+            totalCorrectAnswers = 0;
+            consecutiveCorrect = 0;
+            
+            // 重新初始化题目数组
+            initRandomQuestions();
+            
+            // 加载新题库的第一题
+            loadQuestion(currentRandomIndex);
+            
+            // 更新题库选择按钮的选中状态
+            updateQuestionBankSelection();
+            
+            // 显示切换成功的提示
+            showFeedback(`已切换到${bankName === 'questionsaiagent' ? 'AI Agent' : 'Go区块链'}题库`, 'success');
+        }
+        
+        // 更新题库选择按钮的选中状态
+        function updateQuestionBankSelection() {
+            // 隐藏所有选中标记
+            document.getElementById('bank-check-questions').classList.add('hidden');
+            document.getElementById('bank-check-aiagent').classList.add('hidden');
+            
+            // 显示当前选中的题库标记
+            if (currentQuestionBank === 'questions') {
+                document.getElementById('bank-check-questions').classList.remove('hidden');
+            } else {
+                document.getElementById('bank-check-aiagent').classList.remove('hidden');
+            }
+        }
+        
         // 检查并授予勋章
         function checkAndAwardBadges() {
             const newBadges = [];
@@ -652,7 +751,7 @@
             }
             
             // 完成所有题目勋章
-            if (completed.length === questions.length && !badges.find(b => b.id === 'all_completed')) {
+            if (completed.length === getCurrentQuestions().length && !badges.find(b => b.id === 'all_completed')) {
                 newBadges.push({
                     id: 'all_completed',
                     name: '完成所有题目',
@@ -900,6 +999,58 @@
             
             // 添加发光效果
             xpEl.style.boxShadow = '0 0 20px rgba(72, 187, 120, 0.6)';
+            
+            document.body.appendChild(xpEl);
+            
+            // 动画效果：向上漂浮并淡出
+            let opacity = 1;
+            let position = 80; // 初始位置
+            
+            const animate = () => {
+                opacity -= 0.02;
+                position -= 1;
+                
+                xpEl.style.opacity = opacity;
+                xpEl.style.top = `${position}px`;
+                
+                if (opacity <= 0) {
+                    if (xpEl.parentElement) {
+                        xpEl.remove();
+                    }
+                    return;
+                }
+                
+                requestAnimationFrame(animate);
+            };
+            
+            // 延迟开始动画
+            setTimeout(() => {
+                animate();
+            }, 500);
+            
+            // 2秒后强制移除（安全措施）
+            setTimeout(() => {
+                if (xpEl.parentElement) {
+                    xpEl.remove();
+                }
+            }, 2500);
+        }
+        
+        // 显示经验值扣除动画
+        function showXPLossAnimation(amount, reason) {
+            const xpEl = document.createElement('div');
+            xpEl.className = 'fixed top-20 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-full text-sm font-bold z-40 animate-bounce-in';
+            xpEl.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="text-red-200 text-lg">💸</span>
+                    <span class="font-bold">-${amount} XP</span>
+                    ${reason ? `<span class="text-red-100 text-xs">(${reason})</span>` : ''}
+                    <span class="text-red-200 text-lg">💸</span>
+                </div>
+            `;
+            
+            // 添加发光效果
+            xpEl.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)';
             
             document.body.appendChild(xpEl);
             
@@ -2004,7 +2155,7 @@
         function loadQuestion(index) {
             // 使用随机题目数组
             const questionIndex = randomQuestions[index];
-            const question = questions[questionIndex];
+            const question = getCurrentQuestions()[questionIndex];
             
             // 更新题目内容
             questionContainer.innerHTML = `
@@ -2324,7 +2475,7 @@
         // 检查答案
         function checkAnswer(answer) {
             const questionIndex = randomQuestions[currentRandomIndex];
-            const question = questions[questionIndex];
+            const question = getCurrentQuestions()[questionIndex];
             let isCorrect = false;
             let userAnswer = answer;
             
@@ -2605,6 +2756,13 @@
                 // 重置连续正确计数
                 consecutiveCorrect = 0;
                 
+                // 答错题扣除5点经验值
+                if (xp >= 5) {
+                    xp -= 5;
+                    updateGameStats();
+                    showXPLossAnimation(5, '答错题');
+                } 
+                
                 // 添加错误动画
                 questionContainer.classList.add('shake');
             setTimeout(() => {
@@ -2652,6 +2810,16 @@
             const questionIndex = randomQuestions[currentRandomIndex];
             const question = questions[questionIndex];
             
+            // 检查经验值是否足够
+            if (xp < 10) {
+                showFeedback('经验值不足，无法查看答案！', 'error');
+                return;
+            }
+            
+            // 扣除10点经验值
+            xp -= 10;
+            updateGameStats();
+            
             let answerText = '';
             if (question.type === "fill") {
                 // 填空题：从data-answer属性获取正确答案
@@ -2674,8 +2842,14 @@
                 answerText = `正确答案：\n${question.correctAnswer || question.answer || '未找到答案'}`;
             }
             
+            // 显示扣除经验值的提示
+            answerText = `查看答案消耗10点经验值\n\n${answerText}`;
+            
             answerTextEl.textContent = answerText;
             answerModal.classList.remove('hidden');
+            
+            // 显示经验值扣除动画
+            showXPLossAnimation(10, '查看答案');
         }
         
         // 关闭答案
@@ -2727,7 +2901,10 @@
         
         // 更新进度
         function updateProgress() {
-            progressEl.textContent = `${currentRandomIndex + 1}/${randomQuestions.length}`;
+            // 检查progressEl是否存在，如果不存在则不更新
+            if (progressEl) {
+                progressEl.textContent = `${currentRandomIndex + 1}/${randomQuestions.length}`;
+            }
         }
         
         // 切换学习状态
