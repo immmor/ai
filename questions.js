@@ -2,16 +2,82 @@ const questions = [
     {
         id: 1,
         type: "sentence",
-        title: "区块链概念记忆",
-        content: `<div class="p-4 text-sm">
-                    <p class="mb-4">区块链是一种<span class="code-blank" data-id="1-1" data-answer="分布式"></span>的<span class="code-blank" data-id="1-2" data-answer="账本"></span>技术，通过<span class="code-blank" data-id="1-3" data-answer="密码学"></span>保证数据的<span class="code-blank" data-id="1-4" data-answer="不可篡改"></span>和<span class="code-blank" data-id="1-5" data-answer="可追溯"></span>。</p>
+        title: "Go语言区块链完整实现",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="text-blue-600">package</span> <span class="code-blank" data-id="1-1" data-answer="main"></span></div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">import</span> (</div>
+                    <div>    <span class="code-blank" data-id="1-2" data-answer="crypto/sha256"></span></div>
+                    <div>    <span class="code-blank" data-id="1-3" data-answer="encoding/hex"></span></div>
+                    <div>    <span class="code-blank" data-id="1-4" data-answer="fmt"></span></div>
+                    <div>    <span class="code-blank" data-id="1-5" data-answer="time"></span></div>
+                    <div>)</div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">type</span> <span class="code-blank" data-id="1-6" data-answer="Block"></span> <span class="text-blue-600">struct</span> {</div>
+                    <div>    <span class="code-blank" data-id="1-7" data-answer="Index"></span>     <span class="text-blue-600">int</span></div>
+                    <div>    <span class="code-blank" data-id="1-8" data-answer="Timestamp"></span> <span class="text-blue-600">string</span></div>
+                    <div>    <span class="code-blank" data-id="1-9" data-answer="Data"></span>      <span class="text-blue-600">string</span></div>
+                    <div>    <span class="code-blank" data-id="1-10" data-answer="PrevHash"></span>  <span class="text-blue-600">string</span></div>
+                    <div>    <span class="code-blank" data-id="1-11" data-answer="Hash"></span>      <span class="text-blue-600">string</span></div>
+                    <div>}</div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">type</span> <span class="code-blank" data-id="1-12" data-answer="Blockchain"></span> []<span class="code-blank" data-id="1-13" data-answer="Block"></span></div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="1-14" data-answer="calculateHash"></span>(block <span class="code-blank" data-id="1-15" data-answer="Block"></span>) <span class="text-blue-600">string</span> {</div>
+                    <div>    record := <span class="code-blank" data-id="1-16" data-answer="fmt.Sprintf"></span>("%d%s%s%s", block.Index, block.Timestamp, block.Data, block.PrevHash)</div>
+                    <div>    h := <span class="code-blank" data-id="1-17" data-answer="sha256"></span>.New()</div>
+                    <div>    h.Write([]byte(record))</div>
+                    <div>    hashed := h.Sum(nil)</div>
+                    <div>    return <span class="code-blank" data-id="1-18" data-answer="hex"></span>.EncodeToString(hashed)</div>
+                    <div>}</div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="1-19" data-answer="generateBlock"></span>(prevBlock <span class="code-blank" data-id="1-20" data-answer="Block"></span>, data <span class="text-blue-600">string</span>) <span class="code-blank" data-id="1-21" data-answer="Block"></span> {</div>
+                    <div>    newBlock := Block{</div>
+                    <div>        Index:     prevBlock.Index + 1,</div>
+                    <div>        Timestamp: <span class="code-blank" data-id="1-22" data-answer="time"></span>.Now().Unix(),</div>
+                    <div>        Data:      data,</div>
+                    <div>        PrevHash:  prevBlock.Hash,</div>
+                    <div>    }</div>
+                    <div>    newBlock.Hash = calculateHash(newBlock)</div>
+                    <div>    return newBlock</div>
+                    <div>}</div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="1-23" data-answer="isBlockValid"></span>(newBlock, prevBlock <span class="code-blank" data-id="1-24" data-answer="Block"></span>) <span class="text-blue-600">bool</span> {</div>
+                    <div>    <span class="text-blue-600">if</span> prevBlock.Index+1 != newBlock.Index {</div>
+                    <div>        return <span class="text-blue-600">false</span></div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">if</span> prevBlock.Hash != newBlock.PrevHash {</div>
+                    <div>        return <span class="text-blue-600">false</span></div>
+                    <div>    }</div>
+                    <div>    <span class="text-blue-600">if</span> calculateHash(newBlock) != newBlock.Hash {</div>
+                    <div>        return <span class="text-blue-600">false</span></div>
+                    <div>    }</div>
+                    <div>    return <span class="text-blue-600">true</span></div>
+                    <div>}</div>
+                    <div>&nbsp;</div>
+                    <div><span class="text-blue-600">func</span> <span class="code-blank" data-id="1-25" data-answer="main"></span>() {</div>
+                    <div>    genesisBlock := Block{</div>
+                    <div>        Index:     0,</div>
+                    <div>        Timestamp: "2024-01-01 00:00:00",</div>
+                    <div>        Data:      "Genesis Block",</div>
+                    <div>        PrevHash:  "",</div>
+                    <div>    }</div>
+                    <div>    genesisBlock.Hash = calculateHash(genesisBlock)</div>
+                    <div>    blockchain := <span class="code-blank" data-id="1-26" data-answer="Blockchain"></span>{genesisBlock}</div>
+                    <div>&nbsp;</div>
+                    <div>    newBlock := generateBlock(blockchain[<span class="code-blank" data-id="1-27" data-answer="len"></span>(blockchain)-1], "Transaction Data")</div>
+                    <div>    <span class="text-blue-600">if</span> isBlockValid(newBlock, blockchain[<span class="code-blank" data-id="1-28" data-answer="len"></span>(blockchain)-1]) {</div>
+                    <div>        blockchain = <span class="code-blank" data-id="1-29" data-answer="append"></span>(blockchain, newBlock)</div>
+                    <div>        fmt.Println("Block added successfully")</div>
+                    <div>    }</div>
+                    <div>}</div>
                 </div>`,
-        instruction: "填写正确的词语完成区块链概念定义",
-        hint: "区块链的核心特性包括分布式、不可篡改、可追溯等",
+        instruction: "填写Go语言区块链完整实现代码",
+        hint: "包含包声明、导入语句、结构体定义、哈希计算、区块生成和验证函数",
         explanation:
-            "区块链是一种分布式账本技术，通过密码学保证数据的不可篡改和可追溯性，这是区块链的核心概念",
+            "这是一个完整的Go语言区块链实现，包含区块结构、哈希计算、区块生成和验证等核心功能",
         fullSentence:
-            "区块链是一种分布式的账本技术，通过密码学保证数据的不可篡改和可追溯。",
+            "package main\n\nimport (\n    \"crypto/sha256\"\n    \"encoding/hex\"\n    \"fmt\"\n    \"time\"\n)\n\ntype Block struct {\n    Index     int\n    Timestamp string\n    Data      string\n    PrevHash  string\n    Hash      string\n}\n\ntype Blockchain []Block\n\nfunc calculateHash(block Block) string {\n    record := fmt.Sprintf(\"%d%s%s%s\", block.Index, block.Timestamp, block.Data, block.PrevHash)\n    h := sha256.New()\n    h.Write([]byte(record))\n    hashed := h.Sum(nil)\n    return hex.EncodeToString(hashed)\n}\n\nfunc generateBlock(prevBlock Block, data string) Block {\n    newBlock := Block{\n        Index:     prevBlock.Index + 1,\n        Timestamp: time.Now().Unix(),\n        Data:      data,\n        PrevHash:  prevBlock.Hash,\n    }\n    newBlock.Hash = calculateHash(newBlock)\n    return newBlock\n}\n\nfunc isBlockValid(newBlock, prevBlock Block) bool {\n    if prevBlock.Index+1 != newBlock.Index {\n        return false\n    }\n    if prevBlock.Hash != newBlock.PrevHash {\n        return false\n    }\n    if calculateHash(newBlock) != newBlock.Hash {\n        return false\n    }\n    return true\n}\n\nfunc main() {\n    genesisBlock := Block{\n        Index:     0,\n        Timestamp: \"2024-01-01 00:00:00\",\n        Data:      \"Genesis Block\",\n        PrevHash:  \"\",\n    }\n    genesisBlock.Hash = calculateHash(genesisBlock)\n    blockchain := Blockchain{genesisBlock}\n\n    newBlock := generateBlock(blockchain[len(blockchain)-1], \"Transaction Data\")\n    if isBlockValid(newBlock, blockchain[len(blockchain)-1]) {\n        blockchain = append(blockchain, newBlock)\n        fmt.Println(\"Block added successfully\")\n    }\n}",
     },
     {
         id: 2,
@@ -4505,5 +4571,19 @@ const questions = [
         instruction: "填写Agent状态管理类的名称", 
         hint: "类名应该描述其功能，如AgentState或StateManager", 
         explanation: "Agent状态管理类通常命名为AgentState或类似名称，用于管理Agent的运行状态", 
+    },
+    {
+        id: 292,
+        type: "sentence",
+        title: "区块链概念记忆",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-4">区块链是一种<span class="code-blank" data-id="1-1" data-answer="分布式"></span>的<span class="code-blank" data-id="1-2" data-answer="账本"></span>技术，通过<span class="code-blank" data-id="1-3" data-answer="密码学"></span>保证数据的<span class="code-blank" data-id="1-4" data-answer="不可篡改"></span>和<span class="code-blank" data-id="1-5" data-answer="可追溯"></span>。</p>
+                </div>`,
+        instruction: "填写正确的词语完成区块链概念定义",
+        hint: "区块链的核心特性包括分布式、不可篡改、可追溯等",
+        explanation:
+            "区块链是一种分布式账本技术，通过密码学保证数据的不可篡改和可追溯性，这是区块链的核心概念",
+        fullSentence:
+            "区块链是一种分布式的账本技术，通过密码学保证数据的不可篡改和可追溯。",
     }
 ];
