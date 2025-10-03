@@ -342,19 +342,19 @@
                 <div class="relative">
                     <button id="question-bank-btn" class="text-xs text-gray-500 hover:text-blue-500 flex items-center space-x-1 px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors" title="选择题库">
                         <span>题库</span>
-                        <i class="fa fa-chevron-down text-xs"></i>
+                        <!-- <i class="fa fa-chevron-down text-xs"></i> -->
                     </button>
                     <!-- 题库下拉菜单 -->
-                    <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-24 bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
+                    <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
                         <div class="py-1">
-                            <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questions">
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questions">
                                 <span>Go区块链</span>
                             </button>
-                            <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questionsaiagent">
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsaiagent">
                                 <span>AI Agent</span>
                             </button>
-                            <button class="question-bank-option w-full text-left px-2 py-2 text-xs hover:bg-gray-100" data-bank="questionspython">
-                                <span>Python编程</span>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionspython">
+                                <span>Python</span>
                             </button>
                         </div>
                     </div>
@@ -4267,7 +4267,8 @@
                 
                 // 单字符输入的验证逻辑
                 const expected = input.dataset.expected;
-                const userInput = value.trim();
+                // 对于空格输入框，不能使用trim()，需要保留空格
+                const userInput = input.dataset.expected === ' ' ? value : value.trim();
                 
                 if (userInput === expected) {
                     // 正确：显示绿色边框
