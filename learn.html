@@ -11,6 +11,7 @@
     <script src="questions.js"></script>
     <script src="questionsaiagent.js"></script>
     <script src="questionspython.js"></script>
+    <script src="questionsreactts.js"></script>
     
     <script>
         tailwind.config = {
@@ -342,7 +343,6 @@
                 <div class="relative">
                     <button id="question-bank-btn" class="text-xs text-gray-500 hover:text-blue-500 flex items-center space-x-1 px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors" title="选择题库">
                         <span>题库</span>
-                        <!-- <i class="fa fa-chevron-down text-xs"></i> -->
                     </button>
                     <!-- 题库下拉菜单 -->
                     <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
@@ -355,6 +355,9 @@
                             </button>
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionspython">
                                 <span>Python</span>
+                            </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsreactts">
+                                <span>React</span>
                             </button>
                         </div>
                     </div>
@@ -559,6 +562,8 @@
                 return questionsaiagent;
             } else if (currentQuestionBank === 'questionspython') {
                 return questionspython;
+            } else if (currentQuestionBank === 'questionsreactts') {
+                return questionsreactts;
             } else {
                 return questions;
             }
@@ -708,6 +713,8 @@
                 bankDisplayName = 'AI Agent';
             } else if (bankName === 'questionspython') {
                 bankDisplayName = 'Python编程';
+            } else if (bankName === 'questionsreactts') {
+                bankDisplayName = 'React';
             }
             // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
         }
