@@ -1268,7 +1268,7 @@
                     <div class="absolute inset-0 flex items-center justify-center">
                         <div class="relative">
                             <div class="absolute inset-0 bg-red-500 rounded-full blur-lg opacity-60"></div>
-                            <div class="relative text-red-500 text-6xl font-bold animate-red-x-pulse">
+                            <div class="relative text-red-500 text-8xl font-bold animate-red-x-pulse">
                                 ✕
                             </div>
                         </div>
@@ -1314,7 +1314,7 @@
                     <div class="absolute inset-0 flex items-center justify-center">
                         <div class="relative">
                             <div class="absolute inset-0 bg-green-500 rounded-full blur-lg opacity-60"></div>
-                            <div class="relative text-green-500 text-6xl font-bold animate-green-check-pulse">
+                            <div class="relative text-green-500 text-8xl font-bold animate-green-check-pulse">
                                 ✓
                             </div>
                         </div>
@@ -2715,8 +2715,8 @@
                 prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
             
-            // 下一题按钮：只有当前题目已答对且还有下一题时才能跳转
-            if (currentRandomIndex < randomQuestions.length - 1 && completed.includes(questionIndex)) {
+            // 下一题按钮：只要有下一题就可以跳转（移除答对限制）
+            if (currentRandomIndex < randomQuestions.length - 1) {
                 nextBtn.disabled = false;
                 nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
