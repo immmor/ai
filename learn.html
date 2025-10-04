@@ -4,68 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>学</title>
-    
-    <!-- 静态文件缓存策略 -->
-    <meta http-equiv="Cache-Control" content="public, max-age=31536000">
-    <meta http-equiv="Expires" content="Mon, 05 Oct 2026 00:00:00 GMT">
-    
-    <!-- CDN资源（外部资源由CDN管理缓存） -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- 本地静态文件 - 添加版本控制 -->
-    <script src="howler.min.js?v=1.0"></script>
-    <script src="Tone.min.js?v=1.0"></script>
-    <script src="questions.js?v=1.0"></script>
-    <script src="questionsaiagent.js?v=1.0"></script>
-    <script src="questionspython.js?v=1.0"></script>
-    <script src="questionsreactts.js?v=1.0"></script>
+    <script src="howler.min.js"></script>
+    <script src="Tone.min.js"></script>
+    <script src="questions.js"></script>
+    <script src="questionsaiagent.js"></script>
+    <script src="questionspython.js"></script>
+    <script src="questionsreactts.js"></script>
     
     <script>
-        // Service Worker 注册 - 实现离线缓存
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('./sw.js?v=1.0').then(function(registration) {
-                    console.log('ServiceWorker 注册成功: ', registration.scope);
-                }).catch(function(error) {
-                    console.log('ServiceWorker 注册失败: ', error);
-                });
-            });
-        }
-
-        // 静态资源缓存管理 - 简化版本，避免Service Worker错误
-        const staticCacheName = 'learn-app-static-v1.0';
-        const staticAssets = [
-            './howler.min.js?v=1.0',
-            './Tone.min.js?v=1.0', 
-            './questions.js?v=1.0',
-            './questionsaiagent.js?v=1.0',
-            './questionspython.js?v=1.0',
-            './questionsreactts.js?v=1.0'
-        ];
-
-        // 预缓存静态资源 - 简化版本
-        function precacheStaticAssets() {
-            if ('caches' in window) {
-                caches.open(staticCacheName).then(cache => {
-                    // 只缓存实际存在的文件，使用相对路径
-                    const existingAssets = staticAssets.filter(asset => {
-                        // 检查文件是否存在，避免404错误
-                        return true; // 暂时假设所有文件都存在
-                    });
-                    
-                    if (existingAssets.length > 0) {
-                        return cache.addAll(existingAssets);
-                    }
-                }).catch(error => {
-                    console.log('预缓存失败（可忽略）:', error);
-                });
-            }
-        }
-
-        // 页面加载完成后开始预缓存
-        window.addEventListener('load', precacheStaticAssets);
-
         tailwind.config = {
             theme: {
                 extend: {
