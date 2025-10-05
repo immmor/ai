@@ -2217,10 +2217,21 @@
             } 
             else if (question.type === "select") {
                 let optionsHtml = '';
-                question.options.forEach((option, i) => {
+                
+                // 创建选项副本并打乱顺序
+                const shuffledOptions = [...question.options];
+                for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+                }
+                
+                // 存储打乱后的选项和原始正确选项的映射关系
+                const shuffledCorrectIndex = shuffledOptions.findIndex(option => option === question.options[question.correct]);
+                
+                shuffledOptions.forEach((option, i) => {
                     optionsHtml += `
-                        <div class="border border-gray-200 rounded p-3 mb-2 option-hover cursor-pointer" data-index="${i}">
-                            <div class="font-mono text-sm">${option}</div>
+                        <div class="border border-gray-200 rounded p-3 mb-2 option-hover cursor-pointer" data-index="${i}" data-original-index="${shuffledCorrectIndex === i ? question.correct : -1}">
+                            <div class="font-mono text-sm">${String.fromCharCode(65 + i)}. ${option}</div>
                         </div>
                     `;
                 });
@@ -2522,8 +2533,16 @@
                 isCorrect = userAnswer === correctAnswer;
             } 
             else if (question.type === "select") {
-                isCorrect = parseInt(answer) === question.correct;
-                userAnswer = question.options[parseInt(answer)];
+                // 获取用户选择的选项元素
+                const selectedOption = document.querySelector(`.option-hover[data-index="${answer}"]`);
+                if (selectedOption) {
+                    // 使用data-original-index来判断正确选项
+                    isCorrect = parseInt(selectedOption.dataset.originalIndex) === question.correct;
+                    userAnswer = question.options[parseInt(selectedOption.dataset.originalIndex)];
+                } else {
+                    isCorrect = false;
+                    userAnswer = "";
+                }
             }
             else if (question.type === "sentence") {
                 // 句子记忆题的特殊处理
@@ -2804,9 +2823,10 @@
                     }
                     // 对于选择题，标记正确选项
                     else if (question.type === "select") {
-                        document.querySelectorAll('.option-hover').forEach((el, i) => {
+                        document.querySelectorAll('.option-hover').forEach((el) => {
                             el.classList.remove('border-primary', 'bg-blue-50');
-                            if (i === question.correct) {
+                            // 使用data-original-index来判断正确选项
+                            if (parseInt(el.dataset.originalIndex) === question.correct) {
                                 el.classList.add('border-success', 'bg-green-50');
                             }
                         });
@@ -2865,7 +2885,7 @@
                 // 对于选择题，标记错误选项
                 if (question.type === "select") {
                     const selectedEl = document.querySelector(`.option-hover[data-index="${answer}"]`);
-                    selectedEl.classList.add('border-red-300', 'bg-red-50', 'shake');
+                    selectedEl.classList.add('border-primary', 'bg-blue-50', 'border-red-300', 'bg-red-50', 'shake');
                 }
             }
             
