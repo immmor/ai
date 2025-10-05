@@ -267,7 +267,7 @@ class LevelStyles {
         
         // 更新题目容器
         const questionContainer = document.getElementById('question-container');
-        questionContainer.className = `${config.questionBg} rounded ${config.questionBorder} mb-6 overflow-hidden transition-all duration-1000`;
+        questionContainer.className = `${config.questionBg} rounded ${config.questionBorder} mb-1 overflow-hidden transition-all duration-1000`;
         
         // 更新底部
         const footer = document.querySelector('footer');
