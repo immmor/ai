@@ -274,7 +274,8 @@ class LevelStyles {
         footer.className = `fixed bottom-0 left-0 right-0 ${config.footerBg} ${config.footerBorder} py-3 z-10 transition-all duration-1000`;
         
         // 应用动画效果
-        this.applyAnimations(config);
+        const isUpgrade = !suppressAnimation && this.previousLevel !== level && level > this.previousLevel;
+        this.applyAnimations(config, isUpgrade);
         
         // 应用特殊效果
         this.applySpecialEffects(config);
@@ -361,16 +362,38 @@ class LevelStyles {
     }
 
     // 应用动画效果
-    applyAnimations(config) {
+    applyAnimations(config, isUpgrade = false) {
         const levelEl = document.getElementById('level');
         
         // 移除所有动画类
         const animationClasses = ['animate-pulse', 'animate-bounce', 'animate-pulse-slow', 'animate-pulse-fast', 'animate-spin-slow', 'animate-pulse-rainbow', 'animate-glow-eternal', 'animate-divine-glow'];
         animationClasses.forEach(cls => levelEl.classList.remove(cls));
         
-        // 添加新的动画类
-        if (config.animation && config.animation !== 'none') {
-            levelEl.classList.add(`animate-${config.animation}`);
+        // 只有在升级时才添加动画效果，闪烁5次后停止
+        if (isUpgrade && config.animation && config.animation !== 'none') {
+            const animationClass = `animate-${config.animation}`;
+            
+            // 使用勋章按钮的成功闪烁逻辑
+            let flashCount = 0;
+            const maxFlashes = 5;
+            
+            const flashLevel = () => {
+                if (flashCount < maxFlashes) {
+                    // 等级图标闪烁
+                    levelEl.classList.remove(animationClass);
+                    void levelEl.offsetWidth; // 触发重绘
+                    levelEl.classList.add(animationClass);
+                    
+                    flashCount++;
+                    setTimeout(flashLevel, 1500); // 1500ms间隔，更慢的速度
+                } else {
+                    // 闪烁结束后移除动画类
+                    levelEl.classList.remove(animationClass);
+                }
+            };
+            
+            // 开始闪烁
+            setTimeout(flashLevel, 1000);
         }
     }
 
