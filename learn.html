@@ -13,6 +13,7 @@
     <script src="questionspython.js"></script>
     <script src="questionsreactts.js"></script>
     <script src="level-styles.js"></script>
+    <script src="mode.js"></script>
     
     <script>
         tailwind.config = {
@@ -523,13 +524,7 @@
         const popupQueue = [];
         let isPopupShowing = false;
         
-        // 学习状态切换系统
-        let studyMode = 'normal'; // normal, focus, relax
-        const studyModes = {
-            normal: { bg: '', text: '正常模式', icon: 'fa-star' },
-            focus: { bg: 'bg-blue-50', text: '专注模式', icon: 'fa-bolt' },
-            relax: { bg: 'bg-green-50', text: '放松模式', icon: 'fa-leaf' }
-        };
+
         
         // DOM元素
         const questionContainer = document.getElementById('question-container');
@@ -566,6 +561,11 @@
             // 初始化等级样式系统
             if (window.LevelStyles) {
                 window.levelStyles = new LevelStyles();
+            }
+            
+            // 初始化学习模式系统
+            if (window.StudyModeSystem) {
+                window.studyModeSystem = new StudyModeSystem();
             }
             
             // 初始化时抑制动画
@@ -3158,24 +3158,6 @@
             }
         }
         
-        // 切换学习状态
-        function toggleStudyMode() {
-            const modes = ['normal', 'focus', 'relax'];
-            const currentIndex = modes.indexOf(studyMode);
-            const nextIndex = (currentIndex + 1) % modes.length;
-            studyMode = modes[nextIndex];
-            
-            const modeInfo = studyModes[studyMode];
-            const modeBtn = document.getElementById('mode-btn');
-            
-            // 更新按钮显示
-            modeBtn.innerHTML = `<i class="fa ${modeInfo.icon} mr-1 text-blue-500"></i> ${modeInfo.text}`;
-            
-            // 切换背景样式
-            const container = document.querySelector('.min-h-screen');
-            container.className = `min-h-screen ${modeInfo.bg} transition-all duration-500`;
-        }
-        
         // 设置事件监听
         function setupEvents() {
             // 事件委托处理动态生成的元素
@@ -3409,7 +3391,7 @@
                 if ((e.key === 'm' || e.key === 'M' || e.code === 'KeyM') && e.shiftKey) {
                     e.preventDefault(); // 阻止默认的输入行为
                     e.stopPropagation(); // 阻止事件冒泡
-                    toggleStudyMode();
+        
                 }
                 
                 // 空格键触发加油效果
@@ -3455,16 +3437,9 @@
             // 答案按钮（已通过事件委托处理，此处移除重复绑定）
         closeAnswerBtn.addEventListener('click', closeAnswer);
         
-        // 学习状态切换按钮
-        const modeBtn = document.createElement('button');
-        modeBtn.id = 'mode-btn';
-        modeBtn.className = 'text-gray-500 hover:text-blue-500 flex items-center transition-all duration-300';
-        modeBtn.innerHTML = '<i class="fa fa-star mr-1 text-blue-500"></i> 正常模式';
-        modeBtn.addEventListener('click', toggleStudyMode);
-        
-        // 将状态切换按钮添加到导航区域
-        const navButtons = document.querySelector('.flex.space-x-3');
-        navButtons.insertBefore(modeBtn, navButtons.children[2]);
+
+            
+            // 移除模式按钮的事件监听器（已删除相关功能）
             
             // 点击弹窗背景关闭
             hintModal.addEventListener('click', (e) => {
