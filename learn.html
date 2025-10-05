@@ -252,6 +252,8 @@
                 word-break: break-all;
                 white-space: normal;
                 overflow-wrap: break-word;
+                margin-top: -0.5rem;
+                margin-bottom: 2.5rem;
             }
             
             /* 勋章容器响应式样式 */
@@ -452,11 +454,11 @@
     </footer>
     
     <!-- 提示弹窗 -->
-    <div id="hint-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-10 hidden">
-        <div class="bg-gradient-to-br from-gray-900 via-red-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-red-600">
-            <div class="p-4 border-b border-red-800 bg-red-900/30">
-                <h3 class="text-lg font-bold text-red-400 text-shadow animate-pulse">⚠️ 警告提示</h3>
-            </div>
+            <div id="hint-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-10 hidden">
+                <div class="bg-gradient-to-br from-gray-900 via-red-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-red-600">
+                    <div class="p-4 border-b border-red-800 bg-red-900/30">
+                        <h3 class="text-lg font-bold text-red-400 text-shadow">⚠️ 警告提示</h3>
+                    </div>
             <div class="flex-1 overflow-y-auto p-4 bg-gray-900/50">
                 <p class="text-sm text-red-200 whitespace-pre-wrap break-words font-mono" id="hint-text"></p>
             </div>
@@ -469,11 +471,11 @@
     </div>
 
     <!-- 答案弹窗 -->
-    <div id="answer-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-10 hidden">
-        <div class="bg-gradient-to-br from-purple-900 via-gray-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-purple-600">
-            <div class="p-4 border-b border-purple-800 bg-purple-900/30">
-                <h3 class="text-lg font-bold text-purple-300 text-shadow animate-pulse">💀 最终答案</h3>
-            </div>
+            <div id="answer-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-10 hidden">
+                <div class="bg-gradient-to-br from-purple-900 via-gray-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-purple-600">
+                    <div class="p-4 border-b border-purple-800 bg-purple-900/30">
+                        <h3 class="text-lg font-bold text-purple-300 text-shadow">💀 最终答案</h3>
+                    </div>
             <div class="flex-1 overflow-y-auto p-4 bg-gray-900/50">
                 <p class="text-sm text-purple-200 whitespace-pre-wrap break-words font-mono" id="answer-text"></p>
             </div>
