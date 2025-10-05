@@ -267,5 +267,115 @@ const questionsgomicro = [
         hint: "OpenTelemetry追踪库导入和span管理",
         explanation: "分布式追踪帮助理解微服务间的调用关系和性能瓶颈",
         fullSentence: "import \"go.opentelemetry.io/otel\"\nimport \"go.opentelemetry.io/otel/trace\"\nfunc getUserHandler(w http.ResponseWriter, r *http.Request) {\n    ctx := r.Context()\n    tracer := otel.Tracer(\"user-service\")\n    ctx, span := tracer.Start(ctx, \"get-user\")\n    defer span.End()\n    // 业务逻辑\n}"
+    },
+    {
+        id: 15,
+        type: "select",
+        title: "微服务数据一致性",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，处理跨服务数据一致性的最佳实践是什么？</p>
+                </div>`,
+        options: ["使用分布式事务", "采用最终一致性模式", "将所有数据放在一个数据库中", "避免跨服务数据操作"],
+        correct: 1,
+        explanation: "微服务架构通常采用最终一致性模式，通过事件驱动架构和Saga模式来处理跨服务数据一致性"
+    },
+    {
+        id: 16,
+        type: "select",
+        title: "微服务部署策略",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪种部署策略可以确保微服务在更新时不会中断服务？</p>
+                </div>`,
+        options: ["蓝绿部署", "滚动更新", "金丝雀发布", "所有选项都正确"],
+        correct: 3,
+        explanation: "蓝绿部署、滚动更新和金丝雀发布都是常用的零停机部署策略，可以根据具体场景选择"
+    },
+    {
+        id: 17,
+        type: "select",
+        title: "微服务安全认证",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，推荐使用哪种方式进行服务间认证？</p>
+                </div>`,
+        options: ["API密钥", "JWT令牌", "mTLS双向认证", "OAuth 2.0客户端凭证"],
+        correct: 2,
+        explanation: "mTLS（双向TLS）提供了最强的服务间认证安全性，确保只有授权的服务可以相互通信"
+    },
+    {
+        id: 18,
+        type: "select",
+        title: "微服务事件驱动",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在Go微服务中，哪种消息队列最适合处理高吞吐量的事件流？</p>
+                </div>`,
+        options: ["RabbitMQ", "Kafka", "Redis Pub/Sub", "NATS"],
+        correct: 1,
+        explanation: "Kafka专为高吞吐量、持久化的事件流设计，适合微服务架构中的事件驱动通信"
+    },
+    {
+        id: 19,
+        type: "select",
+        title: "微服务测试策略",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务测试金字塔中，哪种测试应该占最大比例？</p>
+                </div>`,
+        options: ["端到端测试", "集成测试", "单元测试", "契约测试"],
+        correct: 2,
+        explanation: "单元测试应该占测试金字塔的最大比例，因为它们运行快、成本低，能够快速反馈代码质量"
+    },
+    {
+        id: 20,
+        type: "select",
+        title: "微服务服务网格",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，服务网格（Service Mesh）主要负责处理什么？</p>
+                </div>`,
+        options: ["业务逻辑", "服务间通信的网络层", "数据库操作", "用户界面渲染"],
+        correct: 1,
+        explanation: "服务网格专门处理服务间的网络通信，包括负载均衡、服务发现、安全认证、监控等基础设施功能"
+    },
+    {
+        id: 21,
+        type: "select",
+        title: "微服务配置管理",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在Go微服务中，哪种配置管理方式最适合动态配置更新？</p>
+                </div>`,
+        options: ["环境变量", "配置文件", "配置中心", "硬编码在代码中"],
+        correct: 2,
+        explanation: "配置中心（如Consul、Etcd、Apollo）支持动态配置更新，无需重启服务即可应用新配置"
+    },
+    {
+        id: 22,
+        type: "select",
+        title: "微服务性能优化",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在Go微服务中，哪种技术最适合减少服务间调用的延迟？</p>
+                </div>`,
+        options: ["使用HTTP/1.1", "使用gRPC", "增加更多的日志", "使用同步阻塞调用"],
+        correct: 1,
+        explanation: "gRPC基于HTTP/2协议，支持多路复用和头部压缩，能显著减少服务间调用的延迟"
+    },
+    {
+        id: 23,
+        type: "select",
+        title: "微服务容错机制",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，哪种模式用于处理服务调用失败的情况？</p>
+                </div>`,
+        options: ["重试模式", "熔断器模式", "超时模式", "所有选项都正确"],
+        correct: 3,
+        explanation: "重试、熔断器和超时都是微服务中常用的容错机制，可以组合使用来提高系统稳定性"
+    },
+    {
+        id: 24,
+        type: "select",
+        title: "微服务监控指标",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务监控中，哪个指标最能反映服务的健康状态？</p>
+                </div>`,
+        options: ["CPU使用率", "内存使用量", "请求成功率", "所有指标都很重要"],
+        correct: 3,
+        explanation: "微服务监控需要综合多个指标，包括CPU、内存、网络、请求成功率等，才能全面反映服务健康状态"
     }
 ];
