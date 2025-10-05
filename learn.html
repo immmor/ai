@@ -12,6 +12,7 @@
     <script src="questionsaiagent.js"></script>
     <script src="questionspython.js"></script>
     <script src="questionsreactts.js"></script>
+    <script src="questionsgomicro.js"></script>
     <script src="level-styles.js"></script>
     <script src="mode.js"></script>
     
@@ -402,6 +403,9 @@
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsreactts">
                                 <span>React</span>
                             </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsgomicro">
+                                <span>Go微服务</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -620,6 +624,8 @@
                 return questionspython;
             } else if (currentQuestionBank === 'questionsreactts') {
                 return questionsreactts;
+            } else if (currentQuestionBank === 'questionsgomicro') {
+                return questionsgomicro;
             } else {
                 return questions;
             }
@@ -769,6 +775,8 @@
                 bankDisplayName = 'Python编程';
             } else if (bankName === 'questionsreactts') {
                 bankDisplayName = 'React';
+            } else if (bankName === 'questionsgomicro') {
+                bankDisplayName = 'Go微服务';
             }
             // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
         }
@@ -1485,6 +1493,11 @@
             const notes = ["C5", "D5", "E5", "F5", "G5"];
             const randomNote = notes[Math.floor(Math.random() * notes.length)];
             synth.triggerAttackRelease(randomNote, "16n");
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 500);
         }
 
         // 播放正确答题音效
@@ -1509,6 +1522,11 @@
             setTimeout(() => {
                 synth.triggerAttackRelease("G6", "8n");
             }, 200);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 1000);
         }
 
         // 播放错误答题音效
@@ -1530,6 +1548,11 @@
             setTimeout(() => {
                 synth.triggerAttackRelease("A2", "4n");
             }, 200);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 1000);
         }
         
         // 创建炫酷红叉效果
@@ -1645,6 +1668,11 @@
             setTimeout(() => {
                 synth.triggerAttackRelease("C6", "8n");
             }, 300);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 1500);
         }
 
         // 播放获得勋章音效
@@ -1672,6 +1700,11 @@
             setTimeout(() => {
                 synth.triggerAttackRelease("E7", "16n");
             }, 150);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 1000);
         }
         
         // 播放加油音效 - 全新激励版本
@@ -1732,12 +1765,24 @@
             setTimeout(() => {
                 const drumSynth = new Tone.MembraneSynth().toDestination();
                 drumSynth.triggerAttackRelease("C2", "16n");
+                setTimeout(() => {
+                    drumSynth.dispose();
+                }, 500);
             }, 150);
             
             setTimeout(() => {
                 const drumSynth = new Tone.MembraneSynth().toDestination();
                 drumSynth.triggerAttackRelease("C2", "16n");
+                setTimeout(() => {
+                    drumSynth.dispose();
+                }, 500);
             }, 350);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                leadSynth.dispose();
+                bassSynth.dispose();
+            }, 2000);
         }
         
         // 创建烟花效果
@@ -1891,6 +1936,11 @@
             setTimeout(() => {
                 synth.triggerAttackRelease("C6", "16n");
             }, 100);
+            
+            // 播放完成后释放资源
+            setTimeout(() => {
+                synth.dispose();
+            }, 500);
         }
         
         // 创建迷你烟花效果
@@ -3038,6 +3088,11 @@
                     
                     const synth = new Tone.Synth().toDestination();
                     synth.triggerAttackRelease("A4", "8n"); // 提示音效
+                    
+                    // 播放完成后释放资源
+                    setTimeout(() => {
+                        synth.dispose();
+                    }, 500);
                 }
             } catch (e) {
                 // 忽略音效错误
@@ -3099,6 +3154,11 @@
                     
                     const synth = new Tone.Synth().toDestination();
                     synth.triggerAttackRelease("C5", "4n"); // 答案音效
+                    
+                    // 播放完成后释放资源
+                    setTimeout(() => {
+                        synth.dispose();
+                    }, 1000);
                 }
             } catch (e) {
                 // 忽略音效错误
