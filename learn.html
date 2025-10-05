@@ -3002,7 +3002,7 @@
         }
         
         // 显示提示
-        function showHint() {
+        async function showHint() {
             // 检查经验值是否足够
             if (xp >= 2) {
                 // 扣除2点经验值
@@ -3026,6 +3026,22 @@
                 return;
             }
             
+            // 播放提示音效
+            try {
+                if (window.Tone) {
+                    // 确保 Tone.js 上下文已启动
+                    if (Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("A4", "8n"); // 提示音效
+                }
+            } catch (e) {
+                // 忽略音效错误
+                console.log('提示音效播放失败:', e);
+            }
+            
             // 获取当前题库的题目数组
             const currentQuestions = getCurrentQuestions();
             const questionIndex = randomQuestions[currentRandomIndex];
@@ -3042,7 +3058,7 @@
         }
         
         // 显示答案
-        function showAnswer() {
+        async function showAnswer() {
             // 获取当前题库的题目数组
             const currentQuestions = getCurrentQuestions();
             const questionIndex = randomQuestions[currentRandomIndex];
@@ -3069,6 +3085,22 @@
                 // 等级为1且经验值不足
                 showFeedback('经验值不足，无法查看答案！', 'error');
                 return;
+            }
+            
+            // 播放答案音效
+            try {
+                if (window.Tone) {
+                    // 确保 Tone.js 上下文已启动
+                    if (Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("C5", "4n"); // 答案音效
+                }
+            } catch (e) {
+                // 忽略音效错误
+                console.log('答案音效播放失败:', e);
             }
             
             let answerText = '';
