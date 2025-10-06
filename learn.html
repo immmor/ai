@@ -15,6 +15,8 @@
     <script src="questionsgomicro.js"></script>
     <script src="questionscrypto.js"></script>
     <script src="questionscontract.js"></script>
+    <script src="questionsenglish.js"></script>
+    <script src="questionsstock.js"></script>
     <script src="level-styles.js"></script>
     <script src="mode.js"></script>
     
@@ -414,6 +416,12 @@
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionscontract">
                                 <span>智能合约</span>
                             </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsenglish">
+                                <span>英语学习</span>
+                            </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsstock">
+                                <span>股票投资</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -638,6 +646,10 @@
                 return questionscrypto;
             } else if (currentQuestionBank === 'questionscontract') {
                 return questionscontract;
+            } else if (currentQuestionBank === 'questionsenglish') {
+                return questionsenglish;
+            } else if (currentQuestionBank === 'questionsstock') {
+                return questionsstock;
             } else {
                 return questions;
             }
