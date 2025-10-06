@@ -4,7 +4,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务架构基础",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在Go微服务架构中，哪个框架最常用于服务发现和配置管理？</p>
+                    <p>在Go微服务架构中，哪个框架最常用于服务发现和配置管理？</p>
                 </div>`,
         options: ["Consul", "Etcd", "ZooKeeper", "所有选项都正确"],
         correct: 3,
@@ -60,7 +60,7 @@ const questionsgomicro = [
         type: "select",
         title: "服务间通信",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在Go微服务架构中，哪种通信协议最适合高性能的内部服务调用？</p>
+                    <p>在Go微服务架构中，哪种通信协议最适合高性能的内部服务调用？</p>
                 </div>`,
         options: ["REST/JSON", "gRPC", "GraphQL", "WebSocket"],
         correct: 1,
@@ -273,7 +273,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务数据一致性",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，处理跨服务数据一致性的最佳实践是什么？</p>
+                    <p>在微服务架构中，处理跨服务数据一致性的最佳实践是什么？</p>
                 </div>`,
         options: ["使用分布式事务", "采用最终一致性模式", "将所有数据放在一个数据库中", "避免跨服务数据操作"],
         correct: 1,
@@ -284,7 +284,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务部署策略",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪种部署策略可以确保微服务在更新时不会中断服务？</p>
+                    <p>哪种部署策略可以确保微服务在更新时不会中断服务？</p>
                 </div>`,
         options: ["蓝绿部署", "滚动更新", "金丝雀发布", "所有选项都正确"],
         correct: 3,
@@ -295,7 +295,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务安全认证",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，推荐使用哪种方式进行服务间认证？</p>
+                    <p>在微服务架构中，推荐使用哪种方式进行服务间认证？</p>
                 </div>`,
         options: ["API密钥", "JWT令牌", "mTLS双向认证", "OAuth 2.0客户端凭证"],
         correct: 2,
@@ -306,7 +306,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务事件驱动",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在Go微服务中，哪种消息队列最适合处理高吞吐量的事件流？</p>
+                    <p>在Go微服务中，哪种消息队列最适合处理高吞吐量的事件流？</p>
                 </div>`,
         options: ["RabbitMQ", "Kafka", "Redis Pub/Sub", "NATS"],
         correct: 1,
@@ -317,7 +317,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务测试策略",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务测试金字塔中，哪种测试应该占最大比例？</p>
+                    <p>在微服务测试金字塔中，哪种测试应该占最大比例？</p>
                 </div>`,
         options: ["端到端测试", "集成测试", "单元测试", "契约测试"],
         correct: 2,
@@ -328,7 +328,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务服务网格",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，服务网格（Service Mesh）主要负责处理什么？</p>
+                    <p>在微服务架构中，服务网格（Service Mesh）主要负责处理什么？</p>
                 </div>`,
         options: ["业务逻辑", "服务间通信的网络层", "数据库操作", "用户界面渲染"],
         correct: 1,
@@ -339,7 +339,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务配置管理",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在Go微服务中，哪种配置管理方式最适合动态配置更新？</p>
+                    <p>在Go微服务中，哪种配置管理方式最适合动态配置更新？</p>
                 </div>`,
         options: ["环境变量", "配置文件", "配置中心", "硬编码在代码中"],
         correct: 2,
@@ -350,7 +350,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务性能优化",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在Go微服务中，哪种技术最适合减少服务间调用的延迟？</p>
+                    <p>在Go微服务中，哪种技术最适合减少服务间调用的延迟？</p>
                 </div>`,
         options: ["使用HTTP/1.1", "使用gRPC", "增加更多的日志", "使用同步阻塞调用"],
         correct: 1,
@@ -361,7 +361,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务容错机制",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，哪种模式用于处理服务调用失败的情况？</p>
+                    <p>在微服务架构中，哪种模式用于处理服务调用失败的情况？</p>
                 </div>`,
         options: ["重试模式", "熔断器模式", "超时模式", "所有选项都正确"],
         correct: 3,
@@ -372,7 +372,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务监控指标",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务监控中，哪个指标最能反映服务的健康状态？</p>
+                    <p>在微服务监控中，哪个指标最能反映服务的健康状态？</p>
                 </div>`,
         options: ["CPU使用率", "内存使用量", "请求成功率", "所有指标都很重要"],
         correct: 3,
@@ -383,7 +383,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务API设计",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务API设计中，哪种API风格最适合内部服务间的通信？</p>
+                    <p>在微服务API设计中，哪种API风格最适合内部服务间的通信？</p>
                 </div>`,
         options: ["RESTful API", "gRPC", "GraphQL", "SOAP"],
         correct: 1,
@@ -394,7 +394,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务数据库设计",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，数据库设计应该遵循什么原则？</p>
+                    <p>在微服务架构中，数据库设计应该遵循什么原则？</p>
                 </div>`,
         options: ["每个服务使用独立的数据库", "所有服务共享一个数据库", "根据业务需求混合使用", "避免使用数据库"],
         correct: 0,
@@ -405,7 +405,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务版本管理",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务架构中，如何处理API的版本兼容性问题？</p>
+                    <p>在微服务架构中，如何处理API的版本兼容性问题？</p>
                 </div>`,
         options: ["使用URL版本控制", "使用请求头版本控制", "同时运行多个版本", "所有选项都正确"],
         correct: 3,
@@ -416,7 +416,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务团队组织",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪种团队组织结构最适合微服务架构？</p>
+                    <p>哪种团队组织结构最适合微服务架构？</p>
                 </div>`,
         options: ["功能团队", "跨职能团队", "项目团队", "康威定律团队"],
         correct: 1,
@@ -427,7 +427,7 @@ const questionsgomicro = [
         type: "select",
         title: "微服务监控告警",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">在微服务监控中，哪种告警策略最有效？</p>
+                    <p>在微服务监控中，哪种告警策略最有效？</p>
                 </div>`,
         options: ["基于阈值的告警", "基于异常检测的告警", "基于趋势分析的告警", "综合使用多种告警策略"],
         correct: 3,
