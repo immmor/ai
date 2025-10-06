@@ -4,7 +4,7 @@ const questionsreactts = [
         type: "select",
         title: "React TypeScript基础",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">React TypeScript中哪个关键字用于定义组件类型？</p>
+                    <p>React TypeScript中哪个关键字用于定义组件类型？</p>
                 </div>`,
         options: ["React.FC", "Component", "FunctionComponent", "ReactComponent"],
         correct: 0,
@@ -59,7 +59,7 @@ const questionsreactts = [
         type: "select",
         title: "React TypeScript Hook类型",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">React TypeScript中useEffect Hook的返回值类型是什么？</p>
+                    <p>React TypeScript中useEffect Hook的返回值类型是什么？</p>
                 </div>`,
         options: ["void", "undefined", "() => void", "Promise<void>"],
         correct: 0,
