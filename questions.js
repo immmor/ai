@@ -84,7 +84,7 @@ const questions = [
         type: "select",
         title: "结构体定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的区块结构体定义？</p>
+                    <p>哪个选项是正确的区块结构体定义？</p>
                 </div>`,
         options: [
             `type Block { Data string }`,
@@ -152,7 +152,7 @@ const questions = [
         type: "select",
         title: "创建区块",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确创建了一个新区块？</p>
+                    <p>哪个选项正确创建了一个新区块？</p>
                 </div>`,
         options: [
             `newBlock = Block{"交易数据"}`,
@@ -209,7 +209,7 @@ const questions = [
         type: "select",
         title: "哈希计算",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确计算字符串的SHA-256哈希？</p>
+                    <p>哪个选项正确计算字符串的SHA-256哈希？</p>
                 </div>`,
         options: [
             `hash := sha256.Hash("data")`,
@@ -241,7 +241,7 @@ const questions = [
         type: "select",
         title: "时间戳导入",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个包用于获取当前时间戳？</p>
+                    <p>哪个包用于获取当前时间戳？</p>
                 </div>`,
         options: [`"time"`, `"timestamp"`, `"datetime"`, `"clock"`],
         correct: 0,
@@ -298,7 +298,7 @@ const questions = [
         type: "select",
         title: "创世区块",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">创世区块的PrevHash应该是什么？</p>
+                    <p>创世区块的PrevHash应该是什么？</p>
                 </div>`,
         options: [`空字符串""`, `"0"`, `当前区块的哈希`, `随机字符串`],
         correct: 0,
@@ -364,7 +364,7 @@ const questions = [
         type: "select",
         title: "添加区块到链",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项正确地将新区块添加到区块链？</p>
+                    <p>哪个选项正确地将新区块添加到区块链？</p>
                 </div>`,
         options: [
             `blockchain = append(blockchain, newBlock)`,
@@ -392,7 +392,7 @@ const questions = [
         type: "select",
         title: "合约定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的Solidity合约定义？</p>
+                    <p>哪个选项是正确的Solidity合约定义？</p>
                 </div>`,
         options: [
             `contract MyContract {}`,
@@ -440,7 +440,7 @@ const questions = [
         type: "select",
         title: "构造函数",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的Solidity构造函数定义？</p>
+                    <p>哪个选项是正确的Solidity构造函数定义？</p>
                 </div>`,
         options: [
             `function Constructor() {}`,
@@ -489,7 +489,7 @@ const questions = [
         type: "select",
         title: "映射定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的用户余额映射定义？</p>
+                    <p>哪个选项是正确的用户余额映射定义？</p>
                 </div>`,
         options: [
             `mapping(address => uint256) balances;`,
@@ -535,7 +535,7 @@ const questions = [
         type: "select",
         title: "继承语法",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的Solidity合约继承语法？</p>
+                    <p>哪个选项是正确的Solidity合约继承语法？</p>
                 </div>`,
         options: [
             `contract Child extend Parent {}`,
@@ -586,7 +586,7 @@ const questions = [
         type: "select",
         title: "数组定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的动态数组定义？</p>
+                    <p>哪个选项是正确的动态数组定义？</p>
                 </div>`,
         options: [
             `uint[5] numbers;`,
@@ -636,7 +636,7 @@ const questions = [
         type: "select",
         title: "枚举定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的枚举定义？</p>
+                    <p>哪个选项是正确的枚举定义？</p>
                 </div>`,
         options: [
             `enum Status { Pending, Approved, Rejected }`,
@@ -685,7 +685,7 @@ const questions = [
         type: "select",
         title: "库定义",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">哪个选项是正确的库定义？</p>
+                    <p>哪个选项是正确的库定义？</p>
                 </div>`,
         options: [
             `library MathLib {}`,
@@ -702,7 +702,7 @@ const questions = [
         type: "select",
         title: "EVM位数",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以太坊虚拟机（EVM）是多少位的虚拟机？</p>
+            <p>以太坊虚拟机（EVM）是多少位的虚拟机？</p>
         </div>`,
         options: ["8位", "32位", "64位", "256位"],
         correct: 3,
@@ -725,7 +725,7 @@ const questions = [
         type: "select",
         title: "EVM存储类型",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪种不是EVM中的数据存储区域？</p>
+            <p>以下哪种不是EVM中的数据存储区域？</p>
         </div>`,
         options: [
             "Stack（栈）",
@@ -771,7 +771,7 @@ const questions = [
         type: "select",
         title: "字节码类型",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">部署到EVM的合约代码通常是什么形式？</p>
+            <p>部署到EVM的合约代码通常是什么形式？</p>
         </div>`,
         options: ["Solidity源代码", "字节码（Bytecode）", "汇编代码", "机器码"],
         correct: 1,
@@ -795,7 +795,7 @@ const questions = [
         type: "select",
         title: "Storage特性",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">关于EVM的Storage（存储），以下哪项描述正确？</p>
+            <p>关于EVM的Storage（存储），以下哪项描述正确？</p>
         </div>`,
         options: [
             "临时存储，交易结束后清除",
@@ -840,7 +840,7 @@ const questions = [
         type: "select",
         title: "Opcode功能",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">EVM中，SLOAD指令的功能是什么？</p>
+            <p>EVM中，SLOAD指令的功能是什么？</p>
         </div>`,
         options: [
             "从Storage读取数据",
@@ -869,7 +869,7 @@ const questions = [
         type: "select",
         title: "异常处理",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">EVM中，当发生错误（如gas不足）时会如何处理？</p>
+            <p>EVM中，当发生错误（如gas不足）时会如何处理？</p>
         </div>`,
         options: [
             "返回错误代码，继续执行",
@@ -915,7 +915,7 @@ const questions = [
         type: "select",
         title: "SHA3指令",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">EVM中，SHA3指令实现了哪种哈希算法？</p>
+            <p>EVM中，SHA3指令实现了哪种哈希算法？</p>
         </div>`,
         options: ["SHA-1", "SHA-256", "Keccak-256", "MD5"],
         correct: 2,
@@ -939,7 +939,7 @@ const questions = [
         type: "select",
         title: "日志功能",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">EVM中，哪个指令用于创建日志（事件）？</p>
+            <p>EVM中，哪个指令用于创建日志（事件）？</p>
         </div>`,
         options: ["LOG", "EVENT", "LOG0至LOG4", "EMIT"],
         correct: 2,
@@ -963,7 +963,7 @@ const questions = [
         type: "select",
         title: "预编译合约",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪项不是EVM中的预编译合约？</p>
+            <p>以下哪项不是EVM中的预编译合约？</p>
         </div>`,
         options: [
             "SHA256哈希计算",
@@ -980,7 +980,7 @@ const questions = [
         type: "select",
         title: "区块链本质",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链最本质的特征是什么？</p>
+            <p>区块链最本质的特征是什么？</p>
         </div>`,
         options: [
             "一种加密货币",
@@ -1009,7 +1009,7 @@ const questions = [
         type: "select",
         title: "区块组成",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">一个典型的区块不包含以下哪项？</p>
+            <p>一个典型的区块不包含以下哪项？</p>
         </div>`,
         options: ["区块头", "交易数据", "前一区块哈希", "矿工私钥"],
         correct: 3,
@@ -1050,7 +1050,7 @@ const questions = [
         type: "select",
         title: "去中心化意义",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链的去中心化设计主要是为了实现什么？</p>
+            <p>区块链的去中心化设计主要是为了实现什么？</p>
         </div>`,
         options: [
             "提高交易速度",
@@ -1079,7 +1079,7 @@ const questions = [
         type: "select",
         title: "工作量证明",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪项是工作量证明（PoW）的特点？</p>
+            <p>以下哪项是工作量证明（PoW）的特点？</p>
         </div>`,
         options: [
             "能耗低",
@@ -1125,7 +1125,7 @@ const questions = [
         type: "select",
         title: "公有链特点",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">公有链的主要特点是什么？</p>
+            <p>公有链的主要特点是什么？</p>
         </div>`,
         options: [
             "仅限授权节点访问",
@@ -1154,7 +1154,7 @@ const questions = [
         type: "select",
         title: "联盟链特点",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">联盟链最显著的特点是什么？</p>
+            <p>联盟链最显著的特点是什么？</p>
         </div>`,
         options: [
             "完全去中心化",
@@ -1200,7 +1200,7 @@ const questions = [
         type: "select",
         title: "区块链分叉",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链分叉是指什么？</p>
+            <p>区块链分叉是指什么？</p>
         </div>`,
         options: [
             "区块链数据损坏",
@@ -1229,7 +1229,7 @@ const questions = [
         type: "select",
         title: "账户模型vs UTXO",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪项是账户模型与UTXO模型的主要区别？</p>
+            <p>以下哪项是账户模型与UTXO模型的主要区别？</p>
         </div>`,
         options: [
             "账户模型记录余额，UTXO模型追踪交易输出",
@@ -1275,7 +1275,7 @@ const questions = [
         type: "select",
         title: "权益证明",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">权益证明（PoS）的核心思想是什么？</p>
+            <p>权益证明（PoS）的核心思想是什么？</p>
         </div>`,
         options: [
             "计算能力越强，验证权越大",
@@ -1304,7 +1304,7 @@ const questions = [
         type: "select",
         title: "跨链技术",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">跨链技术的主要目的是什么？</p>
+            <p>跨链技术的主要目的是什么？</p>
         </div>`,
         options: [
             "提高单个区块链的安全性",
@@ -1350,7 +1350,7 @@ const questions = [
         type: "select",
         title: "51%攻击",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">51%攻击是指什么？</p>
+            <p>51%攻击是指什么？</p>
         </div>`,
         options: [
             "黑客控制了51%的用户账户",
@@ -1379,7 +1379,7 @@ const questions = [
         type: "select",
         title: "代币类型",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪项不属于常见的区块链代币类型？</p>
+            <p>以下哪项不属于常见的区块链代币类型？</p>
         </div>`,
         options: [
             "原生代币（Native Token）",
@@ -1425,7 +1425,7 @@ const questions = [
         type: "select",
         title: "侧链技术",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">侧链技术的主要目的是什么？</p>
+            <p>侧链技术的主要目的是什么？</p>
         </div>`,
         options: [
             "提高主链的安全性",
@@ -1454,7 +1454,7 @@ const questions = [
         type: "select",
         title: "Layer 2解决方案",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪项不属于Layer 2解决方案？</p>
+            <p>以下哪项不属于Layer 2解决方案？</p>
         </div>`,
         options: [
             "状态通道（State Channels）",
@@ -1500,7 +1500,7 @@ const questions = [
         type: "select",
         title: "分布式账本",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">分布式账本与传统中心化账本的主要区别是什么？</p>
+            <p>分布式账本与传统中心化账本的主要区别是什么？</p>
         </div>`,
         options: [
             "分布式账本存储容量更大",
@@ -1529,7 +1529,7 @@ const questions = [
         type: "select",
         title: "时间戳作用",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链中时间戳的主要作用是什么？</p>
+            <p>区块链中时间戳的主要作用是什么？</p>
         </div>`,
         options: [
             "提高交易速度",
@@ -1575,7 +1575,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在Go语言中，哪个关键字用于创建goroutine？</p>
+            <p>在Go语言中，哪个关键字用于创建goroutine？</p>
         </div>`,
         options: ["thread", "goroutine", "go", "async"],
         correct: 2,
@@ -1598,7 +1598,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个是无缓冲channel的特点？</p>
+            <p>以下哪个是无缓冲channel的特点？</p>
         </div>`,
         options: [
             "发送操作会立即返回",
@@ -1646,7 +1646,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">sync.WaitGroup的作用是什么？</p>
+            <p>sync.WaitGroup的作用是什么？</p>
         </div>`,
         options: [
             "保护共享资源不被并发访问",
@@ -1681,7 +1681,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个方法用于减少sync.WaitGroup的计数器？</p>
+            <p>以下哪个方法用于减少sync.WaitGroup的计数器？</p>
         </div>`,
         options: ["wg.Dec()", "wg.Done()", "wg.Sub()", "wg.Minus()"],
         correct: 1,
@@ -1732,7 +1732,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">sync.Mutex的作用是什么？</p>
+            <p>sync.Mutex的作用是什么？</p>
         </div>`,
         options: [
             "实现goroutine间的消息传递",
@@ -1768,7 +1768,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">关于sync.RWMutex，以下描述正确的是？</p>
+            <p>关于sync.RWMutex，以下描述正确的是？</p>
         </div>`,
         options: [
             "只允许一个goroutine同时读取",
@@ -1823,7 +1823,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个函数可以用于从channel中接收数据并判断channel是否已关闭？</p>
+            <p>以下哪个函数可以用于从channel中接收数据并判断channel是否已关闭？</p>
         </div>`,
         options: ["recv(ch)", "ch.Receive()", "data, ok := <-ch", "read(ch)"],
         correct: 2,
@@ -1854,7 +1854,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">关于select语句，以下描述错误的是？</p>
+            <p>关于select语句，以下描述错误的是？</p>
         </div>`,
         options: [
             "select可以同时等待多个channel操作",
@@ -1913,7 +1913,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">sync.Once的作用是什么？</p>
+            <p>sync.Once的作用是什么？</p>
         </div>`,
         options: [
             "确保代码块只执行一次，即使在并发环境下",
@@ -1951,7 +1951,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个方法可以用于设置goroutine的超时？</p>
+            <p>以下哪个方法可以用于设置goroutine的超时？</p>
         </div>`,
         options: [
             "time.Out()",
@@ -2020,7 +2020,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">context.Context的主要作用是什么？</p>
+            <p>context.Context的主要作用是什么？</p>
         </div>`,
         options: [
             "存储全局变量",
@@ -2057,7 +2057,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪种情况会导致goroutine泄漏？</p>
+            <p>以下哪种情况会导致goroutine泄漏？</p>
         </div>`,
         options: [
             "goroutine正常执行完毕并退出",
@@ -2123,7 +2123,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个是控制并发数量的常用模式？</p>
+            <p>以下哪个是控制并发数量的常用模式？</p>
         </div>`,
         options: [
             "使用带缓冲channel作为信号量",
@@ -2163,7 +2163,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">关于原子操作（sync/atomic包），以下描述正确的是？</p>
+            <p>关于原子操作（sync/atomic包），以下描述正确的是？</p>
         </div>`,
         options: [
             "原子操作比互斥锁性能低",
@@ -2215,7 +2215,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪个函数可以用于从channel中接收所有数据直到channel关闭？</p>
+            <p>以下哪个函数可以用于从channel中接收所有数据直到channel关闭？</p>
         </div>`,
         options: [
             "for data := range ch",
@@ -2257,7 +2257,7 @@ const questions = [
         type: "select",
         title: "go并发编程",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">关于goroutine和操作系统线程的区别，以下描述正确的是？</p>
+            <p>关于goroutine和操作系统线程的区别，以下描述正确的是？</p>
         </div>`,
         options: [
             "goroutine比线程消耗更多内存",
@@ -2320,7 +2320,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在Go语言的GMP模型中，G代表什么？</p>
+            <p>在Go语言的GMP模型中，G代表什么？</p>
         </div>`,
         options: ["操作系统线程", "协程（Goroutine）", "调度器", "处理器"],
         correct: 1,
@@ -2332,7 +2332,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在Go语言的GMP模型中，M代表什么？</p>
+            <p>在Go语言的GMP模型中，M代表什么？</p>
         </div>`,
         options: [
             "协程（Goroutine）",
@@ -2349,7 +2349,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在Go语言的GMP模型中，P代表什么？</p>
+            <p>在Go语言的GMP模型中，P代表什么？</p>
         </div>`,
         options: ["处理器（Processor）", "程序计数器", "优先级", "并行度"],
         correct: 0,
@@ -2373,7 +2373,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下关于GMP调度的描述，正确的是？</p>
+            <p>以下关于GMP调度的描述，正确的是？</p>
         </div>`,
         options: [
             "一个M可以绑定多个P",
@@ -2402,7 +2402,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">Go语言中的全局运行队列（Global Run Queue）存储的是什么？</p>
+            <p>Go语言中的全局运行队列（Global Run Queue）存储的是什么？</p>
         </div>`,
         options: [
             "所有处于阻塞状态的G",
@@ -2448,7 +2448,7 @@ const questions = [
         type: "select",
         title: "GMP",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">以下哪种情况会触发Go调度器的抢占式调度？</p>
+            <p>以下哪种情况会触发Go调度器的抢占式调度？</p>
         </div>`,
         options: [
             "G执行时间过长（超过10ms）",
@@ -2465,7 +2465,7 @@ const questions = [
         type: "select",
         title: "面试注意",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">IT面试前，针对目标公司的“业务与技术栈调研”，以下哪项准备最关键？</p>
+            <p>IT面试前，针对目标公司的“业务与技术栈调研”，以下哪项准备最关键？</p>
         </div>`,
         options: [
             "背诵公司成立时间、创始人等基础信息",
@@ -2494,7 +2494,7 @@ const questions = [
         type: "select",
         title: "面试注意",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">IT面试中，描述过往项目经历时，以下哪种表达最能体现技术能力？</p>
+            <p>IT面试中，描述过往项目经历时，以下哪种表达最能体现技术能力？</p>
         </div>`,
         options: [
             "“我参与了公司的电商项目，负责部分开发工作”",
@@ -2540,7 +2540,7 @@ const questions = [
         type: "select",
         title: "面试注意",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">IT远程面试（如Zoom、腾讯会议）时，以下哪项准备最容易被忽略但至关重要？</p>
+            <p>IT远程面试（如Zoom、腾讯会议）时，以下哪项准备最容易被忽略但至关重要？</p>
         </div>`,
         options: [
             "提前10分钟打开软件测试麦克风、摄像头",
@@ -2557,7 +2557,7 @@ const questions = [
         type: "select",
         title: "面试注意",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">当面试官问“你遇到过的技术难题是什么？如何解决的？”时，以下哪种回答逻辑最合理？</p>
+            <p>当面试官问“你遇到过的技术难题是什么？如何解决的？”时，以下哪种回答逻辑最合理？</p>
         </div>`,
         options: [
             "“我遇到过数据库卡顿，后来换了个数据库就好了”",
@@ -2603,7 +2603,7 @@ const questions = [
         type: "select",
         title: "面试注意",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">当面试官问“你为什么离开上一家公司？”时，以下哪种回答最得体？</p>
+            <p>当面试官问“你为什么离开上一家公司？”时，以下哪种回答最得体？</p>
         </div>`,
         options: [
             "“上一家公司加班太多，领导也不专业，氛围很差”",
@@ -2660,7 +2660,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计联盟链的节点准入机制时，针对金融机构间的区块链网络，以下哪种方案最合适？</p>
+            <p>在设计联盟链的节点准入机制时，针对金融机构间的区块链网络，以下哪种方案最合适？</p>
         </div>`,
         options: [
             "完全开放，任何人可自由加入节点",
@@ -2689,7 +2689,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">某物流企业计划用区块链追踪货物运输轨迹，以下哪个设计最合理？</p>
+            <p>某物流企业计划用区块链追踪货物运输轨迹，以下哪个设计最合理？</p>
         </div>`,
         options: [
             "每5分钟自动记录一次货物位置到区块链",
@@ -2735,7 +2735,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">某跨境支付场景计划采用区块链技术，以下哪项是最核心的技术优势？</p>
+            <p>某跨境支付场景计划采用区块链技术，以下哪项是最核心的技术优势？</p>
         </div>`,
         options: [
             "交易速度比传统支付快10倍以上",
@@ -2752,7 +2752,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计NFT数字艺术品交易平台时，智能合约需重点实现哪些功能？</p>
+            <p>设计NFT数字艺术品交易平台时，智能合约需重点实现哪些功能？</p>
         </div>`,
         options: [
             "自动生成随机艺术品、批量铸造同质化代币",
@@ -2797,7 +2797,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">当区块链网络出现硬分叉时，作为节点开发者应采取哪些措施？</p>
+            <p>当区块链网络出现硬分叉时，作为节点开发者应采取哪些措施？</p>
         </div>`,
         options: [
             "立即关闭节点，等待分叉结束",
@@ -2814,7 +2814,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计区块链节点的P2P网络模块时，以下哪种发现节点的方式最适合联盟链场景？</p>
+            <p>在设计区块链节点的P2P网络模块时，以下哪种发现节点的方式最适合联盟链场景？</p>
         </div>`,
         options: [
             "完全去中心化的随机节点发现",
@@ -2843,7 +2843,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在开发区块链智能合约时，以下哪种做法能有效降低gas费用消耗？</p>
+            <p>在开发区块链智能合约时，以下哪种做法能有效降低gas费用消耗？</p>
         </div>`,
         options: [
             "使用更复杂的数据结构提升代码可读性",
@@ -2888,7 +2888,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计区块链钱包后端服务时，以下哪种私钥存储方式最安全？</p>
+            <p>设计区块链钱包后端服务时，以下哪种私钥存储方式最安全？</p>
         </div>`,
         options: [
             "明文存储在数据库中，方便快速访问",
@@ -2905,7 +2905,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在实现区块链跨链交易时，以下哪种方案更适合资产转移场景？</p>
+            <p>在实现区块链跨链交易时，以下哪种方案更适合资产转移场景？</p>
         </div>`,
         options: [
             "公证人机制（Notary）",
@@ -2950,7 +2950,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计区块链浏览器后端API时，以下哪种优化措施最有效？</p>
+            <p>设计区块链浏览器后端API时，以下哪种优化措施最有效？</p>
         </div>`,
         options: [
             "直接从区块链节点实时查询所有数据",
@@ -2967,7 +2967,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链节点性能优化中，针对区块验证瓶颈，以下哪种方法最有效？</p>
+            <p>在区块链节点性能优化中，针对区块验证瓶颈，以下哪种方法最有效？</p>
         </div>`,
         options: [
             "增加节点内存容量",
@@ -2996,7 +2996,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在处理区块链大交易量时，以下哪种扩容方案属于链上扩容？</p>
+            <p>在处理区块链大交易量时，以下哪种扩容方案属于链上扩容？</p>
         </div>`,
         options: [
             "状态通道（State Channels）",
@@ -3041,7 +3041,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在开发区块链智能合约的测试框架时，以下哪项是必须实现的功能？</p>
+            <p>在开发区块链智能合约的测试框架时，以下哪项是必须实现的功能？</p>
         </div>`,
         options: [
             "自动生成合约文档",
@@ -3058,7 +3058,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计区块链的链下数据存储方案时，以下哪种方式最适合存储大文件？</p>
+            <p>设计区块链的链下数据存储方案时，以下哪种方式最适合存储大文件？</p>
         </div>`,
         options: [
             "IPFS分布式文件系统",
@@ -3103,7 +3103,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链节点的共识模块中，处理恶意节点发送的无效区块时，应采取哪种措施？</p>
+            <p>在区块链节点的共识模块中，处理恶意节点发送的无效区块时，应采取哪种措施？</p>
         </div>`,
         options: [
             "接受区块并转发给其他节点",
@@ -3120,7 +3120,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计区块链的账户系统时，以下哪种模型更适合高频交易场景？</p>
+            <p>设计区块链的账户系统时，以下哪种模型更适合高频交易场景？</p>
         </div>`,
         options: [
             "UTXO模型（未花费交易输出）",
@@ -3149,7 +3149,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在智能合约审计的后端自动化工具中，以下哪项是必须检测的风险？</p>
+            <p>在智能合约审计的后端自动化工具中，以下哪项是必须检测的风险？</p>
         </div>`,
         options: [
             "合约代码的注释完整性",
@@ -3194,7 +3194,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计区块链的链上治理机制时，以下哪种方案更适合去中心化自治组织（DAO）？</p>
+            <p>在设计区块链的链上治理机制时，以下哪种方案更适合去中心化自治组织（DAO）？</p>
         </div>`,
         options: [
             "由单一核心团队决定所有提案",
@@ -3211,7 +3211,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链节点的存储优化中，针对历史数据访问频率低的特点，可采用哪种策略？</p>
+            <p>区块链节点的存储优化中，针对历史数据访问频率低的特点，可采用哪种策略？</p>
         </div>`,
         options: [
             "删除所有历史数据只保留最新状态",
@@ -3256,7 +3256,7 @@ const questions = [
         type: "select",
         title: "区块链后端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链节点的负载均衡设计中，以下哪种方案最适合联盟链环境？</p>
+            <p>在区块链节点的负载均衡设计中，以下哪种方案最适合联盟链环境？</p>
         </div>`,
         options: [
             "基于DNS轮询的简单负载均衡",
@@ -3273,7 +3273,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在开发区块链钱包前端时，以下哪种私钥处理方式最安全？</p>
+            <p>在开发区块链钱包前端时，以下哪种私钥处理方式最安全？</p>
         </div>`,
         options: [
             "将私钥存储在前端localStorage中",
@@ -3302,7 +3302,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计NFT市场前端时，以下哪种方式最适合展示NFT藏品的所有权信息？</p>
+            <p>在设计NFT市场前端时，以下哪种方式最适合展示NFT藏品的所有权信息？</p>
         </div>`,
         options: [
             "仅显示当前持有者的用户名",
@@ -3347,7 +3347,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链前端开发中，处理链上数据加载时，以下哪种用户体验设计最合理？</p>
+            <p>在区块链前端开发中，处理链上数据加载时，以下哪种用户体验设计最合理？</p>
         </div>`,
         options: [
             "加载时显示空白页面，完成后一次性展示所有数据",
@@ -3364,7 +3364,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发多链DApp前端时，以下哪种方式最适合切换不同区块链网络？</p>
+            <p>开发多链DApp前端时，以下哪种方式最适合切换不同区块链网络？</p>
         </div>`,
         options: [
             "为每个区块链开发独立的前端应用",
@@ -3409,7 +3409,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计区块链交易确认页面时，以下哪项信息最需要突出显示？</p>
+            <p>在设计区块链交易确认页面时，以下哪项信息最需要突出显示？</p>
         </div>`,
         options: [
             "网站logo和品牌名称",
@@ -3426,7 +3426,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发区块链前端时，处理智能合约事件的最佳方式是？</p>
+            <p>开发区块链前端时，处理智能合约事件的最佳方式是？</p>
         </div>`,
         options: [
             "定期刷新页面重新获取所有事件",
@@ -3455,7 +3455,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链前端设计中，以下哪种方式最适合提示用户切换到正确的网络？</p>
+            <p>在区块链前端设计中，以下哪种方式最适合提示用户切换到正确的网络？</p>
         </div>`,
         options: [
             "静默切换用户的网络设置，不进行提示",
@@ -3500,7 +3500,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在开发区块链数据可视化前端时，以下哪种图表最适合展示代币价格与交易量的关系？</p>
+            <p>在开发区块链数据可视化前端时，以下哪种图表最适合展示代币价格与交易量的关系？</p>
         </div>`,
         options: [
             "折线图展示价格，柱状图叠加展示交易量",
@@ -3517,7 +3517,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">设计区块链钱包转账页面时，以下哪项功能最能防止用户误操作？</p>
+            <p>设计区块链钱包转账页面时，以下哪项功能最能防止用户误操作？</p>
         </div>`,
         options: [
             "自动填充常用接收地址",
@@ -3562,7 +3562,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链前端实现多语言支持时，以下哪种做法最适合加密货币相关术语？</p>
+            <p>在区块链前端实现多语言支持时，以下哪种做法最适合加密货币相关术语？</p>
         </div>`,
         options: [
             "所有术语完全翻译为当地语言",
@@ -3579,7 +3579,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发区块链移动端DApp时，以下哪种钱包集成方式最适合？</p>
+            <p>开发区块链移动端DApp时，以下哪种钱包集成方式最适合？</p>
         </div>`,
         options: [
             "在App内实现完整的钱包功能，包括私钥管理",
@@ -3608,7 +3608,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链前端设计中，以下哪种方式最适合引导新用户了解钱包连接流程？</p>
+            <p>在区块链前端设计中，以下哪种方式最适合引导新用户了解钱包连接流程？</p>
         </div>`,
         options: [
             "弹出详细的文字说明文档，要求用户阅读后关闭",
@@ -3653,7 +3653,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在设计区块链质押挖矿前端界面时，以下哪项信息最需要突出显示？</p>
+            <p>在设计区块链质押挖矿前端界面时，以下哪项信息最需要突出显示？</p>
         </div>`,
         options: [
             "平台的营销宣传语",
@@ -3670,7 +3670,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">区块链前端实现深色模式时，以下哪种设计最适合展示链上数据？</p>
+            <p>区块链前端实现深色模式时，以下哪种设计最适合展示链上数据？</p>
         </div>`,
         options: [
             "使用高对比度颜色区分不同状态的交易（如绿色表示成功，红色表示失败）",
@@ -3715,7 +3715,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在区块链前端开发中，以下哪种方式最适合实现响应式设计适配不同设备？</p>
+            <p>在区块链前端开发中，以下哪种方式最适合实现响应式设计适配不同设备？</p>
         </div>`,
         options: [
             "为手机、平板、桌面分别开发三个独立前端",
@@ -3732,7 +3732,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在React项目中集成MetaMask钱包，以下哪种方式最适合管理钱包连接状态？</p>
+            <p>在React项目中集成MetaMask钱包，以下哪种方式最适合管理钱包连接状态？</p>
         </div>`,
         options: [
             "使用useState钩子单独管理每个组件的连接状态",
@@ -3761,7 +3761,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发React版NFT列表组件时，需循环渲染多个NFT卡片并调用链上接口获取详情，以下哪种优化方案最合适？</p>
+            <p>开发React版NFT列表组件时，需循环渲染多个NFT卡片并调用链上接口获取详情，以下哪种优化方案最合适？</p>
         </div>`,
         options: [
             "使用useEffect一次性请求所有NFT详情，渲染时直接映射",
@@ -3814,7 +3814,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发React版区块链钱包地址展示组件时，以下哪种方式最适合处理地址截断（如前6后4）并复用？</p>
+            <p>开发React版区块链钱包地址展示组件时，以下哪种方式最适合处理地址截断（如前6后4）并复用？</p>
         </div>`,
         options: [
             "在每个需要展示地址的组件内单独写截断函数",
@@ -3831,7 +3831,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在React组件中监听智能合约事件（如NFT Transfer），以下哪种做法能确保组件卸载后停止监听？</p>
+            <p>在React组件中监听智能合约事件（如NFT Transfer），以下哪种做法能确保组件卸载后停止监听？</p>
         </div>`,
         options: [
             "调用contract.on('Transfer', callback)后不处理，依赖浏览器自动清理",
@@ -3890,7 +3890,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发React版NFT Mint组件时，以下哪种方式最适合处理用户输入的mint数量（限制1-10）？</p>
+            <p>开发React版NFT Mint组件时，以下哪种方式最适合处理用户输入的mint数量（限制1-10）？</p>
         </div>`,
         options: [
             "使用useState存储数量，在onChange中直接更新，提交时再校验",
@@ -3907,7 +3907,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">在React中使用React Query请求链上交易历史数据，以下哪种配置最适合处理数据刷新？</p>
+            <p>在React中使用React Query请求链上交易历史数据，以下哪种配置最适合处理数据刷新？</p>
         </div>`,
         options: [
             "设置refetchOnWindowFocus: false，避免窗口聚焦时重复请求",
@@ -3936,7 +3936,7 @@ const questions = [
         type: "select",
         title: "区块链前端场景（React）",
         content: `<div class="p-4 text-sm">
-            <p class="mb-2">开发React版区块链钱包断开连接功能时，以下哪种实现最符合React状态管理逻辑？</p>
+            <p>开发React版区块链钱包断开连接功能时，以下哪种实现最符合React状态管理逻辑？</p>
         </div>`,
         options: [
             "直接调用window.ethereum.disconnect()，不更新React状态",
@@ -4458,7 +4458,7 @@ const questions = [
         type: "select", 
         title: "Agent类定义", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪个选项是正确的Agent类定义？</p> 
+                    <p>哪个选项是正确的Agent类定义？</p> 
                 </div>`, 
         options: [ 
             `class Agent { constructor() { this.memory = [] } }`, 
@@ -4501,7 +4501,7 @@ const questions = [
         type: "select", 
         title: "记忆存储方式", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪种方式最适合存储Agent的长期记忆？</p> 
+                    <p>哪种方式最适合存储Agent的长期记忆？</p> 
                 </div>`, 
         options: [ 
             `会话存储(sessionStorage)`, 
@@ -4545,7 +4545,7 @@ const questions = [
         type: "select", 
         title: "错误处理策略", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪种错误处理策略最适合Agent系统？</p> 
+                    <p>哪种错误处理策略最适合Agent系统？</p> 
                 </div>`, 
         options: [ 
             `忽略所有错误`, 
