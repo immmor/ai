@@ -2386,7 +2386,7 @@
                     `;
                 });
                 
-                answerContainer.innerHTML = optionsHtml;
+                answerContainer.innerHTML = `<div class="mt-2">${optionsHtml}</div>`;
             }
             else if (question.type === "correct") {
                 answerContainer.innerHTML = `
