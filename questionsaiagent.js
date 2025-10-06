@@ -18,7 +18,7 @@ const questionsaiagent = [
         type: "select", 
         title: "Agent类定义", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪个选项是正确的Agent类定义？</p> 
+                    <p>哪个选项是正确的Agent类定义？</p> 
                 </div>`, 
         options: [ 
             `class Agent { constructor() { this.memory = [] } }`, 
@@ -61,7 +61,7 @@ const questionsaiagent = [
         type: "select", 
         title: "记忆存储方式", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪种方式最适合存储Agent的长期记忆？</p> 
+                    <p>哪种方式最适合存储Agent的长期记忆？</p> 
                 </div>`, 
         options: [ 
             `会话存储(sessionStorage)`, 
@@ -105,7 +105,7 @@ const questionsaiagent = [
         type: "select", 
         title: "错误处理策略", 
         content: `<div class="p-4 text-sm"> 
-                    <p class="mb-2">哪种错误处理策略最适合Agent系统？</p> 
+                    <p>哪种错误处理策略最适合Agent系统？</p> 
                 </div>`, 
         options: [ 
             `忽略所有错误`, 
