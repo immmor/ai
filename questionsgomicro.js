@@ -377,5 +377,60 @@ const questionsgomicro = [
         options: ["CPU使用率", "内存使用量", "请求成功率", "所有指标都很重要"],
         correct: 3,
         explanation: "微服务监控需要综合多个指标，包括CPU、内存、网络、请求成功率等，才能全面反映服务健康状态"
+    },
+    {
+        id: 25,
+        type: "select",
+        title: "微服务API设计",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务API设计中，哪种API风格最适合内部服务间的通信？</p>
+                </div>`,
+        options: ["RESTful API", "gRPC", "GraphQL", "SOAP"],
+        correct: 1,
+        explanation: "gRPC基于Protocol Buffers，提供高性能的二进制序列化，适合内部服务间的高效通信"
+    },
+    {
+        id: 26,
+        type: "select",
+        title: "微服务数据库设计",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，数据库设计应该遵循什么原则？</p>
+                </div>`,
+        options: ["每个服务使用独立的数据库", "所有服务共享一个数据库", "根据业务需求混合使用", "避免使用数据库"],
+        correct: 0,
+        explanation: "微服务应该拥有独立的数据库，这样可以实现数据隔离、独立部署和扩展"
+    },
+    {
+        id: 27,
+        type: "select",
+        title: "微服务版本管理",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务架构中，如何处理API的版本兼容性问题？</p>
+                </div>`,
+        options: ["使用URL版本控制", "使用请求头版本控制", "同时运行多个版本", "所有选项都正确"],
+        correct: 3,
+        explanation: "微服务API版本管理可以采用多种策略，包括URL版本控制、请求头版本控制和同时运行多个版本"
+    },
+    {
+        id: 28,
+        type: "select",
+        title: "微服务团队组织",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">哪种团队组织结构最适合微服务架构？</p>
+                </div>`,
+        options: ["功能团队", "跨职能团队", "项目团队", "康威定律团队"],
+        correct: 1,
+        explanation: "跨职能团队（包含开发、测试、运维等角色）能够独立负责一个或多个微服务的全生命周期"
+    },
+    {
+        id: 29,
+        type: "select",
+        title: "微服务监控告警",
+        content: `<div class="p-4 text-sm">
+                    <p class="mb-2">在微服务监控中，哪种告警策略最有效？</p>
+                </div>`,
+        options: ["基于阈值的告警", "基于异常检测的告警", "基于趋势分析的告警", "综合使用多种告警策略"],
+        correct: 3,
+        explanation: "综合使用阈值告警、异常检测和趋势分析可以提供更全面和准确的监控告警"
     }
 ];
