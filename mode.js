@@ -71,7 +71,7 @@ class StudyModeSystem {
         // 创建模式按钮
         const modeBtn = document.createElement('button');
         modeBtn.id = 'mode-btn';
-        modeBtn.className = 'text-xs text-gray-500 hover:text-blue-500 flex items-center space-x-1 px-2 py-1 transition-all duration-300 cursor-pointer';
+        modeBtn.className = 'text-xs text-gray-500 hover:text-blue-500 flex items-center transition-all duration-300 cursor-pointer';
         modeBtn.title = '点击切换学习模式';
         
         // 添加到底部导航栏，加油按钮的左边
@@ -115,7 +115,7 @@ class StudyModeSystem {
             // 更新按钮显示
             modeBtn.innerHTML = `<i class="fa ${modeInfo.icon} mr-1 ${modeInfo.buttonColor}"></i> ${modeInfo.name}`;
             
-            modeBtn.className = `text-xs ${modeInfo.textColor} hover:${modeInfo.buttonColor} flex items-center space-x-1 px-2 py-1 transition-all duration-300 cursor-pointer`;
+            modeBtn.className = `text-xs ${modeInfo.textColor} hover:${modeInfo.buttonColor} flex items-center transition-all duration-300 cursor-pointer`;
         }
         
         // 切换背景样式

@@ -13,6 +13,8 @@
     <script src="questionspython.js"></script>
     <script src="questionsreactts.js"></script>
     <script src="questionsgomicro.js"></script>
+    <script src="questionscrypto.js"></script>
+    <script src="questionscontract.js"></script>
     <script src="level-styles.js"></script>
     <script src="mode.js"></script>
     
@@ -406,6 +408,12 @@
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionsgomicro">
                                 <span>Go微服务</span>
                             </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionscrypto">
+                                <span>加密概念</span>
+                            </button>
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionscontract">
+                                <span>智能合约</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -626,6 +634,10 @@
                 return questionsreactts;
             } else if (currentQuestionBank === 'questionsgomicro') {
                 return questionsgomicro;
+            } else if (currentQuestionBank === 'questionscrypto') {
+                return questionscrypto;
+            } else if (currentQuestionBank === 'questionscontract') {
+                return questionscontract;
             } else {
                 return questions;
             }
@@ -777,6 +789,10 @@
                 bankDisplayName = 'React';
             } else if (bankName === 'questionsgomicro') {
                 bankDisplayName = 'Go微服务';
+            } else if (bankName === 'questionscrypto') {
+                bankDisplayName = '加密概念';
+            } else if (bankName === 'questionscontract') {
+                bankDisplayName = '智能合约';
             }
             // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
         }
