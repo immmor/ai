@@ -4,7 +4,7 @@ const questionspython = [
         type: "select",
         title: "Python基础语法",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">Python中哪个关键字用于定义函数？</p>
+                    <p>Python中哪个关键字用于定义函数？</p>
                 </div>`,
         options: ["def", "function", "func", "define"],
         correct: 0,
@@ -52,7 +52,7 @@ const questionspython = [
         type: "select",
         title: "Python异常处理",
         content: `<div class="p-4 text-sm">
-                    <p class="mb-2">Python中哪个关键字用于捕获异常？</p>
+                    <p>Python中哪个关键字用于捕获异常？</p>
                 </div>`,
         options: ["try", "catch", "except", "error"],
         correct: 2,
