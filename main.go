@@ -463,7 +463,7 @@ func main() {
 	handler := loggingMiddleware(securityHeadersMiddleware(mux))
 
 	// 启动服务器
-	port := ":8088"
+	port := ":2222"
 	log.Printf("服务器启动在 http://localhost%s", port)
 	log.Printf("登录页面: http://localhost%s/login", port)
 	log.Println("测试账号:")
