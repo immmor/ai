@@ -315,7 +315,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	htmlContent := string(content)
 
 	// 修改题库按钮为"我的"
-	htmlContent = strings.ReplaceAll(htmlContent, "题库", "我的")
+	// htmlContent = strings.ReplaceAll(htmlContent, "题库", "我的")
 
 	// 修改题库下拉菜单，只显示用户有权限的题库
 	htmlContent = modifyQuestionBankMenu(htmlContent, user)
