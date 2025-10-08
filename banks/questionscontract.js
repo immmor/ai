@@ -612,5 +612,418 @@ const questionscontract = [
         options: ["Optimistic Rollup", "ZK-Rollup", "Plasma", "Proof of Work"],
         correct: 3,
         explanation: "Proof of Work是Layer1的共识机制，不是Layer2扩容方案。主流的Layer2方案包括Optimistic Rollup、ZK-Rollup和Plasma等"
+    },
+    {
+        id: 43,
+        type: "select",
+        title: "Solidity存储布局",
+        content: `<div class="p-4 text-sm">
+                    <p>Solidity中状态变量的存储布局遵循什么原则？</p>
+                </div>`,
+        options: ["按声明顺序连续存储", "按字母顺序存储", "随机存储", "按使用频率存储"],
+        correct: 0,
+        explanation: "Solidity中状态变量按照声明顺序连续存储在存储槽中，每个变量占用32字节的存储槽"
+    },
+    {
+        id: 44,
+        type: "select",
+        title: "Solidity内存管理",
+        content: `<div class="p-4 text-sm">
+                    <p>Solidity中memory和storage的主要区别是什么？</p>
+                </div>`,
+        options: ["memory是临时存储，storage是持久存储", "memory比storage更昂贵", "storage只能在函数内部使用", "memory可以跨合约调用"],
+        correct: 0,
+        explanation: "memory是临时存储，函数执行结束后数据丢失；storage是持久存储，数据会永久保存在区块链上"
+    },
+    {
+        id: 45,
+        type: "select",
+        title: "Solidity函数可见性",
+        content: `<div class="p-4 text-sm">
+                    <p>以下哪种函数可见性允许外部合约调用？</p>
+                </div>`,
+        options: ["public和external", "private和internal", "只有public", "只有external"],
+        correct: 0,
+        explanation: "public和external函数都可以被外部合约调用，但external函数在内部调用时不能直接使用this.func()方式"
+    },
+    {
+        id: 46,
+        type: "select",
+        title: "Solidity事件机制",
+        content: `<div class="p-4 text-sm">
+                    <p>Solidity事件的主要作用是什么？</p>
+                </div>`,
+        options: ["记录合约状态变化和提供日志", "优化Gas消耗", "实现合约继承", "提供随机数生成"],
+        correct: 0,
+        explanation: "Solidity事件用于记录合约的重要状态变化，这些日志可以被外部应用监听和查询"
+    },
+    {
+        id: 47,
+        type: "select",
+        title: "Solidity修饰器应用",
+        content: `<div class="p-4 text-sm">
+                    <p>Solidity修饰器的主要应用场景是什么？</p>
+                </div>`,
+        options: ["函数权限控制和输入验证", "优化代码执行效率", "实现多态性", "管理存储布局"],
+        correct: 0,
+        explanation: "修饰器主要用于函数权限控制（如onlyOwner）和输入参数验证，可以在多个函数中复用相同的检查逻辑"
+    },
+    {
+        id: 48,
+        type: "sentence",
+        title: "RWA代币化合约",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>contract <span class="code-blank" data-id="48-1" data-answer="RWA"></span> {</div>
+                    <div>    address public <span class="code-blank" data-id="48-2" data-answer="issuer"></span>;</div>
+                    <div>    address public <span class="code-blank" data-id="48-3" data-answer="complianceOracle"></span>;</div>
+                    <div>    string public <span class="code-blank" data-id="48-4" data-answer="assetName"></span>;</div>
+                    <div>    uint256 public <span class="code-blank" data-id="48-5" data-answer="totalSupply"></span>;</div>
+                    <div>    uint256 public <span class="code-blank" data-id="48-6" data-answer="tokenizationDate"></span>;</div>
+                    <div>    </div>
+                    <div>    mapping(address => uint256) public <span class="code-blank" data-id="48-7" data-answer="balances"></span>;</div>
+                    <div>    mapping(address => bool) public <span class="code-blank" data-id="48-8" data-answer="whitelist"></span>;</div>
+                    <div>    mapping(address => mapping(address => uint256)) public <span class="code-blank" data-id="48-9" data-answer="allowances"></span>;</div>
+                    <div>    </div>
+                    <div>    event <span class="code-blank" data-id="48-10" data-answer="Transfer"></span>(address indexed from, address indexed to, uint256 value);</div>
+                    <div>    event Approval(address indexed owner, address indexed spender, uint256 value);</div>
+                    <div>    event WhitelistUpdated(address indexed investor, bool status);</div>
+                    <div>    event TokenizationCompleted(uint256 totalTokens, string assetName);</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="48-11" data-answer="onlyIssuer"></span>() {</div>
+                    <div>        require(msg.sender == issuer, "Only issuer");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="48-12" data-answer="onlyComplianceOracle"></span>() {</div>
+                    <div>        require(msg.sender == complianceOracle, "Only compliance oracle");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="48-13" data-answer="onlyWhitelisted"></span>(address investor) {</div>
+                    <div>        require(whitelist[investor], "Investor not whitelisted");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    constructor(string memory _assetName, uint256 _totalSupply, address _complianceOracle) {</div>
+                    <div>        issuer = msg.sender;</div>
+                    <div>        complianceOracle = _complianceOracle;</div>
+                    <div>        assetName = _assetName;</div>
+                    <div>        totalSupply = _totalSupply;</div>
+                    <div>        tokenizationDate = block.timestamp;</div>
+                    <div>        balances[issuer] = _totalSupply;</div>
+                    <div>        whitelist[issuer] = true;</div>
+                    <div>        </div>
+                    <div>        emit Transfer(address(0), issuer, _totalSupply);</div>
+                    <div>        emit TokenizationCompleted(_totalSupply, _assetName);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-14" data-answer="transfer"></span>(address to, uint256 value) external returns (bool) {</div>
+                    <div>        require(whitelist[msg.sender] && whitelist[to], "Parties not whitelisted");</div>
+                    <div>        require(balances[msg.sender] >= value, "Insufficient balance");</div>
+                    <div>        </div>
+                    <div>        balances[msg.sender] -= value;</div>
+                    <div>        balances[to] += value;</div>
+                    <div>        </div>
+                    <div>        emit Transfer(msg.sender, to, value);</div>
+                    <div>        return true;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-15" data-answer="approve"></span>(address spender, uint256 value) external returns (bool) {</div>
+                    <div>        allowances[msg.sender][spender] = value;</div>
+                    <div>        emit Approval(msg.sender, spender, value);</div>
+                    <div>        return true;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-16" data-answer="transferFrom"></span>(address from, address to, uint256 value) external returns (bool) {</div>
+                    <div>        require(whitelist[from] && whitelist[to], "Parties not whitelisted");</div>
+                    <div>        require(balances[from] >= value, "Insufficient balance");</div>
+                    <div>        require(allowances[from][msg.sender] >= value, "Allowance exceeded");</div>
+                    <div>        </div>
+                    <div>        balances[from] -= value;</div>
+                    <div>        balances[to] += value;</div>
+                    <div>        allowances[from][msg.sender] -= value;</div>
+                    <div>        </div>
+                    <div>        emit Transfer(from, to, value);</div>
+                    <div>        return true;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-17" data-answer="updateWhitelist"></span>(address investor, bool status) external onlyComplianceOracle {</div>
+                    <div>        whitelist[investor] = status;</div>
+                    <div>        emit WhitelistUpdated(investor, status);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-18" data-answer="balanceOf"></span>(address account) external view returns (uint256) {</div>
+                    <div>        return balances[account];</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-19" data-answer="allowance"></span>(address owner, address spender) external view returns (uint256) {</div>
+                    <div>        return allowances[owner][spender];</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="48-20" data-answer="getAssetInfo"></span>() external view returns (string memory, uint256, uint256) {</div>
+                    <div>        return (assetName, totalSupply, tokenizationDate);</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写RWA代币化合约的完整代码",
+        hint: "合约名称、发行方、合规预言机、资产名称、总供应量、代币化日期、余额映射、白名单、授权映射、事件、修饰器和核心函数",
+        explanation: "RWA代币化合约基于ERC3643标准，包含合规检查、白名单管理、代币转移等核心功能，用于将现实世界资产合规地代币化",
+        fullSentence: "contract RWA {\n    address public issuer;\n    address public complianceOracle;\n    string public assetName;\n    uint256 public totalSupply;\n    uint256 public tokenizationDate;\n    \n    mapping(address => uint256) public balances;\n    mapping(address => bool) public whitelist;\n    mapping(address => mapping(address => uint256)) public allowances;\n    \n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n    event WhitelistUpdated(address indexed investor, bool status);\n    event TokenizationCompleted(uint256 totalTokens, string assetName);\n    \n    modifier onlyIssuer() {\n        require(msg.sender == issuer, \"Only issuer\");\n        _;\n    }\n    \n    modifier onlyComplianceOracle() {\n        require(msg.sender == complianceOracle, \"Only compliance oracle\");\n        _;\n    }\n    \n    modifier onlyWhitelisted(address investor) {\n        require(whitelist[investor], \"Investor not whitelisted\");\n        _;\n    }\n    \n    constructor(string memory _assetName, uint256 _totalSupply, address _complianceOracle) {\n        issuer = msg.sender;\n        complianceOracle = _complianceOracle;\n        assetName = _assetName;\n        totalSupply = _totalSupply;\n        tokenizationDate = block.timestamp;\n        balances[issuer] = _totalSupply;\n        whitelist[issuer] = true;\n        \n        emit Transfer(address(0), issuer, _totalSupply);\n        emit TokenizationCompleted(_totalSupply, _assetName);\n    }\n    \n    function transfer(address to, uint256 value) external returns (bool) {\n        require(whitelist[msg.sender] && whitelist[to], \"Parties not whitelisted\");\n        require(balances[msg.sender] >= value, \"Insufficient balance\");\n        \n        balances[msg.sender] -= value;\n        balances[to] += value;\n        \n        emit Transfer(msg.sender, to, value);\n        return true;\n    }\n    \n    function approve(address spender, uint256 value) external returns (bool) {\n        allowances[msg.sender][spender] = value;\n        emit Approval(msg.sender, spender, value);\n        return true;\n    }\n    \n    function transferFrom(address from, address to, uint256 value) external returns (bool) {\n        require(whitelist[from] && whitelist[to], \"Parties not whitelisted\");\n        require(balances[from] >= value, \"Insufficient balance\");\n        require(allowances[from][msg.sender] >= value, \"Allowance exceeded\");\n        \n        balances[from] -= value;\n        balances[to] += value;\n        allowances[from][msg.sender] -= value;\n        \n        emit Transfer(from, to, value);\n        return true;\n    }\n    \n    function updateWhitelist(address investor, bool status) external onlyComplianceOracle {\n        whitelist[investor] = status;\n        emit WhitelistUpdated(investor, status);\n    }\n    \n    function balanceOf(address account) external view returns (uint256) {\n        return balances[account];\n    }\n    \n    function allowance(address owner, address spender) external view returns (uint256) {\n        return allowances[owner][spender];\n    }\n    \n    function getAssetInfo() external view returns (string memory, uint256, uint256) {\n        return (assetName, totalSupply, tokenizationDate);\n    }\n}"
+    },
+    {
+        id: 49,
+        type: "sentence",
+        title: "完整永续合约功能",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>contract PerpetualContract {</div>
+                    <div>    address public owner;</div>
+                    <div>    uint256 public fundingRate = 0.0001 * 1e18;</div>
+                    <div>    uint256 public lastFundingTime;</div>
+                    <div>    uint256 public <span class="code-blank" data-id="49-1" data-answer="leverage"></span> = 10; // 10倍杠杆</div>
+                    <div>    </div>
+                    <div>    mapping(address => int256) public positions;</div>
+                    <div>    mapping(address => uint256) public margins;</div>
+                    <div>    </div>
+                    <div>    event PositionOpened(address indexed trader, int256 size, uint256 margin);</div>
+                    <div>    event PositionClosed(address indexed trader, int256 pnl);</div>
+                    <div>    event FundingPaid(address indexed trader, int256 fundingAmount);</div>
+                    <div>    </div>
+                    <div>    modifier onlyOwner() {</div>
+                    <div>        require(msg.sender == owner, "Only owner");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    constructor() {</div>
+                    <div>        owner = msg.sender;</div>
+                    <div>        lastFundingTime = block.timestamp;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function openPosition(int256 size, uint256 margin) external payable {</div>
+                    <div>        require(size != 0, "Size cannot be zero");</div>
+                    <div>        require(margin > 0, "Margin required");</div>
+                    <div>        require(msg.value == margin, "ETH sent must equal margin");</div>
+                    <div>        </div>
+                    <div>        // 检查保证金是否足够</div>
+                    <div>        uint256 requiredMargin = <span class="code-blank" data-id="49-2" data-answer="abs"></span>(size) / leverage;</div>
+                    <div>        require(margin >= requiredMargin, "Insufficient margin");</div>
+                    <div>        </div>
+                    <div>        // 更新持仓和保证金</div>
+                    <div>        positions[msg.sender] += size;</div>
+                    <div>        margins[msg.sender] += margin;</div>
+                    <div>        </div>
+                    <div>        emit PositionOpened(msg.sender, size, margin);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function closePosition() external {</div>
+                    <div>        int256 size = positions[msg.sender];</div>
+                    <div>        require(size != 0, "No position to close");</div>
+                    <div>        </div>
+                    <div>        // 计算盈亏（简化版，实际需要价格预言机）</div>
+                    <div>        int256 pnl = size * 1e18 / 100; // 假设盈利1%</div>
+                    <div>        </div>
+                    <div>        // 支付资金费率</div>
+                    <div>        payFunding(msg.sender);</div>
+                    <div>        </div>
+                    <div>        // 计算最终金额</div>
+                    <div>        uint256 finalAmount = margins[msg.sender] + uint256(pnl);</div>
+                    <div>        </div>
+                    <div>        // 重置持仓和保证金</div>
+                    <div>        positions[msg.sender] = 0;</div>
+                    <div>        margins[msg.sender] = 0;</div>
+                    <div>        </div>
+                    <div>        // 转账给交易者</div>
+                    <div>        payable(msg.sender).transfer(finalAmount);</div>
+                    <div>        </div>
+                    <div>        emit PositionClosed(msg.sender, pnl);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function payFunding(address trader) internal {</div>
+                    <div>        if (block.timestamp - lastFundingTime >= 1 hours) {</div>
+                    <div>            int256 fundingAmount = int256(margins[trader]) * int256(fundingRate) / 1e18;</div>
+                    <div>            </div>
+                    <div>            if (positions[trader] > 0) {</div>
+                    <div>                // 多头支付资金费率</div>
+                    <div>                margins[trader] -= uint256(fundingAmount);</div>
+                    <div>            } else if (positions[trader] < 0) {</div>
+                    <div>                // 空头接收资金费率</div>
+                    <div>                margins[trader] += uint256(-fundingAmount);</div>
+                    <div>            }</div>
+                    <div>            </div>
+                    <div>            lastFundingTime = block.timestamp;</div>
+                    <div>            emit FundingPaid(trader, fundingAmount);</div>
+                    <div>        }</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function abs(int256 x) internal pure returns (uint256) {</div>
+                    <div>        return x >= 0 ? uint256(x) : uint256(-x);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function setFundingRate(uint256 newRate) external onlyOwner {</div>
+                    <div>        fundingRate = newRate;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function withdrawFees() external onlyOwner {</div>
+                    <div>        payable(owner).transfer(address(this).balance);</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写完整永续合约的功能代码",
+        hint: "杠杆倍数、绝对值函数、保证金计算",
+        explanation: "完整永续合约包含开仓、平仓、资金费率计算、杠杆控制等核心功能",
+        fullSentence: "contract PerpetualContract {\n    address public owner;\n    uint256 public fundingRate = 0.0001 * 1e18;\n    uint256 public lastFundingTime;\n    uint256 public leverage = 10; // 10倍杠杆\n    \n    mapping(address => int256) public positions;\n    mapping(address => uint256) public margins;\n    \n    event PositionOpened(address indexed trader, int256 size, uint256 margin);\n    event PositionClosed(address indexed trader, int256 pnl);\n    event FundingPaid(address indexed trader, int256 fundingAmount);\n    \n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Only owner\");\n        _;\n    }\n    \n    constructor() {\n        owner = msg.sender;\n        lastFundingTime = block.timestamp;\n    }\n    \n    function openPosition(int256 size, uint256 margin) external payable {\n        require(size != 0, \"Size cannot be zero\");\n        require(margin > 0, \"Margin required\");\n        require(msg.value == margin, \"ETH sent must equal margin\");\n        \n        // 检查保证金是否足够\n        uint256 requiredMargin = abs(size) / leverage;\n        require(margin >= requiredMargin, \"Insufficient margin\");\n        \n        // 更新持仓和保证金\n        positions[msg.sender] += size;\n        margins[msg.sender] += margin;\n        \n        emit PositionOpened(msg.sender, size, margin);\n    }\n    \n    function closePosition() external {\n        int256 size = positions[msg.sender];\n        require(size != 0, \"No position to close\");\n        \n        // 计算盈亏（简化版，实际需要价格预言机）\n        int256 pnl = size * 1e18 / 100; // 假设盈利1%\n        \n        // 支付资金费率\n        payFunding(msg.sender);\n        \n        // 计算最终金额\n        uint256 finalAmount = margins[msg.sender] + uint256(pnl);\n        \n        // 重置持仓和保证金\n        positions[msg.sender] = 0;\n        margins[msg.sender] = 0;\n        \n        // 转账给交易者\n        payable(msg.sender).transfer(finalAmount);\n        \n        emit PositionClosed(msg.sender, pnl);\n    }\n    \n    function payFunding(address trader) internal {\n        if (block.timestamp - lastFundingTime >= 1 hours) {\n            int256 fundingAmount = int256(margins[trader]) * int256(fundingRate) / 1e18;\n            \n            if (positions[trader] > 0) {\n                // 多头支付资金费率\n                margins[trader] -= uint256(fundingAmount);\n            } else if (positions[trader] < 0) {\n                // 空头接收资金费率\n                margins[trader] += uint256(-fundingAmount);\n            }\n            \n            lastFundingTime = block.timestamp;\n            emit FundingPaid(trader, fundingAmount);\n        }\n    }\n    \n    function abs(int256 x) internal pure returns (uint256) {\n        return x >= 0 ? uint256(x) : uint256(-x);\n    }\n    \n    function setFundingRate(uint256 newRate) external onlyOwner {\n        fundingRate = newRate;\n    }\n    \n    function withdrawFees() external onlyOwner {\n        payable(owner).transfer(address(this).balance);\n    }\n}"
+    },
+    {
+        id: 50,
+        type: "sentence",
+        title: "OpenZeppelin IERC20接口",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="50-1" data-answer="interface"></span> <span class="code-blank" data-id="50-2" data-answer="IERC20"></span> {</div>
+                    <div>    event <span class="code-blank" data-id="50-3" data-answer="Transfer"></span>(address indexed from, address indexed to, uint256 value);</div>
+                    <div>    event <span class="code-blank" data-id="50-4" data-answer="Approval"></span>(address indexed owner, address indexed spender, uint256 value);</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="50-5" data-answer="totalSupply"></span>() external view returns (uint256);</div>
+                    <div>    function <span class="code-blank" data-id="50-6" data-answer="balanceOf"></span>(address account) external view returns (uint256);</div>
+                    <div>    function <span class="code-blank" data-id="50-7" data-answer="transfer"></span>(address to, uint256 amount) external returns (bool);</div>
+                    <div>    function <span class="code-blank" data-id="50-8" data-answer="allowance"></span>(address owner, address spender) external view returns (uint256);</div>
+                    <div>    function <span class="code-blank" data-id="50-9" data-answer="approve"></span>(address spender, uint256 amount) external returns (bool);</div>
+                    <div>    function <span class="code-blank" data-id="50-10" data-answer="transferFrom"></span>(address from, address to, uint256 amount) external returns (bool);</div>
+                    <div>}</div>
+                    <div>    </div>
+                    <div>interface <span class="code-blank" data-id="50-11" data-answer="IERC20Metadata"></span> is IERC20 {</div>
+                    <div>    function <span class="code-blank" data-id="50-12" data-answer="name"></span>() external view returns (string memory);</div>
+                    <div>    function <span class="code-blank" data-id="50-13" data-answer="symbol"></span>() external view returns (string memory);</div>
+                    <div>    function <span class="code-blank" data-id="50-14" data-answer="decimals"></span>() external view returns (uint8);</div>
+                    <div>}</div>
+                    <div>    </div>
+                    <div>interface <span class="code-blank" data-id="50-15" data-answer="IERC20Permit"></span> {</div>
+                    <div>    function <span class="code-blank" data-id="50-16" data-answer="permit"></span>(</div>
+                    <div>        address owner,</div>
+                    <div>        address spender,</div>
+                    <div>        uint256 value,</div>
+                    <div>        uint256 deadline,</div>
+                    <div>        uint8 v,</div>
+                    <div>        bytes32 r,</div>
+                    <div>        bytes32 s</div>
+                    <div>    ) external;</div>
+                    <div>    function <span class="code-blank" data-id="50-17" data-answer="nonces"></span>(address owner) external view returns (uint256);</div>
+                    <div>    function <span class="code-blank" data-id="50-18" data-answer="DOMAIN_SEPARATOR"></span>() external view returns (bytes32);</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写OpenZeppelin IERC20接口的完整代码",
+        hint: "接口定义关键字、事件名称、函数签名、元数据接口和许可接口",
+        explanation: "OpenZeppelin的IERC20接口定义了ERC20代币标准的核心功能，包括转账、授权、余额查询等，IERC20Metadata提供代币元数据，IERC20Permit支持无Gas交易",
+        fullSentence: "interface IERC20 {\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n    \n    function totalSupply() external view returns (uint256);\n    function balanceOf(address account) external view returns (uint256);\n    function transfer(address to, uint256 amount) external returns (bool);\n    function allowance(address owner, address spender) external view returns (uint256);\n    function approve(address spender, uint256 amount) external returns (bool);\n    function transferFrom(address from, address to, uint256 amount) external returns (bool);\n}\n\ninterface IERC20Metadata is IERC20 {\n    function name() external view returns (string memory);\n    function symbol() external view returns (string memory);\n    function decimals() external view returns (uint8);\n}\n\ninterface IERC20Permit {\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n    function nonces(address owner) external view returns (uint256);\n    function DOMAIN_SEPARATOR() external view returns (bytes32);\n}"
+    },
+    {
+        id: 51,
+        type: "sentence",
+        title: "OpenZeppelin Ownable合约",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>contract <span class="code-blank" data-id="51-1" data-answer="Ownable"></span> {</div>
+                    <div>    address private <span class="code-blank" data-id="51-2" data-answer="_owner"></span>;</div>
+                    <div>    </div>
+                    <div>    event <span class="code-blank" data-id="51-3" data-answer="OwnershipTransferred"></span>(address indexed previousOwner, address indexed newOwner);</div>
+                    <div>    </div>
+                    <div>    constructor() {</div>
+                    <div>        <span class="code-blank" data-id="51-4" data-answer="_transferOwnership"></span>(msg.sender);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="51-5" data-answer="onlyOwner"></span>() {</div>
+                    <div>        require(owner() == msg.sender, "Ownable: caller is not the owner");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="51-6" data-answer="owner"></span>() public view virtual returns (address) {</div>
+                    <div>        return _owner;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="51-7" data-answer="renounceOwnership"></span>() public virtual onlyOwner {</div>
+                    <div>        _transferOwnership(address(0));</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="51-8" data-answer="transferOwnership"></span>(address newOwner) public virtual onlyOwner {</div>
+                    <div>        require(newOwner != address(0), "Ownable: new owner is the zero address");</div>
+                    <div>        _transferOwnership(newOwner);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="51-9" data-answer="_transferOwnership"></span>(address newOwner) internal virtual {</div>
+                    <div>        address oldOwner = _owner;</div>
+                    <div>        _owner = newOwner;</div>
+                    <div>        emit OwnershipTransferred(oldOwner, newOwner);</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写OpenZeppelin Ownable合约的完整代码",
+        hint: "合约名称、私有所有者变量、事件、修饰器、构造函数和所有权转移函数",
+        explanation: "OpenZeppelin的Ownable合约提供了合约所有权管理功能，包括所有者检查、所有权转移和所有权放弃等核心功能，是智能合约权限控制的基础组件",
+        fullSentence: "contract Ownable {\n    address private _owner;\n    \n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\n    \n    constructor() {\n        _transferOwnership(msg.sender);\n    }\n    \n    modifier onlyOwner() {\n        require(owner() == msg.sender, \"Ownable: caller is not the owner\");\n        _;\n    }\n    \n    function owner() public view virtual returns (address) {\n        return _owner;\n    }\n    \n    function renounceOwnership() public virtual onlyOwner {\n        _transferOwnership(address(0));\n    }\n    \n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        require(newOwner != address(0), \"Ownable: new owner is the zero address\");\n        _transferOwnership(newOwner);\n    }\n    \n    function _transferOwnership(address newOwner) internal virtual {\n        address oldOwner = _owner;\n        _owner = newOwner;\n        emit OwnershipTransferred(oldOwner, newOwner);\n    }\n}"
+    },
+    {
+        id: 52,
+        type: "select",
+        title: "简单合约函数",
+        content: `<div class="p-4 text-sm">
+            <p>Solidity中，哪个关键字用于声明一个只读函数？</p>
+        </div>`,
+        options: [
+            "view",
+            "pure",
+            "constant",
+            "readonly",
+        ],
+        correct: 0,
+        explanation:
+            "view关键字用于声明只读函数，这些函数不会修改合约状态",
+    },
+    {
+        id: 53,
+        type: "sentence",
+        title: "OpenZeppelin UUPSUpgradeable合约",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>abstract contract <span class="code-blank" data-id="53-1" data-answer="UUPSUpgradeable"></span> is IERC1822Proxiable {</div>
+                    <div>    address private immutable <span class="code-blank" data-id="53-2" data-answer="_self"></span> = address(this);</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="53-3" data-answer="proxiableUUID"></span>() external view virtual override notDelegated returns (bytes32) {</div>
+                    <div>        return <span class="code-blank" data-id="53-4" data-answer="_IMPLEMENTATION_SLOT"></span>;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="53-5" data-answer="upgradeToAndCall"></span>(address newImplementation, bytes memory data) external payable virtual onlyProxy {</div>
+                    <div>        _authorizeUpgrade(newImplementation);</div>
+                    <div>        _upgradeToAndCallUUPS(newImplementation, data);</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="53-6" data-answer="_upgradeToAndCallUUPS"></span>(address newImplementation, bytes memory data) internal {</div>
+                    <div>        require(Address.isContract(newImplementation), "ERC1967: new implementation is not a contract");</div>
+                    <div>        StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;</div>
+                    <div>        emit Upgraded(newImplementation);</div>
+                    <div>        if (data.length > 0) {</div>
+                    <div>            Address.functionDelegateCall(newImplementation, data);</div>
+                    <div>        }</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="53-7" data-answer="_authorizeUpgrade"></span>(address newImplementation) internal virtual;</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="53-8" data-answer="onlyProxy"></span>() {</div>
+                    <div>        require(address(this) != _self, "Function must be called through delegatecall");</div>
+                    <div>        require(_getImplementation() == _self, "Function must be called through active proxy");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    modifier <span class="code-blank" data-id="53-9" data-answer="notDelegated"></span>() {</div>
+                    <div>        require(address(this) == _self, "UUPSUpgradeable: must not be called through delegatecall");</div>
+                    <div>        _;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    function <span class="code-blank" data-id="53-10" data-answer="_getImplementation"></span>() internal view returns (address) {</div>
+                    <div>        return StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value;</div>
+                    <div>    }</div>
+                    <div>    </div>
+                    <div>    bytes32 internal constant <span class="code-blank" data-id="53-11" data-answer="_IMPLEMENTATION_SLOT"></span> = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写OpenZeppelin UUPSUpgradeable合约的完整代码",
+        hint: "抽象合约、不可变变量、UUID函数、升级函数、授权函数、修饰器、实现槽常量",
+        explanation: "UUPSUpgradeable合约实现了通用可升级代理标准，允许合约通过代理模式进行无破坏性升级，是智能合约升级模式的核心组件",
+        fullSentence: "abstract contract UUPSUpgradeable is IERC1822Proxiable {\n    address private immutable _self = address(this);\n    \n    function proxiableUUID() external view virtual override notDelegated returns (bytes32) {\n        return _IMPLEMENTATION_SLOT;\n    }\n    \n    function upgradeToAndCall(address newImplementation, bytes memory data) external payable virtual onlyProxy {\n        _authorizeUpgrade(newImplementation);\n        _upgradeToAndCallUUPS(newImplementation, data);\n    }\n    \n    function _upgradeToAndCallUUPS(address newImplementation, bytes memory data) internal {\n        require(Address.isContract(newImplementation), \"ERC1967: new implementation is not a contract\");\n        StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;\n        emit Upgraded(newImplementation);\n        if (data.length > 0) {\n            Address.functionDelegateCall(newImplementation, data);\n        }\n    }\n    \n    function _authorizeUpgrade(address newImplementation) internal virtual;\n    \n    modifier onlyProxy() {\n        require(address(this) != _self, \"Function must be called through delegatecall\");\n        require(_getImplementation() == _self, \"Function must be called through active proxy\");\n        _;\n    }\n    \n    modifier notDelegated() {\n        require(address(this) == _self, \"UUPSUpgradeable: must not be called through delegatecall\");\n        _;\n    }\n    \n    function _getImplementation() internal view returns (address) {\n        return StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value;\n    }\n    \n    bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;\n}"
     }
 ];
