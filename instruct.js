@@ -159,7 +159,8 @@ class StepByStepGuide {
         const rect = targetElement.getBoundingClientRect();
         
         // 第一个指引步骤使用正常尺寸，其他步骤使用扩大尺寸
-        const padding = this.currentStep === 0 ? 0 : 10;
+        // 对于勋章按钮（第2步），使用较小的padding避免覆盖上边框
+        const padding = this.currentStep === 0 ? 0 : (this.currentStep === 2 || this.currentStep === 3 ? 5 : 12);
         highlight.style.left = (rect.left - padding) + 'px';
         highlight.style.top = (rect.top - padding) + 'px';
         highlight.style.width = (rect.width + padding * 2) + 'px';
