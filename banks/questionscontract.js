@@ -455,5 +455,162 @@ const questionscontract = [
         options: ["内置合规性控制", "更高的Gas效率", "支持NFT功能", "更简单的部署流程"],
         correct: 0,
         explanation: "ERC3643与ERC20的主要区别是内置了合规性控制机制，适合证券类代币发行"
+    },
+    {
+        id: 33,
+        type: "select",
+        title: "Chainlink预言机基础",
+        content: `<div class="p-4 text-sm">
+                    <p>Chainlink预言机的主要作用是什么？</p>
+                </div>`,
+        options: ["将链下数据引入智能合约", "提供Gas费用优化", "管理代币供应量", "提供身份验证服务"],
+        correct: 0,
+        explanation: "Chainlink预言机的主要作用是将链下数据（如价格、天气、体育比赛结果等）安全地引入智能合约"
+    },
+    {
+        id: 34,
+        type: "sentence",
+        title: "Chainlink价格预言机",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>import "@chainlink/contracts/src/v0.8/interfaces/<span class="code-blank" data-id="34-1" data-answer="AggregatorV3Interface"></span>.sol";</div>
+                    <div>contract PriceConsumer {</div>
+                    <div>    AggregatorV3Interface internal <span class="code-blank" data-id="34-2" data-answer="priceFeed"></span>;</div>
+                    <div>    </div>
+                    <div>    constructor() {</div>
+                    <div>        priceFeed = AggregatorV3Interface(<span class="code-blank" data-id="34-3" data-answer="0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"></span>);</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Chainlink价格预言机合约基础代码",
+        hint: "接口名称、价格源变量和ETH/USD价格源地址",
+        explanation: "Chainlink价格预言机使用AggregatorV3Interface接口，需要指定对应代币的价格源地址",
+        fullSentence: "import \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract PriceConsumer {\n    AggregatorV3Interface internal priceFeed;\n    \n    constructor() {\n        priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);\n    }\n}"
+    },
+    {
+        id: 35,
+        type: "sentence",
+        title: "Chainlink获取价格数据",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>function getLatestPrice() public view returns (<span class="code-blank" data-id="35-1" data-answer="int"></span>) {</div>
+                    <div>    (,<span class="code-blank" data-id="35-2" data-answer="int"></span> price,,,) = priceFeed.<span class="code-blank" data-id="35-3" data-answer="latestRoundData"></span>();</div>
+                    <div>    return price;</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Chainlink获取最新价格数据的函数代码",
+        hint: "返回值类型、价格变量和函数调用",
+        explanation: "Chainlink价格预言机返回int类型的价格数据，需要调用latestRoundData()函数获取",
+        fullSentence: "function getLatestPrice() public view returns (int) {\n    (,int price,,,) = priceFeed.latestRoundData();\n    return price;\n}"
+    },
+    {
+        id: 36,
+        type: "sentence",
+        title: "Chainlink VRF随机数生成",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>import "@chainlink/contracts/src/v0.8/interfaces/<span class="code-blank" data-id="36-1" data-answer="VRFCoordinatorV2Interface"></span>.sol";</div>
+                    <div>import "@chainlink/contracts/src/v0.8/<span class="code-blank" data-id="36-2" data-answer="VRFConsumerBaseV2"></span>.sol";</div>
+                    <div>contract RandomNumberConsumer is VRFConsumerBaseV2 {</div>
+                    <div>    uint256 public <span class="code-blank" data-id="36-3" data-answer="randomResult"></span>;</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Chainlink VRF随机数生成合约基础代码",
+        hint: "VRF协调器接口、消费者基类和随机结果变量",
+        explanation: "Chainlink VRF使用VRFCoordinatorV2Interface接口和VRFConsumerBaseV2基类合约",
+        fullSentence: "import \"@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol\";\nimport \"@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol\";\ncontract RandomNumberConsumer is VRFConsumerBaseV2 {\n    uint256 public randomResult;\n}"
+    },
+    {
+        id: 37,
+        type: "sentence",
+        title: "Chainlink VRF请求随机数",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>function requestRandomWords() external returns (uint256 requestId) {</div>
+                    <div>    requestId = COORDINATOR.<span class="code-blank" data-id="37-1" data-answer="requestRandomWords"></span>(</div>
+                    <div>        keyHash,</div>
+                    <div>        subId,</div>
+                    <div>        requestConfirmations,</div>
+                    <div>        callbackGasLimit,</div>
+                    <div>        numWords</div>
+                    <div>    );</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Chainlink VRF请求随机数的函数代码",
+        hint: "请求随机数函数",
+        explanation: "Chainlink VRF通过调用协调器的requestRandomWords函数来请求随机数",
+        fullSentence: "function requestRandomWords() external returns (uint256 requestId) {\n    requestId = COORDINATOR.requestRandomWords(\n        keyHash,\n        subId,\n        requestConfirmations,\n        callbackGasLimit,\n        numWords\n    );\n}"
+    },
+    {
+        id: 38,
+        type: "select",
+        title: "智能合约安全最佳实践",
+        content: `<div class="p-4 text-sm">
+                    <p>以下哪种是智能合约安全的最佳实践？</p>
+                </div>`,
+        options: ["使用Checks-Effects-Interactions模式", "尽可能使用call()函数", "避免使用require语句", "使用tx.origin进行身份验证"],
+        correct: 0,
+        explanation: "Checks-Effects-Interactions模式是智能合约安全的重要最佳实践，先检查条件，再更新状态，最后进行外部调用"
+    },
+    {
+        id: 39,
+        type: "sentence",
+        title: "重入攻击防护",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>function withdraw(uint amount) public {</div>
+                    <div>    require(balances[msg.sender] >= amount, "余额不足");</div>
+                    <div>    balances[msg.sender] = <span class="code-blank" data-id="39-1" data-answer="0"></span>;</div>
+                    <div>    (bool success, ) = msg.sender.<span class="code-blank" data-id="39-2" data-answer="call"></span>{value: amount}("");</div>
+                    <div>    require(success, "转账失败");</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写重入攻击防护的代码",
+        hint: "先清零余额再转账",
+        explanation: "防止重入攻击的关键是在进行外部调用前先更新合约状态（清零余额）",
+        fullSentence: "function withdraw(uint amount) public {\n    require(balances[msg.sender] >= amount, \"余额不足\");\n    balances[msg.sender] = 0;\n    (bool success, ) = msg.sender.call{value: amount}(\"\");\n    require(success, \"转账失败\");\n}"
+    },
+    {
+        id: 40,
+        type: "select",
+        title: "Gas优化技巧",
+        content: `<div class="p-4 text-sm">
+                    <p>以下哪种方法可以有效优化Gas消耗？</p>
+                </div>`,
+        options: ["使用calldata代替memory", "使用更多的循环", "使用更长的变量名", "使用更多的require语句"],
+        correct: 0,
+        explanation: "使用calldata代替memory可以显著减少Gas消耗，因为calldata是只读的，不需要复制到内存中"
+    },
+    {
+        id: 41,
+        type: "sentence",
+        title: "代理模式实现",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>contract <span class="code-blank" data-id="41-1" data-answer="Proxy"></span> {</div>
+                    <div>    address public <span class="code-blank" data-id="41-2" data-answer="implementation"></span>;</div>
+                    <div>    </div>
+                    <div>    fallback() external payable {</div>
+                    <div>        address impl = implementation;</div>
+                    <div>        assembly {</div>
+                    <div>            calldatacopy(0, 0, calldatasize())</div>
+                    <div>            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)</div>
+                    <div>            returndatacopy(0, 0, returndatasize())</div>
+                    <div>            switch result</div>
+                    <div>            case 0 { revert(0, returndatasize()) }</div>
+                    <div>            default { return(0, returndatasize()) }</div>
+                    <div>        }</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写代理合约的基础代码",
+        hint: "合约名称和实现地址",
+        explanation: "代理模式使用delegatecall将调用转发到实现合约，实现合约的可升级性",
+        fullSentence: "contract Proxy {\n    address public implementation;\n    \n    fallback() external payable {\n        address impl = implementation;\n        assembly {\n            calldatacopy(0, 0, calldatasize())\n            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)\n            returndatacopy(0, 0, returndatasize())\n            switch result\n            case 0 { revert(0, returndatasize()) }\n            default { return(0, returndatasize()) }\n        }\n    }\n}"
+    },
+    {
+        id: 42,
+        type: "select",
+        title: "Layer2扩容方案",
+        content: `<div class="p-4 text-sm">
+                    <p>以下哪种不是主流的Layer2扩容方案？</p>
+                </div>`,
+        options: ["Optimistic Rollup", "ZK-Rollup", "Plasma", "Proof of Work"],
+        correct: 3,
+        explanation: "Proof of Work是Layer1的共识机制，不是Layer2扩容方案。主流的Layer2方案包括Optimistic Rollup、ZK-Rollup和Plasma等"
     }
 ];
