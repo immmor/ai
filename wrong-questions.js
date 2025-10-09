@@ -87,7 +87,7 @@ class WrongQuestions {
         const panel = document.createElement('div');
         panel.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
         panel.innerHTML = `
-            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 h-[600px] flex flex-col overflow-hidden">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[60vh] flex flex-col overflow-hidden">
                 <div class="bg-gradient-to-r from-red-500 to-orange-500 p-4 flex-shrink-0">
                     <h3 class="text-lg font-bold text-white flex items-center justify-between">
                         <span>

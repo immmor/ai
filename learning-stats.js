@@ -120,7 +120,7 @@ class LearningStats {
         const panel = document.createElement('div');
         panel.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
         panel.innerHTML = `
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[60vh] overflow-hidden">
                 <div class="bg-gradient-to-r from-green-500 to-blue-500 p-4">
                     <h3 class="text-lg font-bold text-white flex items-center">
                         <i class="fas fa-chart-line mr-2"></i>
