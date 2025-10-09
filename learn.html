@@ -3462,8 +3462,8 @@
                     }
                 }
                 
-                // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC和Ctrl+U/Command+U）
-                if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'u' || e.key === 'U') && (e.ctrlKey || e.metaKey))) {
+                // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC、Ctrl+U/Command+U和Ctrl+B/Command+B）
+                if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'u' || e.key === 'U') && (e.ctrlKey || e.metaKey)) && !((e.key === 'b' || e.key === 'B') && (e.ctrlKey || e.metaKey))) {
                     return;
                 }
                 
@@ -3538,6 +3538,19 @@
                     e.preventDefault(); // 阻止默认的输入行为
                     e.stopPropagation(); // 阻止事件冒泡
                     showAnswer();
+                }
+                
+                // 语音播报快捷键：Ctrl+B/Command+B键
+                if ((e.key === 'b' || e.key === 'B' || e.code === 'KeyB') && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault(); // 阻止默认的输入行为
+                    e.stopPropagation(); // 阻止事件冒泡
+                    // 检查当前题目是否为sentence题型且语音播报按钮可见
+                    const questionIndex = randomQuestions[currentRandomIndex];
+                    const currentQuestions = getCurrentQuestions();
+                    const question = currentQuestions[questionIndex];
+                    if (question.type === "sentence" && !speechBtn.classList.contains('hidden')) {
+                        speakSentence();
+                    }
                 }
                 
                 // 模式切换快捷键：Shift+M键
@@ -3647,8 +3660,8 @@
                         isPaused = true;
                         
                         // 改变按钮样式，表示已暂停
-                        speechBtn.classList.remove('text-purple-600', 'bg-purple-100');
-                        speechBtn.classList.add('text-purple-500', 'bg-purple-50');
+                        speechBtn.classList.remove('text-purple-600');
+                        speechBtn.classList.add('text-purple-500');
                         speechBtn.innerHTML = '<i class="fa fa-play mr-1 text-purple-500"></i>';
                         return;
                     }
@@ -3659,8 +3672,8 @@
                         isPaused = false;
                         
                         // 改变按钮样式，表示正在播报
-                        speechBtn.classList.remove('text-purple-500', 'bg-purple-50');
-                        speechBtn.classList.add('text-purple-600', 'bg-purple-100');
+                        speechBtn.classList.remove('text-purple-500');
+                        speechBtn.classList.add('text-purple-600');
                         speechBtn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
                         return;
                     }
@@ -3685,7 +3698,7 @@
                         isPaused = false;
                         // 改变按钮样式，表示正在播报
                         speechBtn.classList.remove('text-gray-500', 'hover:text-purple-500');
-                        speechBtn.classList.add('text-purple-600', 'bg-purple-100');
+                        speechBtn.classList.add('text-purple-600');
                         speechBtn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
                     };
                     
@@ -3694,7 +3707,7 @@
                         isPaused = false;
                         currentUtterance = null;
                         // 恢复按钮样式
-                        speechBtn.classList.remove('text-purple-600', 'bg-purple-100');
+                        speechBtn.classList.remove('text-purple-600');
                         speechBtn.classList.add('text-gray-500', 'hover:text-purple-500');
                         speechBtn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
                     };
@@ -3705,7 +3718,7 @@
                         isPaused = false;
                         currentUtterance = null;
                         // 恢复按钮样式
-                        speechBtn.classList.remove('text-purple-600', 'bg-purple-100');
+                        speechBtn.classList.remove('text-purple-600');
                         speechBtn.classList.add('text-gray-500', 'hover:text-purple-500');
                         speechBtn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
                         
@@ -3954,8 +3967,7 @@
                             inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
                             inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
                             
-                            // 播放正确音效
-                            playCorrectSound();
+                            // 第二阶段不播放正确音效
                         }
                     }
                     
@@ -3998,8 +4010,7 @@
                             inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
                             inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
                             
-                            // 播放正确音效
-                            playCorrectSound();
+                            // 第二阶段不播放正确音效
                         }
                     }
                     
@@ -4035,14 +4046,10 @@
                     // 正确：显示绿色边框
                     input.classList.remove('border-red-300', 'bg-red-50');
                     input.classList.add('border-green-300', 'bg-green-50');
-                    // 播放正确音效
-                    playCorrectSound();
                 } else {
                     // 错误：显示红色边框
                     input.classList.remove('border-green-300', 'bg-green-50');
                     input.classList.add('border-red-300', 'bg-red-50');
-                    // 播放错误音效
-                    playWrongSound();
                 }
             }
         }
@@ -4072,13 +4079,11 @@
                         if (chars[i] === expected) {
                             inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
                             inputs[targetIndex].classList.add('border-green-300', 'bg-green-50');
-                            // 播放正确音效
-                            playCorrectSound();
+                            // 第二阶段不播放正确音效
                         } else {
                             inputs[targetIndex].classList.remove('border-green-300', 'bg-green-50');
                             inputs[targetIndex].classList.add('border-red-300', 'bg-red-50');
-                            // 播放错误音效
-                            playWrongSound();
+                            // 第二阶段不播放错误音效
                         }
                     }
                 }
@@ -4523,13 +4528,11 @@
                             if (chars[i] === expected) {
                                 inputs[targetInputIndex].classList.remove('border-red-300', 'bg-red-50');
                                 inputs[targetInputIndex].classList.add('border-green-300', 'bg-green-50');
-                                // 播放正确音效
-                                playCorrectSound();
+                                // 第二阶段不播放正确音效
                             } else {
                                 inputs[targetInputIndex].classList.remove('border-green-300', 'bg-green-50');
                                 inputs[targetInputIndex].classList.add('border-red-300', 'bg-red-50');
-                                // 播放错误音效
-                                playWrongSound();
+                                // 第二阶段不播放错误音效
                             }
                         }
                     }
@@ -4591,13 +4594,11 @@
                             if (chars[i] === expected) {
                                 inputs[targetInputIndex].classList.remove('border-red-300', 'bg-red-50');
                                 inputs[targetInputIndex].classList.add('border-green-300', 'bg-green-50');
-                                // 播放正确音效
-                                playCorrectSound();
+                                // 第二阶段不播放正确音效
                             } else {
                                 inputs[targetInputIndex].classList.remove('border-green-300', 'bg-green-50');
                                 inputs[targetInputIndex].classList.add('border-red-300', 'bg-red-50');
-                                // 播放错误音效
-                                playWrongSound();
+                                // 第二阶段不播放错误音效
                             }
                         }
                     }
@@ -4641,14 +4642,12 @@
                     // 正确：显示绿色边框
                     input.classList.remove('border-red-300', 'bg-red-50');
                     input.classList.add('border-green-300', 'bg-green-50');
-                    // 播放正确音效
-                    playCorrectSound();
+                    // 第二阶段不播放正确音效
                 } else {
                     // 错误：显示红色边框
                     input.classList.remove('border-green-300', 'bg-green-50');
                     input.classList.add('border-red-300', 'bg-red-50');
-                    // 播放错误音效
-                    playWrongSound();
+                    // 第二阶段不播放错误音效
                 }
                 
                 setTimeout(() => {

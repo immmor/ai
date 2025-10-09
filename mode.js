@@ -4,7 +4,7 @@ class StudyModeSystem {
         this.currentMode = 'normal';
         this.modes = {
             normal: {
-                name: '正常模式',
+                name: '一般',
                 icon: 'fa-star',
                 bg: '',
                 textColor: 'text-gray-700',
@@ -17,7 +17,7 @@ class StudyModeSystem {
                 description: '稳定学习，循序渐进'
             },
             takeoff: {
-                name: '起飞模式',
+                name: '起飞',
                 icon: 'fa-rocket',
                 bg: 'bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200',
                 textColor: 'text-purple-800',
@@ -35,7 +35,7 @@ class StudyModeSystem {
                 xpMultiplier: 1.5
             },
             battle: {
-                name: '战斗模式',
+                name: '战斗',
                 icon: 'fa-fist-raised',
                 bg: 'bg-gradient-to-br from-red-200 via-orange-200 to-yellow-200',
                 textColor: 'text-red-800',
