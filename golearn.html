@@ -20,6 +20,10 @@
     <script src="level-styles.js"></script>
     <script src="mode.js"></script>
     <script src="instruct.js"></script>
+    <script src="learning-stats.js"></script>
+    <script src="wrong-questions.js"></script>
+    <script src="smart-recommend.js"></script>
+    <script src="learning-enhancement.js"></script>
     
     <script>
         tailwind.config = {
@@ -467,6 +471,10 @@
                     </button>
                 </div>
                 <div class="flex space-x-3">
+                    <!-- 学按钮 -->
+                    <button id="learn-btn" class="text-gray-500 hover:text-blue-500 flex items-center">
+                        <i class="fa fa-graduation-cap mr-1 text-blue-500"></i> 学
+                    </button>
                     <button id="prev-btn" class="text-gray-500 hover:text-primary opacity-50 cursor-not-allowed">
                         上一题
                     </button>
@@ -477,6 +485,36 @@
             </div>
         </div>
     </footer>
+    
+    <!-- 学习功能上拉框 -->
+    <div id="learn-panel" class="fixed bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl transition-all duration-300 z-20 hidden w-22 border border-gray-100/50">
+        <!-- 功能按钮区域 -->
+        <div class="p-1 space-y-1">
+            <!-- 学习统计 -->
+            <button id="stats-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-green-100/50">
+                <i class="fas fa-chart-line text-green-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
+                <span class="text-gray-800 text-xs font-medium">学习统计</span>
+            </button>
+            
+            <!-- 错题本 -->
+            <button id="wrong-questions-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-red-100/50">
+                <i class="fas fa-book text-red-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
+                <span class="text-gray-800 text-xs font-medium">错题本</span>
+            </button>
+            
+            <!-- 智能推荐 -->
+            <button id="recommend-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-purple-100/50">
+                <i class="fas fa-robot text-purple-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
+                <span class="text-gray-800 text-xs font-medium">智能推荐</span>
+            </button>
+            
+            <!-- 学习设置 -->
+            <button id="settings-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-blue-100/50">
+                <i class="fas fa-cog text-blue-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
+                <span class="text-gray-800 text-xs font-medium">学习设置</span>
+            </button>
+        </div>
+    </div>
     
     <!-- 提示弹窗 -->
             <div id="hint-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-10 hidden">
@@ -4785,6 +4823,22 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', init);
+        
+        // 初始化学习增强功能
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM加载完成，开始检查学习增强功能...');
+            
+            // 确保学习增强功能已加载并初始化
+            if (window.learningEnhancement) {
+                console.log('学习增强功能已初始化');
+                console.log('功能状态:', window.learningEnhancement.getFeatureStatus());
+            } else {
+                console.warn('学习增强功能未正确加载');
+                // 尝试手动创建实例
+                console.log('尝试手动创建学习增强功能实例...');
+                window.learningEnhancement = new LearningEnhancement();
+            }
+        });
     </script>
 </body>
 </html>
