@@ -63,6 +63,12 @@ class StepByStepGuide {
                 position: "top"
             },
             {
+                title: "播报句子",
+                content: "点击音量按钮可以播报sentence题型的完整句子。",
+                target: "#speech-btn",
+                position: "top"
+            },
+            {
                 title: "上一题按钮",
                 content: "点击'上一题'按钮可以返回查看之前的题目，方便复习和检查。",
                 target: "#prev-btn",
