@@ -54,7 +54,7 @@ class LevelStyles {
                 headerBg: 'bg-white',
                 headerBorder: 'border-gray-200',
                 mainBg: 'bg-gray-50',
-                levelColor: 'text-gray-600',
+                levelColor: 'text-gray-700',
                 xpBarGradient: 'from-green-400 to-blue-500',
                 badgeBg: 'from-yellow-300 via-orange-400 to-red-500',
                 questionBg: 'bg-white',
@@ -71,7 +71,7 @@ class LevelStyles {
                 headerBg: 'bg-blue-50',
                 headerBorder: 'border-blue-200',
                 mainBg: 'bg-blue-50',
-                levelColor: 'text-blue-600',
+                levelColor: 'text-blue-700',
                 xpBarGradient: 'from-blue-400 to-purple-500',
                 badgeBg: 'from-blue-300 via-purple-400 to-indigo-500',
                 questionBg: 'bg-blue-50',
@@ -88,7 +88,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-green-50 to-blue-50',
                 headerBorder: 'border-green-200',
                 mainBg: 'bg-gradient-to-br from-green-50 via-blue-50 to-purple-50',
-                levelColor: 'text-green-600',
+                levelColor: 'text-green-700',
                 xpBarGradient: 'from-green-500 to-teal-500',
                 badgeBg: 'from-green-300 via-teal-400 to-blue-500',
                 questionBg: 'bg-gradient-to-r from-green-50 to-blue-50',
@@ -105,7 +105,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-purple-50 to-pink-50',
                 headerBorder: 'border-purple-200',
                 mainBg: 'bg-gradient-to-br from-purple-50 via-pink-50 to-red-50',
-                levelColor: 'text-purple-600',
+                levelColor: 'text-purple-700',
                 xpBarGradient: 'from-purple-500 to-pink-500',
                 badgeBg: 'from-purple-300 via-pink-400 to-red-500',
                 questionBg: 'bg-gradient-to-r from-purple-50 to-pink-50',
@@ -122,7 +122,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-yellow-50 via-orange-50 to-red-50',
                 headerBorder: 'border-yellow-300',
                 mainBg: 'bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50',
-                levelColor: 'text-yellow-600',
+                levelColor: 'text-yellow-700',
                 xpBarGradient: 'from-yellow-500 via-orange-500 to-red-500',
                 badgeBg: 'from-yellow-300 via-orange-400 to-red-500',
                 questionBg: 'bg-gradient-to-r from-yellow-50 via-orange-50 to-red-50',
@@ -139,7 +139,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50',
                 headerBorder: 'border-indigo-300',
                 mainBg: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50',
-                levelColor: 'text-indigo-600',
+                levelColor: 'text-indigo-700',
                 xpBarGradient: 'from-indigo-500 via-purple-500 to-pink-500',
                 badgeBg: 'from-indigo-300 via-purple-400 to-pink-500',
                 questionBg: 'bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50',
@@ -156,7 +156,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50',
                 headerBorder: 'border-teal-300',
                 mainBg: 'bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50',
-                levelColor: 'text-teal-600',
+                levelColor: 'text-teal-700',
                 xpBarGradient: 'from-teal-500 via-cyan-500 to-blue-500',
                 badgeBg: 'from-teal-300 via-cyan-400 to-blue-500',
                 questionBg: 'bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50',
@@ -173,7 +173,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-red-50 via-pink-50 to-purple-50',
                 headerBorder: 'border-red-300',
                 mainBg: 'bg-gradient-to-br from-red-50 via-pink-50 to-purple-50',
-                levelColor: 'text-red-600',
+                levelColor: 'text-red-700',
                 xpBarGradient: 'from-red-500 via-pink-500 to-purple-500',
                 badgeBg: 'from-red-300 via-pink-400 to-purple-500',
                 questionBg: 'bg-gradient-to-r from-red-50 via-pink-50 to-purple-50',
@@ -190,7 +190,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200',
                 headerBorder: 'border-gray-400',
                 mainBg: 'bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200',
-                levelColor: 'text-gray-800',
+                levelColor: 'text-gray-900',
                 xpBarGradient: 'from-gray-500 via-gray-600 to-gray-700',
                 badgeBg: 'from-gray-300 via-gray-400 to-gray-500',
                 questionBg: 'bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200',
@@ -207,7 +207,7 @@ class LevelStyles {
                 headerBg: 'bg-gradient-to-r from-yellow-100 via-yellow-200 to-yellow-300',
                 headerBorder: 'border-yellow-500',
                 mainBg: 'bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300',
-                levelColor: 'text-yellow-800',
+                levelColor: 'text-yellow-900',
                 xpBarGradient: 'from-yellow-600 via-yellow-700 to-yellow-800',
                 badgeBg: 'from-yellow-400 via-yellow-500 to-yellow-600',
                 questionBg: 'bg-gradient-to-r from-yellow-100 via-yellow-200 to-yellow-300',
@@ -260,6 +260,12 @@ class LevelStyles {
         // 更新勋章背景
         const badgeCollapsed = document.getElementById('badge-collapsed');
         badgeCollapsed.className = `hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br ${config.badgeBg} text-white text-sm font-bold shadow-lg cursor-pointer transition-all duration-1000 hover:scale-110`;
+        
+        // 更新动态生成的勋章元素背景色
+        const badgeElements = document.querySelectorAll('.badge-item');
+        badgeElements.forEach(badge => {
+            badge.className = `badge-item w-8 h-8 rounded-full bg-gradient-to-br ${config.badgeBg} text-white text-sm font-bold shadow-lg cursor-pointer transition-all duration-300 hover:scale-110 flex items-center justify-center`;
+        });
         
         // 更新主内容区域
         const body = document.querySelector('body');
