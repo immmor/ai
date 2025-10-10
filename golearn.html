@@ -465,10 +465,6 @@
                     <button id="cheer-btn" class="text-gray-500 hover:text-green-500 flex items-center transition-all duration-300 select-none">
                         <i class="fa fa-fire mr-1 text-orange-500"></i> 加油
                     </button>
-                    <!-- 语音播报按钮（仅sentence题型显示） -->
-                    <button id="speech-btn" class="text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none hidden">
-                        <i class="fa fa-volume-up mr-1 text-purple-500"></i>
-                    </button>
                 </div>
                 <div class="flex space-x-3">
                     <!-- 学按钮 -->
@@ -2413,23 +2409,15 @@
                 isPaused = false;
                 currentUtterance = null;
                 
-                // 恢复按钮样式
-                speechBtn.classList.remove('text-purple-600', 'bg-purple-100', 'text-purple-500', 'bg-purple-50');
-                speechBtn.classList.add('text-gray-500', 'hover:text-purple-500');
-                speechBtn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
-            }
-
-            // 显示或隐藏语音播报按钮
-            if (question.type === "sentence") {
-                speechBtn.classList.remove('hidden');
-            } else {
-                speechBtn.classList.add('hidden');
+                // 恢复标题语音按钮样式
+                updateSpeechButtonState('stop');
             }
             
             // 更新题目内容
             questionContainer.innerHTML = `
-                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500">
-                    随机题目 ${index + 1}/${randomQuestions.length}: ${question.title}
+                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500 flex justify-between items-center">
+                    <span>随机题目 ${index + 1}/${randomQuestions.length}: ${question.title}</span>
+                    ${question.type === "sentence" ? '<button id="title-speech-btn" class="text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none"><i class="fa fa-volume-up mr-1 text-purple-500"></i></button>' : ''}
                 </div>
                 ${question.type === "sentence" ? '' : question.content}
             `;
@@ -2529,6 +2517,12 @@
                 // 将填空处转换为可编辑的输入框（每个汉字一个输入框）
                 const allBlanks = document.querySelectorAll('.code-blank');
                 let inputIndex = 0;
+                
+                // 为标题语音按钮添加事件监听器
+                const titleSpeechBtn = document.getElementById('title-speech-btn');
+                if (titleSpeechBtn) {
+                    titleSpeechBtn.addEventListener('click', speakSentence);
+                }
                 
                 allBlanks.forEach((blank, blankIndex) => {
                     const originalText = blank.textContent || '______';
@@ -3582,11 +3576,12 @@
                 if ((e.key === 'b' || e.key === 'B' || e.code === 'KeyB') && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault(); // 阻止默认的输入行为
                     e.stopPropagation(); // 阻止事件冒泡
-                    // 检查当前题目是否为sentence题型且语音播报按钮可见
+                    // 检查当前题目是否为sentence题型且标题语音按钮存在
                     const questionIndex = randomQuestions[currentRandomIndex];
                     const currentQuestions = getCurrentQuestions();
                     const question = currentQuestions[questionIndex];
-                    if (question.type === "sentence" && !speechBtn.classList.contains('hidden')) {
+                    const titleSpeechBtn = document.getElementById('title-speech-btn');
+                    if (question.type === "sentence" && titleSpeechBtn) {
                         speakSentence();
                     }
                 }
@@ -3682,6 +3677,35 @@
         let isSpeaking = false;
         let isPaused = false;
         
+        // 更新语音按钮状态
+        function updateSpeechButtonState(state) {
+            const speechBtn = document.getElementById('speech-btn');
+            const titleSpeechBtn = document.getElementById('title-speech-btn');
+            
+            const buttons = [speechBtn, titleSpeechBtn].filter(btn => btn !== null);
+            
+            buttons.forEach(btn => {
+                switch(state) {
+                    case 'playing':
+                        btn.classList.remove('text-gray-500', 'hover:text-purple-500', 'text-purple-500');
+                        btn.classList.add('text-purple-600');
+                        btn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
+                        break;
+                    case 'paused':
+                        btn.classList.remove('text-purple-600');
+                        btn.classList.add('text-purple-500');
+                        btn.innerHTML = '<i class="fa fa-play mr-1 text-purple-500"></i>';
+                        break;
+                    case 'stopped':
+                    default:
+                        btn.classList.remove('text-purple-600');
+                        btn.classList.add('text-gray-500', 'hover:text-purple-500');
+                        btn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
+                        break;
+                }
+            });
+        }
+        
         // 语音播报功能
         function speakSentence() {
             const questionIndex = randomQuestions[currentRandomIndex];
@@ -3698,9 +3722,7 @@
                         isPaused = true;
                         
                         // 改变按钮样式，表示已暂停
-                        speechBtn.classList.remove('text-purple-600');
-                        speechBtn.classList.add('text-purple-500');
-                        speechBtn.innerHTML = '<i class="fa fa-play mr-1 text-purple-500"></i>';
+                        updateSpeechButtonState('paused');
                         return;
                     }
                     
@@ -3710,9 +3732,7 @@
                         isPaused = false;
                         
                         // 改变按钮样式，表示正在播报
-                        speechBtn.classList.remove('text-purple-500');
-                        speechBtn.classList.add('text-purple-600');
-                        speechBtn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
+                        updateSpeechButtonState('playing');
                         return;
                     }
                     
@@ -3735,9 +3755,7 @@
                         isSpeaking = true;
                         isPaused = false;
                         // 改变按钮样式，表示正在播报
-                        speechBtn.classList.remove('text-gray-500', 'hover:text-purple-500');
-                        speechBtn.classList.add('text-purple-600');
-                        speechBtn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
+                        updateSpeechButtonState('playing');
                     };
                     
                     currentUtterance.onend = function() {
@@ -3745,9 +3763,7 @@
                         isPaused = false;
                         currentUtterance = null;
                         // 恢复按钮样式
-                        speechBtn.classList.remove('text-purple-600');
-                        speechBtn.classList.add('text-gray-500', 'hover:text-purple-500');
-                        speechBtn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
+                        updateSpeechButtonState('stopped');
                     };
                     
                     currentUtterance.onerror = function(event) {
@@ -3756,9 +3772,7 @@
                         isPaused = false;
                         currentUtterance = null;
                         // 恢复按钮样式
-                        speechBtn.classList.remove('text-purple-600');
-                        speechBtn.classList.add('text-gray-500', 'hover:text-purple-500');
-                        speechBtn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
+                        updateSpeechButtonState('stopped');
                         
                         // 只有在不是主动取消的情况下才显示错误提示
                         if (event.error !== 'interrupted') {
