@@ -432,5 +432,173 @@ const questionsgomicro = [
         options: ["基于阈值的告警", "基于异常检测的告警", "基于趋势分析的告警", "综合使用多种告警策略"],
         correct: 3,
         explanation: "综合使用阈值告警、异常检测和趋势分析可以提供更全面和准确的监控告警"
+    },
+    {
+        id: 30,
+        type: "select",
+        title: "微服务负载均衡",
+        content: `<div class="p-4 text-sm">
+                    <p>在Go微服务中，哪种负载均衡策略最适合处理突发流量？</p>
+                </div>`,
+        options: ["轮询", "最少连接", "加权轮询", "随机"],
+        correct: 1,
+        explanation: "最少连接策略将请求发送到当前连接数最少的服务器，适合处理突发流量"
+    },
+    {
+        id: 31,
+        type: "select",
+        title: "微服务缓存策略",
+        content: `<div class="p-4 text-sm">
+                    <p>在微服务架构中，哪种缓存策略最适合提高读取性能？</p>
+                </div>`,
+        options: ["本地缓存", "分布式缓存", "数据库缓存", "CDN缓存"],
+        correct: 1,
+        explanation: "分布式缓存（如Redis）可以在多个服务实例间共享缓存数据，提高读取性能"
+    },
+    {
+        id: 32,
+        type: "select",
+        title: "微服务安全传输",
+        content: `<div class="p-4 text-sm">
+                    <p>在微服务间通信中，哪种加密方式最安全？</p>
+                </div>`,
+        options: ["HTTP", "HTTPS", "gRPC with TLS", "WebSocket with SSL"],
+        correct: 2,
+        explanation: "gRPC结合TLS加密提供了最强的安全传输保障"
+    },
+    {
+        id: 33,
+        type: "select",
+        title: "微服务编排工具",
+        content: `<div class="p-4 text-sm">
+                    <p>在Go微服务部署中，哪种编排工具最流行？</p>
+                </div>`,
+        options: ["Docker Swarm", "Kubernetes", "Nomad", "Mesos"],
+        correct: 1,
+        explanation: "Kubernetes是目前最流行的容器编排工具，广泛用于微服务部署"
+    },
+    {
+        id: 34,
+        type: "select",
+        title: "微服务性能监控",
+        content: `<div class="p-4 text-sm">
+                    <p>在Go微服务中，哪个指标最能反映应用性能？</p>
+                </div>`,
+        options: ["响应时间", "吞吐量", "错误率", "所有指标都很重要"],
+        correct: 3,
+        explanation: "响应时间、吞吐量和错误率都是衡量微服务性能的重要指标"
+    },
+    {
+        id: 35,
+        type: "sentence",
+        title: "Go微服务优雅关闭",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>func main() {</div>
+                    <div>    server := &http.Server{</div>
+                    <div>        Addr: ":8080",</div>
+                    <div>        Handler: router,</div>
+                    <div>    }</div>
+                    <div>    go func() {</div>
+                    <div>        if err := server.<span class="code-blank" data-id="35-1" data-answer="ListenAndServe"></span>(); err != nil && err != http.ErrServerClosed {</div>
+                    <div>            log.Fatal(err)</div>
+                    <div>        }</div>
+                    <div>    }()</div>
+                    <div>    quit := make(chan <span class="code-blank" data-id="35-2" data-answer="os.Signal"></span>, 1)</div>
+                    <div>    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)</div>
+                    <div>    <-quit</div>
+                    <div>    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)</div>
+                    <div>    defer <span class="code-blank" data-id="35-3" data-answer="cancel"></span>()</div>
+                    <div>    if err := server.<span class="code-blank" data-id="35-4" data-answer="Shutdown"></span>(ctx); err != nil {</div>
+                    <div>        log.Fatal(err)</div>
+                    <div>    }</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Go微服务优雅关闭代码",
+        hint: "信号处理和服务器优雅关闭",
+        explanation: "优雅关闭确保微服务在处理完现有请求后再停止，避免数据丢失",
+        fullSentence: "func main() {\n    server := &http.Server{\n        Addr: \":8080\",\n        Handler: router,\n    }\n    go func() {\n        if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {\n            log.Fatal(err)\n        }\n    }()\n    quit := make(chan os.Signal, 1)\n    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)\n    <-quit\n    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)\n    defer cancel()\n    if err := server.Shutdown(ctx); err != nil {\n        log.Fatal(err)\n    }\n}"
+    },
+    {
+        id: 36,
+        type: "sentence",
+        title: "Go微服务中间件",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>func <span class="code-blank" data-id="36-1" data-answer="loggingMiddleware"></span>(next http.Handler) http.Handler {</div>
+                    <div>    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {</div>
+                    <div>        start := time.<span class="code-blank" data-id="36-2" data-answer="Now"></span>()</div>
+                    <div>        next.ServeHTTP(w, r)</div>
+                    <div>        duration := time.Since(start)</div>
+                    <div>        log.Printf("%s %s %s %v", r.Method, r.URL.Path, r.RemoteAddr, <span class="code-blank" data-id="36-3" data-answer="duration"></span>)</div>
+                    <div>    })</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Go微服务日志中间件代码",
+        hint: "中间件函数定义和日志记录",
+        explanation: "中间件模式可以统一处理请求，如日志记录、认证、限流等",
+        fullSentence: "func loggingMiddleware(next http.Handler) http.Handler {\n    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n        start := time.Now()\n        next.ServeHTTP(w, r)\n        duration := time.Since(start)\n        log.Printf(\"%s %s %s %v\", r.Method, r.URL.Path, r.RemoteAddr, duration)\n    })\n}"
+    },
+    {
+        id: 37,
+        type: "sentence",
+        title: "Go微服务配置热更新",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>import "<span class="code-blank" data-id="37-1" data-answer="github.com/spf13/viper"></span>"</div>
+                    <div>func watchConfigChanges() {</div>
+                    <div>    viper.<span class="code-blank" data-id="37-2" data-answer="WatchConfig"></span>()</div>
+                    <div>    viper.OnConfigChange(func(e fsnotify.Event) {</div>
+                    <div>        log.Println("Config file changed:", e.Name)</div>
+                    <div>        // 重新加载配置</div>
+                    <div>        reloadConfig()</div>
+                    <div>    })</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Go微服务配置热更新代码",
+        hint: "Viper配置监听和热更新",
+        explanation: "配置热更新允许微服务在不重启的情况下应用新的配置",
+        fullSentence: "import \"github.com/spf13/viper\"\nfunc watchConfigChanges() {\n    viper.WatchConfig()\n    viper.OnConfigChange(func(e fsnotify.Event) {\n        log.Println(\"Config file changed:\", e.Name)\n        reloadConfig()\n    })\n}"
+    },
+    {
+        id: 38,
+        type: "sentence",
+        title: "Go微服务健康检查端点",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>func <span class="code-blank" data-id="38-1" data-answer="healthCheckHandler"></span>(w http.ResponseWriter, r *http.Request) {</div>
+                    <div>    // 检查数据库连接</div>
+                    <div>    if err := db.Ping(); err != nil {</div>
+                    <div>        w.WriteHeader(http.StatusServiceUnavailable)</div>
+                    <div>        w.Write([]byte("Database connection failed"))</div>
+                    <div>        return</div>
+                    <div>    }</div>
+                    <div>    // 检查外部服务</div>
+                    <div>    if !checkExternalService() {</div>
+                    <div>        w.WriteHeader(http.StatusServiceUnavailable)</div>
+                    <div>        w.Write([]byte("External service unavailable"))</div>
+                    <div>        return</div>
+                    <div>    }</div>
+                    <div>    w.WriteHeader(http.StatusOK)</div>
+                    <div>    w.Write([]byte("<span class="code-blank" data-id="38-2" data-answer="OK"></span>"))</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Go微服务健康检查端点代码",
+        hint: "健康检查处理函数和状态码",
+        explanation: "健康检查端点用于监控微服务的运行状态",
+        fullSentence: "func healthCheckHandler(w http.ResponseWriter, r *http.Request) {\n    if err := db.Ping(); err != nil {\n        w.WriteHeader(http.StatusServiceUnavailable)\n        w.Write([]byte(\"Database connection failed\"))\n        return\n    }\n    if !checkExternalService() {\n        w.WriteHeader(http.StatusServiceUnavailable)\n        w.Write([]byte(\"External service unavailable\"))\n        return\n    }\n    w.WriteHeader(http.StatusOK)\n    w.Write([]byte(\"OK\"))\n}"
+    },
+    {
+        id: 39,
+        type: "sentence",
+        title: "Go微服务错误重试",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>import "<span class="code-blank" data-id="39-1" data-answer="github.com/sethvargo/go-retry"></span>"</div>
+                    <div>func callServiceWithRetry() error {</div>
+                    <div>    return retry.Do(context.Background(), retry.WithMaxRetries(3, retry.NewConstant(1*time.Second)), func(ctx context.Context) error {</div>
+                    <div>        return callExternalService()</div>
+                    <div>    })</div>
+                    <div>}</div>
+                </div>`,
+        instruction: "填写Go微服务错误重试代码",
+        hint: "重试库导入和重试逻辑",
+        explanation: "错误重试机制可以提高微服务间调用的可靠性",
+        fullSentence: "import \"github.com/sethvargo/go-retry\"\nfunc callServiceWithRetry() error {\n    return retry.Do(context.Background(), retry.WithMaxRetries(3, retry.NewConstant(1*time.Second)), func(ctx context.Context) error {\n        return callExternalService()\n    })\n}"
     }
 ];
