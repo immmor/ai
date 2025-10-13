@@ -790,5 +790,185 @@ const questionsenglish = [
         hint: "日程、协调、开发、验证、管理",
         explanation: "车载娱乐系统测试的每周工作流程，包括计划、测试、验证、缺陷管理和自动化等活动",
         fullSentence: "The weekly automotive infotainment system testing schedule starts on Monday with test planning and coordination activities where we review the test backlog, prioritize features based on development progress and customer requirements, and allocate testing resources accordingly. Monday afternoon involves test case development and environment setup where we prepare test scenarios for new features, update existing test cases for regression testing, and configure test benches with the latest software builds and hardware configurations. Tuesday through Thursday are dedicated to comprehensive test validation covering various aspects including multimedia functionality (audio/video playback quality, codec compatibility), connectivity features (Bluetooth, Wi-Fi, cellular connectivity), navigation system accuracy, voice recognition performance, smartphone integration (Apple CarPlay, Android Auto), and user interface responsiveness. Each day includes specific focus areas: Tuesday for core functionality testing, Wednesday for performance and stress testing under different operating conditions, and Thursday for compatibility testing with various mobile devices and operating systems. Friday morning is reserved for defect management and reporting where we consolidate test results, document identified issues with detailed reproduction steps and severity ratings, and prepare comprehensive test reports for development teams. Friday afternoon focuses on test automation activities including script development, maintenance of automated test suites, and analysis of test coverage metrics. Throughout the week, we conduct daily status meetings to track testing progress, address blocking issues, and ensure timely feedback to development teams. We also allocate time for exploratory testing to identify usability issues and provide constructive feedback for user experience improvements."
+    },
+    {
+        id: 67,
+        type: "sentence",
+        title: "测试进度汇报",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>I have <span class="code-blank" data-id="67-1" data-answer="completed"></span> 80% of the test cases for this <span class="code-blank" data-id="67-2" data-answer="sprint"></span>.</div>
+                </div>`,
+        instruction: "填写测试进度汇报句子",
+        hint: "完成、冲刺",
+        explanation: "测试进度汇报的简单表达方式",
+        fullSentence: "I have completed 80% of the test cases for this sprint."
+    },
+    {
+        id: 68,
+        type: "sentence",
+        title: "缺陷报告",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>I found a <span class="code-blank" data-id="68-1" data-answer="critical"></span> bug in the login <span class="code-blank" data-id="68-2" data-answer="functionality"></span>.</div>
+                </div>`,
+        instruction: "填写缺陷报告句子",
+        hint: "严重、功能",
+        explanation: "报告发现的关键缺陷",
+        fullSentence: "I found a critical bug in the login functionality."
+    },
+    {
+        id: 69,
+        type: "sentence",
+        title: "测试环境准备",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>The test <span class="code-blank" data-id="69-1" data-answer="environment"></span> is ready for <span class="code-blank" data-id="69-2" data-answer="execution"></span>.</div>
+                </div>`,
+        instruction: "填写测试环境准备句子",
+        hint: "环境、执行",
+        explanation: "测试环境准备完成的简单表达",
+        fullSentence: "The test environment is ready for execution."
+    },
+    {
+        id: 70,
+        type: "sentence",
+        title: "测试结果讨论",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Let's <span class="code-blank" data-id="70-1" data-answer="discuss"></span> the test <span class="code-blank" data-id="70-2" data-answer="results"></span> in the meeting.</div>
+                </div>`,
+        instruction: "填写测试结果讨论句子",
+        hint: "讨论、结果",
+        explanation: "邀请讨论测试结果的表达",
+        fullSentence: "Let's discuss the test results in the meeting."
+    },
+    {
+        id: 71,
+        type: "sentence",
+        title: "测试用例编写",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>I need to <span class="code-blank" data-id="71-1" data-answer="write"></span> more test <span class="code-blank" data-id="71-2" data-answer="cases"></span> for the new feature.</div>
+                </div>`,
+        instruction: "填写测试用例编写句子",
+        hint: "编写、用例",
+        explanation: "表达需要编写更多测试用例",
+        fullSentence: "I need to write more test cases for the new feature."
+    },
+    {
+        id: 72,
+        type: "sentence",
+        title: "回归测试",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>We should run <span class="code-blank" data-id="72-1" data-answer="regression"></span> tests after the code <span class="code-blank" data-id="72-2" data-answer="changes"></span>.</div>
+                </div>`,
+        instruction: "填写回归测试句子",
+        hint: "回归、变更",
+        explanation: "代码变更后运行回归测试的建议",
+        fullSentence: "We should run regression tests after the code changes."
+    },
+    {
+        id: 73,
+        type: "sentence",
+        title: "性能测试",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>The performance test <span class="code-blank" data-id="73-1" data-answer="shows"></span> good response <span class="code-blank" data-id="73-2" data-answer="times"></span>.</div>
+                </div>`,
+        instruction: "填写性能测试句子",
+        hint: "显示、时间",
+        explanation: "性能测试结果的积极反馈",
+        fullSentence: "The performance test shows good response times."
+    },
+    {
+        id: 74,
+        type: "sentence",
+        title: "自动化测试",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Our automated tests <span class="code-blank" data-id="74-1" data-answer="save"></span> a lot of <span class="code-blank" data-id="74-2" data-answer="time"></span>.</div>
+                </div>`,
+        instruction: "填写自动化测试句子",
+        hint: "节省、时间",
+        explanation: "自动化测试带来的效率提升",
+        fullSentence: "Our automated tests save a lot of time."
+    },
+    {
+        id: 75,
+        type: "sentence",
+        title: "测试报告",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>I will <span class="code-blank" data-id="75-1" data-answer="send"></span> the test <span class="code-blank" data-id="75-2" data-answer="report"></span> by email.</div>
+                </div>`,
+        instruction: "填写测试报告句子",
+        hint: "发送、报告",
+        explanation: "通过邮件发送测试报告的表达",
+        fullSentence: "I will send the test report by email."
+    },
+    {
+        id: 76,
+        type: "sentence",
+        title: "测试质量",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>The test <span class="code-blank" data-id="76-1" data-answer="quality"></span> meets our <span class="code-blank" data-id="76-2" data-answer="standards"></span>.</div>
+                </div>`,
+        instruction: "填写测试质量句子",
+        hint: "质量、标准",
+        explanation: "测试质量符合标准的表达",
+        fullSentence: "The test quality meets our standards."
+    },
+    {
+        id: 77,
+        type: "sentence",
+        title: "面试开场问候",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Good morning, thank you for <span class="code-blank" data-id="77-1" data-answer="taking"></span> the time to <span class="code-blank" data-id="77-2" data-answer="interview"></span> me today.</div>
+                </div>`,
+        instruction: "填写面试开场问候句子",
+        hint: "花费、面试",
+        explanation: "面试开场时的礼貌问候和感谢",
+        fullSentence: "Good morning, thank you for taking the time to interview me today."
+    },
+    {
+        id: 78,
+        type: "sentence",
+        title: "自我介绍开场",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>It's a <span class="code-blank" data-id="78-1" data-answer="pleasure"></span> to meet you and learn more about this <span class="code-blank" data-id="78-2" data-answer="opportunity"></span>.</div>
+                </div>`,
+        instruction: "填写自我介绍开场句子",
+        hint: "荣幸、机会",
+        explanation: "表达见到面试官的荣幸和对机会的兴趣",
+        fullSentence: "It's a pleasure to meet you and learn more about this opportunity."
+    },
+    {
+        id: 79,
+        type: "sentence",
+        title: "天气寒暄",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>It's a beautiful day <span class="code-blank" data-id="79-1" data-answer="outside"></span>, I hope you're having a good <span class="code-blank" data-id="79-2" data-answer="day"></span>.</div>
+                </div>`,
+        instruction: "填写天气寒暄句子",
+        hint: "外面、一天",
+        explanation: "天气相关的轻松寒暄，营造友好氛围",
+        fullSentence: "It's a beautiful day outside, I hope you're having a good day."
+    },
+    {
+        id: 80,
+        type: "sentence",
+        title: "公司赞美",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>I've been <span class="code-blank" data-id="80-1" data-answer="following"></span> your company's work and I'm really <span class="code-blank" data-id="80-2" data-answer="impressed"></span>.</div>
+                </div>`,
+        instruction: "填写公司赞美句子",
+        hint: "关注、印象深刻",
+        explanation: "表达对公司工作的关注和赞赏",
+        fullSentence: "I've been following your company's work and I'm really impressed."
+    },
+    {
+        id: 81,
+        type: "sentence",
+        title: "面试结束感谢",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Thank you again for this <span class="code-blank" data-id="81-1" data-answer="wonderful"></span> opportunity, I look forward to <span class="code-blank" data-id="81-2" data-answer="hearing"></span> from you.</div>
+                </div>`,
+        instruction: "填写面试结束感谢句子",
+        hint: "美好的、听到",
+        explanation: "面试结束时的感谢和期待后续联系",
+        fullSentence: "Thank you again for this wonderful opportunity, I look forward to hearing from you."
     }
 ];

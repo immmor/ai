@@ -1025,5 +1025,115 @@ const questionscontract = [
         hint: "抽象合约、不可变变量、UUID函数、升级函数、授权函数、修饰器、实现槽常量",
         explanation: "UUPSUpgradeable合约实现了通用可升级代理标准，允许合约通过代理模式进行无破坏性升级，是智能合约升级模式的核心组件",
         fullSentence: "abstract contract UUPSUpgradeable is IERC1822Proxiable {\n    address private immutable _self = address(this);\n    \n    function proxiableUUID() external view virtual override notDelegated returns (bytes32) {\n        return _IMPLEMENTATION_SLOT;\n    }\n    \n    function upgradeToAndCall(address newImplementation, bytes memory data) external payable virtual onlyProxy {\n        _authorizeUpgrade(newImplementation);\n        _upgradeToAndCallUUPS(newImplementation, data);\n    }\n    \n    function _upgradeToAndCallUUPS(address newImplementation, bytes memory data) internal {\n        require(Address.isContract(newImplementation), \"ERC1967: new implementation is not a contract\");\n        StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;\n        emit Upgraded(newImplementation);\n        if (data.length > 0) {\n            Address.functionDelegateCall(newImplementation, data);\n        }\n    }\n    \n    function _authorizeUpgrade(address newImplementation) internal virtual;\n    \n    modifier onlyProxy() {\n        require(address(this) != _self, \"Function must be called through delegatecall\");\n        require(_getImplementation() == _self, \"Function must be called through active proxy\");\n        _;\n    }\n    \n    modifier notDelegated() {\n        require(address(this) == _self, \"UUPSUpgradeable: must not be called through delegatecall\");\n        _;\n    }\n    \n    function _getImplementation() internal view returns (address) {\n        return StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value;\n    }\n    \n    bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;\n}"
+    },
+    {
+        id: 54,
+        type: "select",
+        title: "Gas优化基础",
+        content: `<div class="p-4 text-sm">
+                    <p>在Solidity中，哪种数据类型消耗的Gas最少？</p>
+                </div>`,
+        options: ["uint256", "uint8", "bool", "address"],
+        correct: 2,
+        explanation: "bool类型只占用1位存储空间，消耗的Gas最少。uint8虽然比uint256小，但在存储时仍然占用完整的32字节槽位"
+    },
+    {
+        id: 55,
+        type: "select",
+        title: "存储优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种存储布局方式最节省Gas？</p>
+                </div>`,
+        options: ["将小数据类型打包到同一个存储槽", "每个变量单独占用一个存储槽", "使用mapping存储所有数据", "使用数组存储所有数据"],
+        correct: 0,
+        explanation: "将多个小数据类型打包到同一个32字节存储槽中可以显著节省Gas，因为每个存储槽的写入操作都需要消耗大量Gas"
+    },
+    {
+        id: 56,
+        type: "select",
+        title: "函数可见性优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种函数可见性消耗的Gas最少？</p>
+                </div>`,
+        options: ["external", "public", "internal", "private"],
+        correct: 2,
+        explanation: "internal函数不涉及外部调用，不需要进行ABI编码解码，消耗的Gas最少。external函数虽然在某些情况下更高效，但需要处理外部调用开销"
+    },
+    {
+        id: 57,
+        type: "select",
+        title: "循环优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种循环写法最节省Gas？</p>
+                </div>`,
+        options: ["使用固定长度的for循环", "使用while循环", "使用递归函数", "避免使用循环"],
+        correct: 0,
+        explanation: "固定长度的for循环可以让编译器更好地优化，避免动态数组长度检查的开销。while循环和递归可能产生不可预测的Gas消耗"
+    },
+    {
+        id: 58,
+        type: "select",
+        title: "错误处理优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种错误处理方式消耗的Gas最少？</p>
+                </div>`,
+        options: ["require()", "assert()", "revert()", "自定义错误"],
+        correct: 3,
+        explanation: "自定义错误（Custom Errors）在Solidity 0.8.4+中引入，比require和revert消耗更少的Gas，因为它们不需要存储错误字符串"
+    },
+    {
+        id: 59,
+        type: "select",
+        title: "内存优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种内存使用方式最节省Gas？</p>
+                </div>`,
+        options: ["使用calldata代替memory", "使用memory代替storage", "使用storage代替memory", "使用固定大小数组"],
+        correct: 0,
+        explanation: "calldata是只读的，不需要在内存中复制数据，比memory更节省Gas。特别是在函数参数传递时，使用calldata可以避免不必要的数据复制"
+    },
+    {
+        id: 60,
+        type: "select",
+        title: "事件优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种事件参数标记方式最节省Gas？</p>
+                </div>`,
+        options: ["indexed参数", "非indexed参数", "所有参数都indexed", "不使用事件"],
+        correct: 0,
+        explanation: "indexed参数可以让事件更高效地被过滤和查询，虽然写入时消耗稍多Gas，但整体使用效率更高。合理使用indexed参数可以优化Gas消耗"
+    },
+    {
+        id: 61,
+        type: "select",
+        title: "数学运算优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种数学运算方式最节省Gas？</p>
+                </div>`,
+        options: ["使用移位运算代替乘除法", "使用SafeMath库", "直接使用+-*/运算", "使用内联汇编"],
+        correct: 0,
+        explanation: "移位运算（<<和>>）比乘除法消耗更少的Gas。在Solidity 0.8+中，内置的溢出检查已经足够安全，不需要额外使用SafeMath库"
+    },
+    {
+        id: 62,
+        type: "select",
+        title: "合约部署优化",
+        content: `<div class="p-4 text-sm">
+                    <p>哪种方式可以减少合约部署的Gas成本？</p>
+                </div>`,
+        options: ["使用代理模式", "减少构造函数代码", "使用较小的合约", "所有选项都正确"],
+        correct: 3,
+        explanation: "所有选项都有助于减少Gas成本：代理模式可以避免重复部署逻辑合约，减少构造函数代码可以降低一次性成本，较小的合约自然消耗更少Gas"
+    },
+    {
+        id: 63,
+        type: "select",
+        title: "Gas优化最佳实践",
+        content: `<div class="p-4 text-sm">
+                    <p>以下哪种不是Gas优化的最佳实践？</p>
+                </div>`,
+        options: ["过早优化", "使用适当的可见性", "避免不必要的存储操作", "使用适当的数据类型"],
+        correct: 0,
+        explanation: "过早优化是Gas优化的常见误区。应该先确保代码正确性和安全性，再进行有针对性的Gas优化。其他选项都是Gas优化的最佳实践"
     }
 ];
