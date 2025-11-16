@@ -305,8 +305,8 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 读取golearn.html文件
-	content, err := os.ReadFile("golearn.html")
+	// 读取learn.html文件
+	content, err := os.ReadFile("learn.html")
 	if err != nil {
 		http.Error(w, "无法读取页面文件", http.StatusInternalServerError)
 		return
@@ -401,7 +401,7 @@ func fileServerHandler(w http.ResponseWriter, r *http.Request) {
 	// 服务静态文件
 	filePath := r.URL.Path[1:] // 移除开头的"/"
 	if filePath == "" {
-		filePath = "golearn.html"
+		filePath = "learn.html"
 	}
 
 	// 检查文件是否存在
@@ -451,7 +451,7 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			mainHandler(w, r)
-		} else if r.URL.Path == "/golearn.html" {
+		} else if r.URL.Path == "/learn.html" {
 			fileServerHandler(w, r)
 		} else {
 			// 处理其他静态文件请求
