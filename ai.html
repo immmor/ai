@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project: NEURAL GENESIS</title>
+    <style>
+        /* --- 沉浸式视觉风格 (CSS) --- */
+        :root {
+            --bg-color: #050505;
+            --primary-color: #00ff41; /* 黑客绿 */
+            --secondary-color: #03a9f4; /* 科技蓝 */
+            --alert-color: #ff0055;
+            --glass-bg: rgba(0, 20, 0, 0.8);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* CRT 扫描线效果 */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 90vw;
+            height: 90vh;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-color);
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: 60px 1fr 150px;
+            background: var(--glass-bg);
+            z-index: 1;
+        }
+
+        /* 头部 */
+        header {
+            grid-column: 1 / -1;
+            border-bottom: 1px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        /* 左侧：状态栏 */
+        #status-panel {
+            grid-row: 2 / 3;
+            border-right: 1px solid var(--primary-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-box {
+            border: 1px solid var(--secondary-color);
+            padding: 10px;
+            color: var(--secondary-color);
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* 中间：可视化区域 (Canvas) */
+        #visual-core {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #train-btn-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        /* 核心按钮 */
+        #train-btn {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 15px 40px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+            transition: all 0.1s;
+            box-shadow: 0 0 10px var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        #train-btn:active {
+            background: var(--primary-color);
+            color: #000;
+            transform: scale(0.95);
+        }
+
+        /* 右侧：升级面板 */
+        #upgrade-panel {
+            grid-row: 2 / 3;
+            border-left: 1px solid var(--primary-color);
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .upgrade-item {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upgrade-item:hover {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .upgrade-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* 底部：日志 */
+        #log-console {
+            grid-column: 1 / -1;
+            border-top: 1px solid var(--primary-color);
+            background: #000;
+            padding: 10px;
+            font-size: 0.9em;
+            overflow-y: scroll;
+            color: #aaa;
+        }
+        
+        .log-entry { margin-bottom: 4px; }
+        .log-success { color: var(--primary-color); }
+        .log-warn { color: orange; }
+        .log-system { color: var(--secondary-color); }
+
+        /* 动画 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px var(--primary-color); }
+            50% { box-shadow: 0 0 20px var(--primary-color); }
+            100% { box-shadow: 0 0 5px var(--primary-color); }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <span>PROJECT: NEURAL GENESIS</span>
+        <span id="system-clock">SYS_TIME: 00:00:00</span>
+    </header>
+
+    <aside id="status-panel">
+        <div class="stat-box">
+            <div>算力 (FLOPS)</div>
+            <div id="currency" class="stat-value">0</div>
+        </div>
+        <div class="stat-box">
+            <div>智力等级 (Level)</div>
+            <div id="level" class="stat-value">v1.0</div>
+        </div>
+        <div class="stat-box" style="border-color: var(--alert-color);">
+            <div style="color: var(--alert-color);">Loss (误差)</div>
+            <div id="loss-val" class="stat-value">1.000</div>
+        </div>
+        <div style="font-size: 0.8em; color: #666;">
+            <p>> 架构: 全连接层</p>
+            <p>> 优化器: SGD</p>
+        </div>
+    </aside>
+
+    <main id="visual-core">
+        <canvas id="networkCanvas"></canvas>
+        <div id="train-btn-container">
+            <button id="train-btn" onclick="trainAI()">执行训练 (TRAIN)</button>
+        </div>
+    </main>
+
+    <aside id="upgrade-panel">
+        <h3 style="text-align: center; border-bottom: 1px dashed #444; padding-bottom:5px;">硬件 & 算法</h3>
+        
+        <div class="upgrade-item" onclick="buyUpgrade('gpu')">
+            <div style="font-weight:bold;">购买 NVIDIA GPU</div>
+            <div style="font-size:0.8em;">每秒自动产生算力</div>
+            <div style="color: var(--secondary-color); margin-top:5px;">花费: <span id="cost-gpu">50</span> FLOPS</div>
+        </div>
+
+        <div class="upgrade-item" onclick="buyUpgrade('algo')">
+            <div style="font-weight:bold;">优化反向传播算法</div>
+            <div style="font-size:0.8em;">点击训练效果 +1</div>
+            <div style="color: var(--secondary-color); margin-top:5px;">花费: <span id="cost-algo">100</span> FLOPS</div>
+        </div>
+
+        <div class="upgrade-item" onclick="buyUpgrade('layer')">
+            <div style="font-weight:bold;">增加隐藏层</div>
+            <div style="font-size:0.8em;">大幅降低误差 (Loss)</div>
+            <div style="color: var(--secondary-color); margin-top:5px;">花费: <span id="cost-layer">500</span> FLOPS</div>
+        </div>
+    </aside>
+
+    <footer id="log-console">
+        <div class="log-entry log-system">System initialized... Waiting for input.</div>
+    </footer>
+</div>
+
+<script>
+    /* --- 游戏逻辑 --- */
+    
+    // 游戏状态
+    let gameState = {
+        flops: 0,             // 货币
+        level: 1,             // 等级
+        loss: 1.0,            // 误差 (越低越好)
+        clickPower: 1,        // 点击获得的算力
+        autoPower: 0,         // 自动增长的算力
+        nodes: 5,             // 可视化节点数量
+        
+        costs: {
+            gpu: 50,
+            algo: 100,
+            layer: 500
+        }
+    };
+
+    // DOM 元素
+    const els = {
+        flops: document.getElementById('currency'),
+        level: document.getElementById('level'),
+        loss: document.getElementById('loss-val'),
+        logs: document.getElementById('log-console'),
+        clock: document.getElementById('system-clock'),
+        costs: {
+            gpu: document.getElementById('cost-gpu'),
+            algo: document.getElementById('cost-algo'),
+            layer: document.getElementById('cost-layer')
+        }
+    };
+
+    // 核心动作：训练
+    function trainAI() {
+        gameState.flops += gameState.clickPower;
+        gameState.loss = Math.max(0.001, gameState.loss * 0.995); // 误差衰减
+        
+        playEffect(); // 视觉特效
+        updateUI();
+        
+        // 随机触发日志
+        if (Math.random() > 0.8) {
+            log(`Training cycle complete. Gradient applied.`, 'log-success');
+        }
+    }
+
+    // 购买升级
+    function buyUpgrade(type) {
+        const cost = gameState.costs[type];
+        if (gameState.flops >= cost) {
+            gameState.flops -= cost;
+            
+            if (type === 'gpu') {
+                gameState.autoPower += 1;
+                gameState.costs.gpu = Math.floor(gameState.costs.gpu * 1.5);
+                log("GPU Installed. Auto-training initiated.", "log-system");
+            } else if (type === 'algo') {
+                gameState.clickPower += 2;
+                gameState.costs.algo = Math.floor(gameState.costs.algo * 1.6);
+                log("Algorithm optimized. Efficiency increased.", "log-system");
+            } else if (type === 'layer') {
+                gameState.level++;
+                gameState.nodes += 2;
+                gameState.loss *= 0.8; // 大幅降低Loss
+                gameState.costs.layer *= 3;
+                initNetwork(); // 重绘网络
+                log(`Hidden Layer added. Neural depth increased to Level ${gameState.level}.`, "log-warn");
+            }
+            updateUI();
+        } else {
+            log("Error: Insufficient Computational Resources.", "log-warn");
+        }
+    }
+
+    // 自动循环 (Game Loop)
+    setInterval(() => {
+        if (gameState.autoPower > 0) {
+            gameState.flops += gameState.autoPower;
+            updateUI();
+        }
+        // 更新时间
+        const now = new Date();
+        els.clock.innerText = `SYS_TIME: ${now.toLocaleTimeString()}`;
+    }, 1000);
+
+    // 更新界面
+    function updateUI() {
+        els.flops.innerText = Math.floor(gameState.flops);
+        els.level.innerText = `v${gameState.level}.0`;
+        els.loss.innerText = gameState.loss.toFixed(5);
+        
+        // 更新价格显示
+        els.costs.gpu.innerText = gameState.costs.gpu;
+        els.costs.algo.innerText = gameState.costs.algo;
+        els.costs.layer.innerText = gameState.costs.layer;
+    }
+
+    // 日志系统
+    function log(msg, className = "") {
+        const div = document.createElement('div');
+        div.className = `log-entry ${className}`;
+        div.innerText = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+        els.logs.appendChild(div);
+        els.logs.scrollTop = els.logs.scrollHeight; // 自动滚动到底部
+    }
+
+    /* --- Canvas 视觉效果 (Neural Network) --- */
+    const canvas = document.getElementById('networkCanvas');
+    const ctx = canvas.getContext('2d');
+    let neurons = [];
+    let connections = [];
+
+    function resizeCanvas() {
+        canvas.width = document.getElementById('visual-core').offsetWidth;
+        canvas.height = document.getElementById('visual-core').offsetHeight;
+        initNetwork();
+    }
+
+    function initNetwork() {
+        neurons = [];
+        connections = [];
+        // 创建节点
+        for (let i = 0; i < gameState.nodes + 10; i++) {
+            neurons.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5, // 移动速度
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 3 + 2
+            });
+        }
+    }
+
+    function drawNetwork() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 拖影效果
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 更新并绘制节点
+        neurons.forEach(node => {
+            node.x += node.vx;
+            node.y += node.vy;
+
+            // 边界反弹
+            if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+            if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ff41';
+            ctx.fill();
+        });
+
+        // 绘制连线 (距离近的连线)
+        ctx.strokeStyle = 'rgba(0, 255, 65, 0.2)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < neurons.length; i++) {
+            for (let j = i + 1; j < neurons.length; j++) {
+                const dx = neurons[i].x - neurons[j].x;
+                const dy = neurons[i].y - neurons[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(neurons[i].x, neurons[i].y);
+                    ctx.lineTo(neurons[j].x, neurons[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        requestAnimationFrame(drawNetwork);
+    }
+
+    // 视觉冲击特效
+    function playEffect() {
+        // 点击时产生一次闪光
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+    }
+
+    // 初始化
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    drawNetwork();
+    log("Neural Architecture loaded. Objective: Minimize Loss.", "log-system");
+
+</script>
+</body>
+</html>

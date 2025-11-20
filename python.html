@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Python 编年史：语法地牢</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --term-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent: #58a6ff;
+            --success: #2ea043;
+            --error: #da3633;
+            --border: #30363d;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* header */
+        header {
+            padding: 15px;
+            background: var(--term-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.2rem; color: var(--accent); }
+        .stats { font-size: 0.9rem; }
+
+        /* Main Layout */
+        #game-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
+
+        /* Canvas Area */
+        #world-view {
+            flex: 2;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid var(--border);
+        }
+
+        canvas {
+            background: #0d1117;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Terminal Area */
+        #terminal-view {
+            flex: 1;
+            background-color: var(--term-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #story-log {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #8b949e;
+        }
+
+        .log-entry { margin-bottom: 10px; }
+        .log-system { color: var(--accent); font-weight: bold; }
+        .log-error { color: var(--error); }
+        .log-success { color: var(--success); }
+
+        #code-editor-container {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-label {
+            font-size: 0.8rem;
+            color: #8b949e;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #code-input {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            height: 80px;
+            width: 100%;
+        }
+
+        #run-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            align-self: flex-end;
+            transition: opacity 0.2s;
+        }
+
+        #run-btn:hover { opacity: 0.9; }
+
+        /* Overlay for instructions */
+        #overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🐍 Python 编年史：语法地牢</h1>
+    <div class="stats">当前关卡: <span id="level-indicator">1</span> | 状态: <span id="status-indicator">探索中</span></div>
+</header>
+
+<div id="game-container">
+    <div id="world-view">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+        <div id="overlay">
+            按 <b>WASD</b> 或 <b>方向键</b> 移动<br>
+            遇到障碍物时，右侧终端会激活
+        </div>
+    </div>
+
+    <div id="terminal-view">
+        <div id="story-log">
+            <div class="log-entry log-system">系统初始化成功...</div>
+            <div class="log-entry">你醒在了一个充满数字和代码的黑暗地牢中。前方有一扇锁住的门。</div>
+            <div class="log-entry">走到门前看看。</div>
+        </div>
+
+        <div id="code-editor-container" style="opacity: 0.5; pointer-events: none;">
+            <div class="editor-label">
+                <span>TERMINAL (main.py)</span>
+                <span style="color: #58a6ff">Python 3.9</span>
+            </div>
+            <textarea id="code-input" placeholder="在此输入 Python 代码..." spellcheck="false"></textarea>
+            <button id="run-btn">运行代码 (Run)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 游戏引擎与逻辑 ---
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const logEl = document.getElementById('story-log');
+    const editorContainer = document.getElementById('code-editor-container');
+    const codeInput = document.getElementById('code-input');
+    const runBtn = document.getElementById('run-btn');
+    const levelInd = document.getElementById('level-indicator');
+    const statusInd = document.getElementById('status-indicator');
+
+    const TILE_SIZE = 40;
+    let isCoding = false;
+
+    // 游戏状态
+    const gameState = {
+        level: 1,
+        player: { x: 2, y: 5, color: '#58a6ff' },
+        completed: false
+    };
+
+    // 关卡设计
+    const levels = [
+        {
+            id: 1,
+            map: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,0,1,0,1,1,1,1,1,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,2,1,1,1,1,1,1,1,0,1,0,1], // 2 is a locked door
+                [1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            start: { x: 2, y: 5 },
+            goal: { x: 2, y: 4 }, // 门的位置
+            type: 'door',
+            prompt: "这扇门需要一把逻辑钥匙。在 Python 中，我们需要定义一个变量。<br>请定义一个名为 <code>key</code> 的变量，并将其赋值为字符串 <code>'open'</code>。",
+            hint: "key = 'open'",
+            check: (code) => {
+                // 简单的模拟检查
+                const cleanCode = code.replace(/\s/g, '');
+                return cleanCode.includes("key='open'") || cleanCode.includes('key="open"');
+            },
+            successMsg: "变量定义正确！内存地址已覆盖。门开了。",
+            nextStart: { x: 2, y: 3 } // 开门后的移动
+        },
+        {
+            id: 2,
+            map: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,1,0,0,0,0,3,1], // 3 is an enemy/guard
+                [1,0,1,1,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1],
+                [1,1,1,1,1,0,1,1,1,1,1,0,1,1,1],
+                [1,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            start: { x: 1, y: 5 },
+            goal: { x: 13, y: 1 },
+            type: 'enemy',
+            prompt: "一个只有听觉传感器的守卫挡住了路。你需要向它打招呼。<br>使用 <code>print()</code> 函数输出 <code>'Hello'</code>。",
+            hint: "print('Hello')",
+            check: (code) => {
+                const cleanCode = code.replace(/\s/g, '');
+                return cleanCode.includes("print('Hello')") || cleanCode.includes('print("Hello")');
+            },
+            successMsg: "标准输出流已激活。守卫听到了你的声音并让开了路。",
+            nextStart: { x: 13, y: 1 }
+        },
+        {
+            id: 3,
+            map: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                [1,0,1,9,9,9,9,9,9,9,9,4,1,0,1], // 4 is a bridge console, 9 is water/lava
+                [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            start: { x: 1, y: 5 },
+            goal: { x: 11, y: 3 },
+            type: 'bridge',
+            prompt: "前面的桥断了。修复它需要计算桥梁长度。<br>缺口是 5 个单位，每个单位需要 2 块木板。<br>创建一个变量 <code>planks</code> 并计算 <code>5 * 2</code>。",
+            hint: "planks = 5 * 2",
+            check: (code) => {
+                const cleanCode = code.replace(/\s/g, '');
+                return cleanCode.includes("planks=5*2") || cleanCode.includes("planks=10");
+            },
+            successMsg: "计算正确！桥梁自动生成程序已启动。",
+            nextStart: { x: 11, y: 3 }
+        }
+    ];
+
+    let currentLevelData = levels[0];
+
+    // --- 渲染引擎 ---
+
+    function draw() {
+        // 清屏
+        ctx.fillStyle = '#0d1117';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const map = currentLevelData.map;
+        
+        // 简单的摄像机逻辑 (Centered on player)
+        // 计算偏移量
+        const offsetX = (canvas.width / 2) - (gameState.player.x * TILE_SIZE) - (TILE_SIZE / 2);
+        const offsetY = (canvas.height / 2) - (gameState.player.y * TILE_SIZE) - (TILE_SIZE / 2);
+
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[y].length; x++) {
+                const tile = map[y][x];
+                const drawX = x * TILE_SIZE + offsetX;
+                const drawY = y * TILE_SIZE + offsetY;
+
+                // 地面
+                ctx.fillStyle = '#161b22';
+                ctx.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                ctx.strokeStyle = '#21262d';
+                ctx.strokeRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+
+                // 墙
+                if (tile === 1) {
+                    ctx.fillStyle = '#30363d';
+                    ctx.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                    // 3D effect
+                    ctx.fillStyle = '#21262d';
+                    ctx.fillRect(drawX, drawY + TILE_SIZE - 5, TILE_SIZE, 5);
+                }
+                // 门 (Locked)
+                else if (tile === 2) {
+                    ctx.fillStyle = '#da3633'; // Red door
+                    ctx.fillRect(drawX + 5, drawY + 5, TILE_SIZE - 10, TILE_SIZE - 10);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '20px Arial';
+                    ctx.fillText('🔒', drawX + 10, drawY + 28);
+                }
+                // 敌人
+                else if (tile === 3) {
+                    ctx.fillStyle = '#d29922';
+                    ctx.beginPath();
+                    ctx.arc(drawX + TILE_SIZE/2, drawY + TILE_SIZE/2, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000';
+                    ctx.fillText('?', drawX + 15, drawY + 25);
+                }
+                // 桥控制台
+                else if (tile === 4) {
+                    ctx.fillStyle = '#58a6ff';
+                    ctx.fillRect(drawX + 10, drawY + 10, 20, 20);
+                }
+                // 岩浆/水
+                else if (tile === 9) {
+                    ctx.fillStyle = '#1f6feb';
+                    ctx.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+
+        // 绘制玩家
+        const px = gameState.player.x * TILE_SIZE + offsetX;
+        const py = gameState.player.y * TILE_SIZE + offsetY;
+        
+        // 玩家阴影
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath();
+        ctx.ellipse(px + TILE_SIZE/2, py + TILE_SIZE - 5, 12, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 玩家本体 (简单的机器人)
+        ctx.fillStyle = gameState.player.color;
+        ctx.fillRect(px + 10, py + 5, 20, 25);
+        
+        // 眼睛
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(px + 14, py + 10, 4, 4);
+        ctx.fillRect(px + 22, py + 10, 4, 4);
+
+        requestAnimationFrame(draw);
+    }
+
+    // --- 输入与交互 ---
+
+    function log(msg, type = 'normal') {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        if (type === 'system') div.classList.add('log-system');
+        if (type === 'error') div.classList.add('log-error');
+        if (type === 'success') div.classList.add('log-success');
+        div.innerHTML = `> ${msg}`;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function enableCoding(enable) {
+        isCoding = enable;
+        if (enable) {
+            editorContainer.style.opacity = '1';
+            editorContainer.style.pointerEvents = 'auto';
+            statusInd.textContent = "等待输入...";
+            statusInd.style.color = '#58a6ff';
+            codeInput.focus();
+        } else {
+            editorContainer.style.opacity = '0.5';
+            editorContainer.style.pointerEvents = 'none';
+            statusInd.textContent = "探索中";
+            statusInd.style.color = '#c9d1d9';
+            codeInput.blur();
+            canvas.focus(); // Refocus game
+        }
+    }
+
+    function checkInteraction(newX, newY) {
+        const tile = currentLevelData.map[newY][newX];
+        
+        // 如果是不可通行区域 (墙壁=1, 锁住的门=2, 敌人=3, 控制台=4, 水=9)
+        if (tile !== 0) {
+            
+            // 检查是否是当前关卡的目标
+            if (newX === currentLevelData.goal.x && newY === currentLevelData.goal.y) {
+                log(currentLevelData.prompt, 'system');
+                enableCoding(true);
+                return false; // 阻止移动，直到解决
+            }
+            
+            if (tile === 1) return false; // 墙
+            if (tile === 9) return false; // 水
+        }
+        return true;
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (isCoding) return; // 编码时禁用移动
+
+        let dx = 0;
+        let dy = 0;
+
+        if (e.key === 'ArrowUp' || e.key === 'w') dy = -1;
+        if (e.key === 'ArrowDown' || e.key === 's') dy = 1;
+        if (e.key === 'ArrowLeft' || e.key === 'a') dx = -1;
+        if (e.key === 'ArrowRight' || e.key === 'd') dx = 1;
+
+        if (dx !== 0 || dy !== 0) {
+            const newX = gameState.player.x + dx;
+            const newY = gameState.player.y + dy;
+
+            if (checkInteraction(newX, newY)) {
+                gameState.player.x = newX;
+                gameState.player.y = newY;
+            }
+        }
+    });
+
+    // --- 代码执行逻辑 ---
+
+    runBtn.addEventListener('click', () => {
+        const code = codeInput.value;
+        log(`运行: ${code}`);
+
+        if (currentLevelData.check(code)) {
+            // 成功
+            log(currentLevelData.successMsg, 'success');
+            log("执行成功。按任意方向键继续。", 'system');
+            codeInput.value = "";
+            enableCoding(false);
+            
+            // 解锁当前位置的障碍
+            // 简单处理：把目标变成地板(0)
+            currentLevelData.map[currentLevelData.goal.y][currentLevelData.goal.x] = 0;
+            
+            // 特殊处理：如果是桥，把水(9)填满
+            if(currentLevelData.type === 'bridge') {
+                for(let x=4; x<11; x++) {
+                    currentLevelData.map[3][x] = 0; // 铺路
+                }
+            }
+
+            // 检查是否还有下一关
+            if (gameState.level < levels.length) {
+                // 小延迟后进入下一关的逻辑可以放在这里，但为了演示，我们让玩家走过去
+                // 当玩家真正通过障碍后，我们加载下一关
+                setTimeout(() => {
+                     nextLevel();
+                }, 1500);
+            } else {
+                setTimeout(() => {
+                    alert("恭喜！你通过了所有测试，成为了一名 Python 见习法师！");
+                }, 1000);
+            }
+
+        } else {
+            // 失败
+            log(`SyntaxError: 所有的尝试都失败了... 再试一次？`, 'error');
+            log(`提示: ${currentLevelData.hint}`, 'system');
+            
+            // 视觉反馈：晃动编辑器
+            editorContainer.style.transform = "translateX(5px)";
+            setTimeout(() => editorContainer.style.transform = "translateX(0)", 100);
+        }
+    });
+
+    function nextLevel() {
+        gameState.level++;
+        if(gameState.level > levels.length) return;
+        
+        levelInd.innerText = gameState.level;
+        currentLevelData = levels[gameState.level - 1];
+        gameState.player.x = currentLevelData.start.x;
+        gameState.player.y = currentLevelData.start.y;
+        
+        log("--- 进入下一层 ---", 'system');
+    }
+
+    // 初始化
+    draw();
+    log("系统就绪。使用 WASD 移动。目标：找到红色的门。", 'system');
+
+</script>
+</body>
+</html>

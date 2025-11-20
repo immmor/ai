@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Web3 沉浸式探索者</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Courier New', Courier, monospace; background: #000; }
+        
+        /* UI 层 - HUD 风格 */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* 让鼠标可以穿透 UI 操作 canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #header {
+            padding: 20px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+            font-size: 24px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #aaa;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+
+        /* 知识弹窗 */
+        #modal {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background: rgba(10, 20, 30, 0.95);
+            border: 2px solid #00ffcc;
+            padding: 20px;
+            color: #fff;
+            display: none; /* 默认隐藏 */
+            pointer-events: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 204, 0.2);
+            text-align: left;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        #modal h2 { color: #00ffcc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        #modal p { line-height: 1.6; font-size: 14px; color: #ddd; }
+        #modal .close-btn {
+            margin-top: 20px;
+            padding: 8px 20px;
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: 0.3s;
+        }
+        #modal .close-btn:hover { background: #fff; }
+
+        /* 加载画面 */
+        #loading {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            color: #00ffcc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">正在接入主网...</div>
+
+    <div id="ui-layer">
+        <div id="header">Web3 Explorer // <span>连接状态: 在线</span></div>
+        <div id="controls-hint">
+            [W, A, S, D] 移动 <br>
+            靠近发光方块学习知识
+        </div>
+    </div>
+
+    <div id="modal">
+        <h2 id="modal-title">标题</h2>
+        <p id="modal-content">内容</p>
+        <button class="close-btn" onclick="closeModal()">学习并关闭 (Enter)</button>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+
+        // --- 1. 初始化场景 ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.Fog(0x050505, 10, 50); // 增加雾效，更有沉浸感
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. 环境光照与地面 ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 赛博朋克风格网格地面
+        const gridHelper = new THREE.GridHelper(100, 100, 0x00ffcc, 0x222222);
+        scene.add(gridHelper);
+
+        // 地面碰撞体 (不可见)
+        const planeGeometry = new THREE.PlaneGeometry(100, 100);
+        const planeMaterial = new THREE.MeshBasicMaterial({ visible: false });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = -Math.PI / 2;
+        scene.add(plane);
+
+        // --- 3. 玩家角色 (简单的机器人形状) ---
+        const playerGroup = new THREE.Group();
+        
+        // 身体
+        const bodyGeo = new THREE.BoxGeometry(0.8, 1, 0.5);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x001133 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.5;
+        body.castShadow = true;
+        playerGroup.add(body);
+
+        // 头
+        const headGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.2;
+        playerGroup.add(head);
+
+        scene.add(playerGroup);
+
+        // --- 4. 游戏内容：Web3 知识节点 ---
+        const knowledgeData = [
+            { title: "区块链 (Blockchain)", content: "本质是一个去中心化的分布式账本。数据被存储在一个个'区块'中，并通过密码学哈希链接在一起，一旦写入便难以篡改。" },
+            { title: "智能合约 (Smart Contract)", content: "部署在区块链上的自动执行程序。当满足预设条件时（比如收到付款），代码会自动执行操作（比如发货），无需中介。" },
+            { title: "NFT (非同质化代币)", content: "具有唯一性的数字资产凭证。无论是图片、音乐还是游戏道具，NFT 证明了该数字物品在链上的所有权归属于你。" },
+            { title: "DAO (去中心化自治组织)", content: "没有传统CEO或层级管理的组织。规则写入代码，通过成员持有代币进行投票来共同治理和决策。" },
+            { title: "私钥 (Private Key)", content: "你的终极密码。掌握私钥就掌握了资产的所有权。如果你丢失了私钥，没人能帮你找回资产；如果别人获得了它，就能拿走你的一切。" },
+            { title: "DeFi (去中心化金融)", content: "建立在区块链上的金融服务（借贷、交易、保险）。不依赖银行，而是通过智能合约自动运行，通常效率更高、门槛更低。" }
+        ];
+
+        const nodes = [];
+        const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+        
+        knowledgeData.forEach((data, index) => {
+            // 创建发光方块
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x00ffcc, 
+                emissive: 0x004433,
+                shininess: 100,
+                transparent: true,
+                opacity: 0.9
+            });
+            const cube = new THREE.Mesh(boxGeometry, material);
+            
+            // 随机位置 (避开出生点)
+            const angle = (index / knowledgeData.length) * Math.PI * 2;
+            const radius = 8 + Math.random() * 15; // 距离圆心 8-23
+            cube.position.set(Math.cos(angle) * radius, 1, Math.sin(angle) * radius);
+            
+            cube.castShadow = true;
+            
+            // 也可以给方块添加浮动动画的数据
+            cube.userData = { 
+                ...data, 
+                originalY: 1, 
+                floatSpeed: 0.02 + Math.random() * 0.02, 
+                floatOffset: Math.random() * Math.PI 
+            };
+            
+            scene.add(cube);
+            nodes.push(cube);
+
+            // 添加光柱效果
+            const light = new THREE.PointLight(0x00ffcc, 1, 5);
+            light.position.set(0, 0, 0);
+            cube.add(light);
+        });
+
+        // --- 5. 控制逻辑 ---
+        const keys = { w: false, a: false, s: false, d: false };
+        const speed = 0.15;
+        const turnSpeed = 0.05;
+        let isModalOpen = false;
+
+        window.addEventListener('keydown', (e) => {
+            if (isModalOpen) {
+                if(e.key === 'Enter') closeModal();
+                return;
+            }
+            const key = e.key.toLowerCase();
+            if (keys.hasOwnProperty(key)) keys[key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (keys.hasOwnProperty(key)) keys[key] = false;
+        });
+
+        window.closeModal = () => {
+            document.getElementById('modal').style.display = 'none';
+            isModalOpen = false;
+        };
+
+        // --- 6. 游戏循环 ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            if (!isModalOpen) {
+                // 移动逻辑
+                if (keys.w) playerGroup.translateZ(-speed);
+                if (keys.s) playerGroup.translateZ(speed);
+                if (keys.a) playerGroup.rotation.y += turnSpeed;
+                if (keys.d) playerGroup.rotation.y -= turnSpeed;
+
+                // 简单的边界限制
+                if(playerGroup.position.x > 45) playerGroup.position.x = 45;
+                if(playerGroup.position.x < -45) playerGroup.position.x = -45;
+                if(playerGroup.position.z > 45) playerGroup.position.z = 45;
+                if(playerGroup.position.z < -45) playerGroup.position.z = -45;
+            }
+
+            // 相机跟随逻辑 (第三人称平滑跟随)
+            // 理想的相机位置：角色后上方
+            const relativeCameraOffset = new THREE.Vector3(0, 5, 8);
+            const cameraOffset = relativeCameraOffset.applyMatrix4(playerGroup.matrixWorld);
+            
+            // 平滑插值移动相机
+            camera.position.lerp(cameraOffset, 0.1);
+            camera.lookAt(playerGroup.position);
+
+            // 知识节点动画与检测
+            nodes.forEach(node => {
+                // 上下浮动
+                node.rotation.y += 0.01;
+                node.rotation.z += 0.005;
+                node.position.y = node.userData.originalY + Math.sin(time * 2 + node.userData.floatOffset) * 0.2;
+
+                // 距离检测
+                const dist = playerGroup.position.distanceTo(node.position);
+                if (dist < 2 && !isModalOpen) {
+                    // 触发弹窗
+                    showModal(node.userData);
+                    // 稍微推开一点，防止无限触发
+                    playerGroup.translateZ(0.5); 
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function showModal(data) {
+            isModalOpen = true;
+            document.getElementById('modal-title').innerText = data.title;
+            document.getElementById('modal-content').innerText = data.content;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        // 隐藏Loading
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+        }, 1000);
+
+        // 窗口调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 探索者：去中心化地图</title>
+    <style>
+        /* === 沉浸式环境样式 === */
+        :root {
+            --primary-color: #00ff88;
+            --bg-color: #050510;
+            --panel-bg: rgba(20, 20, 40, 0.9);
+            --danger-color: #ff4444;
+            --accent-color: #b026ff;
+            --map-tile-size: 50px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 900px; /* 增加宽度以适应地图 */
+            height: 700px; /* 增加高度 */
+            background: #111;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* === HUD (平视显示器) === */
+        .hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            z-index: 10;
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .stat-box {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* === 模式切换 === */
+        #exploration-view {
+            display: none; /* 默认隐藏 */
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #battle-view {
+            display: none; /* 默认隐藏 */
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            flex-direction: column;
+        }
+
+        /* === 地图样式 === */
+        #game-map {
+            display: grid;
+            border: 1px solid rgba(0,255,136,0.3);
+            background: #0f0c29;
+            box-shadow: inset 0 0 10px rgba(0,255,136,0.1);
+            position: relative;
+            width: calc(var(--map-tile-size) * 10); /* 10x10 地图 */
+            height: calc(var(--map-tile-size) * 10);
+            margin: 20px auto;
+        }
+
+        .map-tile {
+            width: var(--map-tile-size);
+            height: var(--map-tile-size);
+            border: 1px dotted rgba(0,255,136,0.1);
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        .map-tile.current-player {
+            background-color: rgba(0,255,255,0.2);
+            box-shadow: 0 0 10px cyan;
+        }
+        
+        .map-tile.monster-spawn {
+            background-color: rgba(255,0,0,0.1);
+        }
+
+        #player-map-char {
+            font-size: 35px;
+            animation: breathe 1s infinite ease-in-out;
+            color: cyan;
+            text-shadow: 0 0 5px cyan;
+        }
+
+        #map-console {
+            width: 80%;
+            height: 100px;
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            margin-top: 20px;
+            padding: 10px;
+            overflow-y: auto;
+            color: var(--primary-color);
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        #movement-controls {
+            margin-top: 15px;
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left . right"
+                ". down .";
+            gap: 5px;
+            width: 180px;
+        }
+        #movement-controls button {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            background: rgba(0,255,136,0.1);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            transition: background 0.2s;
+        }
+        #movement-controls button:hover {
+            background: rgba(0,255,136,0.3);
+            box-shadow: 0 0 8px var(--primary-color);
+        }
+        #move-up { grid-area: up; }
+        #move-left { grid-area: left; }
+        #move-right { grid-area: right; }
+        #move-down { grid-area: down; }
+
+
+        /* === 战斗场景样式 (从之前代码复用) === */
+        #scene {
+            position: relative;
+            width: 100%;
+            height: 65%;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 50px;
+            /* display: none; */ /* 默认隐藏 */
+        }
+
+        .character {
+            width: 100px;
+            height: 120px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .player {
+            filter: drop-shadow(0 0 10px cyan);
+        }
+
+        .enemy {
+            filter: drop-shadow(0 0 10px red);
+        }
+
+        .char-sprite {
+            font-size: 80px;
+            text-align: center;
+            animation: breathe 2s infinite ease-in-out;
+            cursor: pointer;
+        }
+
+        .char-name {
+            text-align: center;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-top: -10px;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            margin-top: 5px;
+            border: 1px solid white;
+            position: relative;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 100%;
+            transition: width 0.3s;
+        }
+
+        .hp-fill.enemy-hp { background: var(--danger-color); }
+
+        /* === 交互区域 === */
+        #interaction-panel {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 35%;
+            background: var(--panel-bg);
+            border-top: 2px solid var(--primary-color);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #dialogue-text {
+            width: 100%;
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        button:hover {
+            background: var(--primary-color);
+            color: black;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        button:disabled {
+            border-color: gray;
+            color: gray;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* === 动画 === */
+        @keyframes breathe {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes attack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(50px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes damage {
+            0% { opacity: 1; }
+            20% { opacity: 0; filter: invert(1); }
+            40% { opacity: 1; }
+            60% { opacity: 0; filter: invert(1); }
+            100% { opacity: 1; }
+        }
+
+        .attack-anim { animation: attack 0.3s; }
+        .damage-anim { animation: damage 0.5s; }
+
+        /* === 启动覆盖层 === */
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 { font-size: 40px; color: var(--primary-color); margin-bottom: 10px; }
+        .btn-start {
+            font-size: 24px;
+            padding: 15px 40px;
+            margin-top: 30px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1>WEB3 探索者：去中心化地图</h1>
+        <p>连接你的知识钱包，探索 Web3 世界，击败中心化恶龙</p>
+        <p style="color: #888; font-size: 12px; margin-top:10px;">(点击下方按钮开始)</p>
+        <button class="btn-start" onclick="game.start()">连接钱包 (Connect Wallet)</button>
+    </div>
+
+    <div class="hud">
+        <div class="stat-box">Level: <span id="level-display">1</span></div>
+        <div class="stat-box">Wallet: <span id="score-display">0</span> ETH</div>
+        <div class="stat-box">HP: <span id="player-hp-display">100</span>/<span id="player-max-hp-display">100</span></div>
+    </div>
+
+    <div id="exploration-view">
+        <div id="game-map"></div>
+        <div id="map-console"></div>
+        <div id="movement-controls">
+            <button id="move-up">⬆️</button>
+            <button id="move-left">⬅️</button>
+            <button id="move-right">➡️</button>
+            <button id="move-down">⬇️</button>
+        </div>
+    </div>
+
+    <div id="battle-view">
+        <div id="scene">
+            <div class="character player" id="player-char">
+                <div class="hp-bar"><div class="hp-fill" id="player-battle-hp-fill"></div></div>
+                <div class="char-sprite">🧙‍♂️</div>
+                <div class="char-name">Dev_User</div>
+            </div>
+
+            <div class="character enemy" id="enemy-char">
+                <div class="hp-bar"><div class="hp-fill enemy-hp" id="enemy-hp-fill"></div></div>
+                <div class="char-sprite" id="enemy-sprite">👾</div>
+                <div class="char-name" id="enemy-name">Bug</div>
+            </div>
+        </div>
+
+        <div id="interaction-panel">
+            <div id="dialogue-text">系统正在初始化...</div>
+            <div class="options-grid" id="options-container">
+                </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * 游戏数据与逻辑
+ */
+
+// 题库：Web3 知识 (分等级)
+const questionBank = [
+    // Level 1: 基础概念
+    {
+        level: 1,
+        q: "区块链不可篡改的主要特性是基于什么？",
+        options: ["密码学哈希函数", "政府监管", "昂贵的服务器", "管理员密码"],
+        correct: 0, // 索引
+        damage: 25
+    },
+    {
+        level: 1,
+        q: "Web3 中的 'Gas' 指的是什么？",
+        options: ["一种加密货币", "网络交易手续费", "由于挖矿产生的废气", "液化天然气"],
+        correct: 1,
+        damage: 30
+    },
+    {
+        level: 1,
+        q: "谁通常被认为是比特币的创造者？",
+        options: ["Vitalik Buterin", "Elon Musk", "Satoshi Nakamoto", "CZ"],
+        correct: 2,
+        damage: 25
+    },
+
+    // Level 2: 钱包与安全
+    {
+        level: 2,
+        q: "助记词 (Seed Phrase) 应该告诉谁？",
+        options: ["客服人员", "最好的朋友", "只能自己保管，绝不告诉任何人", "存在云盘里"],
+        correct: 2,
+        damage: 35
+    },
+    {
+        level: 2,
+        q: "Metamask 是什么类型的钱包？",
+        options: ["冷钱包 (Cold Wallet)", "热钱包 (Hot Wallet)", "纸钱包", "硬件钱包"],
+        correct: 1,
+        damage: 30
+    },
+    {
+        level: 2,
+        q: "以下哪项是避免加密货币诈骗的最佳实践？",
+        options: ["投资承诺高回报的项目", "点击所有收到的链接", "在可信平台上验证项目信息，并警惕陌生空投", "分享私钥给有经验的人指导"],
+        correct: 2,
+        damage: 35
+    },
+
+    // Level 3: 进阶 (DeFi/NFT)
+    {
+        level: 3,
+        q: "DAO 的全称是什么？",
+        options: ["Digital Art Online", "Decentralized Autonomous Organization", "Data Access Object", "DeFi Auto Option"],
+        correct: 1,
+        damage: 40
+    },
+    {
+        level: 3,
+        q: "在以太坊上，同质化代币的标准通常是？",
+        options: ["ERC-721", "ERC-20", "ERC-1155", "HTTP-404"],
+        correct: 1,
+        damage: 45
+    },
+    {
+        level: 3,
+        q: "NFT 与比特币的主要区别是什么？",
+        options: ["NFT 可以在超市使用", "NFT 是不可分割且独一无二的", "NFT 没有任何价值", "比特币是图片"],
+        correct: 1,
+        damage: 40
+    },
+    {
+        level: 3,
+        q: "DeFi 是什么意思？",
+        options: ["去中心化金融", "数字艺术", "开发人员接口", "数据加密文件"],
+        correct: 0,
+        damage: 45
+    }
+];
+
+const enemies = [
+    { name: "中心化数据库", sprite: "🗄️", hp: 50, level: 1 },
+    { name: "钓鱼网站", sprite: "🎣", hp: 80, level: 2 },
+    { name: "高昂 Gas 费", sprite: "⛽", hp: 100, level: 2 },
+    { name: "51% 攻击者", sprite: "😈", hp: 150, level: 3 },
+    { name: "Rug Pull 项目方", sprite: "🏃‍♂️", hp: 200, level: 3 },
+    { name: "无趣的白皮书", sprite: "📜", hp: 70, level: 1 },
+    { name: "Mempool 堵塞", sprite: "🚦", hp: 120, level: 2 },
+];
+
+const MAP_SIZE = 10; // 地图是 10x10 的网格
+
+class Game {
+    constructor() {
+        this.player = {
+            hp: 100,
+            maxHp: 100,
+            level: 1,
+            exp: 0,
+            score: 0, // ETH
+            x: 0, // 玩家在地图上的x坐标
+            y: 0, // 玩家在地图上的y坐标
+        };
+        this.currentEnemy = null;
+        this.isBattleActive = false;
+        this.map = []; // 存储地图数据
+        this.playerMapChar = document.createElement('div');
+        this.playerMapChar.id = 'player-map-char';
+        this.playerMapChar.textContent = '👨‍💻'; // 玩家在地图上的表示
+
+        // DOM Elements
+        this.ui = {
+            dialogue: document.getElementById('dialogue-text'),
+            options: document.getElementById('options-container'),
+            playerBattleHpFill: document.getElementById('player-battle-hp-fill'), // 战斗血条
+            enemyHpFill: document.getElementById('enemy-hp-fill'), // 敌人血条
+            enemySprite: document.getElementById('enemy-sprite'),
+            enemyName: document.getElementById('enemy-name'),
+            enemyChar: document.getElementById('enemy-char'),
+            playerChar: document.getElementById('player-char'),
+            score: document.getElementById('score-display'),
+            level: document.getElementById('level-display'),
+            playerHpDisplay: document.getElementById('player-hp-display'), // HUD血量
+            playerMaxHpDisplay: document.getElementById('player-max-hp-display'), // HUD最大血量
+            startScreen: document.getElementById('start-screen'),
+            explorationView: document.getElementById('exploration-view'),
+            battleView: document.getElementById('battle-view'),
+            gameMap: document.getElementById('game-map'),
+            mapConsole: document.getElementById('map-console'),
+            moveUpBtn: document.getElementById('move-up'),
+            moveDownBtn: document.getElementById('move-down'),
+            moveLeftBtn: document.getElementById('move-left'),
+            moveRightBtn: document.getElementById('move-right'),
+        };
+
+        this.initMap();
+        this.attachEventListeners();
+    }
+
+    initMap() {
+        this.ui.gameMap.style.gridTemplateColumns = `repeat(${MAP_SIZE}, 1fr)`;
+        this.ui.gameMap.style.gridTemplateRows = `repeat(${MAP_SIZE}, 1fr)`;
+        
+        for (let i = 0; i < MAP_SIZE; i++) {
+            this.map[i] = [];
+            for (let j = 0; j < MAP_SIZE; j++) {
+                const tile = document.createElement('div');
+                tile.classList.add('map-tile');
+                tile.dataset.x = j;
+                tile.dataset.y = i;
+                this.map[i][j] = { element: tile, hasMonster: false };
+                this.ui.gameMap.appendChild(tile);
+            }
+        }
+        this.placeMonstersOnMap();
+        this.updateMap();
+    }
+
+    placeMonstersOnMap() {
+        // 随机放置一些怪物点
+        const numMonsters = Math.floor(MAP_SIZE * MAP_SIZE / 5); // 大约五分之一的格子有怪物
+        for (let i = 0; i < numMonsters; i++) {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * MAP_SIZE);
+                y = Math.floor(Math.random() * MAP_SIZE);
+            } while (this.map[y][x].hasMonster || (x === this.player.x && y === this.player.y)); // 避免重叠和出生点
+            this.map[y][x].hasMonster = true;
+            this.map[y][x].element.classList.add('monster-spawn');
+        }
+    }
+
+    attachEventListeners() {
+        this.ui.moveUpBtn.onclick = () => this.movePlayer(0, -1);
+        this.ui.moveDownBtn.onclick = () => this.movePlayer(0, 1);
+        this.ui.moveLeftBtn.onclick = () => this.movePlayer(-1, 0);
+        this.ui.moveRightBtn.onclick = () => this.movePlayer(1, 0);
+
+        document.addEventListener('keydown', (e) => {
+            if (this.isBattleActive || this.ui.startScreen.style.display !== 'none') return;
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                    this.movePlayer(0, -1);
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    this.movePlayer(0, 1);
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                    this.movePlayer(-1, 0);
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                    this.movePlayer(1, 0);
+                    break;
+            }
+        });
+    }
+
+    start() {
+        this.ui.startScreen.style.display = 'none';
+        this.switchView('exploration');
+        this.logToConsole('连接到 Web3 探索网络...开始旅程！');
+        this.updateHpDisplay();
+    }
+
+    switchView(mode) {
+        if (mode === 'exploration') {
+            this.ui.explorationView.style.display = 'flex';
+            this.ui.battleView.style.display = 'none';
+            this.isBattleActive = false;
+        } else if (mode === 'battle') {
+            this.ui.explorationView.style.display = 'none';
+            this.ui.battleView.style.display = 'flex';
+            this.isBattleActive = true;
+        }
+    }
+
+    logToConsole(message, color = 'var(--primary-color)') {
+        const p = document.createElement('p');
+        p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        p.style.color = color;
+        this.ui.mapConsole.prepend(p); // 新消息显示在顶部
+        if (this.ui.mapConsole.children.length > 20) { // 保持最多20条消息
+            this.ui.mapConsole.removeChild(this.ui.mapConsole.lastChild);
+        }
+    }
+
+    updateMap() {
+        // 清除所有旧的玩家标记
+        document.querySelectorAll('.map-tile.current-player').forEach(tile => {
+            tile.classList.remove('current-player');
+            if (tile.firstChild === this.playerMapChar) {
+                tile.removeChild(this.playerMapChar);
+            }
+        });
+
+        // 放置新的玩家标记
+        const playerTile = this.map[this.player.y][this.player.x].element;
+        playerTile.classList.add('current-player');
+        playerTile.appendChild(this.playerMapChar);
+    }
+
+    movePlayer(dx, dy) {
+        if (this.isBattleActive) return; // 战斗中不能移动
+
+        const newX = this.player.x + dx;
+        const newY = this.player.y + dy;
+
+        if (newX >= 0 && newX < MAP_SIZE && newY >= 0 && newY < MAP_SIZE) {
+            this.player.x = newX;
+            this.player.y = newY;
+            this.updateMap();
+            this.logToConsole(`移动到坐标: (${this.player.x}, ${this.player.y})`);
+
+            // 检查是否遇到怪物
+            if (this.map[this.player.y][this.player.x].hasMonster) {
+                this.logToConsole('⚠️ 发现一个中心化怪物！', 'var(--danger-color)');
+                this.map[this.player.y][this.player.x].hasMonster = false; // 移除怪物
+                this.map[this.player.y][this.player.x].element.classList.remove('monster-spawn');
+                this.switchView('battle');
+                this.spawnEnemy();
+            } else {
+                // 模拟随机遭遇：5%几率在空地遇到随机怪物
+                if (Math.random() < 0.08) { // 8% chance
+                    this.logToConsole('⚠️ 意外遭遇一个随机怪物！', 'var(--danger-color)');
+                    this.switchView('battle');
+                    this.spawnEnemy();
+                } else {
+                    this.logToConsole('区块安全，继续前进...');
+                }
+            }
+        } else {
+            this.logToConsole('边界错误：你无法穿越区块链的边缘！', 'gray');
+        }
+    }
+
+    spawnEnemy() {
+        // 根据玩家等级筛选敌人，如果没有匹配等级，则随机选一个
+        let potentialEnemies = enemies.filter(e => e.level <= this.player.level + 1);
+        if(potentialEnemies.length === 0) potentialEnemies = enemies;
+
+        const template = potentialEnemies[Math.floor(Math.random() * potentialEnemies.length)];
+
+        this.currentEnemy = {
+            ...template,
+            maxHp: template.hp
+        };
+
+        // 更新UI
+        this.ui.enemySprite.textContent = this.currentEnemy.sprite;
+        this.ui.enemyName.textContent = `Lv.${this.currentEnemy.level} ${this.currentEnemy.name}`;
+        this.updateHpUi();
+
+        this.typewriter(`遭遇了 ${this.currentEnemy.name}！\n准备战斗，验证你的知识！`, () => {
+            this.startTurn();
+        });
+    }
+
+    startTurn() {
+        this.isBattleActive = true;
+        // 随机选择一道题目
+        const availableQuestions = questionBank.filter(q => q.level <= this.player.level);
+        // 兜底，如果没有对应等级题目，取所有
+        const pool = availableQuestions.length > 0 ? availableQuestions : questionBank;
+        const question = pool[Math.floor(Math.random() * pool.length)];
+
+        this.ui.dialogue.innerHTML = `<strong>[知识攻击]</strong> ${question.q}`;
+        this.ui.options.innerHTML = '';
+
+        question.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.textContent = opt;
+            btn.onclick = () => this.handleAnswer(index, question);
+            this.ui.options.appendChild(btn);
+        });
+    }
+
+    handleAnswer(selectedIndex, question) {
+        // 禁用所有按钮防止连点
+        const btns = this.ui.options.querySelectorAll('button');
+        btns.forEach(b => b.disabled = true);
+
+        if (selectedIndex === question.correct) {
+            // 答对了
+            this.playerAttack(question.damage);
+        } else {
+            // 答错了
+            this.enemyAttack();
+        }
+    }
+
+    playerAttack(damage) {
+        // 动画
+        this.ui.playerChar.classList.add('attack-anim');
+        setTimeout(() => this.ui.playerChar.classList.remove('attack-anim'), 300);
+
+        // 敌人受伤动画
+        setTimeout(() => {
+            this.ui.enemyChar.classList.add('damage-anim');
+            this.currentEnemy.hp -= damage;
+            if (this.currentEnemy.hp < 0) this.currentEnemy.hp = 0;
+            this.updateHpUi();
+
+            this.ui.dialogue.innerHTML = `<span style="color:var(--primary-color)">回答正确！</span><br>你对敌人造成了 ${damage} 点伤害。`;
+
+            setTimeout(() => {
+                this.ui.enemyChar.classList.remove('damage-anim');
+                if (this.currentEnemy.hp <= 0) {
+                    this.winBattle();
+                } else {
+                    // 1秒后下一题
+                    setTimeout(() => this.startTurn(), 1500);
+                }
+            }, 500);
+        }, 300);
+    }
+
+    enemyAttack() {
+        const dmg = 20 + (this.currentEnemy.level * 5);
+
+        // 敌人攻击动画
+        this.ui.enemyChar.classList.add('attack-anim');
+        setTimeout(() => this.ui.enemyChar.classList.remove('attack-anim'), 300);
+
+        setTimeout(() => {
+            this.ui.playerChar.classList.add('damage-anim');
+            this.player.hp -= dmg;
+            if (this.player.hp < 0) this.player.hp = 0;
+            this.updateHpUi();
+            this.updateHpDisplay(); // 更新HUD血量
+
+            this.ui.dialogue.innerHTML = `<span style="color:var(--danger-color)">回答错误！</span><br>敌人发起了DDOS攻击，你受到了 ${dmg} 点伤害。`;
+
+            setTimeout(() => {
+                this.ui.playerChar.classList.remove('damage-anim');
+                if (this.player.hp <= 0) {
+                    this.gameOver();
+                } else {
+                    setTimeout(() => this.startTurn(), 2000);
+                }
+            }, 500);
+        }, 300);
+    }
+
+    winBattle() {
+        const rewardEth = 0.1 * this.currentEnemy.level;
+        this.player.score += rewardEth;
+        this.player.exp += 50;
+        
+        // 简单的升级逻辑
+        if (this.player.exp >= this.player.level * 100 ) {
+            // === 接续上一段代码 ===
+            this.player.level++;
+            this.player.exp = 0;
+            this.player.hp = this.player.maxHp; // 升级回血
+            this.updateHpDisplay();
+            
+            this.typewriter(`胜利！获得 ${rewardEth.toFixed(1)} ETH。\n恭喜！你升级到了 Level ${this.player.level}！`, () => {
+                setTimeout(() => this.returnToMap(), 2500);
+            });
+        } else {
+             this.typewriter(`胜利！获得 ${rewardEth.toFixed(1)} ETH。敌人已被去中心化。`, () => {
+                setTimeout(() => this.returnToMap(), 2000);
+            });
+        }
+        
+        this.ui.score.textContent = this.player.score.toFixed(2);
+        this.ui.level.textContent = this.player.level;
+        this.ui.options.innerHTML = '<button disabled>正在验证交易...</button>';
+    }
+
+    returnToMap() {
+        this.switchView('exploration');
+        this.logToConsole('战斗结束，返回主网。');
+        this.currentEnemy = null;
+        // 确保战斗后更新一次HUD血量
+        this.updateHpDisplay();
+    }
+
+    gameOver() {
+        this.ui.dialogue.innerHTML = `<span style="color:red">连接断开...</span><br>你的私钥丢失了（HP归零）。请刷新页面重新开始。`;
+        this.ui.options.innerHTML = `<button onclick="location.reload()">重新部署合约 (Restart)</button>`;
+    }
+
+    updateHpUi() {
+        const pPct = (this.player.hp / this.player.maxHp) * 100;
+        const ePct = (this.currentEnemy.hp / this.currentEnemy.maxHp) * 100;
+        this.ui.playerBattleHpFill.style.width = `${pPct}%`;
+        this.ui.enemyHpFill.style.width = `${ePct}%`;
+    }
+
+    updateHpDisplay() {
+        this.ui.playerHpDisplay.textContent = this.player.hp;
+        this.ui.playerMaxHpDisplay.textContent = this.player.maxHp;
+    }
+
+    // 打字机效果 helper
+    typewriter(text, callback) {
+        this.ui.dialogue.innerHTML = '';
+        let i = 0;
+        const speed = 30; 
+        const type = () => {
+            if (i < text.length) {
+                this.ui.dialogue.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else if (callback) {
+                callback();
+            }
+        };
+        type();
+    }
+}
+
+// 初始化游戏
+const game = new Game();
+
+</script>
+
+</body>
+</html>
