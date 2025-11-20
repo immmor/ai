@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Flow | Master Edition</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-dim: #333;
+            --text-bright: #fff;
+            --accent-color: #00f3ff; /* 赛博蓝 */
+            --secondary-color: #bc13fe; /* 霓虹紫 */
+            --fever-color: #ffcc00; /* 狂热金 */
+            --error-color: #ff0055;  /* 故障红 */
+            --cursor-color: #ffe600; /* 亮黄光标 */
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-bright);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* 防止粒子撑开滚动条 */
+            user-select: none;
+            transition: background-color 0.5s;
+        }
+
+        /* --- 顶部经验条 --- */
+        .xp-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #222;
+            z-index: 100;
+        }
+        .xp-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+            box-shadow: 0 0 10px var(--accent-color);
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .level-badge {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* --- 游戏主区域 --- */
+        .game-container {
+            width: 80%;
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        .stage-dot {
+            padding: 4px 12px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stage-dot.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        /* --- 文字显示 --- */
+        .word-display {
+            font-size: 2.5rem;
+            line-height: 1.6;
+            font-weight: bold;
+            margin-bottom: 30px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            min-height: 80px;
+        }
+
+        .char {
+            color: var(--text-dim);
+            transition: color 0.1s, text-shadow 0.1s;
+            position: relative;
+            white-space: pre;
+            border-bottom: 2px solid transparent;
+        }
+
+        .char.masked { color: transparent; border-bottom: 2px dashed #333; }
+        .char.correct {
+            color: var(--accent-color) !important;
+            text-shadow: 0 0 10px var(--accent-color);
+            border-bottom-color: transparent !important;
+        }
+        .char.wrong {
+            color: var(--error-color) !important;
+            text-shadow: 0 0 10px var(--error-color);
+            background-color: rgba(255, 0, 85, 0.1);
+        }
+        
+        .char.active {
+            border-bottom: 2px solid var(--cursor-color) !important;
+            animation: blink 1s infinite;
+        }
+        .char.hint-reveal {
+            color: rgba(255, 255, 255, 0.5) !important;
+            animation: fadeInOut 1s forwards;
+        }
+
+        /* 默写模式 */
+        .word-display.blind-mode .char:not(.correct):not(.wrong) { color: transparent; border-bottom: none; }
+        .word-display.blind-mode::after {
+            content: "[ BLIND MODE ]";
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 1.5rem; color: #333; pointer-events: none;
+        }
+        .word-display.blind-mode.typing::after { opacity: 0; }
+
+        /* --- 翻译与反馈 --- */
+        .translation {
+            font-size: 1.3rem;
+            color: #888;
+            margin-top: 10px;
+            font-family: "Microsoft YaHei", sans-serif;
+            min-height: 1.5em;
+            transition: color 0.3s;
+        }
+
+        /* --- HUD --- */
+        .hud {
+            display: flex;
+            gap: 40px;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            justify-content: center;
+        }
+        .hud-item b {
+            color: #fff;
+            font-size: 1.4rem;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* --- 粒子特效容器 --- */
+        #particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            animation: pop 0.6s ease-out forwards;
+        }
+
+        /* --- 狂热模式样式 --- */
+        body.fever-mode {
+            --accent-color: var(--fever-color);
+            /* background-color: #1a1100; 微弱的背景色变化 */
+        }
+        body.fever-mode .combo-bg {
+            color: rgba(255, 204, 0, 0.1);
+            text-shadow: 0 0 30px var(--fever-color);
+        }
+
+        /* --- 提示栏 --- */
+        .footer-hint {
+            position: fixed;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            z-index: 100;
+        }
+        
+        .footer-hint span {
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 3px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        
+        .footer-hint span:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--accent-color);
+        }
+        .key-tag {
+            background: #222;
+            padding: 1px 3px;
+            border-radius: 2px;
+            color: #999;
+            border: 1px solid #333;
+            font-size: 10px;
+        }
+
+        /* --- 动画 --- */
+        .combo-bg {
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 15rem; color: rgba(255, 255, 255, 0.02);
+            z-index: -1; font-weight: 900; pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        @keyframes blink {
+            0%, 100% { border-bottom-color: var(--cursor-color); box-shadow: 0 2px 5px var(--cursor-color); }
+            50% { border-bottom-color: transparent; box-shadow: none; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .shake-screen { animation: shake 0.3s ease-in-out; }
+        @keyframes pop {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; }
+        }
+        @keyframes levelUpAnim {
+            0% { transform: scale(1); } 50% { transform: scale(1.5); color: #fff; } 100% { transform: scale(1); }
+        }
+
+        #input-field { opacity: 0; position: absolute; top: -1000px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
+    <div class="level-badge" id="level-badge">LV.1</div>
+    <div id="particles"></div>
+    <div class="combo-bg" id="combo-bg">0</div>
+
+    <div class="game-container">
+        <div class="stage-indicator" id="stage-indicator"></div>
+
+        <div class="word-display" id="word-display">Press Any Key</div>
+        <div class="translation" id="translation">点击开始 • 进入心流状态</div>
+
+        <div class="hud">
+            <div class="hud-item">Score <b id="score">0</b></div>
+            <div class="hud-item">Combo <b id="combo">0</b></div>
+            <div class="hud-item">WPM <b id="wpm">0</b></div>
+        </div>
+    </div>
+
+    <div class="footer-hint">
+        <span id="hint-button"><span class="key-tag">Shift + I</span> 提示 (-50分)</span>
+        <span id="read-button"><span class="key-tag">Shift + R</span> 朗读</span>
+        <span id="skip-button"><span class="key-tag">Shift + N</span> 跳过</span>
+        <span><span class="key-tag">自动退格修正</span></span>
+    </div>
+    
+    <input type="text" id="input-field" autocomplete="off">
+
+    <script src="words.js"></script>
+    <script>
+        // --- 1. 核心变量 ---
+        let lessonQueue = [];
+        let currentStep = null;
+        
+        let state = {
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            hits: 0,
+            misses: 0,
+            xp: 0,
+            level: 1,
+            nextLevelXp: 1000
+        };
+        
+        let startTime = 0;
+        let typedChars = 0;
+
+        let isGameActive = false;
+        
+        // --- 2. 音频系统 (增强版) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            if (type === 'success') {
+                // 小关卡成功
+                playSoundNote(880, now, 0.1); 
+                setTimeout(() => playSoundNote(1108.73, now + 0.1, 0.15), 50); 
+            } else if (type === 'complete') {
+                // 整句完成（更华丽的声音）
+                playSoundNote(523.25, now, 0.1); // C5
+                setTimeout(() => playSoundNote(659.25, now + 0.1, 0.1), 100); // E5
+                setTimeout(() => playSoundNote(783.99, now + 0.2, 0.3), 200); // G5
+            } else {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                // 狂热模式音调更高
+                let pitchMod = state.combo > 20 ? 1.2 : 1.0;
+
+                if (type === 'type') {
+                    // 机械键盘声 (清脆)
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(600 * pitchMod, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now); // 稍微大声一点
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(50, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'levelup') {
+                    // 升级音效 (爬升音)
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.linearRampToValueAtTime(880, now + 0.1);
+                    osc.frequency.linearRampToValueAtTime(1760, now + 0.3);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            }
+        }
+        
+        function playSoundNote(freq, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        // --- 3. 视觉特效系统 ---
+        function spawnParticles(rect) {
+            const container = document.getElementById('particles');
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            const color = state.combo > 20 ? 'var(--fever-color)' : 'var(--accent-color)';
+
+            // 生成 5-8 个粒子
+            for (let i = 0; i < 6; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.backgroundColor = color;
+                
+                // 随机爆炸方向
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 30 + Math.random() * 50;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                p.style.setProperty('--tx', `${tx}px`);
+                p.style.setProperty('--ty', `${ty}px`);
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+
+        // --- 4. 游戏逻辑 ---
+        const displayEl = document.getElementById('word-display');
+        const inputEl = document.getElementById('input-field');
+        const scoreEl = document.getElementById('score');
+        const comboEl = document.getElementById('combo');
+        const bgEl = document.getElementById('combo-bg');
+        const wpmEl = document.getElementById('wpm');
+        const xpBar = document.getElementById('xp-bar');
+        const levelEl = document.getElementById('level-badge');
+        const stageIndEl = document.getElementById('stage-indicator');
+
+        function speakCurrentText() {
+            const u = new SpeechSynthesisUtterance(currentStep.text);
+            u.lang = 'en-US';
+            window.speechSynthesis.speak(u);
+        }
+        
+        function initGame() {
+            document.addEventListener('click', () => {
+                inputEl.focus();
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+            });
+            document.addEventListener('keydown', () => inputEl.focus());
+            
+            // 为底部按钮添加点击事件
+            document.getElementById('hint-button').addEventListener('click', showHint);
+            document.getElementById('read-button').addEventListener('click', speakCurrentText);
+            document.getElementById('skip-button').addEventListener('click', loadNextStep);
+            
+            startNewSentence();
+        }
+        
+        function updateWPM() {
+            if (!isGameActive) return;
+            const timeElapsedMin = (Date.now() - startTime) / 60000;
+            if (timeElapsedMin > 0) {
+                const wpm = Math.round((typedChars / 5) / timeElapsedMin);
+                wpmEl.innerText = wpm;
+            }
+            requestAnimationFrame(updateWPM);
+        }
+        
+        function shakeScreen() {
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 300);
+        }
+
+        function generateLessonPlan(sentenceObj) {
+            const plan = [];
+            const words = sentenceObj.en.split(' ');
+            
+            // 难词提取 (长度>4)
+            let hardWords = words
+                .filter(w => w.replace(/[^a-zA-Z]/g, '').length > 4)
+                .sort((a, b) => b.length - a.length)
+                .slice(0, 2); // 只要最难的2个，避免太长
+            
+            hardWords.forEach(word => {
+                const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '');
+                if(cleanWord.length > 0) {
+                    plan.push({
+                        text: cleanWord,
+                        mode: 'word',
+                        label: '⚡ Warm-up',
+                        translation: `[ 预热 ] 重点词汇: ${cleanWord}`
+                    });
+                }
+            });
+
+            // 填空
+            let maskIndices = [];
+            hardWords.forEach(hw => {
+                let idx = sentenceObj.en.indexOf(hw);
+                if (idx !== -1) {
+                    for(let i=0; i<hw.length; i++) maskIndices.push(idx + i);
+                }
+            });
+
+            plan.push({
+                text: sentenceObj.en,
+                mode: 'cloze',
+                label: '🧩 Cloze',
+                maskIndices: maskIndices,
+                translation: sentenceObj.cn
+            });
+
+            // 默写
+            plan.push({
+                text: sentenceObj.en,
+                mode: 'blind',
+                label: '🧠 Recall',
+                translation: sentenceObj.cn
+            });
+
+            return plan;
+        }
+
+        function startNewSentence() {
+            const targetObj = contentList[Math.floor(Math.random() * contentList.length)];
+            lessonQueue = generateLessonPlan(targetObj);
+            loadNextStep();
+        }
+
+        function loadNextStep() {
+            if (lessonQueue.length === 0) {
+                // 句子完成奖励
+                addXP(100);
+                playSound('complete');
+                setTimeout(startNewSentence, 800);
+                return;
+            }
+
+            currentStep = lessonQueue.shift();
+            inputEl.value = '';
+            
+            // 渲染步骤条
+            stageIndEl.innerHTML = '';
+            const dot = document.createElement('div');
+            dot.className = 'stage-dot active';
+            dot.innerText = currentStep.label;
+            stageIndEl.appendChild(dot);
+
+            renderUI();
+            
+            if (!isGameActive) {
+                startTime = Date.now();
+                isGameActive = true;
+                requestAnimationFrame(updateWPM);
+            }
+        }
+
+        function renderUI() {
+            displayEl.innerHTML = '';
+            displayEl.className = 'word-display'; 
+            const transEl = document.getElementById('translation');
+            transEl.className = 'translation';
+            
+            if (currentStep.mode === 'blind') {
+                displayEl.classList.add('blind-mode');
+                transEl.classList.add('highlight'); // 高亮中文
+            }
+
+            transEl.innerText = currentStep.translation;
+
+            currentStep.text.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.classList.add('char');
+                if (currentStep.mode === 'cloze' && currentStep.maskIndices && currentStep.maskIndices.includes(index)) {
+                    span.classList.add('masked');
+                }
+                if (index === 0) span.classList.add('active');
+                displayEl.appendChild(span);
+            });
+        }
+
+        // --- 核心输入监听 ---
+        inputEl.addEventListener('input', (e) => {
+            const val = inputEl.value;
+            const spans = displayEl.querySelectorAll('.char');
+            
+            // 盲打模式开始后隐藏提示
+            if (currentStep.mode === 'blind' && val.length > 0) {
+                displayEl.classList.add('typing');
+            }
+
+            if (e.inputType !== "deleteContentBackward") {
+                playSound('type');
+                state.hits++;
+                
+                // 获取光标位置的元素用于生成粒子
+                const currentSpan = spans[val.length - 1];
+                if (currentSpan) {
+                    const rect = currentSpan.getBoundingClientRect();
+                    spawnParticles(rect); // ✨ 生成粒子
+                }
+            }
+
+            let allCorrectSoFar = true;
+
+            spans.forEach((span, index) => {
+                span.classList.remove('active');
+
+                if (index < val.length) {
+                    if (val[index] === currentStep.text[index]) {
+                        span.className = 'char correct';
+                    } else {
+                        span.className = 'char wrong';
+                        allCorrectSoFar = false;
+                        if (e.inputType !== "deleteContentBackward" && index === val.length - 1) {
+                            playSound('error');
+                            resetCombo();
+                            shakeScreen();
+                        }
+                    }
+                } else {
+                    span.className = 'char';
+                    if (currentStep.mode === 'cloze' && currentStep.maskIndices.includes(index)) {
+                        span.classList.add('masked');
+                    }
+                }
+            });
+
+            if (val.length < spans.length) {
+                spans[val.length].classList.add('active');
+            }
+
+            // 检查完成
+            if (val === currentStep.text) {
+                handleSuccess();
+            }
+        });
+
+        function handleError() {
+            // 这个函数可能不再需要，因为错误处理已移至 input 事件中
+            state.misses++;
+            updateHUD();
+            document.body.classList.remove('fever-mode'); // 退出狂热
+        }
+        
+        function resetCombo() {
+            state.combo = 0;
+            bgEl.style.opacity = 0;
+            updateHUD();
+        }
+
+        function handleSuccess() {
+            playSound('success');
+            
+            let stepBonus = currentStep.mode === 'blind' ? 100 : (currentStep.mode === 'cloze' ? 50 : 20);
+            state.score += stepBonus + state.combo;
+            state.combo++;
+            typedChars += currentStep.text.length;
+            
+            if(state.combo > state.maxCombo) state.maxCombo = state.combo;
+
+            // 狂热模式判定
+            if (state.combo >= 20) {
+                document.body.classList.add('fever-mode');
+            }
+
+            addXP(10);
+            updateHUD();
+            triggerComboEffect();
+            setTimeout(loadNextStep, 300);
+        }
+        
+        function triggerComboEffect() {
+            // 简单视觉反馈
+        }
+
+        function addXP(amount) {
+            state.xp += amount;
+            if (state.xp >= state.nextLevelXp) {
+                state.xp -= state.nextLevelXp;
+                state.level++;
+                state.nextLevelXp = Math.floor(state.nextLevelXp * 1.2); // 升级难度增加
+                playSound('levelup');
+                levelEl.innerText = "LV." + state.level;
+                levelEl.style.animation = 'levelUpAnim 0.5s';
+                setTimeout(() => levelEl.style.animation = '', 500);
+            }
+            
+            const pct = (state.xp / state.nextLevelXp) * 100;
+            xpBar.style.width = `${pct}%`;
+        }
+
+        function updateHUD() {
+            scoreEl.innerText = state.score;
+            comboEl.innerText = state.combo;
+            
+            if (state.combo > 0) {
+                bgEl.innerText = state.combo;
+                bgEl.style.opacity = Math.min(state.combo * 0.05, 0.3);
+                bgEl.style.transform = "translate(-50%, -50%) scale(1.2)";
+                setTimeout(() => bgEl.style.transform = "translate(-50%, -50%) scale(1)", 100);
+            } else {
+                bgEl.style.opacity = 0;
+            }
+        }
+
+        // --- 提示功能 ---
+        function showHint() {
+            const val = inputEl.value;
+            if (val.length >= currentStep.text.length) return;
+            
+            const nextChar = currentStep.text[val.length];
+            const spans = displayEl.querySelectorAll('.char');
+            const targetSpan = spans[val.length];
+
+            // 扣分
+            state.score = Math.max(0, state.score - 50);
+            updateHUD();
+
+            // 视觉提示 (临时显示字符)
+            targetSpan.innerText = nextChar;
+            targetSpan.classList.add('hint-reveal');
+            
+            // 1秒后如果还没输入，恢复原样 (除了blind mode特殊处理)
+            setTimeout(() => {
+                targetSpan.classList.remove('hint-reveal');
+                if (currentStep.mode === 'blind' && !targetSpan.classList.contains('correct')) {
+                     // Blind mode 下提示消失后应该变回空/透明，但为了用户体验，这里我们让它保持不可见直到用户输入
+                     // 其实 CSS class .char 没有文字内容变化，这里 innerText 改变了
+                }
+            }, 800);
+        }
+
+        // --- 快捷键系统 ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') location.reload();
+            
+            // Hint: Shift + I
+            if ((e.key === 'i' || e.key === 'I') && e.shiftKey) {
+                e.preventDefault();
+                showHint();
+            }
+
+            // Skip: Shift + N
+            if (e.key.toLowerCase() === 'n' && e.shiftKey) {
+                e.preventDefault();
+                state.combo = 0; 
+                document.body.classList.remove('fever-mode');
+                startNewSentence(); 
+            } 
+
+            // Read: Shift + R
+            if (e.key.toLowerCase() === 'r' && e.shiftKey) {
+                e.preventDefault();
+                const u = new SpeechSynthesisUtterance(currentStep.text);
+                u.lang = 'en-US';
+                window.speechSynthesis.speak(u);
+            }
+        });
+
+        initGame();
+
+    </script>
+</body>
+</html>

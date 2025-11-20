@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Flow | Pro</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-dim: #444;
+            --text-bright: #fff;
+            --accent-color: #00f3ff; /* 赛博蓝 */
+            --error-color: #ff0055;  /* 故障红 */
+            --cursor-color: #ffe600; /* 亮黄光标 */
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-bright);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* --- 游戏主区域 --- */
+        .game-container {
+            width: 80%;
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- 单词/句子显示 --- */
+        .word-display {
+            font-size: 2.5rem; /* 稍微调小以适应句子 */
+            line-height: 1.6;
+            font-weight: bold;
+            margin-bottom: 30px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap; /* 允许句子换行 */
+            justify-content: center;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .char {
+            color: var(--text-dim);
+            transition: color 0.1s, text-shadow 0.1s;
+            position: relative;
+            white-space: pre; /* 保留空格宽度 */
+            border-bottom: 2px solid transparent; /* 光标预留位置 */
+        }
+
+        /* 正确 */
+        .char.correct {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* 错误 */
+        .char.wrong {
+            color: var(--error-color);
+            text-shadow: 0 0 10px var(--error-color);
+            background-color: rgba(255, 0, 85, 0.1);
+        }
+
+        /* 当前光标指示器 */
+        .char.active {
+            border-bottom: 2px solid var(--cursor-color);
+            animation: blink 1s infinite;
+        }
+
+        /* --- 翻译 --- */
+        .translation {
+            font-size: 1.2rem;
+            color: #888;
+            margin-top: 10px;
+            font-family: "Microsoft YaHei", sans-serif;
+            min-height: 1.5em;
+        }
+
+        /* --- HUD 仪表盘 --- */
+        .hud {
+            display: flex;
+            gap: 50px;
+            margin-top: 60px;
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            justify-content: center;
+        }
+        
+        .hud-item b {
+            color: #fff;
+            font-size: 1.4rem;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* --- 连击背景字 --- */
+        .combo-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15rem;
+            color: rgba(255, 255, 255, 0.02);
+            z-index: -1;
+            font-weight: 900;
+            pointer-events: none;
+            transition: all 0.2s ease-out;
+        }
+
+        /* --- 输入框 (隐形) --- */
+        #input-field {
+            opacity: 0;
+            position: absolute;
+            top: -1000px;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.8rem;
+            color: #444;
+        }
+
+        /* --- 动画 --- */
+        @keyframes blink {
+            0%, 100% { border-bottom-color: var(--cursor-color); box-shadow: 0 2px 5px var(--cursor-color); }
+            50% { border-bottom-color: transparent; box-shadow: none; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .shake-screen {
+            animation: shake 0.3s ease-in-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="combo-bg" id="combo-bg">0</div>
+
+    <div class="game-container">
+        <div class="word-display" id="word-display">
+            Press Any Key
+        </div>
+        <div class="translation" id="translation">
+            点击任意键开启声音并开始
+        </div>
+
+        <div class="hud">
+            <div class="hud-item">Score <b id="score">0</b></div>
+            <div class="hud-item">Combo <b id="combo">0</b></div>
+            <div class="hud-item">WPM <b id="wpm">0</b></div>
+        </div>
+    </div>
+
+    <div class="hint">Shift + N 下一句 • Shift + R 读句子 • 支持退格修正</div>
+    <input type="text" id="input-field" autocomplete="off">
+
+    <script src="words.js"></script>
+    <script>
+        // --- 2. 状态变量 ---
+        let currentTarget = {}; // 当前题目对象
+        let startTime = 0;
+        let typedChars = 0; // 总输入字符数 (用于计算WPM)
+        let score = 0;
+        let combo = 0;
+        let isGameActive = false;
+        
+        // --- 3. 音频系统 (Web Audio API - 无需外部文件) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = new AudioContext();
+
+        // 合成音效函数
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume(); // 浏览器策略：需用户交互后解锁
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'type') {
+                // 机械键盘: 短促高频正弦波 + 快速衰减
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } 
+            else if (type === 'error') {
+                // 错误: 锯齿波低频嗡嗡声
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.15);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            else if (type === 'success') {
+                // 成功: 两个音符的和弦
+                playSoundNote(880, now, 0.1); // A5
+                setTimeout(() => playSoundNote(1108.73, now + 0.1, 0.2), 50); // C#6
+            }
+        }
+
+        function playSoundNote(freq, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        // --- 4. 游戏逻辑 ---
+        const displayEl = document.getElementById('word-display');
+        const transEl = document.getElementById('translation');
+        const inputEl = document.getElementById('input-field');
+        const scoreEl = document.getElementById('score');
+        const comboEl = document.getElementById('combo');
+        const bgEl = document.getElementById('combo-bg');
+        const wpmEl = document.getElementById('wpm');
+
+        function initGame() {
+            // 确保点击任意处聚焦输入框
+            document.addEventListener('click', () => {
+                inputEl.focus();
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+            });
+            document.addEventListener('keydown', () => inputEl.focus());
+            
+            nextLevel();
+        }
+
+        function nextLevel() {
+            // 随机选句
+            currentTarget = contentList[Math.floor(Math.random() * contentList.length)];
+            
+            // 重置输入框
+            inputEl.value = '';
+            
+            // 渲染界面
+            renderWord();
+            transEl.innerText = currentTarget.cn;
+            
+            // WPM 计时起点
+            if (!isGameActive) {
+                startTime = Date.now();
+                isGameActive = true;
+                requestAnimationFrame(updateWPM);
+            }
+        }
+
+        function renderWord() {
+            displayEl.innerHTML = '';
+            // 将句子拆分成 span
+            currentTarget.en.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.classList.add('char');
+                if (index === 0) span.classList.add('active'); // 初始光标
+                displayEl.appendChild(span);
+            });
+        }
+
+        // --- 5. 核心输入监听 (包含删除逻辑) ---
+        inputEl.addEventListener('input', (e) => {
+            const val = inputEl.value;
+            const spans = displayEl.querySelectorAll('.char');
+            
+            // 播放打字音效 (如果是输入内容而非清空)
+            if (e.inputType !== "deleteContentBackward") {
+                playSound('type');
+            }
+
+            // 遍历所有字符进行状态更新 (涵盖了输入和删除两种情况)
+            spans.forEach((span, index) => {
+                // 移除旧光标
+                span.classList.remove('active');
+
+                if (index < val.length) {
+                    // 已经输入的部分
+                    if (val[index] === currentTarget.en[index]) {
+                        span.className = 'char correct'; // 正确
+                    } else {
+                        span.className = 'char wrong'; // 错误
+                        if (e.inputType !== "deleteContentBackward" && index === val.length - 1) {
+                            // 只有刚输错的那个瞬间才播放错误音效
+                            playSound('error');
+                            resetCombo();
+                            shakeScreen();
+                        }
+                    }
+                } else {
+                    // 尚未输入的部分 (或是被退格删掉的部分) -> 重置状态
+                    span.className = 'char';
+                }
+            });
+
+            // 设置新光标位置
+            if (val.length < spans.length) {
+                spans[val.length].classList.add('active');
+            }
+
+            // 检查完成
+            if (val === currentTarget.en) {
+                playSound('success');
+                score += 10 + combo;
+                combo++;
+                typedChars += val.length;
+                updateHUD();
+                triggerComboEffect();
+                
+                setTimeout(nextLevel, 200); // 稍作停顿
+            }
+        });
+
+        // --- 辅助功能 ---
+        
+        function resetCombo() {
+            combo = 0;
+            bgEl.style.opacity = 0;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            scoreEl.innerText = score;
+            comboEl.innerText = combo;
+            
+            // 连击背景效果
+            if (combo > 0) {
+                bgEl.innerText = combo;
+                bgEl.style.opacity = Math.min(combo * 0.05, 0.3);
+                bgEl.style.transform = "translate(-50%, -50%) scale(1.2)";
+                setTimeout(() => {
+                    bgEl.style.transform = "translate(-50%, -50%) scale(1)";
+                }, 100);
+            }
+        }
+
+        function updateWPM() {
+            if (!isGameActive) return;
+            
+            const timeElapsedMin = (Date.now() - startTime) / 60000;
+            // WPM 计算公式: (字符数 / 5) / 分钟数
+            if (timeElapsedMin > 0) {
+                const wpm = Math.round((typedChars / 5) / timeElapsedMin);
+                wpmEl.innerText = wpm;
+            }
+            
+            requestAnimationFrame(updateWPM);
+        }
+
+        function shakeScreen() {
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 300);
+        }
+
+        // 文本朗读功能
+        function readCurrentSentence() {
+            if (!currentTarget || !currentTarget.en) return;
+            
+            // 使用 Web Speech API 进行文本朗读
+            const utterance = new SpeechSynthesisUtterance(currentTarget.en);
+            utterance.lang = 'en-US'; // 设置为英语朗读
+            utterance.rate = 0.9; // 稍微放慢语速以提高清晰度
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 键盘快捷键处理
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                location.reload(); // ESC 重置
+            } else if (e.key.toLowerCase() === 'n' && e.shiftKey) {
+                e.preventDefault(); // 防止输入大写N
+                playSound('type'); // 播放音效
+                resetCombo(); // 重置连击
+                nextLevel(); // Shift + N 组合键切换到下一句
+            } else if (e.key.toLowerCase() === 'r' && e.shiftKey) {
+                e.preventDefault(); // 防止输入大写R
+                playSound('type'); // 播放音效
+                readCurrentSentence(); // Shift + R 组合键朗读当前句子
+            }
+        });
+
+        initGame();
+
+    </script>
+</body>
+</html>
