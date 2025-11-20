@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Flow | Master Edition</title>
     <style>
         :root {
@@ -427,25 +427,10 @@
 
         // --- 4. 游戏逻辑 ---
         
-        // 防止移动端键盘弹出时屏幕滚动
-        function preventScroll() {
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                // 禁用默认的触摸滚动
-                document.addEventListener('touchmove', function(e) {
-                    e.preventDefault();
-                }, { passive: false });
-                
-                // 保存并恢复滚动位置
-                let lastScrollY = window.scrollY;
-                window.addEventListener('scroll', function() {
-                    window.scrollTo(0, lastScrollY);
-                });
-            }
-        }
-        
-        // 在输入时保持当前位置
+        // 在输入时保持当前滚动位置，但允许用户手动滚动
         function preserveScrollPosition() {
             if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                // 保存当前滚动位置
                 const savedScroll = { x: window.scrollX, y: window.scrollY };
                 // 强制恢复到之前的滚动位置
                 setTimeout(() => {
@@ -470,9 +455,6 @@
         }
         
         function initGame() {
-            // 防止移动端滚动问题
-            preventScroll();
-            
             document.addEventListener('click', () => {
                 inputEl.focus();
                 if(audioCtx.state === 'suspended') audioCtx.resume();
