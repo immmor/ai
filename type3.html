@@ -232,6 +232,13 @@
             border: 1px solid #333;
             font-size: 10px;
         }
+        
+        /* 在移动设备上隐藏快捷键标签 */
+        @media (max-width: 768px) {
+            .footer-hint .key-tag {
+                display: none;
+            }
+        }
 
         /* --- 动画 --- */
         .combo-bg {
@@ -290,10 +297,9 @@
     </div>
 
     <div class="footer-hint">
-        <span id="hint-button"><span class="key-tag">Shift + I</span> 提示 (-50分)</span>
+        <span id="hint-button"><span class="key-tag">Shift + I</span> 提示</span>
         <span id="read-button"><span class="key-tag">Shift + R</span> 朗读</span>
         <span id="skip-button"><span class="key-tag">Shift + N</span> 跳过</span>
-        <span><span class="key-tag">自动退格修正</span></span>
     </div>
     
     <input type="text" id="input-field" autocomplete="off">
