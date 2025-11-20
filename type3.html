@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Flow | Master Edition</title>
     <style>
         :root {
@@ -29,41 +29,6 @@
             overflow: hidden; /* 防止粒子撑开滚动条 */
             user-select: none;
             transition: background-color 0.5s;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* 移动端专用容器样式 */
-        @media (max-width: 768px) {
-            html, body {
-                height: 100%;
-                overflow: hidden;
-                position: fixed;
-                width: 100%;
-                top: 0;
-                left: 0;
-            }
-            
-            .game-container-wrapper {
-                height: 100%;
-                width: 100%;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                position: relative;
-                z-index: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding-bottom: 100px; /* 为底部按钮留出空间 */
-            }
-        }
-        
-        /* 非移动端保持原有样式 */
-        @media (min-width: 769px) {
-            .game-container-wrapper {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
         }
 
         /* --- 顶部经验条 --- */
@@ -318,18 +283,16 @@
     <div id="particles"></div>
     <div class="combo-bg" id="combo-bg">0</div>
 
-    <div class="game-container-wrapper">
-        <div class="game-container">
-            <div class="stage-indicator" id="stage-indicator"></div>
+    <div class="game-container">
+        <div class="stage-indicator" id="stage-indicator"></div>
 
-            <div class="word-display" id="word-display">Press Any Key</div>
-            <div class="translation" id="translation">点击开始 • 进入心流状态</div>
+        <div class="word-display" id="word-display">Press Any Key</div>
+        <div class="translation" id="translation">点击开始 • 进入心流状态</div>
 
-            <div class="hud">
-                <div class="hud-item">Score <b id="score">0</b></div>
-                <div class="hud-item">Combo <b id="combo">0</b></div>
-                <div class="hud-item">WPM <b id="wpm">0</b></div>
-            </div>
+        <div class="hud">
+            <div class="hud-item">Score <b id="score">0</b></div>
+            <div class="hud-item">Combo <b id="combo">0</b></div>
+            <div class="hud-item">WPM <b id="wpm">0</b></div>
         </div>
     </div>
 
@@ -464,65 +427,15 @@
 
         // --- 4. 游戏逻辑 ---
         
-        // 增强的滚动位置保持功能
+        // 在输入时保持当前滚动位置，但允许用户手动滚动
         function preserveScrollPosition() {
             if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                // 获取正确的滚动容器
-                const scrollContainer = document.querySelector('.game-container-wrapper') || window;
-                
                 // 保存当前滚动位置
-                const savedScroll = scrollContainer === window 
-                    ? { x: window.scrollX, y: window.scrollY }
-                    : { x: 0, y: scrollContainer.scrollTop };
-                
-                // 使用多个延时来确保滚动位置被正确恢复
-                const restoreScroll = () => {
-                    if (scrollContainer === window) {
-                        window.scrollTo(savedScroll.x, savedScroll.y);
-                    } else {
-                        scrollContainer.scrollTop = savedScroll.y;
-                    }
-                };
-                
-                // 立即执行一次
-                restoreScroll();
-                // 多次延时执行，确保在各种情况下都能恢复
-                setTimeout(restoreScroll, 0);
-                setTimeout(restoreScroll, 10);
-                setTimeout(restoreScroll, 50);
-            }
-        }
-        
-        // 监听输入框焦点事件，防止键盘弹出时滚动
-        function setupFocusListeners() {
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                const inputEl = document.getElementById('input-field');
-                const scrollContainer = document.querySelector('.game-container-wrapper') || window;
-                
-                let savedScrollPosition = 0;
-                
-                // 在输入框获得焦点前保存滚动位置
-                inputEl.addEventListener('focusin', () => {
-                    savedScrollPosition = scrollContainer === window 
-                        ? window.scrollY 
-                        : scrollContainer.scrollTop;
-                });
-                
-                // 在窗口大小变化时（键盘弹出/收起）恢复滚动位置
-                window.addEventListener('resize', () => {
-                    setTimeout(() => {
-                        if (scrollContainer === window) {
-                            window.scrollTo(0, savedScrollPosition);
-                        } else {
-                            scrollContainer.scrollTop = savedScrollPosition;
-                        }
-                    }, 0);
-                });
-                
-                // 禁用输入框的默认滚动行为
-                inputEl.addEventListener('focus', (e) => {
-                    e.preventDefault();
-                }, { passive: false });
+                const savedScroll = { x: window.scrollX, y: window.scrollY };
+                // 强制恢复到之前的滚动位置
+                setTimeout(() => {
+                    window.scrollTo(savedScroll.x, savedScroll.y);
+                }, 0);
             }
         }
         const displayEl = document.getElementById('word-display');
@@ -542,9 +455,6 @@
         }
         
         function initGame() {
-            // 设置焦点监听器，防止键盘弹出时滚动
-            setupFocusListeners();
-            
             document.addEventListener('click', () => {
                 inputEl.focus();
                 if(audioCtx.state === 'suspended') audioCtx.resume();
