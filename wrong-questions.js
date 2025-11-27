@@ -19,7 +19,7 @@ class WrongQuestions {
     }
 
     // 添加错题
-    addWrongQuestion(question, userAnswer, correctAnswer, topic) {
+    addWrongQuestion(question, userAnswer, correctAnswer, topic, fullQuestionData = null) {
         const wrongQuestion = {
             id: Date.now(),
             question: question,
@@ -28,7 +28,8 @@ class WrongQuestions {
             topic: topic,
             timestamp: new Date().toISOString(),
             reviewCount: 0,
-            lastReviewed: null
+            lastReviewed: null,
+            fullQuestionData: fullQuestionData // 存储完整的题目信息
         };
         
         // 检查是否已存在相同错题

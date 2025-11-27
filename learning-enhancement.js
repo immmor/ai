@@ -154,7 +154,8 @@ class LearningEnhancement {
                         question.title || question.question,
                         answer,
                         question.correct || question.correctAnswer,
-                        topic
+                        topic,
+                        question // 传递完整的题目信息
                     );
                 }
                 

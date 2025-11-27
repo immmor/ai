@@ -7,6 +7,8 @@
     <script src="static/tailwindcss.js"></script>
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- question banks -->
     <script src="static/howler.min.js"></script>
     <script src="static/Tone.min.js"></script>
     <script src="banks/questions.js"></script>
@@ -19,6 +21,8 @@
     <script src="banks/questionsenglish.js"></script>
     <script src="banks/questionsstock.js"></script>
     <script src="banks/questionsgerman.js"></script>
+
+    <!-- tools -->
     <script src="level-styles.js"></script>
     <script src="mode.js"></script>
     <script src="instruct.js"></script>
@@ -27,8 +31,9 @@
     <script src="smart-recommend.js"></script>
     <script src="learning-enhancement.js"></script>
     <script src="volume.js"></script>
-    <script src="input-stage2.js"></script>
     <script src="badge.js"></script>
+    <script src="typing.js"></script>
+    <script src="question.js"></script>
     
     <script>
         tailwind.config = {
@@ -405,6 +410,9 @@
                     <!-- 题库下拉菜单 -->
                     <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
                         <div class="py-1">
+                            <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionswrong">
+                                <span>错题本</span>
+                            </button>
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questions">
                                 <span>Go区块链</span>
                             </button>
@@ -527,11 +535,11 @@
     </div>
     
     <!-- 提示弹窗 -->
-            <div id="hint-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-10 hidden">
-                <div class="bg-gradient-to-br from-gray-900 via-red-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[60vh] flex flex-col border-2 border-red-600">
-                    <div class="p-4 border-b border-red-800 bg-red-900/30">
-                        <h3 class="text-lg font-bold text-red-400 text-shadow">⚠️ 警告提示</h3>
-                    </div>
+    <div id="hint-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-10 hidden">
+        <div class="bg-gradient-to-br from-gray-900 via-red-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[60vh] flex flex-col border-2 border-red-600">
+            <div class="p-4 border-b border-red-800 bg-red-900/30">
+                <h3 class="text-lg font-bold text-red-400 text-shadow">⚠️ 警告提示</h3>
+            </div>
             <div class="flex-1 overflow-y-auto p-4 bg-gray-900/50">
                 <p class="text-sm text-red-200 whitespace-pre-wrap break-words font-mono" id="hint-text"></p>
             </div>
@@ -544,11 +552,11 @@
     </div>
 
     <!-- 答案弹窗 -->
-            <div id="answer-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-10 hidden">
-                <div class="bg-gradient-to-br from-purple-900 via-gray-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-purple-600">
-                    <div class="p-4 border-b border-purple-800 bg-purple-900/30">
-                        <h3 class="text-lg font-bold text-purple-300 text-shadow">💀 最终答案</h3>
-                    </div>
+    <div id="answer-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-10 hidden">
+        <div class="bg-gradient-to-br from-purple-900 via-gray-900 to-black rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col border-2 border-purple-600">
+            <div class="p-4 border-b border-purple-800 bg-purple-900/30">
+                <h3 class="text-lg font-bold text-purple-300 text-shadow">💀 最终答案</h3>
+            </div>
             <div class="flex-1 overflow-y-auto p-4 bg-gray-900/50">
                 <p class="text-sm text-purple-200 whitespace-pre-wrap break-words font-mono" id="answer-text"></p>
             </div>
@@ -623,6 +631,11 @@
         const levelEl = document.getElementById('level');
         const xpEl = document.getElementById('xp');
         const xpBar = document.getElementById('xp-bar');
+
+        // 全局变量跟踪当前语音播报状态
+        let currentUtterance = null;
+        let isSpeaking = false;
+        let isPaused = false;
         
         // 初始化
         function init() {
@@ -656,148 +669,6 @@
                 }
                 document.removeEventListener('click', initAudio);
             });
-        }
-        
-        // 初始化随机题目数组
-        function initRandomQuestions() {
-            // 获取当前题库的题目数组
-            const currentQuestions = getCurrentQuestions();
-            
-            // 创建题目索引数组
-            const questionIndices = Array.from({length: currentQuestions.length}, (_, i) => i);
-            
-            // 确保id为1的题目总是第一题
-            const id1Index = questionIndices.findIndex(i => currentQuestions[i].id === 1);
-            if (id1Index !== -1 && id1Index !== 0) {
-                // 将id为1的题目移到数组开头
-                [questionIndices[0], questionIndices[id1Index]] = [questionIndices[id1Index], questionIndices[0]];
-            }
-            
-            // 随机打乱剩余题目（从第2个开始）
-            for (let i = questionIndices.length - 1; i > 1; i--) {
-                const j = Math.floor(Math.random() * (i - 1)) + 1;
-                [questionIndices[i], questionIndices[j]] = [questionIndices[j], questionIndices[i]];
-            }
-            
-            randomQuestions = questionIndices;
-            currentRandomIndex = 0;
-            
-            console.log('题目顺序:', randomQuestions.map(i => currentQuestions[i].title));
-        }
-        
-        // 获取当前题库的题目数组
-        function getCurrentQuestions() {
-            if (currentQuestionBank === 'questionsaiagent') {
-                return questionsaiagent;
-            } else if (currentQuestionBank === 'questionspython') {
-                return questionspython;
-            } else if (currentQuestionBank === 'questionsreactts') {
-                return questionsreactts;
-            } else if (currentQuestionBank === 'questionsgomicro') {
-                return questionsgomicro;
-            } else if (currentQuestionBank === 'questionscrypto') {
-                return questionscrypto;
-            } else if (currentQuestionBank === 'questionscontract') {
-                return questionscontract;
-            } else if (currentQuestionBank === 'questionsenglish') {
-                return questionsenglish;
-            } else if (currentQuestionBank === 'questionsstock') {
-                return questionsstock;
-            } else if (currentQuestionBank === 'questionsgerman') {
-                return questionsgerman;
-            } else {
-                return questions;
-            }
-        }
-        
-        // 设置题库选择功能
-        function setupQuestionBankToggle() {
-            const bankBtn = document.getElementById('question-bank-btn');
-            const bankMenu = document.getElementById('question-bank-menu');
-            const bankOptions = document.querySelectorAll('.question-bank-option');
-            
-            // 点击题库按钮显示/隐藏下拉菜单
-            bankBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                bankMenu.classList.toggle('hidden');
-            });
-            
-            // 点击题库选项
-            bankOptions.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const bankName = option.dataset.bank;
-                    switchQuestionBank(bankName);
-                    bankMenu.classList.add('hidden');
-                });
-            });
-            
-            // 点击页面其他地方关闭下拉菜单
-            document.addEventListener('click', () => {
-                bankMenu.classList.add('hidden');
-            });
-            
-            // 初始化选中状态
-            updateQuestionBankSelection();
-        }
-        
-        // 切换题库
-        function switchQuestionBank(bankName) {
-            if (currentQuestionBank === bankName) return;
-            
-            // 更新当前题库
-            currentQuestionBank = bankName;
-            
-            // 重置游戏状态
-            currentRandomIndex = 0;
-            completed = [];
-            totalCorrectAnswers = 0;
-            consecutiveCorrect = 0;
-            
-            // 重新初始化题目数组
-            initRandomQuestions();
-            
-            // 加载新题库的第一题
-            loadQuestion(currentRandomIndex);
-            
-            // 更新题库选择按钮的选中状态
-            updateQuestionBankSelection();
-            
-            // 显示切换成功的提示
-            let bankDisplayName = 'Go区块链';
-            if (bankName === 'questionsaiagent') {
-                bankDisplayName = 'AI Agent';
-            } else if (bankName === 'questionspython') {
-                bankDisplayName = 'Python编程';
-            } else if (bankName === 'questionsreactts') {
-                bankDisplayName = 'React';
-            } else if (bankName === 'questionsgomicro') {
-                bankDisplayName = 'Go微服务';
-            } else if (bankName === 'questionscrypto') {
-                bankDisplayName = '加密概念';
-            } else if (bankName === 'questionscontract') {
-                bankDisplayName = '智能合约';
-            }
-            // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
-        }
-        
-        // 更新题库选择按钮的选中状态
-        function updateQuestionBankSelection() {
-            // 获取所有题库选项
-            const bankOptions = document.querySelectorAll('.question-bank-option');
-            
-            // 重置所有选项的颜色
-            bankOptions.forEach(option => {
-                option.classList.remove('bg-blue-50', 'text-blue-600', 'font-medium');
-                option.classList.add('hover:bg-gray-100');
-            });
-            
-            // 为当前选中的题库添加颜色标记
-            const currentOption = document.querySelector(`.question-bank-option[data-bank="${currentQuestionBank}"]`);
-            if (currentOption) {
-                currentOption.classList.add('bg-blue-50', 'text-blue-600', 'font-medium');
-                currentOption.classList.remove('hover:bg-gray-100');
-            }
         }
         
         // 弹窗队列管理
@@ -1248,32 +1119,6 @@
                     cheerPressTimer = null;
                 }
             }, 100);
-        }
-
-        // 播放打字音效（轻快的键盘音效）
-        function playTypingSound() {
-            // 播放轻快的键盘音效作为打字音效
-            const synth = new Tone.Synth({
-                oscillator: {
-                    type: "sine"
-                },
-                envelope: {
-                    attack: 0.001,
-                    decay: 0.1,
-                    sustain: 0.1,
-                    release: 0.1
-                }
-            }).toDestination();
-            
-            // 随机音符，模拟键盘敲击声
-            const notes = ["C5", "D5", "E5", "F5", "G5"];
-            const randomNote = notes[Math.floor(Math.random() * notes.length)];
-            synth.triggerAttackRelease(randomNote, "16n");
-            
-            // 播放完成后释放资源
-            setTimeout(() => {
-                synth.dispose();
-            }, 500);
         }
 
         // 播放正确答题音效
@@ -1792,244 +1637,6 @@
             }
         }
         
-        // 处理sentence类型题目的输入事件
-        function handleSentenceInput(e, currentIndex) {
-            const input = e.target;
-            const value = input.value;
-            
-            console.log('输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
-            
-            // 检查是否是中文输入法正在输入（composition事件）
-            if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
-                console.log('中文输入法正在输入，跳过处理');
-                return;
-            }
-            
-            // 特殊处理：检测中文输入法候选词选择
-            // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
-            if (e.inputType === 'insertText' && value.length > 1) {
-                console.log('检测到中文候选词选择:', value);
-                
-                // 检查是否已经被空格键处理过
-                if (input.dataset.multiCharProcessed === 'true') {
-                    console.log('多字符输入已经被空格键处理过，跳过重复处理');
-                    // 重置标记
-                    input.dataset.multiCharProcessed = 'false';
-                    return;
-                }
-                
-                // 获取所有填空输入框
-                const inputs = document.querySelectorAll('.code-blank input');
-                
-                // 检查是否是有效的中文字符
-                const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                console.log('是否中文字符:', isChineseText);
-                
-                if (isChineseText) {
-                    // 将输入的内容按字符分割
-                    const chars = value.split('');
-                    console.log('分割字符:', chars);
-                    
-                    // 修复：确保当前输入框只保留第一个字符
-                    // 当前输入框的值应该是第一个字符，而不是整个多字符输入
-                    input.value = chars[0];
-                    
-                    // 从当前输入框开始填充
-                    // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
-                    for (let i = 1; i < chars.length; i++) {
-                        const targetIndex = currentIndex + i;
-                        if (targetIndex < inputs.length) {
-                            console.log('填充到输入框', targetIndex, ':', chars[i]);
-                            inputs[targetIndex].value = chars[i];
-                            
-                            // 更新输入框样式
-                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
-                            inputs[targetIndex].classList.add('border-gray-300');
-                        }
-                    }
-                    
-                    // 确保字符正确显示：只在当前输入框不是多字符输入的第一个字符时才清空
-                    // 对于多字符输入，第一个字符应该保留在当前输入框
-                    // 修复：对于多字符输入，当前输入框应该保留第一个字符，不应该被清空
-                    // if (currentIndex > 0) {
-                    //     input.value = '';
-                    // }
-                    
-                    // 聚焦到下一个未填充的输入框
-                    setTimeout(() => {
-                        focusNextEmptyInput(currentIndex + chars.length);
-                    }, 10);
-                    
-                    console.log('中文候选词处理完成');
-                    return;
-                }
-            }
-            
-            // 如果输入的内容超过1个字符，可能是粘贴或快速输入
-            if (value.length > 1) {
-                console.log('检测到多字符输入:', value);
-                // 获取所有填空输入框
-                const inputs = document.querySelectorAll('.code-blank input');
-                
-                // 检查是否是有效的中文字符（非英文字母）
-                const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                console.log('是否中文字符:', isChineseText);
-                
-                if (isChineseText) {
-                    // 将输入的内容按字符分割
-                    const chars = value.split('');
-                    console.log('分割字符:', chars);
-                    
-                    // 从当前输入框开始填充
-                    // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
-                    for (let i = 1; i < chars.length; i++) {
-                        const targetIndex = currentIndex + i;
-                        if (targetIndex < inputs.length) {
-                            console.log('填充到输入框', targetIndex, ':', chars[i]);
-                            inputs[targetIndex].value = chars[i];
-                            
-                            // 更新输入框样式
-                            inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
-                            inputs[targetIndex].classList.add('border-gray-300');
-                        }
-                    }
-                    
-                    // 确保第一个字符正确显示：对于多字符输入，第一个字符应该保留在当前输入框
-                    // 只有当当前输入框不是多字符输入的第一个字符时才清空
-                    // 修复：对于多字符输入，当前输入框应该保留第一个字符，不应该被清空
-                    // if (currentIndex > 0) {
-                    //     input.value = '';
-                    // }
-                    
-                    // 聚焦到下一个未填充的输入框
-                    setTimeout(() => {
-                        focusNextEmptyInput(currentIndex + chars.length);
-                    }, 10);
-                    
-                    console.log('多字符处理完成');
-                    // 处理完成后立即返回，避免后续逻辑执行
-                    return;
-                }
-                // 如果是英文字母，可能是输入法候选词选择，不处理
-            }
-            
-            // 如果输入了1个字符，自动跳到下一个输入框（对中文字符和英文字符都生效）
-            else if (value.length === 1) {
-                console.log('单字符输入，跳转到下一个输入框');
-                setTimeout(() => {
-                    focusNextEmptyInput(currentIndex + 1);
-                }, 10);
-            }
-        }
-        
-        // 处理sentence类型题目的删除键事件
-        function handleSentenceKeydown(e, currentIndex) {
-            const input = e.target;
-            const value = input.value;
-            
-            // 处理Backspace键删除
-            if (e.key === 'Backspace' && value.length === 0 && currentIndex > 0) {
-                e.preventDefault();
-                
-                // 获取所有填空输入框
-                const inputs = document.querySelectorAll('.code-blank input');
-                
-                // 找到前一个非空的输入框
-                for (let i = currentIndex - 1; i >= 0; i--) {
-                    if (inputs[i].value.trim()) {
-                        // 清空前一个输入框
-                        inputs[i].value = '';
-                        
-                        // 更新输入框样式
-                        inputs[i].classList.remove('border-gray-300');
-                        inputs[i].classList.add('border-red-300', 'bg-red-50');
-                        
-                        // 聚焦到前一个输入框
-                        setTimeout(() => {
-                            inputs[i].focus();
-                        }, 10);
-                        break;
-                    }
-                }
-            }
-            
-            // 处理Delete键删除
-            if (e.key === 'Delete' && value.length === 0 && currentIndex < document.querySelectorAll('.code-blank input').length - 1) {
-                e.preventDefault();
-                
-                // 获取所有填空输入框
-                const inputs = document.querySelectorAll('.code-blank input');
-                
-                // 找到后一个非空的输入框
-                for (let i = currentIndex + 1; i < inputs.length; i++) {
-                    if (inputs[i].value.trim()) {
-                        // 清空后一个输入框
-                        inputs[i].value = '';
-                        
-                        // 更新输入框样式
-                        inputs[i].classList.remove('border-gray-300');
-                        inputs[i].classList.add('border-red-300', 'bg-red-50');
-                        
-                        // 聚焦到后一个输入框
-                        setTimeout(() => {
-                            inputs[i].focus();
-                        }, 10);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // 处理sentence类型题目的粘贴事件
-        function handleSentencePaste(e, currentIndex) {
-            e.preventDefault();
-            
-            // 获取粘贴的内容
-            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-            
-            if (pastedText && pastedText.length > 0) {
-                // 获取所有填空输入框
-                const inputs = document.querySelectorAll('.code-blank input');
-                
-                // 将粘贴的内容按字符分割
-                const chars = pastedText.split('');
-                
-                // 从当前输入框开始填充
-                for (let i = 0; i < chars.length; i++) {
-                    const targetIndex = currentIndex + i;
-                    if (targetIndex < inputs.length) {
-                        inputs[targetIndex].value = chars[i];
-                        
-                        // 更新输入框样式
-                        inputs[targetIndex].classList.remove('border-red-300', 'bg-red-50');
-                        inputs[targetIndex].classList.add('border-gray-300');
-                    }
-                }
-                
-                // 聚焦到下一个未填充的输入框
-                setTimeout(() => {
-                    focusNextEmptyInput(currentIndex + chars.length);
-                }, 10);
-            }
-        }
-        
-        // 聚焦到下一个未填充的输入框
-        function focusNextEmptyInput(startIndex) {
-            const inputs = document.querySelectorAll('.code-blank input');
-            
-            for (let i = startIndex; i < inputs.length; i++) {
-                if (!inputs[i].value.trim()) {
-                    inputs[i].focus();
-                    return;
-                }
-            }
-            
-            // 如果所有输入框都已填充，聚焦到最后一个
-            if (inputs.length > 0) {
-                inputs[inputs.length - 1].focus();
-            }
-        }
-
         // 超炫酷加油效果
         function createCheerEffect() {
             // 创建爆炸粒子效果
@@ -2058,8 +1665,6 @@
             }
         }
 
-
-        
         function stopCheerPress() {
             if (cheerPressTimer) {
                 clearInterval(cheerPressTimer);
@@ -3372,11 +2977,6 @@
                 return 'en-US';
             }
         }
-        
-        // 全局变量跟踪当前语音播报状态
-        let currentUtterance = null;
-        let isSpeaking = false;
-        let isPaused = false;
         
         // 更新语音按钮状态
         function updateSpeechButtonState(state) {

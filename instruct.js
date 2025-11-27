@@ -69,6 +69,12 @@ class StepByStepGuide {
                 position: "top"
             },
             {
+                title: "设置按钮",
+                content: "点击设置按钮可以调整学习系统的参数，包括音量、模式等。",
+                target: "#learn-btn",
+                position: "top"
+            },
+            {
                 title: "上一题按钮",
                 content: "点击'上一题'按钮可以返回查看之前的题目，方便复习和检查。",
                 target: "#prev-btn",
