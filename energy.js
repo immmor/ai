@@ -60,12 +60,12 @@ function setupEnergyEventListeners() {
     energyDisplay.addEventListener('click', function(e) {
         e.stopPropagation(); // 防止事件冒泡
         // 切换提示框显示状态
-        energyTooltip.style.opacity = energyTooltip.style.opacity === '1' ? '0' : '1';
+        energyTooltip.classList.toggle('hidden');
     });
     
     // 点击页面其他地方关闭提示框
     document.addEventListener('click', function() {
-        energyTooltip.style.opacity = '0';
+        energyTooltip.classList.add('hidden');
     });
     
     // 为充能码输入区域添加点击事件，防止关闭提示框
@@ -149,7 +149,7 @@ function createEnergyDisplay() {
             <i id="energy-icon" class="fas fa-bolt text-blue-500 text-xs mr-0.5"></i>
             <span id="energy-count" class="text-blue-600 font-medium text-xs">${energy}</span>
         </div>
-        <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-4 py-2 bg-white rounded-lg shadow-lg opacity-0 transition-all duration-300 z-10 border border-gray-100">
+        <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-4 py-2 bg-white rounded-lg shadow-lg hidden z-10 border border-gray-100">
             <!-- 充能码输入区域 -->
             <div class="mt-3 pt-2">
                 <div class="flex items-center space-x-2">
