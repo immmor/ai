@@ -34,6 +34,7 @@
     <script src="badge.js"></script>
     <script src="typing.js"></script>
     <script src="question.js"></script>
+    <script src="energy.js"></script>
     
     <script>
         tailwind.config = {
@@ -393,7 +394,7 @@
                 <div class="flex items-center space-x-1">
                     <!-- 小屏幕折叠显示 -->
                     <div class="relative">
-                        <div id="badge-collapsed" class="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 text-white text-sm font-bold shadow-lg cursor-pointer transition-all duration-300 hover:scale-110" title="点击查看勋章 (快捷键: X键)">
+                        <div id="badge-collapsed" class="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 text-white text-sm font-bold shadow-lg cursor-pointer transition-all duration-300 hover:scale-110" title="查看勋章">
                             勋
                         </div>
                         <!-- 勋章容器 -->
@@ -639,8 +640,8 @@
         
         // 初始化
         function init() {
-            // 初始化随机题目数组
             initRandomQuestions();
+            initEnergy();
             loadQuestion(currentRandomIndex);
             setupEvents();
             loadBadges();
@@ -1679,6 +1680,15 @@
         
         // 加载题目
         function loadQuestion(index) {
+            // 检查能量是否充足
+            if (!hasEnoughEnergy()) {
+                showFeedback('能量不足，请等待能量恢复后再继续学习！', 'error');
+                return false;
+            }
+            
+            // 消耗1点能量
+            consumeEnergy();
+            
             // 使用随机题目数组
             const questionIndex = randomQuestions[index];
             const question = getCurrentQuestions()[questionIndex];
@@ -1697,7 +1707,7 @@
             // 更新题目内容
             questionContainer.innerHTML = `
                 <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500 flex justify-between items-center">
-                    <span>随机题目 ${index + 1}/${randomQuestions.length}: ${question.title}</span>
+                    <span>${getBankDisplayName(currentQuestionBank)} ${index + 1}/${randomQuestions.length}: ${question.title}</span>
                     ${question.type === "sentence" ? '<button id="title-speech-btn" class="text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none" title="语音播报 (快捷键: Ctrl+B/Command+B)"><i class="fa fa-volume-up mr-1 text-purple-500"></i></button>' : ''}
                 </div>
                 ${question.type === "sentence" ? '' : question.content}
@@ -2275,6 +2285,9 @@
                     // 检查并授予勋章
                     checkAndAwardBadges();
                     
+                    // 答对题目，随机获得额外能量
+                    gainRandomEnergy();
+                    
                     // 添加庆祝动画（显示在屏幕中间）
                     createSparkleEffect(window.innerWidth / 2, window.innerHeight / 2, 20);
                     
@@ -2353,6 +2366,9 @@
                     
                     // 检查并授予勋章
                     checkAndAwardBadges();
+                    
+                    // 答对题目，随机获得额外能量
+                    gainRandomEnergy();
                     
                     // 添加庆祝动画（显示在屏幕中间）
                     createSparkleEffect(window.innerWidth / 2, window.innerHeight / 2, 20);

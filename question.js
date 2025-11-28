@@ -144,6 +144,12 @@ function switchQuestionBank(bankName) {
     updateQuestionBankSelection();
     
     // 显示切换成功的提示
+    const bankDisplayName = getBankDisplayName(bankName);
+    // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
+}
+
+// 获取题库显示名称
+function getBankDisplayName(bankName) {
     let bankDisplayName = 'Go区块链';
     if (bankName === 'questionswrong') {
         bankDisplayName = '错题本';
@@ -159,8 +165,14 @@ function switchQuestionBank(bankName) {
         bankDisplayName = '加密概念';
     } else if (bankName === 'questionscontract') {
         bankDisplayName = '智能合约';
+    } else if (bankName === 'questionsenglish') {
+        bankDisplayName = '英语学习';
+    } else if (bankName === 'questionsstock') {
+        bankDisplayName = '股票投资';
+    } else if (bankName === 'questionsgerman') {
+        bankDisplayName = '德语学习';
     }
-    // showFeedback(`已切换到${bankDisplayName}题库`, 'success');
+    return bankDisplayName;
 }
 
 // 更新题库选择按钮的选中状态
