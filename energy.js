@@ -42,73 +42,77 @@ function saveEnergy() {
     localStorage.setItem('goBlockchainEnergy', energy.toString());
 }
 
-// 创建能量显示元素
-function createEnergyDisplay() {
-    // 查找勋章容器的父元素
-    const badgeSection = document.querySelector('.flex.items-center.space-x-1');
-    if (!badgeSection) {
-        console.error('未找到勋章区域');
+// 设置能量系统事件监听器
+function setupEnergyEventListeners() {
+    // 获取DOM元素引用
+    const energyDisplay = document.getElementById('energy-display');
+    const energyTooltip = document.getElementById('energy-tooltip');
+    const codeInput = document.getElementById('energy-code-input');
+    const codeSubmit = document.getElementById('energy-code-submit');
+    const messageEl = document.getElementById('energy-code-message');
+    
+    if (!energyDisplay || !energyTooltip) {
+        console.error('能量显示元素未找到');
         return;
     }
     
-    // 创建能量显示容器
-    const energyContainer = document.createElement('div');
-    energyContainer.className = 'relative group -ml-1';
-    energyContainer.innerHTML = `
-        <div id="energy-display" class="flex items-center cursor-help bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 transform transition-all duration-300 hover:bg-blue-100" title="当前能量值">
-            <i id="energy-icon" class="fas fa-bolt text-blue-500 text-sm mr-0.5"></i>
-            <span id="energy-count" class="text-blue-600 font-medium text-sm">${energy}</span>
-        </div>
-        <div class="absolute top-full left-0 mt-1 px-4 py-2 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 border border-gray-100">
-            <div class="font-medium text-gray-800 flex items-center">
-                <i class="fas fa-bolt text-blue-500 mr-2"></i>
-                能量值：${energy}/${MAX_ENERGY}
-            </div>
-            <div class="h-1 w-full bg-gray-100 rounded-full mt-2 mb-2">
-                <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full" style="width: ${(energy/MAX_ENERGY)*100}%"></div>
-            </div>
-            <div class="text-gray-600 text-xs">每道题消耗1点能量</div>
-            <div class="text-gray-600 text-xs">答对题目有机会获得额外能量</div>
-            
-            <!-- 充能码输入区域 -->
-            <div class="mt-3 pt-2 border-t border-gray-100">
-                <div class="flex items-center space-x-1">
-                    <input type="text" placeholder="输入充能码" id="energy-code-input" 
-                           class="text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-36">
-                    <button id="energy-code-submit" class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors whitespace-nowrap">
-                        充能
-                    </button>
-                </div>
-                <div id="energy-code-message" class="text-xs mt-1 h-4"></div>
-            </div>
-        </div>
-        
-        <script>
-        // 为充能码提交按钮添加事件监听器
-        document.getElementById('energy-code-input').parentElement.addEventListener('click', function(e) {
-            // 防止点击输入区域时关闭提示框
+    // 点击显示/隐藏提示框
+    energyDisplay.addEventListener('click', function(e) {
+        e.stopPropagation(); // 防止事件冒泡
+        // 切换提示框显示状态
+        energyTooltip.style.opacity = energyTooltip.style.opacity === '1' ? '0' : '1';
+    });
+    
+    // 点击页面其他地方关闭提示框
+    document.addEventListener('click', function() {
+        energyTooltip.style.opacity = '0';
+    });
+    
+    // 为充能码输入区域添加点击事件，防止关闭提示框
+    if (codeInput) {
+        const codeInputArea = codeInput.parentElement;
+        codeInputArea.addEventListener('click', function(e) {
             e.stopPropagation();
         });
         
-        document.getElementById('energy-code-submit').addEventListener('click', function() {
-            const codeInput = document.getElementById('energy-code-input');
-            const messageEl = document.getElementById('energy-code-message');
+        // 允许通过回车键提交充能码
+        codeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                codeSubmit.click();
+            }
+        });
+    }
+    
+    // 为充能码提交按钮添加事件监听器
+    if (codeSubmit && messageEl) {
+        codeSubmit.addEventListener('click', function() {
             const code = codeInput.value.trim().toLowerCase();
             
             if (code === 'energy') {
                 // 验证成功，增加10点能量
-                // 尝试直接调用全局能量增加函数，如果不存在则手动更新
-                if (window.addEnergy) {
-                    window.addEnergy(10);
-                } else if (window.energy !== undefined) {
-                    // 如果没有addEnergy函数，直接更新energy变量并调用updateEnergyDisplay
-                    window.energy = Math.min(window.energy + 10, window.MAX_ENERGY);
-                    if (window.updateEnergyDisplay) {
-                        window.updateEnergyDisplay(window.energy);
-                    }
-                    // 保存到localStorage
-                    localStorage.setItem('user_energy', window.energy);
+                // 更新模块内的能量变量
+                window.energy = energy = Math.min(energy + 10, MAX_ENERGY);
+                
+                // 更新UI显示
+                if (document.getElementById('energy-count')) {
+                    document.getElementById('energy-count').textContent = energy;
                 }
+                
+                // 更新提示框中的进度条
+                const progressBar = energyTooltip.querySelector('.h-full.bg-gradient-to-r.from-blue-400.to-blue-600.rounded-full');
+                if (progressBar) {
+                    progressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
+                }
+                
+                // 更新提示框中的能量值
+                const energyText = energyTooltip.querySelector('.font-medium.text-gray-800.flex.items-center');
+                if (energyText) {
+                    energyText.innerHTML = '<i class="fas fa-bolt text-blue-500 mr-2"></i>能量值：' + energy + '/' + MAX_ENERGY;
+                }
+                
+                // 保存到localStorage
+                saveEnergy();
+                
                 messageEl.textContent = '充能成功！获得10点能量';
                 messageEl.className = 'text-xs mt-1 h-4 text-green-600';
             } else {
@@ -125,14 +129,38 @@ function createEnergyDisplay() {
             // 清空输入框
             codeInput.value = '';
         });
-        
-        // 允许通过回车键提交充能码
-        document.getElementById('energy-code-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('energy-code-submit').click();
-            }
-        });
-        </script>
+    }
+}
+
+// 创建能量显示元素
+function createEnergyDisplay() {
+    // 查找勋章容器的父元素
+    const badgeSection = document.querySelector('.flex.items-center.space-x-1');
+    if (!badgeSection) {
+        console.error('未找到勋章区域');
+        return;
+    }
+    
+    // 创建能量显示容器
+    const energyContainer = document.createElement('div');
+    energyContainer.className = 'relative -ml-1';
+    energyContainer.innerHTML = `
+        <div id="energy-display" class="flex items-center cursor-pointer bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 hover:bg-blue-100" title="点击查看能量详情">
+            <i id="energy-icon" class="fas fa-bolt text-blue-500 text-xs mr-0.5"></i>
+            <span id="energy-count" class="text-blue-600 font-medium text-xs">${energy}</span>
+        </div>
+        <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-4 py-2 bg-white rounded-lg shadow-lg opacity-0 transition-all duration-300 z-10 border border-gray-100">
+            <!-- 充能码输入区域 -->
+            <div class="mt-3 pt-2">
+                <div class="flex items-center space-x-2">
+                    <input type="text" placeholder="输入充能码" id="energy-code-input" class="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24">
+                    <button id="energy-code-submit" class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap">
+                        充能
+                    </button>
+                </div>
+                <div id="energy-code-message" class="text-xs mt-1 h-4"></div>
+            </div>
+        </div>
     `;
     
     // 将能量显示添加到勋章显示的左边
@@ -141,6 +169,8 @@ function createEnergyDisplay() {
     // 获取能量显示元素引用
     energyDisplay = document.getElementById('energy-display');
     energyIcon = document.getElementById('energy-icon');
+    
+    setupEnergyEventListeners();
 }
 
 // 更新能量显示
@@ -185,6 +215,9 @@ function updateEnergyDisplay() {
     
     // 保存能量值
     saveEnergy();
+    
+    // 同时更新全局变量
+    window.energy = energy;
 }
 
 // 设置能量自动恢复
