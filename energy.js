@@ -23,7 +23,7 @@ function initEnergy() {
     // 设置能量自动恢复定时器
     setupEnergyRecovery();
     
-    console.log('能量系统初始化完成，当前能量：', energy);
+    // console.log('能量系统初始化完成，当前能量：', energy);
 }
 
 // 从localStorage加载能量
@@ -49,7 +49,7 @@ function setupEnergyEventListeners() {
     const energyTooltip = document.getElementById('energy-tooltip');
     const codeInput = document.getElementById('energy-code-input');
     const codeSubmit = document.getElementById('energy-code-submit');
-    const messageEl = document.getElementById('energy-code-message');
+    // const messageEl = document.getElementById('energy-code-message');
     
     if (!energyDisplay || !energyTooltip) {
         console.error('能量显示元素未找到');
@@ -84,7 +84,7 @@ function setupEnergyEventListeners() {
     }
     
     // 为充能码提交按钮添加事件监听器
-    if (codeSubmit && messageEl) {
+    if (codeSubmit) {
         codeSubmit.addEventListener('click', function() {
             const code = codeInput.value.trim().toLowerCase();
             
@@ -113,18 +113,20 @@ function setupEnergyEventListeners() {
                 // 保存到localStorage
                 saveEnergy();
                 
-                messageEl.textContent = '充能成功！获得10点能量';
-                messageEl.className = 'text-xs mt-1 h-4 text-green-600';
+                // messageEl.textContent = '充能成功！获得10点能量';
+                // messageEl.className = 'text-xs mt-1 h-4 text-green-600';
+                showFeedback('充能成功！获得10点能量', 'success');
             } else {
-                messageEl.textContent = '无效的充能码';
-                messageEl.className = 'text-xs mt-1 h-4 text-red-600';
+                // messageEl.textContent = '无效的充能码';
+                // messageEl.className = 'text-xs mt-1 h-4 text-red-600';
+                showFeedback('无效的充能码', 'success');
             }
             
             // 3秒后清除消息
-            setTimeout(() => {
-                messageEl.textContent = '';
-                messageEl.className = 'text-xs mt-1 h-4';
-            }, 3000);
+            // setTimeout(() => {
+            //     messageEl.textContent = '';
+            //     messageEl.className = 'text-xs mt-1 h-4';
+            // }, 3000);
             
             // 清空输入框
             codeInput.value = '';
@@ -149,16 +151,13 @@ function createEnergyDisplay() {
             <i id="energy-icon" class="fas fa-bolt text-blue-500 text-xs mr-0.5"></i>
             <span id="energy-count" class="text-blue-600 font-medium text-xs">${energy}</span>
         </div>
-        <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-4 py-2 bg-white rounded-lg shadow-lg hidden z-10 border border-gray-100">
+        <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 px-2 py-2 bg-white rounded-lg shadow-lg hidden z-10 border border-gray-100">
             <!-- 充能码输入区域 -->
-            <div class="mt-3 pt-2">
-                <div class="flex items-center space-x-2">
-                    <input type="text" placeholder="输入充能码" id="energy-code-input" class="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24">
-                    <button id="energy-code-submit" class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap">
-                        充能
-                    </button>
-                </div>
-                <div id="energy-code-message" class="text-xs mt-1 h-4"></div>
+            <div class="flex items-center space-x-2">
+                <input type="text" placeholder="输入充能码" id="energy-code-input" class="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24">
+                <button id="energy-code-submit" class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap">
+                    充能
+                </button>
             </div>
         </div>
     `;

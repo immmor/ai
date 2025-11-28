@@ -30,22 +30,22 @@ function handleSentenceInput(e, currentIndex) {
     const input = e.target;
     const value = input.value;
     
-    console.log('输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
+    // console.log('输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
     
     // 检查是否是中文输入法正在输入（composition事件）
     if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
-        console.log('中文输入法正在输入，跳过处理');
+        // console.log('中文输入法正在输入，跳过处理');
         return;
     }
     
     // 特殊处理：检测中文输入法候选词选择
     // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
     if (e.inputType === 'insertText' && value.length > 1) {
-        console.log('检测到中文候选词选择:', value);
+        // console.log('检测到中文候选词选择:', value);
         
         // 检查是否已经被空格键处理过
         if (input.dataset.multiCharProcessed === 'true') {
-            console.log('多字符输入已经被空格键处理过，跳过重复处理');
+            // console.log('多字符输入已经被空格键处理过，跳过重复处理');
             // 重置标记
             input.dataset.multiCharProcessed = 'false';
             return;
@@ -56,12 +56,12 @@ function handleSentenceInput(e, currentIndex) {
         
         // 检查是否是有效的中文字符
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 修复：确保当前输入框只保留第一个字符
             // 当前输入框的值应该是第一个字符，而不是整个多字符输入
@@ -72,7 +72,7 @@ function handleSentenceInput(e, currentIndex) {
             for (let i = 1; i < chars.length; i++) {
                 const targetIndex = currentIndex + i;
                 if (targetIndex < inputs.length) {
-                    console.log('填充到输入框', targetIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetIndex, ':', chars[i]);
                     inputs[targetIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -93,32 +93,32 @@ function handleSentenceInput(e, currentIndex) {
                 focusNextEmptyInput(currentIndex + chars.length);
             }, 10);
             
-            console.log('中文候选词处理完成');
+            // console.log('中文候选词处理完成');
             return;
         }
     }
     
     // 如果输入的内容超过1个字符，可能是粘贴或快速输入
     if (value.length > 1) {
-        console.log('检测到多字符输入:', value);
+        // console.log('检测到多字符输入:', value);
         // 获取所有填空输入框
         const inputs = document.querySelectorAll('.code-blank input');
         
         // 检查是否是有效的中文字符（非英文字母）
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 从当前输入框开始填充
             // 修复：从i=1开始填充，因为i=0的字符已经在当前输入框中
             for (let i = 1; i < chars.length; i++) {
                 const targetIndex = currentIndex + i;
                 if (targetIndex < inputs.length) {
-                    console.log('填充到输入框', targetIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetIndex, ':', chars[i]);
                     inputs[targetIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -139,7 +139,7 @@ function handleSentenceInput(e, currentIndex) {
                 focusNextEmptyInput(currentIndex + chars.length);
             }, 10);
             
-            console.log('多字符处理完成');
+            // console.log('多字符处理完成');
             // 处理完成后立即返回，避免后续逻辑执行
             return;
         }
@@ -148,7 +148,7 @@ function handleSentenceInput(e, currentIndex) {
     
     // 如果输入了1个字符，自动跳到下一个输入框（对中文字符和英文字符都生效）
     else if (value.length === 1) {
-        console.log('单字符输入，跳转到下一个输入框');
+        // console.log('单字符输入，跳转到下一个输入框');
         setTimeout(() => {
             focusNextEmptyInput(currentIndex + 1);
         }, 10);
@@ -265,30 +265,30 @@ function focusNextEmptyInput(startIndex) {
 
 // 为第二阶段输入框添加复杂的事件监听器（支持中文输入法）
 function addStage2InputEventListener(input, index) {
-    console.log('为第二阶段输入框', index, '添加事件监听器');
+    // console.log('为第二阶段输入框', index, '添加事件监听器');
     
     input.addEventListener('input', function(e) {
-        console.log('第二阶段input事件触发，输入框:', index);
+        // console.log('第二阶段input事件触发，输入框:', index);
         // 检查是否应该阻止input事件处理
         if (input.dataset.preventInput === 'true') {
-            console.log('阻止input事件处理，跳过');
+            // console.log('阻止input事件处理，跳过');
             return;
         }
         handleStage2Input(e, index);
     });
     
     input.addEventListener('paste', function(e) {
-        console.log('第二阶段paste事件触发，输入框:', index);
+        // console.log('第二阶段paste事件触发，输入框:', index);
         handleStage2Paste(e, index);
     });
     
     // 添加删除键事件监听器
     input.addEventListener('keydown', function(e) {
-        console.log('第二阶段keydown事件触发，输入框:', index, '按键:', e.key);
+        // console.log('第二阶段keydown事件触发，输入框:', index, '按键:', e.key);
         
         // 特殊处理：中文输入法候选词选择（空格键确认）
         if (e.key === ' ' && input.dataset.composing === 'true') {
-            console.log('检测到中文候选词选择确认（空格键）');
+            // console.log('检测到中文候选词选择确认（空格键）');
             // 阻止默认的空格键行为
             e.preventDefault();
             
@@ -300,28 +300,28 @@ function addStage2InputEventListener(input, index) {
             // 延迟处理，确保输入框值已更新
             setTimeout(() => {
                 const value = input.value;
-                console.log('候选词选择后输入框值:', value);
+                // console.log('候选词选择后输入框值:', value);
                 
                 // 检查是否是多个字符（中文候选词）
                 if (value.length > 1) {
-                    console.log('检测到多字符候选词:', value);
+                    // console.log('检测到多字符候选词:', value);
                     // 获取所有第二阶段输入框
                     const inputs = document.querySelectorAll('#full-sentence-blanks input');
                     
                     // 检查是否是有效的中文字符
                     const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                    console.log('是否中文字符:', isChineseText);
+                    // console.log('是否中文字符:', isChineseText);
                     
                     if (isChineseText) {
                         // 将输入的内容按字符分割
                         const chars = value.split('');
-                        console.log('分割字符:', chars);
+                        // console.log('分割字符:', chars);
                         
                         // 从当前输入框开始填充
                         for (let i = 0; i < chars.length; i++) {
                             const targetIndex = index + i;
                             if (targetIndex < inputs.length) {
-                                console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                // console.log('填充到输入框', targetIndex, ':', chars[i]);
                                 inputs[targetIndex].value = chars[i];
                                 
                                 // 更新输入框样式
@@ -341,7 +341,7 @@ function addStage2InputEventListener(input, index) {
                             focusStage2NextInput(index + chars.length);
                         }, 10);
                         
-                        console.log('中文候选词处理完成');
+                        // console.log('中文候选词处理完成');
                         // 阻止后续的input事件处理
                         input.dataset.preventInput = 'true';
                         setTimeout(() => {
@@ -352,7 +352,7 @@ function addStage2InputEventListener(input, index) {
                 }
                 
                 // 如果没有检测到多字符，正常处理
-                console.log('空格键处理后未检测到多字符，正常处理');
+                // console.log('空格键处理后未检测到多字符，正常处理');
                 handleStage2Input(e, index);
             }, 100); // 增加延迟到100ms，确保输入框值已更新
         }
@@ -362,17 +362,17 @@ function addStage2InputEventListener(input, index) {
     
     // 添加中文输入法事件监听器
     input.addEventListener('compositionstart', function(e) {
-        console.log('compositionstart: 中文输入开始，输入框:', index);
+        // console.log('compositionstart: 中文输入开始，输入框:', index);
         input.dataset.composing = 'true';
     });
     
     input.addEventListener('compositionend', function(e) {
-        console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
+        // console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
         input.dataset.composing = 'false';
         
         // 检查是否已经被空格键处理过
         if (input.dataset.spaceProcessed === 'true') {
-            console.log('已经被空格键处理过，跳过compositionend处理');
+            // console.log('已经被空格键处理过，跳过compositionend处理');
             input.dataset.spaceProcessed = 'false'; // 重置标记
             return;
         }
@@ -380,28 +380,28 @@ function addStage2InputEventListener(input, index) {
         // 延迟处理，确保输入框值已更新（增加延迟时间）
         setTimeout(() => {
             const value = input.value;
-            console.log('compositionend延迟检查，输入框值:', value);
+            // console.log('compositionend延迟检查，输入框值:', value);
             
             // 检查是否是多个字符（中文输入法候选词选择）
             if (value.length > 1) {
-                console.log('检测到多字符候选词选择:', value);
+                // console.log('检测到多字符候选词选择:', value);
                 // 获取所有第二阶段输入框
                 const inputs = document.querySelectorAll('#full-sentence-blanks input');
                 
                 // 检查是否是有效的中文字符
                 const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                console.log('是否中文字符:', isChineseText);
+                // console.log('是否中文字符:', isChineseText);
                 
                 if (isChineseText) {
                     // 将输入的内容按字符分割
                     const chars = value.split('');
-                    console.log('分割字符:', chars);
+                    // console.log('分割字符:', chars);
                     
                     // 从当前输入框开始填充
                     for (let i = 0; i < chars.length; i++) {
                         const targetIndex = index + i;
                         if (targetIndex < inputs.length) {
-                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            // console.log('填充到输入框', targetIndex, ':', chars[i]);
                             inputs[targetIndex].value = chars[i];
                             
                             // 更新输入框样式
@@ -421,7 +421,7 @@ function addStage2InputEventListener(input, index) {
                         focusStage2NextInput(index + chars.length);
                     }, 10);
                     
-                    console.log('中文候选词处理完成');
+                    // console.log('中文候选词处理完成');
                     return;
                 }
             }
@@ -429,10 +429,10 @@ function addStage2InputEventListener(input, index) {
             // 如果没有检测到多字符，或者不是中文字符，正常处理
             // 但需要检查输入框是否已经被清空（多字符处理已完成）
             if (input.value.trim() !== '') {
-                console.log('正常处理单字符输入');
+                // console.log('正常处理单字符输入');
                 handleStage2Input(e, index);
             } else {
-                console.log('输入框已被清空，跳过处理');
+                // console.log('输入框已被清空，跳过处理');
             }
         }, 100); // 增加延迟到100ms，确保输入框值已更新
     });
@@ -443,28 +443,28 @@ function handleStage2Input(e, currentIndex) {
     const input = e.target;
     const value = input.value;
     
-    console.log('第二阶段输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
+    // console.log('第二阶段输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
     
     // 调试：检查多字符处理条件
-    console.log('多字符处理条件检查:');
-    console.log('  - value.length > 1:', value.length > 1);
-    console.log('  - e.inputType === \'insertText\':', e.inputType === 'insertText');
-    console.log('  - 组合条件:', e.inputType === 'insertText' && value.length > 1);
+    // console.log('多字符处理条件检查:');
+    // console.log('  - value.length > 1:', value.length > 1);
+    // console.log('  - e.inputType === \'insertText\':', e.inputType === 'insertText');
+    // console.log('  - 组合条件:', e.inputType === 'insertText' && value.length > 1);
     
     // 检查是否是中文输入法正在输入（composition事件）
     if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
-        console.log('中文输入法正在输入，跳过处理');
+        // console.log('中文输入法正在输入，跳过处理');
         return;
     }
     
     // 特殊处理：检测中文输入法候选词选择
     // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
     if (e.inputType === 'insertText' && value.length > 1) {
-        console.log('检测到中文候选词选择:', value);
+        // console.log('检测到中文候选词选择:', value);
         
         // 检查是否已经被空格键处理过
         if (input.dataset.multiCharProcessed === 'true') {
-            console.log('多字符输入已经被空格键处理过，跳过重复处理');
+            // console.log('多字符输入已经被空格键处理过，跳过重复处理');
             // 重置标记
             input.dataset.multiCharProcessed = 'false';
             return;
@@ -475,18 +475,18 @@ function handleStage2Input(e, currentIndex) {
         
         // 检查是否是有效的中文字符
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 从当前输入框开始填充
             for (let i = 0; i < chars.length; i++) {
                 const targetIndex = currentIndex + i;
                 if (targetIndex < inputs.length) {
-                    console.log('填充到输入框', targetIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetIndex, ':', chars[i]);
                     inputs[targetIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -505,31 +505,31 @@ function handleStage2Input(e, currentIndex) {
                 focusStage2NextInput(currentIndex + chars.length);
             }, 10);
             
-            console.log('中文候选词处理完成');
+            // console.log('中文候选词处理完成');
             return;
         }
     }
     
     // 如果输入的内容超过1个字符，可能是粘贴或快速输入
     if (value.length > 1) {
-        console.log('检测到多字符输入:', value);
+        // console.log('检测到多字符输入:', value);
         // 获取所有第二阶段输入框
         const inputs = document.querySelectorAll('#full-sentence-blanks input');
         
         // 检查是否是有效的中文字符（非英文字母）
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 从当前输入框开始填充
             for (let i = 0; i < chars.length; i++) {
                 const targetIndex = currentIndex + i;
                 if (targetIndex < inputs.length) {
-                    console.log('填充到输入框', targetIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetIndex, ':', chars[i]);
                     inputs[targetIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -548,7 +548,7 @@ function handleStage2Input(e, currentIndex) {
                 focusStage2NextInput(currentIndex + chars.length);
             }, 10);
             
-            console.log('多字符处理完成');
+            // console.log('多字符处理完成');
             // 处理完成后立即返回，避免后续逻辑执行
             return;
         }
@@ -557,7 +557,7 @@ function handleStage2Input(e, currentIndex) {
     
     // 如果输入了1个字符，自动跳到下一个输入框（仅对中文字符生效）
     else if (value.length === 1 && /[\u4e00-\u9fff]/.test(value)) {
-        console.log('单字符输入，跳转到下一个输入框');
+        // console.log('单字符输入，跳转到下一个输入框');
         setTimeout(() => {
             focusStage2NextInput(currentIndex + 1);
         }, 10);
@@ -805,30 +805,30 @@ function createReviewSentenceInputs(fullSentence) {
 
 // 为第二阶段输入框添加事件监听器
 function addStage2InputEventListener(input, index) {
-    console.log('为第二阶段输入框', index, '添加事件监听器');
+    // console.log('为第二阶段输入框', index, '添加事件监听器');
     
     input.addEventListener('input', function(e) {
-        console.log('第二阶段input事件触发，输入框:', index);
+        // console.log('第二阶段input事件触发，输入框:', index);
         // 检查是否应该阻止input事件处理
         if (input.dataset.preventInput === 'true') {
-            console.log('阻止input事件处理，跳过');
+            // console.log('阻止input事件处理，跳过');
             return;
         }
         handleStage2Input(e, index);
     });
     
     input.addEventListener('paste', function(e) {
-        console.log('第二阶段paste事件触发，输入框:', index);
+        // console.log('第二阶段paste事件触发，输入框:', index);
         handleStage2Paste(e, index);
     });
     
     // 添加删除键事件监听器
     input.addEventListener('keydown', function(e) {
-        console.log('第二阶段keydown事件触发，输入框:', index, '按键:', e.key);
+        // console.log('第二阶段keydown事件触发，输入框:', index, '按键:', e.key);
         
         // 特殊处理：中文输入法候选词选择（空格键确认）
         if (e.key === ' ' && input.dataset.composing === 'true') {
-            console.log('检测到中文候选词选择确认（空格键）');
+            // console.log('检测到中文候选词选择确认（空格键）');
             // 阻止默认的空格键行为
             e.preventDefault();
             
@@ -840,22 +840,22 @@ function addStage2InputEventListener(input, index) {
             // 延迟处理，确保输入框值已更新
             setTimeout(() => {
                 const value = input.value;
-                console.log('候选词选择后输入框值:', value);
+                // console.log('候选词选择后输入框值:', value);
                 
                 // 检查是否是多个字符（中文候选词）
                 if (value.length > 1) {
-                    console.log('检测到多字符候选词:', value);
+                    // console.log('检测到多字符候选词:', value);
                     // 获取所有第二阶段输入框
                     const inputs = document.querySelectorAll('#full-sentence-blanks input');
                     
                     // 检查是否是有效的中文字符
                     const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                    console.log('是否中文字符:', isChineseText);
+                    // console.log('是否中文字符:', isChineseText);
                     
                     if (isChineseText) {
                         // 将输入的内容按字符分割
                         const chars = value.split('');
-                        console.log('分割字符:', chars);
+                        // console.log('分割字符:', chars);
                         
                         // 修复：确保当前输入框只保留第一个字符
                         input.value = chars[0];
@@ -865,7 +865,7 @@ function addStage2InputEventListener(input, index) {
                         for (let i = 1; i < chars.length; i++) {
                             const targetIndex = index + i;
                             if (targetIndex < inputs.length) {
-                                console.log('填充到输入框', targetIndex, ':', chars[i]);
+                                // console.log('填充到输入框', targetIndex, ':', chars[i]);
                                 inputs[targetIndex].value = chars[i];
                                 
                                 // 更新输入框样式
@@ -889,7 +889,7 @@ function addStage2InputEventListener(input, index) {
                             focusStage2NextInput(index + chars.length);
                         }, 10);
                         
-                        console.log('中文候选词处理完成');
+                        // console.log('中文候选词处理完成');
                         // 阻止后续的input事件处理
                         input.dataset.preventInput = 'true';
                         setTimeout(() => {
@@ -900,7 +900,7 @@ function addStage2InputEventListener(input, index) {
                 }
                 
                 // 如果没有检测到多字符，正常处理
-                console.log('空格键处理后未检测到多字符，正常处理');
+                // console.log('空格键处理后未检测到多字符，正常处理');
                 handleStage2Input(e, index);
             }, 100); // 增加延迟到100ms，确保输入框值已更新
         }
@@ -910,17 +910,17 @@ function addStage2InputEventListener(input, index) {
     
     // 添加中文输入法事件监听器
     input.addEventListener('compositionstart', function(e) {
-        console.log('compositionstart: 中文输入开始，输入框:', index);
+        // console.log('compositionstart: 中文输入开始，输入框:', index);
         input.dataset.composing = 'true';
     });
     
     input.addEventListener('compositionend', function(e) {
-        console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
+        // console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
         input.dataset.composing = 'false';
         
         // 检查是否已经被空格键处理过
         if (input.dataset.spaceProcessed === 'true') {
-            console.log('已经被空格键处理过，跳过compositionend处理');
+            // console.log('已经被空格键处理过，跳过compositionend处理');
             input.dataset.spaceProcessed = 'false'; // 重置标记
             return;
         }
@@ -928,22 +928,22 @@ function addStage2InputEventListener(input, index) {
         // 延迟处理，确保输入框值已更新（增加延迟时间）
         setTimeout(() => {
             const value = input.value;
-            console.log('compositionend延迟检查，输入框值:', value);
+            // console.log('compositionend延迟检查，输入框值:', value);
             
             // 检查是否是多个字符（中文输入法候选词选择）
             if (value.length > 1) {
-                console.log('检测到多字符候选词选择:', value);
+                // console.log('检测到多字符候选词选择:', value);
                 // 获取所有第二阶段输入框
                 const inputs = document.querySelectorAll('#full-sentence-blanks input');
                 
                 // 检查是否是有效的中文字符
                 const isChineseText = /[\u4e00-\u9fff]/.test(value);
-                console.log('是否中文字符:', isChineseText);
+                // console.log('是否中文字符:', isChineseText);
                 
                 if (isChineseText) {
                     // 将输入的内容按字符分割
                     const chars = value.split('');
-                    console.log('分割字符:', chars);
+                    // console.log('分割字符:', chars);
                     
                     // 修复：确保当前输入框只保留第一个字符
                     input.value = chars[0];
@@ -953,7 +953,7 @@ function addStage2InputEventListener(input, index) {
                     for (let i = 1; i < chars.length; i++) {
                         const targetIndex = index + i;
                         if (targetIndex < inputs.length) {
-                            console.log('填充到输入框', targetIndex, ':', chars[i]);
+                            // console.log('填充到输入框', targetIndex, ':', chars[i]);
                             inputs[targetIndex].value = chars[i];
                             
                             // 更新输入框样式
@@ -977,7 +977,7 @@ function addStage2InputEventListener(input, index) {
                         focusStage2NextInput(index + chars.length);
                     }, 10);
                     
-                    console.log('中文候选词处理完成');
+                    // console.log('中文候选词处理完成');
                     return;
                 }
             }
@@ -985,10 +985,10 @@ function addStage2InputEventListener(input, index) {
             // 如果没有检测到多字符，或者不是中文字符，正常处理
             // 但需要检查输入框是否已经被清空（多字符处理已完成）
             if (input.value.trim() !== '') {
-                console.log('正常处理单字符输入');
+                // console.log('正常处理单字符输入');
                 handleStage2Input(e, index);
             } else {
-                console.log('输入框已被清空，跳过处理');
+                // console.log('输入框已被清空，跳过处理');
             }
         }, 100); // 增加延迟到100ms，确保输入框值已更新
     });
@@ -999,22 +999,22 @@ function handleStage2Input(e, currentIndex) {
     const input = e.target;
     const value = input.value;
     
-    console.log('第二阶段输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
+    // console.log('第二阶段输入事件触发:', { value, currentIndex, isComposing: e.isComposing, inputType: e.inputType, composing: input.dataset.composing });
     
     // 检查是否是中文输入法正在输入（composition事件）
     if (e.isComposing || e.inputType === 'insertCompositionText' || input.dataset.composing === 'true') {
-        console.log('中文输入法正在输入，跳过处理');
+        // console.log('中文输入法正在输入，跳过处理');
         return;
     }
     
     // 特殊处理：检测中文输入法候选词选择
     // 当inputType为'insertText'且值长度大于1时，可能是中文候选词选择
     if (e.inputType === 'insertText' && value.length > 1) {
-        console.log('检测到中文候选词选择:', value);
+        // console.log('检测到中文候选词选择:', value);
         
         // 检查是否已经被空格键处理过
         if (input.dataset.multiCharProcessed === 'true') {
-            console.log('多字符输入已经被空格键处理过，跳过重复处理');
+            // console.log('多字符输入已经被空格键处理过，跳过重复处理');
             // 重置标记
             input.dataset.multiCharProcessed = 'false';
             return;
@@ -1027,12 +1027,12 @@ function handleStage2Input(e, currentIndex) {
         
         // 检查是否是有效的中文字符
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 修复：确保当前输入框只保留第一个字符
             // 当前输入框的值应该是第一个字符，而不是整个多字符输入
@@ -1046,7 +1046,7 @@ function handleStage2Input(e, currentIndex) {
                 const targetInputIndex = inputMap[targetCharIndex];
                 
                 if (targetInputIndex !== undefined && targetInputIndex !== null && targetInputIndex < inputs.length) {
-                    console.log('填充到输入框', targetInputIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetInputIndex, ':', chars[i]);
                     inputs[targetInputIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -1082,14 +1082,14 @@ function handleStage2Input(e, currentIndex) {
                 }
             }, 10);
             
-            console.log('中文候选词处理完成');
+            // console.log('中文候选词处理完成');
             return;
         }
     }
     
     // 如果输入的内容超过1个字符，可能是粘贴或快速输入
     if (value.length > 1) {
-        console.log('检测到多字符输入:', value);
+        // console.log('检测到多字符输入:', value);
         // 获取所有第二阶段输入框和索引映射表
         const container = document.getElementById('full-sentence-blanks');
         const inputs = document.querySelectorAll('#full-sentence-blanks input');
@@ -1097,12 +1097,12 @@ function handleStage2Input(e, currentIndex) {
         
         // 检查是否是有效的中文字符（非英文字母）
         const isChineseText = /[\u4e00-\u9fff]/.test(value);
-        console.log('是否中文字符:', isChineseText);
+        // console.log('是否中文字符:', isChineseText);
         
         if (isChineseText) {
             // 将输入的内容按字符分割
             const chars = value.split('');
-            console.log('分割字符:', chars);
+            // console.log('分割字符:', chars);
             
             // 从当前输入框开始填充，使用索引映射表找到正确的目标输入框
             const currentCharIndex = parseInt(input.dataset.charIndex);
@@ -1112,7 +1112,7 @@ function handleStage2Input(e, currentIndex) {
                 const targetInputIndex = inputMap[targetCharIndex];
                 
                 if (targetInputIndex !== undefined && targetInputIndex !== null && targetInputIndex < inputs.length) {
-                    console.log('填充到输入框', targetInputIndex, ':', chars[i]);
+                    // console.log('填充到输入框', targetInputIndex, ':', chars[i]);
                     inputs[targetInputIndex].value = chars[i];
                     
                     // 更新输入框样式
@@ -1148,7 +1148,7 @@ function handleStage2Input(e, currentIndex) {
                 }
             }, 10);
             
-            console.log('多字符处理完成');
+            // console.log('多字符处理完成');
             // 处理完成后立即返回，避免后续逻辑执行
             return;
         }
@@ -1157,7 +1157,7 @@ function handleStage2Input(e, currentIndex) {
     
     // 如果输入了1个字符，自动跳到下一个输入框（对中文字符和英文字符都生效）
     else if (value.length === 1) {
-        console.log('单字符输入，跳转到下一个输入框');
+        // console.log('单字符输入，跳转到下一个输入框');
         
         // 单字符输入的验证逻辑
         const expected = input.dataset.expected;

@@ -35,6 +35,7 @@
     <script src="typing.js"></script>
     <script src="question.js"></script>
     <script src="energy.js"></script>
+    <script src="speech.js"></script>
     
     <script>
         tailwind.config = {
@@ -405,11 +406,11 @@
                 </div>
                 <!-- 题库选择 -->
                 <div class="relative">
-                    <button id="question-bank-btn" class="text-xs text-gray-500 hover:text-blue-500 flex items-center space-x-1 px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors" title="选择题库">
+                    <button id="question-bank-btn" class="-ml-1 -mr-1 text-xs text-gray-500 hover:text-blue-500 flex items-center px-1.5 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors" title="选择题库">
                         <span>题库</span>
                     </button>
                     <!-- 题库下拉菜单 -->
-                    <div id="question-bank-menu" class="absolute top-full right-0 mt-1 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
+                    <div id="question-bank-menu" class="absolute top-full -right-1 mt-2 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
                         <div class="py-1">
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionswrong">
                                 <span>错题本</span>
@@ -2976,136 +2977,6 @@
             nextBtn.addEventListener('click', goNext);
         }
         
-        // 检测文本语言（中文或英文）
-        function detectLanguage(text) {
-            // 统计中文字符数量
-            const chineseChars = text.match(/[\u4e00-\u9fff]/g) || [];
-            const chineseCount = chineseChars.length;
-            
-            // 统计英文字符数量（字母和空格）
-            const englishChars = text.match(/[a-zA-Z\s]/g) || [];
-            const englishCount = englishChars.length;
-            
-            // 如果中文字符数量多于英文字符数量，则认为是中文
-            if (chineseCount > englishCount) {
-                return 'zh-CN';
-            } else {
-                return 'en-US';
-            }
-        }
-        
-        // 更新语音按钮状态
-        function updateSpeechButtonState(state) {
-            const speechBtn = document.getElementById('speech-btn');
-            const titleSpeechBtn = document.getElementById('title-speech-btn');
-            
-            const buttons = [speechBtn, titleSpeechBtn].filter(btn => btn !== null);
-            
-            buttons.forEach(btn => {
-                switch(state) {
-                    case 'playing':
-                        btn.classList.remove('text-gray-500', 'hover:text-purple-500', 'text-purple-500');
-                        btn.classList.add('text-purple-600');
-                        btn.innerHTML = '<i class="fa fa-pause mr-1 text-purple-600"></i>';
-                        break;
-                    case 'paused':
-                        btn.classList.remove('text-purple-600');
-                        btn.classList.add('text-purple-500');
-                        btn.innerHTML = '<i class="fa fa-play mr-1 text-purple-500"></i>';
-                        break;
-                    case 'stopped':
-                    default:
-                        btn.classList.remove('text-purple-600');
-                        btn.classList.add('text-gray-500', 'hover:text-purple-500');
-                        btn.innerHTML = '<i class="fa fa-volume-up mr-1 text-purple-500"></i>';
-                        break;
-                }
-            });
-        }
-        
-        // 语音播报功能
-        function speakSentence() {
-            const questionIndex = randomQuestions[currentRandomIndex];
-            const currentQuestions = getCurrentQuestions();
-            const question = currentQuestions[questionIndex];
-            
-            if (question.type === "sentence" && question.fullSentence) {
-                // 使用Web Speech API进行语音播报
-                if ('speechSynthesis' in window) {
-                    
-                    // 如果正在播报，则暂停
-                    if (isSpeaking && currentUtterance && !isPaused) {
-                        window.speechSynthesis.pause();
-                        isPaused = true;
-                        
-                        // 改变按钮样式，表示已暂停
-                        updateSpeechButtonState('paused');
-                        return;
-                    }
-                    
-                    // 如果已暂停，则继续播放
-                    if (isPaused && currentUtterance) {
-                        window.speechSynthesis.resume();
-                        isPaused = false;
-                        
-                        // 改变按钮样式，表示正在播报
-                        updateSpeechButtonState('playing');
-                        return;
-                    }
-                    
-                    // 停止任何正在进行的语音播报
-                    window.speechSynthesis.cancel();
-                    isPaused = false;
-                    
-                    // 检测语言
-                    const detectedLang = detectLanguage(question.fullSentence);
-                    
-                    // 创建新的语音播报
-                    currentUtterance = new SpeechSynthesisUtterance(question.fullSentence);
-                    currentUtterance.lang = detectedLang; // 根据检测结果设置语言
-                    currentUtterance.rate = 0.9; // 稍微慢一点，便于听清
-                    currentUtterance.pitch = 1.0; // 正常音调
-                    currentUtterance.volume = 1.0; // 最大音量
-                    
-                    // 添加语音播报开始和结束的事件监听
-                    currentUtterance.onstart = function() {
-                        isSpeaking = true;
-                        isPaused = false;
-                        // 改变按钮样式，表示正在播报
-                        updateSpeechButtonState('playing');
-                    };
-                    
-                    currentUtterance.onend = function() {
-                        isSpeaking = false;
-                        isPaused = false;
-                        currentUtterance = null;
-                        // 恢复按钮样式
-                        updateSpeechButtonState('stopped');
-                    };
-                    
-                    currentUtterance.onerror = function(event) {
-                        console.error('语音播报错误:', event);
-                        isSpeaking = false;
-                        isPaused = false;
-                        currentUtterance = null;
-                        // 恢复按钮样式
-                        updateSpeechButtonState('stopped');
-                        
-                        // 只有在不是主动取消的情况下才显示错误提示
-                        if (event.error !== 'interrupted') {
-                            showFeedback('语音播报失败，请检查浏览器设置或尝试刷新页面', 'error');
-                        }
-                    };
-                    
-                    // 开始语音播报
-                    window.speechSynthesis.speak(currentUtterance);
-                } else {
-                    // 浏览器不支持语音播报
-                    showFeedback('您的浏览器不支持语音播报功能', 'error');
-                }
-            }
-        }
-
         // 初始化
         document.addEventListener('DOMContentLoaded', init);
         
