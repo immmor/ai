@@ -98,10 +98,16 @@ function setupEnergyEventListeners() {
                     document.getElementById('energy-count').textContent = energy;
                 }
                 
+                // 更新主界面进度条
+                const energyProgressBar = document.getElementById('energy-progress-bar');
+                if (energyProgressBar) {
+                    energyProgressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
+                }
+                
                 // 更新提示框中的进度条
-                const progressBar = energyTooltip.querySelector('.h-full.bg-gradient-to-r.from-blue-400.to-blue-600.rounded-full');
-                if (progressBar) {
-                    progressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
+                const tooltipProgressBar = energyTooltip.querySelector('.h-full.bg-gradient-to-r.from-blue-400.to-blue-600.rounded-full');
+                if (tooltipProgressBar) {
+                    tooltipProgressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
                 }
                 
                 // 更新提示框中的能量值
@@ -147,9 +153,13 @@ function createEnergyDisplay() {
     const energyContainer = document.createElement('div');
     energyContainer.className = 'relative -ml-1';
     energyContainer.innerHTML = `
-        <div id="energy-display" class="flex items-center cursor-pointer bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 hover:bg-blue-100" title="点击查看能量详情">
-            <i id="energy-icon" class="fas fa-bolt text-blue-500 text-xs mr-0.5"></i>
-            <span id="energy-count" class="text-blue-600 font-medium text-xs">${energy}</span>
+        <div id="energy-display" class="relative cursor-pointer w-10 px-2 py-0.5 rounded-md overflow-hidden" title="点击查看能量详情">
+            <div class="absolute inset-0 bg-gray-200"></div>
+            <div id="energy-progress-bar" class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500" style="width: ${(energy / MAX_ENERGY) * 100}%"></div>
+            <div class="relative flex items-center justify-center z-10">
+                <i id="energy-icon" class="fas fa-bolt text-white text-xs mr-0.5"></i>
+                <span id="energy-count" class="text-white font-medium text-xs">${energy}</span>
+            </div>
         </div>
         <div id="energy-tooltip" class="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 px-2 py-2 bg-white rounded-lg shadow-lg hidden z-10 border border-gray-100">
             <!-- 充能码输入区域 -->
@@ -174,28 +184,36 @@ function createEnergyDisplay() {
 
 // 更新能量显示
 function updateEnergyDisplay() {
-    if (energyDisplay && energyDisplay.querySelector('#energy-count')) {
+    if (energyDisplay) {
         const energyCount = energyDisplay.querySelector('#energy-count');
+        const energyProgressBar = energyDisplay.querySelector('#energy-progress-bar');
         
         // 添加能量变化动画
         if (energyIcon) {
             energyIcon.classList.add('animate-pulse');
         }
-        energyCount.classList.add('animate-bounce-in');
+        if (energyCount) {
+            energyCount.classList.add('animate-bounce-in');
+            // 更新能量值
+            energyCount.textContent = energy;
+        }
         
-        // 更新能量值
-        energyCount.textContent = energy;
+        // 更新进度条宽度
+        if (energyProgressBar) {
+            const percentage = (energy / MAX_ENERGY) * 100;
+            energyProgressBar.style.width = `${percentage}%`;
+        }
         
         // 更新悬停提示信息
         const tooltip = energyDisplay.nextElementSibling;
         if (tooltip) {
             // 更新标题
-        const titleElement = tooltip.querySelector('.font-medium');
-        if (titleElement) {
-            titleElement.innerHTML = `<i class="fas fa-bolt text-blue-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
-        }
+            const titleElement = tooltip.querySelector('.font-medium');
+            if (titleElement) {
+                titleElement.innerHTML = `<i class="fas fa-bolt text-blue-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
+            }
             
-            // 更新进度条
+            // 更新提示框中的进度条
             const progressBar = tooltip.querySelector('.h-full.bg-gradient-to-r.from-amber-400.to-red-500.rounded-full');
             if (progressBar) {
                 const percentage = (energy/MAX_ENERGY) * 100;
@@ -208,7 +226,9 @@ function updateEnergyDisplay() {
             if (energyIcon) {
                 energyIcon.classList.remove('animate-pulse');
             }
-            energyCount.classList.remove('animate-bounce-in');
+            if (energyCount) {
+                energyCount.classList.remove('animate-bounce-in');
+            }
         }, 1000);
     }
     

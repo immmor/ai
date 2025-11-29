@@ -383,12 +383,12 @@
             <div class="flex items-center space-x-2">
                 <!-- 经验值和等级 -->
                 <div class="flex items-center space-x-2">
-                    <div class="text-xs text-gray-600">
-                        <span id="level">Lv.1</span>
-                    </div>
-                    <div class="relative w-12 h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div id="xp-bar" class="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500" style="width: 0%"></div>
-                        <div id="xp" class="absolute inset-0 flex items-center justify-center text-[9px] font-normal text-white mix-blend-difference">0/100</div>
+                    <div class="relative w-28 h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="xp-bar" class="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500 hidden opacity-70" style="width: 0%"></div>
+                        <div id="xp" class="absolute inset-0 flex items-center justify-center text-xs font-normal text-white mix-blend-difference hidden">0/100</div>
+                        <div class="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800 z-10">
+                            <span id="level">Lv.1</span>
+                        </div>
                     </div>
                 </div>
                 <!-- 勋章展示 -->

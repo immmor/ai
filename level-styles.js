@@ -279,9 +279,18 @@ class LevelStyles {
         const footer = document.querySelector('footer');
         footer.className = `fixed bottom-0 left-0 right-0 ${config.footerBg} ${config.footerBorder} py-3 z-10 transition-all duration-1000`;
         
-        // 应用动画效果
+        // 检查是否真的是升级（不是降级或等级不变）
         const isUpgrade = !suppressAnimation && this.previousLevel !== level && level > this.previousLevel;
-        this.applyAnimations(config, isUpgrade);
+        
+        // 仅在真正升级时应用动画效果
+        if (isUpgrade) {
+            this.applyAnimations(config, true);
+        } else {
+            // 其他情况下确保没有动画效果
+            const levelEl = document.getElementById('level');
+            const animationClasses = ['animate-pulse', 'animate-bounce', 'animate-pulse-slow', 'animate-pulse-fast', 'animate-spin-slow', 'animate-pulse-rainbow', 'animate-glow-eternal', 'animate-divine-glow'];
+            animationClasses.forEach(cls => levelEl.classList.remove(cls));
+        }
         
         // 应用特殊效果
         this.applySpecialEffects(config);
@@ -371,35 +380,29 @@ class LevelStyles {
     applyAnimations(config, isUpgrade = false) {
         const levelEl = document.getElementById('level');
         
-        // 移除所有动画类
+        // 定义所有可能的动画类
         const animationClasses = ['animate-pulse', 'animate-bounce', 'animate-pulse-slow', 'animate-pulse-fast', 'animate-spin-slow', 'animate-pulse-rainbow', 'animate-glow-eternal', 'animate-divine-glow'];
+        
+        // 首先确保移除所有动画类
         animationClasses.forEach(cls => levelEl.classList.remove(cls));
         
-        // 只有在升级时才添加动画效果，闪烁5次后停止
+        // 只有在明确是升级且需要动画效果时才添加动画
         if (isUpgrade && config.animation && config.animation !== 'none') {
-            const animationClass = `animate-${config.animation}`;
+            // 使用简单的闪烁效果而不是可能导致持续移动的动画
+            levelEl.classList.add('animate-pulse');
             
-            // 使用勋章按钮的成功闪烁逻辑
-            let flashCount = 0;
-            const maxFlashes = 5;
-            
-            const flashLevel = () => {
-                if (flashCount < maxFlashes) {
-                    // 等级图标闪烁
-                    levelEl.classList.remove(animationClass);
-                    void levelEl.offsetWidth; // 触发重绘
-                    levelEl.classList.add(animationClass);
-                    
-                    flashCount++;
-                    setTimeout(flashLevel, 1500); // 1500ms间隔，更慢的速度
-                } else {
-                    // 闪烁结束后移除动画类
-                    levelEl.classList.remove(animationClass);
-                }
-            };
-            
-            // 开始闪烁
-            setTimeout(flashLevel, 1000);
+            // 设置定时器，确保动画效果在短暂显示后完全移除
+            setTimeout(() => {
+                animationClasses.forEach(cls => levelEl.classList.remove(cls));
+                
+                // 再次检查并移除，确保没有任何动画类残留
+                const remainingClasses = levelEl.className;
+                animationClasses.forEach(cls => {
+                    if (remainingClasses.includes(cls)) {
+                        levelEl.classList.remove(cls);
+                    }
+                });
+            }, 3000); // 3秒后移除所有动画效果
         }
     }
 
@@ -408,11 +411,19 @@ class LevelStyles {
         // 清除之前的特殊效果
         this.clearSpecialEffects();
         
-        // 应用新的特殊效果
+        // 确保等级元素没有任何动画类
+        const levelEl = document.getElementById('level');
+        const animationClasses = ['animate-pulse', 'animate-bounce', 'animate-pulse-slow', 'animate-pulse-fast', 'animate-spin-slow', 'animate-pulse-rainbow', 'animate-glow-eternal', 'animate-divine-glow'];
+        animationClasses.forEach(cls => levelEl.classList.remove(cls));
+        
+        // 应用新的特殊效果（但避免对等级名应用持续动画效果）
         config.specialEffects.forEach(effect => {
-            const methodName = `apply${effect.charAt(0).toUpperCase() + effect.slice(1)}Effect`;
-            if (typeof this[methodName] === 'function') {
-                this[methodName]();
+            // 过滤掉可能导致等级名持续移动的效果
+            if (effect !== 'float' && effect !== 'bounce' && effect !== 'pulse') {
+                const methodName = `apply${effect.charAt(0).toUpperCase() + effect.slice(1)}Effect`;
+                if (typeof this[methodName] === 'function') {
+                    this[methodName]();
+                }
             }
         });
     }
