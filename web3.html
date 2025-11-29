@@ -81,18 +81,53 @@
         }
 
         #interaction-hint {
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            background: #000;
-            padding: 10px 20px;
-            border: 1px solid #fff;
-            display: none;
-            font-size: 1.5em;
-            animation: bounce 1s infinite;
-        }
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00ff41;
+    color: #000;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.5em;
+    display: none;
+    cursor: pointer;
+    font-family: 'VT323', monospace;
+    transition: all 0.2s;
+    text-shadow: none;
+}
+
+#interaction-hint:hover {
+    background: #00cc33;
+    transform: translateX(-50%) scale(1.05);
+}
+
+#interaction-hint:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    #interaction-hint {
+        padding: 16px 32px;
+        font-size: 1.8em;
+        bottom: 120px;
+    }
+}
+
+/* 脉动动画 */
+@keyframes pulse {
+    0% {
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.1);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+    }
+}
 
         @keyframes bounce {
             0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -142,7 +177,7 @@
         <p style="font-size: 0.8em; color: #888;">控制: WASD 或 方向键移动 | E 键攻击/交互</p>
     </div>
 
-    <div id="interaction-hint">按 [E] 攻击怪物</div>
+    <button id="interaction-hint" class="interaction-btn">点击攻击怪物</button>
 
     <div id="modal">
         <h2 id="modal-title">节点提问</h2>
@@ -364,6 +399,7 @@ class Player {
         this.y = canvas.height / 2;
         this.size = 20;
         this.speed = 7;
+        this.dragSpeed = 10;
         this.color = '#fff';
         this.vx = 0;
         this.vy = 0;
@@ -372,8 +408,36 @@ class Player {
     }
 
     update() {
-        this.x += this.vx;
-        this.y += this.vy;
+        // 移动控制
+        let moveX = 0;
+        let moveY = 0;
+        
+        // 键盘控制
+        if (keys['w'] || keys['arrowup']) moveY -= this.speed;
+        if (keys['s'] || keys['arrowdown']) moveY += this.speed;
+        if (keys['a'] || keys['arrowleft']) moveX -= this.speed;
+        if (keys['d'] || keys['arrowright']) moveX += this.speed;
+        
+        // 拖拽控制（触摸屏和鼠标）
+        if (isDragging) {
+            // 使用拖拽偏移量，但限制最大速度
+            const dragMag = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
+            if (dragMag > 0) {
+                moveX += (dragOffsetX / dragMag) * this.dragSpeed;
+                moveY += (dragOffsetY / dragMag) * this.dragSpeed;
+            }
+        }
+        
+        // 规范化向量以保持对角线移动速度一致
+        const magnitude = Math.sqrt(moveX * moveX + moveY * moveY);
+        if (magnitude > 0) {
+            moveX = (moveX / magnitude) * Math.max(this.speed, magnitude * 0.1);
+            moveY = (moveY / magnitude) * Math.max(this.speed, magnitude * 0.1);
+        }
+        
+        // 更新位置
+        this.x += moveX;
+        this.y += moveY;
 
         // 移除边界检查，实现开放式地图
     }
@@ -432,12 +496,95 @@ function updateHealthBar() {
  * Input Handling
  */
 const keys = {};
+// 触摸屏控制
+let isDragging = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
 window.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
     if(e.key === 'e' || e.key === 'E') tryInteract();
 });
 window.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
+});
+
+// 触摸屏触摸开始事件
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // 防止页面滚动
+    
+    const touch = e.touches[0];
+    isDragging = true;
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+    dragOffsetX = 0;
+    dragOffsetY = 0;
+}, { passive: false });
+
+// 触摸屏触摸移动事件
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // 防止页面滚动
+    
+    if (isDragging && gameState === 'PLAY') {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - lastTouchX;
+        const deltaY = touch.clientY - lastTouchY;
+        
+        // 更新玩家移动方向（反向，因为拖拽是让背景移动，相当于玩家向相反方向移动）
+        dragOffsetX = -deltaX;
+        dragOffsetY = -deltaY;
+        
+        lastTouchX = touch.clientX;
+        lastTouchY = touch.clientY;
+    }
+}, { passive: false });
+
+// 触摸屏触摸结束事件
+canvas.addEventListener('touchend', () => {
+    isDragging = false;
+    dragOffsetX = 0;
+    dragOffsetY = 0;
+});
+
+// 鼠标拖拽支持
+canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // 左键
+        isDragging = true;
+        lastTouchX = e.clientX;
+        lastTouchY = e.clientY;
+        dragOffsetX = 0;
+        dragOffsetY = 0;
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (isDragging && gameState === 'PLAY') {
+        const deltaX = e.clientX - lastTouchX;
+        const deltaY = e.clientY - lastTouchY;
+        
+        // 更新玩家移动方向（反向）
+        dragOffsetX = -deltaX;
+        dragOffsetY = -deltaY;
+        
+        lastTouchX = e.clientX;
+        lastTouchY = e.clientY;
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    isDragging = false;
+    dragOffsetX = 0;
+    dragOffsetY = 0;
+});
+
+// 点击攻击按钮事件
+const interactionBtn = document.getElementById('interaction-hint');
+interactionBtn.addEventListener('click', () => {
+    if (gameState === 'PLAY' && currentMonster) {
+        tryInteract();
+    }
 });
 
 function handleInput() {
@@ -517,8 +664,13 @@ function checkCollisions() {
     
     if (nearAny && gameState === 'PLAY') {
         hintEl.style.display = 'block';
+        hintEl.style.opacity = '1';
+        // 添加脉动动画提示
+        hintEl.style.animation = 'pulse 2s infinite';
     } else {
         hintEl.style.display = 'none';
+        hintEl.style.opacity = '0';
+        hintEl.style.animation = 'none';
     }
 }
 
