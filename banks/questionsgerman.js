@@ -118,5 +118,125 @@ const questionsgerman = [
         hint: "序数词和年份",
         explanation: "德语日期的表达方式",
         fullSentence: "Heute ist der erste Januar zweitausendundzwanzig."
+    },
+    {
+        id: 11,
+        type: "sentence",
+        title: "简单问候",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="11-1" data-answer="Hallo"></span>! Wie heißt <span class="code-blank" data-id="11-2" data-answer="du"></span>?</div>
+                </div>`,
+        instruction: "填写简单的问候语",
+        hint: "打招呼和第二人称",
+        explanation: "最基本的德语问候语",
+        fullSentence: "Hallo! Wie heißt du?"
+    },
+    {
+        id: 12,
+        type: "sentence",
+        title: "基本数字1-5",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Ein, zwei, <span class="code-blank" data-id="12-1" data-answer="drei"></span>, vier, <span class="code-blank" data-id="12-2" data-answer="fünf"></span>.</div>
+                </div>`,
+        instruction: "填写德语数字",
+        hint: "基础数字",
+        explanation: "德语中1-5的基本数字",
+        fullSentence: "Ein, zwei, drei, vier, fünf."
+    },
+    {
+        id: 13,
+        type: "sentence",
+        title: "日常物品",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Das ist ein <span class="code-blank" data-id="13-1" data-answer="Buch"></span>. Das ist ein <span class="code-blank" data-id="13-2" data-answer="Stift"></span>.</div>
+                </div>`,
+        instruction: "填写日常物品名称",
+        hint: "书和笔",
+        explanation: "常见物品的德语名称",
+        fullSentence: "Das ist ein Buch. Das ist ein Stift."
+    },
+    {
+        id: 14,
+        type: "sentence",
+        title: "简单自我介绍",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="14-1" data-answer="Ich"></span> heiße Max. <span class="code-blank" data-id="14-2" data-answer="Ich"></span> bin 20 Jahre alt.</div>
+                </div>`,
+        instruction: "填写自我介绍",
+        hint: "第一人称",
+        explanation: "简单的德语自我介绍",
+        fullSentence: "Ich heiße Max. Ich bin 20 Jahre alt."
+    },
+    {
+        id: 15,
+        type: "sentence",
+        title: "基础动词",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Ich <span class="code-blank" data-id="15-1" data-answer="esse"></span> ein Apfel. Ich <span class="code-blank" data-id="15-2" data-answer="trinke"></span> Wasser.</div>
+                </div>`,
+        instruction: "填写基础动词",
+        hint: "吃和喝",
+        explanation: "基本日常动词",
+        fullSentence: "Ich esse ein Apfel. Ich trinke Wasser."
+    },
+    {
+        id: 16,
+        type: "sentence",
+        title: "基本颜色",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Rot, grün, <span class="code-blank" data-id="16-1" data-answer="blau"></span> und <span class="code-blank" data-id="16-2" data-answer="gelb"></span>.</div>
+                </div>`,
+        instruction: "填写颜色名称",
+        hint: "蓝色和黄色",
+        explanation: "基本颜色的德语表达",
+        fullSentence: "Rot, grün, blau und gelb."
+    },
+    {
+        id: 17,
+        type: "sentence",
+        title: "人称代词",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="17-1" data-answer="Ich"></span> bin hier. <span class="code-blank" data-id="17-2" data-answer="Du"></span> bist da.</div>
+                </div>`,
+        instruction: "填写人称代词",
+        hint: "我和你",
+        explanation: "第一和第二人称代词",
+        fullSentence: "Ich bin hier. Du bist da."
+    },
+    {
+        id: 18,
+        type: "sentence",
+        title: "简单回答",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Ja, <span class="code-blank" data-id="18-1" data-answer="ich"></span> verstehe. Nein, <span class="code-blank" data-id="18-2" data-answer="ich"></span> verstehe nicht.</div>
+                </div>`,
+        instruction: "填写简单回答",
+        hint: "第一人称",
+        explanation: "基本的肯定和否定回答",
+        fullSentence: "Ja, ich verstehe. Nein, ich verstehe nicht."
+    },
+    {
+        id: 19,
+        type: "sentence",
+        title: "时间表达",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div>Es ist <span class="code-blank" data-id="19-1" data-answer="ein"></span> Uhr. Bald ist <span class="code-blank" data-id="19-2" data-answer="zwei"></span> Uhr.</div>
+                </div>`,
+        instruction: "填写时间表达",
+        hint: "一点和两点",
+        explanation: "基本的时间表达方式",
+        fullSentence: "Es ist ein Uhr. Bald ist zwei Uhr."
+    },
+    {
+        id: 20,
+        type: "sentence",
+        title: "感谢和道歉",
+        content: `<div class="p-4 font-mono text-sm">
+                    <div><span class="code-blank" data-id="20-1" data-answer="Danke"></span>! <span class="code-blank" data-id="20-2" data-answer="Entschuldigung"></span>, ich bin spät.</div>
+                </div>`,
+        instruction: "填写感谢和道歉",
+        hint: "谢谢和对不起",
+        explanation: "基本的礼貌用语",
+        fullSentence: "Danke! Entschuldigung, ich bin spät."
     }
 ];

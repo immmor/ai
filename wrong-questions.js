@@ -52,6 +52,8 @@ class WrongQuestions {
     removeWrongQuestion(id) {
         this.wrongQuestions = this.wrongQuestions.filter(wq => wq.id !== id);
         this.saveWrongQuestions();
+        // 刷新错题本面板，让用户看到变化
+        this.refreshWrongQuestionsPanel();
     }
 
     // 标记为已复习
@@ -61,7 +63,112 @@ class WrongQuestions {
             question.reviewCount++;
             question.lastReviewed = new Date().toISOString();
             this.saveWrongQuestions();
+            // 刷新错题本面板，让用户看到变化
+            this.refreshWrongQuestionsPanel();
         }
+    }
+    
+    // 刷新错题本面板
+    refreshWrongQuestionsPanel() {
+        const panel = document.getElementById('wrong-questions-panel');
+        if (!panel) return;
+        
+        // 获取内容区域和当前滚动位置
+        const contentArea = panel.querySelector('.overflow-y-auto');
+        const scrollPosition = contentArea ? contentArea.scrollTop : 0;
+        
+        // 获取错题列表
+        const wrongQuestions = this.getWrongQuestions();
+        
+        // 更新错题数量显示
+        const titleElement = panel.querySelector('h3 span');
+        if (titleElement) {
+            titleElement.innerHTML = '<i class="fas fa-book mr-2"></i>\n                        错题本 (' + wrongQuestions.length + ')';
+        }
+        
+        // 更新内容区域
+        if (contentArea) {
+            if (wrongQuestions.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-check-circle text-4xl mb-2"></i>
+                        <p>暂无错题记录</p>
+                    </div>
+                `;
+            } else {
+                contentArea.innerHTML = `
+                    <div class="space-y-4">
+                        ${wrongQuestions.map(wq => `
+                            <div class="border rounded-lg p-3 bg-red-50">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs bg-red-200 text-red-800 px-2 py-1 rounded">${wq.topic}</span>
+                                    <button class="text-red-500 hover:text-red-700 text-xs delete-btn" data-id="${wq.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="text-sm font-medium mb-1">${wq.question}</div>
+                                <div class="text-xs text-gray-600 mb-1">
+                                    <span class="text-red-500">你的答案: ${wq.userAnswer}</span>
+                                </div>
+                                <div class="text-xs text-gray-600">
+                                    <span class="text-green-500">正确答案: ${wq.correctAnswer}</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                                    <span>复习次数: ${wq.reviewCount}</span>
+                                    <span>${new Date(wq.timestamp).toLocaleDateString()}</span>
+                                </div>
+                                <button class="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded text-xs review-btn" data-id="${wq.id}">
+                                    标记为已复习
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // 使用onclick方式绑定新内容的事件，避免递归问题
+            panel.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    this.removeWrongQuestion(id);
+                };
+            });
+            
+            panel.querySelectorAll('.review-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    this.markAsReviewed(id);
+                };
+            });
+            
+            // 恢复滚动位置
+            if (contentArea) {
+                contentArea.scrollTop = scrollPosition;
+            }
+        }
+    }
+    
+    // 绑定事件处理程序
+    bindEventHandlers(panel) {
+        // 绑定删除按钮事件
+        panel.querySelectorAll('.delete-btn').forEach(btn => {
+            // 先移除可能存在的事件监听器，避免重复绑定
+            btn.onclick = null;
+            btn.onclick = (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                this.removeWrongQuestion(id);
+            };
+        });
+        
+        // 绑定标记为已复习按钮事件
+        panel.querySelectorAll('.review-btn').forEach(btn => {
+            // 先移除可能存在的事件监听器，避免重复绑定
+            btn.onclick = null;
+            btn.onclick = (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                this.markAsReviewed(id);
+            };
+        });
     }
 
     // 获取错题列表
@@ -86,6 +193,7 @@ class WrongQuestions {
         const wrongQuestions = this.getWrongQuestions();
         
         const panel = document.createElement('div');
+        panel.id = 'wrong-questions-panel';
         panel.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
         panel.innerHTML = `
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[60vh] flex flex-col overflow-hidden">
@@ -112,9 +220,9 @@ class WrongQuestions {
                                 <div class="border rounded-lg p-3 bg-red-50">
                                     <div class="flex justify-between items-start mb-2">
                                         <span class="text-xs bg-red-200 text-red-800 px-2 py-1 rounded">${wq.topic}</span>
-                                        <button onclick="wrongQuestions.removeWrongQuestion(${wq.id})" class="text-red-500 hover:text-red-700 text-xs">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 text-xs delete-btn" data-id="${wq.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     </div>
                                     <div class="text-sm font-medium mb-1">${wq.question}</div>
                                     <div class="text-xs text-gray-600 mb-1">
@@ -127,8 +235,7 @@ class WrongQuestions {
                                         <span>复习次数: ${wq.reviewCount}</span>
                                         <span>${new Date(wq.timestamp).toLocaleDateString()}</span>
                                     </div>
-                                    <button onclick="wrongQuestions.markAsReviewed(${wq.id}); this.closest('.fixed').remove()" 
-                                            class="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded text-xs">
+                                    <button class="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded text-xs review-btn" data-id="${wq.id}">
                                         标记为已复习
                                     </button>
                                 </div>
@@ -145,6 +252,22 @@ class WrongQuestions {
         `;
         
         document.body.appendChild(panel);
+        
+        // 绑定删除按钮事件
+        panel.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                this.removeWrongQuestion(id);
+            });
+        });
+        
+        // 绑定标记为已复习按钮事件
+        panel.querySelectorAll('.review-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                this.markAsReviewed(id);
+            });
+        });
         
         // 点击背景关闭
         panel.addEventListener('click', (e) => {
