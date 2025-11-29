@@ -36,6 +36,7 @@
     <script src="question.js"></script>
     <script src="energy.js"></script>
     <script src="speech.js"></script>
+    <!-- <script src="tree.js"></script> -->
     
     <script>
         tailwind.config = {
@@ -56,6 +57,15 @@
     
     <style type="text/tailwindcss">
         @layer utilities {
+            /* 枫树容器样式 */
+            #maple-tree-container {
+                pointer-events: none;
+                transition: all 0.3s ease;
+            }
+            
+            #maple-tree-canvas {
+                background-color: transparent;
+            }
             .code-blank {
                 @apply bg-blue-50 border-b-2 border-primary px-1 mx-0.5 min-w-[30px] inline-block;
             }
@@ -377,7 +387,25 @@
     <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 py-2 z-20" id="level-header">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fa fa-code text-primary text-lg"></i>
+                <div class="w-6 h-6 flex items-center justify-center relative">
+                    <!-- 主茎 -->
+                    <div class="absolute w-1.2 h-5 bg-gradient-to-t from-green-600 to-green-400 rounded-full shadow-md transform -rotate-12"></div>
+                    <!-- 叶子设计 -->
+                    <div class="absolute w-4 h-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full transform scale-x-150 -rotate-45 -translate-y-1.5 shadow-md"></div>
+                    <div class="absolute w-3 h-3 bg-gradient-to-br from-green-300 to-teal-400 rounded-full transform scale-x-150 rotate-45 translate-y-0.75 shadow-md"></div>
+                    <!-- 装饰细节 -->
+                    <div class="absolute w-1.5 h-0.75 bg-green-200 rounded-full transform -rotate-60 -translate-x-0.75 -translate-y-0.75"></div>
+                    <div class="absolute w-1.2 h-0.75 bg-green-200 rounded-full transform rotate-60 translate-x-0.5 translate-y-0.5"></div>
+                    <!-- 土壤根茎部分 -->
+                    <div class="absolute bottom-0 w-3 h-1 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-md"></div>
+                    <!-- 增加几条根须 -->
+                    <div class="absolute bottom-0.5 w-4 h-0.5 bg-amber-600 rounded-full shadow-sm transform -rotate-10 translate-x-0.25"></div>
+                    <div class="absolute bottom-0.5 w-3 h-0.5 bg-amber-700 rounded-full shadow-sm transform rotate-10 -translate-x-0.5"></div>
+                    <!-- 轻微呼吸动画 -->
+                    <div class="absolute inset-0 flex items-center justify-center animate-pulse-slow">
+                        <div class="w-4 h-4 rounded-full bg-green-300 opacity-10"></div>
+                    </div>
+                </div>
                 <span class="font-bold text-lg">学</span>
             </div>
             <div class="flex items-center space-x-2">
@@ -411,7 +439,7 @@
                     </button>
                     <!-- 题库下拉菜单 -->
                     <div id="question-bank-menu" class="absolute top-full -right-1 mt-2 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
-                        <div class="py-1">
+                        <div class="py-1 max-h-[165px] overflow-y-auto">
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionswrong">
                                 <span>错题本</span>
                             </button>
@@ -580,6 +608,11 @@
             <div class="text-2xl font-bold text-yellow-600 animate-pulse-slow select-none">加油！继续努力！</div>
         </div>
     </div>
+    
+    <!-- 波特兰枫树容器 -->
+    <!-- <div id="maple-tree-container" class="fixed bottom-16 left-0 right-0 flex justify-center items-center z-5">
+        <canvas id="maple-tree-canvas" class="max-w-[90%] max-h-[250px] opacity-90 rounded-lg shadow-lg"></canvas>
+    </div> -->
 
     <script>
         // 当前状态
