@@ -208,10 +208,9 @@
         <div id="health-bar" style="width: 200px; height: 10px; background: #333; margin-top: 5px;">
             <div id="health-fill" style="width: 100%; height: 100%; background: #ff0000;"></div>
         </div>
-        <p style="font-size: 0.8em; color: #888;">控制: WASD 或 方向键移动 | E 键攻击/交互</p>
     </div>
 
-    <div id="interaction-hint">点击或按 [E] 攻击怪物</div>
+    <div id="interaction-hint">按 [E] 攻击怪物</div>
 
     <div id="modal">
         <h2 id="modal-title">节点提问</h2>
@@ -371,11 +370,11 @@ class Player {
         
         // 拖拽控制（触摸屏和鼠标）
         if (isDragging) {
-            // 使用拖拽偏移量，但限制最大速度
+            // 使用拖拽偏移量，但限制最大速度，并反转方向使控制更直观
             const dragMag = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
             if (dragMag > 0) {
-                moveX += (dragOffsetX / dragMag) * this.dragSpeed;
-                moveY += (dragOffsetY / dragMag) * this.dragSpeed;
+                moveX -= (dragOffsetX / dragMag) * this.dragSpeed;
+                moveY -= (dragOffsetY / dragMag) * this.dragSpeed;
             }
         }
         

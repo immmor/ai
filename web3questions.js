@@ -79,5 +79,117 @@ const blockchainQuestions = [
             { text: "更快的网页加载速度", correct: false },
             { text: "只能在电脑上使用", correct: false }
         ]
+    },
+    {
+        question: "什么是区块链的'不可篡改性'？",
+        options: [
+            { text: "一旦数据写入就几乎不可能被修改或删除", correct: true },
+            { text: "区块链数据可以随时被管理员修改", correct: false },
+            { text: "只有开发者可以修改区块链数据", correct: false }
+        ]
+    },
+    {
+        question: "'挖矿'在区块链中是什么意思？",
+        options: [
+            { text: "通过解决复杂数学问题验证交易并创建新区块", correct: true },
+            { text: "在虚拟世界中寻找数字宝藏", correct: false },
+            { text: "买卖加密货币的过程", correct: false }
+        ]
+    },
+    {
+        question: "公链和私链的主要区别是什么？",
+        options: [
+            { text: "公链对所有人开放，私链限制访问权限", correct: true },
+            { text: "公链比私链更安全", correct: false },
+            { text: "私链可以发行加密货币，公链不能", correct: false }
+        ]
+    },
+    {
+        question: "跨链技术的目的是什么？",
+        options: [
+            { text: "实现不同区块链之间的通信和资产转移", correct: true },
+            { text: "将所有区块链合并为一个", correct: false },
+            { text: "让区块链运行速度变慢", correct: false }
+        ]
+    },
+    {
+        question: "什么是区块链的'分布式账本'？",
+        options: [
+            { text: "数据副本被存储在多个节点上，而非单一中心", correct: true },
+            { text: "账本只能被一个人查看", correct: false },
+            { text: "账本数据每天会被清空一次", correct: false }
+        ]
+    },
+    {
+        question: "'共识算法'PoW和PoS的区别是什么？",
+        options: [
+            { text: "PoW依赖计算能力，PoS依赖持有代币数量", correct: true },
+            { text: "PoW比PoS更环保", correct: false },
+            { text: "PoS只用于比特币，PoW用于以太坊", correct: false }
+        ]
+    },
+    {
+        question: "什么是'钱包地址'？",
+        options: [
+            { text: "区块链上识别用户的唯一字符串", correct: true },
+            { text: "加密货币的存储文件", correct: false },
+            { text: "交易所的登录账号", correct: false }
+        ]
+    },
+    {
+        question: "'Layer 2'解决方案解决了区块链的什么问题？",
+        options: [
+            { text: "扩展性和交易速度问题", correct: true },
+            { text: "安全性问题", correct: false },
+            { text: "去中心化问题", correct: false }
+        ]
+    },
+    {
+        question: "'分叉'在区块链中意味着什么？",
+        options: [
+            { text: "区块链协议的升级或改变导致链分裂", correct: true },
+            { text: "区块链数据丢失", correct: false },
+            { text: "加密货币价格下跌", correct: false }
+        ]
+    },
+    {
+        question: "什么是'预言机'(Oracle)？",
+        options: [
+            { text: "将外部世界数据带入区块链的服务", correct: true },
+            { text: "区块链网络的管理员", correct: false },
+            { text: "加密货币交易的审计员", correct: false }
+        ]
+    },
+    {
+        question: "'侧链'技术的主要作用是什么？",
+        options: [
+            { text: "提供主链之外的扩展功能，同时保持与主链的互操作性", correct: true },
+            { text: "完全替代现有主链", correct: false },
+            { text: "只用于存储不重要的数据", correct: false }
+        ]
+    },
+    {
+        question: "什么是'代币经济模型'？",
+        options: [
+            { text: "设计代币的发行、分配和使用规则的系统", correct: true },
+            { text: "预测代币价格的方法", correct: false },
+            { text: "买卖代币的策略", correct: false }
+        ]
+    },
+    {
+        question: "'稳定币'与其他加密货币的主要区别是什么？",
+        options: [
+            { text: "价格与法定货币或商品挂钩，波动性低", correct: true },
+            { text: "交易速度更快", correct: false },
+            { text: "只能在特定平台使用", correct: false }
+        ]
+    },
+    {
+        question: "区块链中的'默克尔树'(Merkle Tree)有什么作用？",
+        options: [
+            { text: "高效验证大量数据的完整性", correct: true },
+            { text: "增加区块链的存储空间", correct: false },
+            { text: "减慢交易处理速度", correct: false }
+        ]
     }
 ];
