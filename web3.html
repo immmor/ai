@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web3 探索者：创世区块之旅</title>
+    <script src="web3questions.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -66,16 +67,17 @@
         .option-btn {
             display: block;
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 10px 15px;
+            margin: 8px 0;
             background: #003300;
             border: 1px solid #00ff41;
             color: #00ff41;
             cursor: pointer;
             font-family: 'VT323', monospace;
-            font-size: 1.2em;
+            font-size: 1em;
             transition: 0.2s;
             box-sizing: border-box;
+            min-height: 35px;
         }
         
         /* 小屏幕优化 */
@@ -93,16 +95,17 @@
             }
             
             #modal-text {
-                font-size: 1.1em;
+                font-size: 1.2em;
                 line-height: 1.4;
                 margin-bottom: 20px;
+                font-weight: bold;
             }
             
             .option-btn {
-                padding: 18px 10px;
-                font-size: 1.3em;
-                margin: 12px 0;
-                min-height: 60px;
+                padding: 12px 10px;
+                font-size: 1em;
+                margin: 8px 0;
+                min-height: 40px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -112,9 +115,10 @@
         /* 触摸屏优化 */
         @media (hover: none) and (pointer: coarse) {
             .option-btn {
-                padding: 20px 15px;
-                font-size: 1.4em;
-                margin: 15px 0;
+                padding: 14px 15px;
+                font-size: 1.1em;
+                margin: 10px 0;
+                min-height: 45px;
             }
         }
 
@@ -254,89 +258,6 @@ resize();
 /**
  * Game Data (The Knowledge Base)
  */
-// 区块链问题库
-const blockchainQuestions = [
-    {
-        question: "在区块链中，'去中心化'意味着什么？",
-        options: [
-            { text: "数据存储在谷歌的服务器上", correct: false },
-            { text: "没有单一的控制机构，权力下放", correct: true },
-            { text: "每个人都必须住在同一个城市", correct: false }
-        ]
-    },
-    {
-        question: "如果你丢失了你的'私钥'（Private Key），会发生什么？",
-        options: [
-            { text: "可以找客服重置密码", correct: false },
-            { text: "没有任何影响", correct: false },
-            { text: "你将永久失去对钱包资产的控制权", correct: true }
-        ]
-    },
-    {
-        question: "NFT (非同质化代币) 的主要特征是？",
-        options: [
-            { text: "每一个都是独一无二且不可分割的", correct: true },
-            { text: "它们都可以互相等价交换（像比特币一样）", correct: false },
-            { text: "它们只能用来买卖图片", correct: false }
-        ]
-    },
-    {
-        question: "智能合约（Smart Contract）是什么？",
-        options: [
-            { text: "一份非常聪明的法律纸质合同", correct: false },
-            { text: "部署在区块链上自动执行的代码协议", correct: true },
-            { text: "人工智能聊天机器人", correct: false }
-        ]
-    },
-    {
-        question: "以太坊和比特币的主要区别是什么？",
-        options: [
-            { text: "比特币只支持加密货币，以太坊支持智能合约", correct: true },
-            { text: "以太坊更老一些", correct: false },
-            { text: "比特币没有区块链", correct: false }
-        ]
-    },
-    {
-        question: "Gas费在区块链中是用来做什么的？",
-        options: [
-            { text: "奖励区块打包者", correct: true },
-            { text: "支付给中心化公司", correct: false },
-            { text: "购买代币的方式", correct: false }
-        ]
-    },
-    {
-        question: "'区块'在区块链技术中包含什么？",
-        options: [
-            { text: "一系列交易和时间戳", correct: true },
-            { text: "只有加密货币余额", correct: false },
-            { text: "用户个人信息", correct: false }
-        ]
-    },
-    {
-        question: "DeFi（去中心化金融）的核心优势是什么？",
-        options: [
-            { text: "无需中介机构，全球可访问", correct: true },
-            { text: "由政府控制更安全", correct: false },
-            { text: "只能在特定国家使用", correct: false }
-        ]
-    },
-    {
-        question: "'共识机制'在区块链中起到什么作用？",
-        options: [
-            { text: "确保所有参与者对账本状态达成一致", correct: true },
-            { text: "决定谁可以使用网络", correct: false },
-            { text: "加密用户个人信息", correct: false }
-        ]
-    },
-    {
-        question: "Web3的主要特点是什么？",
-        options: [
-            { text: "去中心化、用户拥有数据控制权", correct: true },
-            { text: "更快的网页加载速度", correct: false },
-            { text: "只能在电脑上使用", correct: false }
-        ]
-    }
-];
 
 // 怪物类型定义
 const monsterTypes = [
@@ -827,12 +748,20 @@ function handleAnswer(isCorrect) {
         // 对怪物造成伤害
         currentMonster.health -= 30; // 每个正确答案造成30点伤害
         
+        // 检查是否是最后一个问题
+        const isLastQuestion = currentMonster.currentQuestionIndex === currentMonster.questions.length - 1;
+        
         if (currentMonster.health <= 0) {
             // 怪物被击败
             modalText.innerText = "💥 怪物被击败！获得奖励！";
-            modalOptions.innerHTML = '<button class="option-btn" onclick="finishBattle(true)">继续探索</button>';
+            // 确保currentMonster对象被引用，避免在finishBattle中丢失
+            const defeatedMonster = currentMonster;
+            modalOptions.innerHTML = `<button class="option-btn" onclick="finishBattle(true)">继续探索</button>`;
+        } else if (isLastQuestion) {
+            // 最后一个问题但怪物未被击败，仍然结束战斗
+            modalOptions.innerHTML = '<button class="option-btn" onclick="finishBattle(false)">继续探索</button>';
         } else {
-            // 无论是否是最后一个问题，都允许继续战斗，确保所有问题都能被回答
+            // 不是最后一个问题且怪物未被击败，继续战斗
             modalOptions.innerHTML = '<button class="option-btn" onclick="continueBattle()">继续攻击</button>';
         }
     } else {
@@ -843,7 +772,13 @@ function handleAnswer(isCorrect) {
         
         // 检查玩家是否死亡
         if (player.health <= 0) {
+            // 保存当前怪物状态用于结束战斗
+            const monsterToFinish = currentMonster;
+            // 先清除modal，避免显示两次
             modal.style.display = 'none';
+            // 先结束当前战斗，再调用gameOver
+            finishBattle(false);
+            // 调用gameOver
             gameOver();
             return;
         }
@@ -854,9 +789,8 @@ function handleAnswer(isCorrect) {
 }
 
 function continueBattle() {
-    if (currentMonster.health <= 0) {
-        finishBattle(true);
-        return;
+    if (!currentMonster || currentMonster.defeated) {
+        return; // 安全检查，避免处理无效怪物
     }
     
     // 进入下一个问题
@@ -867,30 +801,36 @@ function continueBattle() {
         askMonsterQuestion();
     } else {
         // 所有问题都已问完，结束战斗
-        finishBattle(true);
+        finishBattle(currentMonster.health <= 0);
     }
 }
 
 function finishBattle(success) {
+    // 确保modal被隐藏
     modal.style.display = 'none';
     gameState = 'PLAY';
     
-    if(success && currentMonster) {
-        // 增加分数和击败计数
-        score += currentMonster.reward;
-        defeatedCount++;
+    // 安全检查：确保currentMonster存在且未被处理过
+    if (currentMonster) {
+        if(success) {
+            // 增加分数和击败计数
+            score += currentMonster.reward;
+            defeatedCount++;
+            
+            // 标记怪物为已击败
+            currentMonster.defeated = true;
+            
+            // 更新UI
+            scoreEl.innerText = score;
+            progressEl.innerText = defeatedCount;
+            
+            // 随机恢复一些生命值
+            player.health = Math.min(100, player.health + Math.floor(Math.random() * 15) + 5);
+            updateHealthBar();
+        }
         
-        // 标记怪物为已击败
-        currentMonster.defeated = true;
+        // 无论成功失败，都清除当前怪物引用，避免重复处理
         currentMonster = null;
-        
-        // 更新UI
-        scoreEl.innerText = score;
-        progressEl.innerText = defeatedCount;
-        
-        // 随机恢复一些生命值
-        player.health = Math.min(100, player.health + Math.floor(Math.random() * 15) + 5);
-        updateHealthBar();
     }
 }
 
