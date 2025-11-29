@@ -125,7 +125,7 @@ function setupEnergyEventListeners() {
             } else {
                 // messageEl.textContent = '无效的充能码';
                 // messageEl.className = 'text-xs mt-1 h-4 text-red-600';
-                showFeedback('无效的充能码', 'success');
+                showFeedback('无效的充能码', 'error');
             }
             
             // 3秒后清除消息
