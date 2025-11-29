@@ -246,6 +246,32 @@ let defeatedCount = 0;
 let lastSpawnTime = 0; // 上次生成怪物的时间
 let currentMonster = null; // 当前正在战斗的怪物
 
+// 稳定区配置 - 与稳定币挂钩的安全区域
+const stableZones = [
+    { x: 0, y: 0, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }, // 中心稳定区
+    { x: 1000, y: 800, radius: 150, color: 'rgba(0, 150, 255, 0.3)' },
+    { x: -1200, y: -600, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }
+];
+
+// 检查点是否在稳定区内
+function isInStableZone(x, y) {
+    return stableZones.some(zone => {
+        const dx = x - zone.x;
+        const dy = y - zone.y;
+        return Math.sqrt(dx*dx + dy*dy) < zone.radius;
+    });
+}
+
+// 检查点是否接近稳定区边界
+function isNearStableZone(x, y, margin = 20) {
+    return stableZones.some(zone => {
+        const dx = x - zone.x;
+        const dy = y - zone.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        return Math.abs(distance - zone.radius) < margin;
+    });
+}
+
 // Resize canvas
 function resize() {
     canvas.width = window.innerWidth;
@@ -558,18 +584,58 @@ function updateMonsters() {
     activeMonsters = activeMonsters.filter(monster => !monster.defeated);
     
     activeMonsters.forEach(monster => {
-        // 更新目标位置（追踪玩家）
-        monster.targetX = player.x;
-        monster.targetY = player.y;
+        // 如果玩家在稳定区内，怪物不追踪玩家，而是在稳定区外巡逻
+        let targetX, targetY;
+        if (isInStableZone(player.x, player.y)) {
+            // 找到最近的稳定区边界点作为目标
+            let closestDistance = Infinity;
+            let closestPoint = { x: player.x, y: player.y };
+            
+            stableZones.forEach(zone => {
+                const dx = player.x - zone.x;
+                const dy = player.y - zone.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                if (distance > 0) {
+                    // 计算稳定区边界上的点
+                    const boundaryX = zone.x + (dx / distance) * zone.radius;
+                    const boundaryY = zone.y + (dy / distance) * zone.radius;
+                    
+                    // 检查这个点是否比当前最近点更近
+                    const toMonsterDist = Math.sqrt(
+                        Math.pow(boundaryX - monster.x, 2) + 
+                        Math.pow(boundaryY - monster.y, 2)
+                    );
+                    
+                    if (toMonsterDist < closestDistance) {
+                        closestDistance = toMonsterDist;
+                        closestPoint = { x: boundaryX, y: boundaryY };
+                    }
+                }
+            });
+            
+            targetX = closestPoint.x;
+            targetY = closestPoint.y;
+        } else {
+            // 玩家不在稳定区，正常追踪
+            targetX = player.x;
+            targetY = player.y;
+        }
         
         // 计算移动方向
-        const dx = monster.targetX - monster.x;
-        const dy = monster.targetY - monster.y;
+        const dx = targetX - monster.x;
+        const dy = targetY - monster.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
         
         if (dist > 0) {
-            monster.x += (dx / dist) * monster.speed;
-            monster.y += (dy / dist) * monster.speed;
+            // 计算新位置
+            let newX = monster.x + (dx / dist) * monster.speed;
+            let newY = monster.y + (dy / dist) * monster.speed;
+            
+            // 检查新位置是否在稳定区内，如果是则不移动
+            if (!isInStableZone(newX, newY)) {
+                monster.x = newX;
+                monster.y = newY;
+            }
         }
     });
 }
@@ -585,6 +651,9 @@ function checkCollisions() {
     let nearAny = false;
     currentMonster = null;
     
+    // 检查玩家是否在稳定区内
+    const playerInStableZone = isInStableZone(player.x, player.y);
+    
     activeMonsters.forEach(monster => {
         if(monster.defeated) return;
         
@@ -593,7 +662,8 @@ function checkCollisions() {
         const dist = Math.sqrt(dx*dx + dy*dy);
         
         // 如果距离太近，怪物攻击玩家
-        if (dist < (player.size/2 + monster.size/2)) {
+        // 但只有当玩家不在稳定区时才会受到伤害
+        if (dist < (player.size/2 + monster.size/2) && !playerInStableZone) {
             // 怪物攻击玩家
             if (Math.random() < 0.1) { // 10%的概率攻击
                 player.takeDamage(5);
@@ -606,6 +676,7 @@ function checkCollisions() {
         }
         
         // 交互半径
+        // 玩家在稳定区时也可以与怪物交互，但不会受到伤害
         if (dist < 80) {
             nearAny = true;
             currentMonster = monster;
@@ -927,6 +998,37 @@ function render() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawGrid();
+    
+    // 绘制稳定区
+    stableZones.forEach(zone => {
+        // 计算屏幕上的位置
+        const screenX = zone.x - player.x + canvas.width / 2;
+        const screenY = zone.y - player.y + canvas.height / 2;
+        
+        // 只在屏幕范围内绘制
+        const maxRenderDistance = Math.max(canvas.width, canvas.height) / 2 + zone.radius;
+        const distanceToCenter = Math.sqrt(screenX*screenX + screenY*screenY);
+        
+        if (distanceToCenter < maxRenderDistance) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, zone.radius, 0, Math.PI * 2);
+            ctx.fillStyle = zone.color;
+            ctx.fill();
+            
+            // 绘制稳定区边框
+            ctx.strokeStyle = '#0096FF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 添加稳定币图标或标记
+            ctx.fillStyle = '#0096FF';
+            ctx.font = '24px VT323';
+            ctx.textAlign = 'center';
+            ctx.fillText('USDT', screenX, screenY + 8);
+            ctx.restore();
+        }
+    });
     
     // 绘制能量道具
     energyPotions.forEach(potion => potion.draw(ctx));
