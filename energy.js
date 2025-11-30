@@ -386,9 +386,11 @@ function createFallingSun() {
     
     fallingSuns.push(sunInfo);
     
-    // 添加点击事件
-    sun.addEventListener('click', function() {
-        collectSun(sunInfo.id);
+    // 添加点击事件，传递点击位置
+    sun.addEventListener('click', function(event) {
+        const clickX = event.clientX;
+        const clickY = event.clientY;
+        collectSun(sunInfo.id, clickX, clickY);
     });
     
     // 添加悬停效果（轻微放大和发光）
@@ -438,61 +440,70 @@ function updateFallingSuns() {
 }
 
 // 收集太阳（增加能量）
-function collectSun(sunId) {
-    for (let i = 0; i < fallingSuns.length; i++) {
-        if (fallingSuns[i].id === sunId) {
-            const sun = fallingSuns[i];
-            
-            // 播放收集动画
-            sun.element.style.transition = 'all 0.3s ease-out';
-            sun.element.style.transform = 'scale(1.5) rotate(360deg)';
-            sun.element.style.opacity = '0';
-            sun.element.style.filter = 'brightness(150%)';
-            
-            // 显示收集成功效果
-            const collectEffect = document.createElement('div');
-            collectEffect.className = 'fixed z-50 text-yellow-500 font-bold animate-bounce-in';
-            collectEffect.style.left = `${sun.x + SUN_SIZE/2}px`;
-            collectEffect.style.top = `${sun.y + SUN_SIZE/2}px`;
-            collectEffect.style.transform = 'translate(-50%, -50%)';
-            collectEffect.textContent = '+1 能量';
-            collectEffect.style.fontSize = '14px';
-            
-            document.body.appendChild(collectEffect);
-            
-            // 2秒后移除收集效果
-            setTimeout(() => {
-                collectEffect.style.transition = 'all 0.5s ease-out';
+function collectSun(sunId, clickX, clickY) {
+    // 使用更高效的查找方式
+    const sunIndex = fallingSuns.findIndex(s => s.id === sunId);
+    if (sunIndex === -1) return;
+    
+    const sun = fallingSuns[sunIndex];
+    
+    // 简化收集动画，使用更高效的CSS属性
+    sun.element.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+    sun.element.style.transform = 'scale(1.3)';
+    sun.element.style.opacity = '0';
+    
+    // 使用更轻量的收集效果
+    const collectEffect = document.createElement('div');
+    // 使用预先定义的类而不是内联样式，减少重排
+    collectEffect.className = 'fixed z-50 text-yellow-500 font-bold';
+    collectEffect.style.cssText = `
+        left: ${clickX}px;
+        top: ${clickY}px;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.2s ease-out, transform 0.5s ease-out;
+        pointer-events: none;
+    `;
+    collectEffect.textContent = '+1 能量';
+    
+    document.body.appendChild(collectEffect);
+    
+    // 强制重排后立即应用动画，使效果更流畅
+    collectEffect.offsetWidth; // 触发重排
+    collectEffect.style.opacity = '1';
+    collectEffect.style.transform = 'translate(-50%, -30px)';
+    
+    // 增加能量
+    if (energy < MAX_ENERGY) {
+        energy += 1;
+        // 异步更新能量显示，避免阻塞动画
+        setTimeout(() => updateEnergyDisplay(), 100);
+        console.log('收集到太阳！增加1点能量，当前能量：', energy);
+    }
+    
+    // 移除太阳 - 使用requestAnimationFrame确保在帧中执行
+    requestAnimationFrame(() => {
+        // 快速移除DOM元素
+        if (document.body.contains(sun.element)) {
+            document.body.removeChild(sun.element);
+        }
+        
+        // 移除收集效果
+        setTimeout(() => {
+            if (document.body.contains(collectEffect)) {
                 collectEffect.style.opacity = '0';
-                collectEffect.style.transform = 'translate(-50%, -50px) scale(1.2)';
-                
                 setTimeout(() => {
                     if (document.body.contains(collectEffect)) {
                         document.body.removeChild(collectEffect);
                     }
-                }, 500);
-            }, 1500);
-            
-            // 增加能量
-            if (energy < MAX_ENERGY) {
-                energy += 1;
-                updateEnergyDisplay();
-                console.log('收集到太阳！增加1点能量，当前能量：', energy);
+                }, 200);
             }
-            
-            // 移除太阳
-            setTimeout(() => {
-                if (document.body.contains(sun.element)) {
-                    document.body.removeChild(sun.element);
-                }
-                
-                // 从数组中移除
-                fallingSuns = fallingSuns.filter(s => s.id !== sunId);
-            }, 300);
-            
-            break;
-        }
-    }
+        }, 800);
+        
+        // 从数组中移除
+        fallingSuns.splice(sunIndex, 1);
+    });
 }
 
 // 在initEnergy函数末尾调用初始化太阳掉落系统
