@@ -3,7 +3,7 @@
 // 能量初始值
 let energy = 20;
 const MAX_ENERGY = 20; // 最大能量值
-const ENERGY_RECOVERY_INTERVAL = 60000; // 能量恢复间隔（毫秒）- 1分钟
+const ENERGY_RECOVERY_INTERVAL = 7200000; // 能量恢复间隔（毫秒）- 1分钟
 
 // 获取能量元素
 let energyDisplay = null;
@@ -89,8 +89,6 @@ function setupEnergyEventListeners() {
             const code = codeInput.value.trim().toLowerCase();
             
             if (code === 'energy') {
-                // 验证成功，增加10点能量
-                // 更新模块内的能量变量
                 window.energy = energy = Math.min(energy + 10, MAX_ENERGY);
                 
                 // 更新UI显示
@@ -115,26 +113,11 @@ function setupEnergyEventListeners() {
                 if (energyText) {
                     energyText.innerHTML = '<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：' + energy + '/' + MAX_ENERGY;
                 }
-                
-                // 保存到localStorage
                 saveEnergy();
-                
-                // messageEl.textContent = '充能成功！获得10点能量';
-                // messageEl.className = 'text-xs mt-1 h-4 text-green-600';
                 showFeedback('充能成功！获得10点能量', 'success');
             } else {
-                // messageEl.textContent = '无效的充能码';
-                // messageEl.className = 'text-xs mt-1 h-4 text-red-600';
                 showFeedback('无效的充能码', 'error');
             }
-            
-            // 3秒后清除消息
-            // setTimeout(() => {
-            //     messageEl.textContent = '';
-            //     messageEl.className = 'text-xs mt-1 h-4';
-            // }, 3000);
-            
-            // 清空输入框
             codeInput.value = '';
         });
     }
@@ -326,7 +309,7 @@ function hasEnoughEnergy() {
 // 太阳掉落动画系统
 let fallingSuns = [];
 let lastSunDropTime = 0;
-const MIN_SUN_INTERVAL = 15000; // 最小太阳掉落间隔（毫秒）
+const MIN_SUN_INTERVAL = 30000; // 最小太阳掉落间隔（毫秒）
 const MAX_SUN_INTERVAL = 45000; // 最大太阳掉落间隔（毫秒）
 const SUN_FALL_SPEED = 2; // 太阳掉落速度
 const SUN_SWING_AMPLITUDE = 30; // 太阳左右摆动幅度

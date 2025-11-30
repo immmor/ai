@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web3 探索者：创世区块之旅</title>
-    <script src="web3questions.js"></script>
+    <script src="web3banks/web3questions.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -78,6 +78,104 @@
             transition: 0.2s;
             box-sizing: border-box;
             min-height: 35px;
+        }
+        
+        /* NFT Collection UI */
+        #nft-collection {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            min-width: 200px;
+            max-width: 225px;
+            max-height: 200px;
+            overflow: hidden;
+        }
+        
+        #nft-collection h3 {
+            margin: 0 0 10px 0;
+            color: #00ff41;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        /* NFT滚动容器 */
+        #nft-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        /* 滚动条样式 */
+        #nft-items::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #nft-items::-webkit-scrollbar-track {
+            background: rgba(0, 255, 65, 0.1);
+            border-radius: 3px;
+        }
+        
+        #nft-items::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 3px;
+        }
+        
+        #nft-items::-webkit-scrollbar-thumb:hover {
+            background: #00cc33;
+        }
+        
+        .nft-item {
+            width: 35px;
+            height: 35px;
+            background-size: cover;
+            border: 1px solid #00ff41;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .nft-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        
+        /* Mining Site Indicator */
+        .mining-site-indicator {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff9800;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: none;
+            color: #ff9800;
+            font-size: 1.1em;
+        }
+        
+        /* Mining Progress Bar */
+        #mining-progress {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            margin-top: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        #mining-progress-fill {
+            height: 100%;
+            background: #ff9800;
+            width: 0%;
+            transition: width 0.5s;
         }
         
         /* 小屏幕优化 */
@@ -221,7 +319,21 @@
     <div id="start-screen">
         <h1 style="font-size: 4em; text-shadow: 0 0 20px #00ff41;">WEB3 UNIVERSE</h1>
         <p>通过回答问题收集创世区块，成为去中心化大师。</p>
-        <button id="start-btn">连接主网 (开始游戏)</button>
+        <button id="start-btn">连接主网</button>
+    </div>
+    
+    <!-- NFT Collection UI -->
+    <div id="nft-collection">
+        <h3>NFT 收藏 (0)</h3>
+        <div id="nft-items"></div>
+    </div>
+    
+    <!-- Mining Site Indicator -->
+    <div class="mining-site-indicator" id="mining-indicator">
+        <span>在挖矿点附近！按 [M] 开始挖矿</span>
+        <div id="mining-progress">
+            <div id="mining-progress-fill"></div>
+        </div>
     </div>
 </div>
 
@@ -247,11 +359,43 @@ let lastSpawnTime = 0; // 上次生成怪物的时间
 let currentMonster = null; // 当前正在战斗的怪物
 
 // 稳定区配置 - 与稳定币挂钩的安全区域
-const stableZones = [
-    { x: 0, y: 0, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }, // 中心稳定区
-    { x: 1000, y: 800, radius: 150, color: 'rgba(0, 150, 255, 0.3)' },
-    { x: -1200, y: -600, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }
-];
+    const stableZones = [
+        { x: 0, y: 0, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }, // 中心稳定区
+        { x: 1000, y: 800, radius: 150, color: 'rgba(0, 150, 255, 0.3)' },
+        { x: -1200, y: -600, radius: 150, color: 'rgba(0, 150, 255, 0.3)' }
+    ];
+    
+    // 加密货币挖矿点配置
+    const miningSites = [
+        { x: 500, y: 300, radius: 100, active: true },
+        { x: -800, y: 500, radius: 100, active: true },
+        { x: 300, y: -700, radius: 100, active: true },
+        { x: -1000, y: -400, radius: 100, active: true }
+    ];
+    
+    // NFT定义
+    const nftTypes = [
+        { id: 1, name: '创世区块', rarity: 'common', color: '#ff9800', value: 10, description: '区块链的第一个区块' },
+        { id: 2, name: '比特币标志', rarity: 'common', color: '#f7931a', value: 15, description: '比特币的官方标志' },
+        { id: 3, name: '以太坊图标', rarity: 'common', color: '#627eea', value: 20, description: '以太坊的标志' },
+        { id: 4, name: '智能合约', rarity: 'uncommon', color: '#9c27b0', value: 30, description: '自动执行的合约代码' },
+        { id: 5, name: '去中心化应用', rarity: 'uncommon', color: '#2196f3', value: 35, description: '基于区块链的应用' },
+        { id: 6, name: 'DeFi协议', rarity: 'rare', color: '#4caf50', value: 50, description: '去中心化金融协议' },
+        { id: 7, name: 'DAO组织', rarity: 'rare', color: '#ff5722', value: 60, description: '去中心化自治组织' },
+        { id: 8, name: 'Web3护照', rarity: 'epic', color: '#e91e63', value: 100, description: 'Web3世界的通行证' },
+        { id: 9, name: '元宇宙种子', rarity: 'legendary', color: '#ffeb3b', value: 200, description: '元宇宙的起源种子' }
+    ];
+    
+    // 玩家NFT收藏
+    let playerNFTs = [];
+    // 活跃的NFT物品
+    let activeNFTs = [];
+    // 挖矿相关变量
+    let currentMiningSite = null;
+    let isMining = false;
+    let miningProgress = 0;
+    const MINING_DURATION = 5000; // 5秒挖矿时间
+    let miningStartTime = 0;
 
 // 检查点是否在稳定区内
 function isInStableZone(x, y) {
@@ -270,6 +414,276 @@ function isNearStableZone(x, y, margin = 20) {
         const distance = Math.sqrt(dx*dx + dy*dy);
         return Math.abs(distance - zone.radius) < margin;
     });
+}
+
+// 检查点是否在挖矿点内
+// 检查点是否在挖矿点内并返回找到的挖矿点对象
+function findMiningSite(x, y) {
+    return miningSites.find(site => {
+        // 挖矿时仍然可以检测玩家是否在该点范围内
+        const dx = x - site.x;
+        const dy = y - site.y;
+        return Math.sqrt(dx*dx + dy*dy) < site.radius;
+    });
+}
+
+// 检查点是否在特定挖矿点内（用于正在挖矿的情况）
+function isInSpecificMiningSite(x, y, targetSite) {
+    if (!targetSite) return false;
+    const dx = x - targetSite.x;
+    const dy = y - targetSite.y;
+    // 增加容忍度，使用1.5倍的半径
+    return Math.sqrt(dx*dx + dy*dy) < (targetSite.radius * 1.5);
+}
+
+// 检查点是否在挖矿点内，返回布尔值
+function isInMiningSite(x, y) {
+    return findMiningSite(x, y) !== undefined;
+}
+
+// 生成随机NFT
+function spawnNFT() {
+    // 限制同时存在的NFT数量
+    if (activeNFTs.length >= 5) return;
+    
+    // 随机选择NFT类型
+    const nftType = nftTypes[Math.floor(Math.random() * nftTypes.length)];
+    
+    // 随机位置（在玩家附近但不在稳定区内）
+    let x, y;
+    do {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 300 + Math.random() * 500; // 300-800范围内
+        x = player.x + Math.cos(angle) * distance;
+        y = player.y + Math.sin(angle) * distance;
+    } while (isInStableZone(x, y));
+    
+    // 创建NFT对象
+    const nft = {
+        id: Date.now(),
+        type: nftType,
+        x: x,
+        y: y,
+        size: 30,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 0.02, // 随机旋转速度
+        collected: false
+    };
+    
+    activeNFTs.push(nft);
+}
+
+// 更新NFT状态
+function updateNFTs() {
+    activeNFTs = activeNFTs.filter(nft => !nft.collected);
+    
+    activeNFTs.forEach(nft => {
+        // 更新旋转
+        nft.rotation += nft.rotationSpeed;
+    });
+}
+
+// 检查NFT碰撞
+function checkNFTCollection() {
+    activeNFTs.forEach(nft => {
+        const dx = player.x - nft.x;
+        const dy = player.y - nft.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 40 && !nft.collected) {
+            // 收集NFT
+            nft.collected = true;
+            playerNFTs.push(nft.type);
+            
+            // 更新UI
+            updateNFTCollectionUI();
+            
+            // 显示收集通知
+            showNotification(`收集到 NFT: ${nft.type.name} (+${nft.type.value} ETH)`);
+            
+            // 增加分数
+            score += nft.type.value;
+            scoreEl.innerText = score;
+            
+            // 生成收集效果（简单的粒子效果）
+            for (let i = 0; i < 10; i++) {
+                showNotification('✨');
+            }
+        }
+    });
+}
+
+// 更新NFT收集UI
+function updateNFTCollectionUI() {
+    const nftCollectionEl = document.getElementById('nft-collection');
+    const nftItemsEl = document.getElementById('nft-items');
+    
+    nftCollectionEl.querySelector('h3').innerText = `NFT 收藏 (${playerNFTs.length})`;
+    nftItemsEl.innerHTML = '';
+    
+    // 按稀有度分组NFT
+    const rarityGroups = {};
+    playerNFTs.forEach(nft => {
+        if (!rarityGroups[nft.rarity]) {
+            rarityGroups[nft.rarity] = [];
+        }
+        rarityGroups[nft.rarity].push(nft);
+    });
+    
+    // 创建NFT显示
+    playerNFTs.forEach(nft => {
+        const nftItem = document.createElement('div');
+        nftItem.className = 'nft-item';
+        nftItem.style.backgroundColor = nft.color;
+        nftItem.title = `${nft.name} (${nft.rarity})\n${nft.description}\n价值: ${nft.value} ETH`;
+        
+        // 添加稀有度边框效果
+        if (nft.rarity === 'uncommon') {
+            nftItem.style.borderColor = '#4caf50';
+            nftItem.style.boxShadow = '0 0 5px #4caf50';
+        } else if (nft.rarity === 'rare') {
+            nftItem.style.borderColor = '#2196f3';
+            nftItem.style.boxShadow = '0 0 5px #2196f3';
+        } else if (nft.rarity === 'epic') {
+            nftItem.style.borderColor = '#9c27b0';
+            nftItem.style.boxShadow = '0 0 5px #9c27b0';
+        } else if (nft.rarity === 'legendary') {
+            nftItem.style.borderColor = '#ffeb3b';
+            nftItem.style.boxShadow = '0 0 5px #ffeb3b';
+        }
+        
+        nftItemsEl.appendChild(nftItem);
+    });
+}
+
+// 开始挖矿
+function startMining() {
+    if (isMining || gameState !== 'PLAY') {
+        return;
+    }
+    
+    // 确保玩家确实在挖矿点内
+    if (!currentMiningSite || !isInSpecificMiningSite(player.x, player.y, currentMiningSite)) {
+        showNotification('请先移动到挖矿点内');
+        return;
+    }
+    
+    isMining = true;
+    miningProgress = 0;
+    miningStartTime = Date.now();
+    
+    // 显示挖矿进度条
+    document.getElementById('mining-progress-fill').style.width = '0%';
+    
+    // 不需要禁用挖矿点，而是通过逻辑判断来防止重复挖矿
+    
+    showNotification('开始挖矿...');
+}
+
+// 更新挖矿进度
+function updateMining() {
+    if (!isMining) return;
+    
+    // 简化逻辑：不再每帧检查位置，给玩家更多宽容度
+    // 只有在明显离开时才会停止挖矿
+    
+    const elapsed = Date.now() - miningStartTime;
+    miningProgress = Math.min(elapsed / MINING_DURATION, 1);
+    
+    // 更新进度条
+    document.getElementById('mining-progress-fill').style.width = `${miningProgress * 100}%`;
+    
+    // 挖矿完成
+    if (miningProgress >= 1) {
+        completeMining();
+    }
+}
+
+// 完成挖矿
+function completeMining() {
+    isMining = false;
+    
+    // 随机获得奖励
+    const rewardType = Math.random();
+    let rewardAmount, rewardText;
+    
+    if (rewardType < 0.6) { // 60%概率获得ETH
+        rewardAmount = Math.floor(Math.random() * 30) + 20; // 20-50 ETH
+        rewardText = `挖到 ${rewardAmount} ETH!`;
+        score += rewardAmount;
+        scoreEl.innerText = score;
+    } else if (rewardType < 0.9) { // 30%概率获得生命值恢复
+        rewardAmount = Math.floor(Math.random() * 30) + 20; // 20-50 生命值
+        rewardText = `挖到治疗药水 +${rewardAmount} 生命值!`;
+        player.health = Math.min(100, player.health + rewardAmount);
+        updateHealthBar();
+    } else { // 10%概率获得稀有NFT
+        const rareNFTs = nftTypes.filter(nft => nft.rarity === 'rare' || nft.rarity === 'epic' || nft.rarity === 'legendary');
+        if (rareNFTs.length > 0) {
+            const nft = rareNFTs[Math.floor(Math.random() * rareNFTs.length)];
+            playerNFTs.push(nft);
+            updateNFTCollectionUI();
+            rewardText = `挖到稀有NFT: ${nft.name}!`;
+            score += nft.value;
+            scoreEl.innerText = score;
+        }
+    }
+    
+    showNotification(rewardText);
+    
+    // 30秒后重新激活挖矿点
+    setTimeout(() => {
+        if (currentMiningSite) {
+            currentMiningSite.active = true;
+        }
+    }, 30000);
+}
+
+// 检查挖矿点交互
+function checkMiningInteraction() {
+    const miningIndicator = document.getElementById('mining-indicator');
+    
+    if (gameState !== 'PLAY') {
+        miningIndicator.style.display = 'none';
+        currentMiningSite = null;
+        return;
+    }
+    
+    // 非挖矿状态下，只检测激活的挖矿点
+    if (!isMining) {
+        const miningSite = miningSites.find(site => {
+            if (!site.active) return false;
+            const dx = player.x - site.x;
+            const dy = player.y - site.y;
+            return Math.sqrt(dx*dx + dy*dy) < site.radius;
+        });
+        
+        if (miningSite) {
+            currentMiningSite = miningSite;
+            miningIndicator.style.display = 'block';
+        } else {
+            miningIndicator.style.display = 'none';
+            currentMiningSite = null;
+        }
+    } else {
+        // 挖矿状态下，使用特定函数检查是否在当前挖矿点范围内，提供更大宽容度
+        if (!isInSpecificMiningSite(player.x, player.y, currentMiningSite)) {
+            // 连续检测两次才取消挖矿，避免抖动问题
+            setTimeout(() => {
+                if (isMining && !isInSpecificMiningSite(player.x, player.y, currentMiningSite)) {
+                    isMining = false;
+                    showNotification('离开挖矿点太远，挖矿已取消');
+                    document.getElementById('mining-progress-fill').style.width = '0%';
+                    // 重新激活挖矿点
+                    setTimeout(() => {
+                        if (currentMiningSite) {
+                            currentMiningSite.active = true;
+                        }
+                    }, 5000);
+                }
+            }, 1500); // 延长至1.5秒后再确认
+        }
+    }
 }
 
 // Resize canvas
@@ -482,6 +896,7 @@ let dragOffsetY = 0;
 window.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
     if(e.key === 'e' || e.key === 'E') tryInteract();
+    if(e.key === 'm' || e.key === 'M') startMining();
 });
 window.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
@@ -638,6 +1053,149 @@ function updateMonsters() {
             }
         }
     });
+}
+
+// 绘制挖矿点
+function drawMiningSites() {
+    miningSites.forEach(site => {
+        // 计算屏幕上的位置
+        const screenX = site.x - player.x + canvas.width / 2;
+        const screenY = site.y - player.y + canvas.height / 2;
+        
+        // 只在屏幕范围内绘制
+        const maxRenderDistance = Math.max(canvas.width, canvas.height) / 2 + site.radius;
+        const distanceToCenter = Math.sqrt(screenX*screenX + screenY*screenY);
+        
+        if (distanceToCenter < maxRenderDistance) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, site.radius, 0, Math.PI * 2);
+            
+            // 根据是否活跃和玩家是否在其中改变颜色
+            if (!site.active) {
+                ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+                ctx.strokeStyle = '#666';
+            } else if (isInMiningSite(player.x, player.y)) {
+                ctx.fillStyle = 'rgba(255, 152, 0, 0.4)';
+                ctx.strokeStyle = '#ff9800';
+            } else {
+                ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+                ctx.strokeStyle = '#ff9800';
+            }
+            
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 添加挖矿图标
+            ctx.fillStyle = site.active ? '#ff9800' : '#666';
+            ctx.font = '24px VT323';
+            ctx.textAlign = 'center';
+            ctx.fillText('⛏️', screenX, screenY + 8);
+            
+            // 如果活跃，添加脉冲效果
+            if (site.active) {
+                ctx.strokeStyle = 'rgba(255, 152, 0, 0.6)';
+                ctx.lineWidth = 1;
+                const pulseRadius = site.radius * (1 + 0.2 * Math.sin(Date.now() * 0.002));
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, pulseRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+        }
+    });
+}
+
+// 绘制NFT
+function drawNFTs() {
+    activeNFTs.forEach(nft => {
+        if (nft.collected) return;
+        
+        // 计算屏幕位置
+        const screenX = nft.x - player.x + canvas.width / 2;
+        const screenY = nft.y - player.y + canvas.height / 2;
+        
+        // 只在屏幕范围内绘制
+        if (screenX > -nft.size * 2 && screenX < canvas.width + nft.size * 2 &&
+            screenY > -nft.size * 2 && screenY < canvas.height + nft.size * 2) {
+            
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            ctx.rotate(nft.rotation);
+            
+            // 绘制NFT边框
+            ctx.strokeStyle = nft.type.color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-nft.size/2, -nft.size/2, nft.size, nft.size);
+            
+            // 根据稀有度添加发光效果
+            if (nft.type.rarity === 'uncommon') {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#4caf50';
+            } else if (nft.type.rarity === 'rare') {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#2196f3';
+            } else if (nft.type.rarity === 'epic') {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#9c27b0';
+            } else if (nft.type.rarity === 'legendary') {
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = '#ffeb3b';
+            }
+            
+            // 填充NFT背景
+            ctx.fillStyle = nft.type.color;
+            ctx.fillRect(-nft.size/2, -nft.size/2, nft.size, nft.size);
+            
+            // 重置阴影
+            ctx.shadowBlur = 0;
+            
+            // 添加NFT图标或文字
+            ctx.fillStyle = '#fff';
+            ctx.font = '14px VT323';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('NFT', 0, 0);
+            
+            // 添加稀有度标记
+            let rarityMark = '';
+            if (nft.type.rarity === 'uncommon') rarityMark = '◆';
+            else if (nft.type.rarity === 'rare') rarityMark = '◆◆';
+            else if (nft.type.rarity === 'epic') rarityMark = '◆◆◆';
+            else if (nft.type.rarity === 'legendary') rarityMark = '★';
+            
+            if (rarityMark) {
+                ctx.fillStyle = nft.type.rarity === 'legendary' ? '#ffeb3b' : '#fff';
+                ctx.font = '10px VT323';
+                ctx.fillText(rarityMark, 0, -nft.size/2 - 5);
+            }
+            
+            ctx.restore();
+            
+            // 添加吸引玩家的脉动效果
+            const pulseRadius = nft.size * (1 + 0.1 * Math.sin(Date.now() * 0.005));
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, pulseRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(${hexToRgb(nft.type.color)}, 0.5)`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    });
+}
+
+// 辅助函数：十六进制颜色转RGB
+function hexToRgb(hex) {
+    // 移除#号
+    hex = hex.replace('#', '');
+    
+    // 解析RGB值
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    return `${r}, ${g}, ${b}`;
 }
 
 // 检查玩家与怪物的碰撞
@@ -1030,6 +1588,12 @@ function render() {
         }
     });
     
+    // 绘制挖矿点
+    drawMiningSites();
+    
+    // 绘制NFT
+    drawNFTs();
+    
     // 绘制能量道具
     energyPotions.forEach(potion => potion.draw(ctx));
     
@@ -1139,6 +1703,14 @@ function loop(timestamp) {
         updateMonsters();
         checkCollisions();
         
+        // 更新NFT
+        updateNFTs();
+        checkNFTCollection();
+        
+        // 检查挖矿交互
+        checkMiningInteraction();
+        updateMining();
+        
         // 更新能量道具
         energyPotions.forEach(potion => potion.update());
         
@@ -1154,6 +1726,11 @@ function loop(timestamp) {
         if (timestamp - lastSpawnTime > SPAWN_INTERVAL) {
             spawnMonster();
             lastSpawnTime = timestamp;
+        }
+        
+        // 随机生成NFT
+        if (Math.random() < 0.002) { // 每帧约0.2%概率生成NFT
+            spawnNFT();
         }
         
         // 能量道具由定时器生成，不再需要每帧检查
@@ -1173,6 +1750,20 @@ document.getElementById('start-btn').addEventListener('click', () => {
     if (energySpawnTimer) {
         clearInterval(energySpawnTimer);
     }
+    
+    // 重置游戏状态
+    playerNFTs = [];
+    activeNFTs = [];
+    score = 0;
+    defeatedCount = 0;
+    isMining = false;
+    miningProgress = 0;
+    currentMiningSite = null;
+    scoreEl.innerText = score;
+    progressEl.innerText = defeatedCount;
+    
+    // 初始化NFT收藏UI
+    updateNFTCollectionUI();
     
     // 设置玩家初始位置
     player.x = 0;
@@ -1195,6 +1786,20 @@ document.getElementById('start-btn').addEventListener('click', () => {
         }, i * 2000);
     }
     
+    // 生成初始NFT
+    for (let i = 0; i < 2; i++) {
+        setTimeout(() => {
+            if (gameState === 'PLAY') {
+                spawnNFT();
+            }
+        }, i * 3000 + 1000);
+    }
+    
+    // 重新激活所有挖矿点
+    miningSites.forEach(site => {
+        site.active = true;
+    });
+    
     // 设置能量道具定时生成器
     energySpawnTimer = setInterval(() => {
         if (gameState === 'PLAY' && energyPotions.length < maxEnergyPotions) {
@@ -1203,6 +1808,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
     }, energySpawnInterval);
 
     gameState = 'PLAY';
+    
     requestAnimationFrame(loop);
 });
 
