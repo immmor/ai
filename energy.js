@@ -439,6 +439,35 @@ function updateFallingSuns() {
     fallingSuns = newFallingSuns;
 }
 
+// 播放能量收集音效
+function playEnergyGainSound() {
+    const synth = new Tone.Synth({
+        oscillator: {
+            type: "triangle"  // 改为三角波，音色更明亮
+        },
+        envelope: {
+            attack: 0.001,
+            decay: 0.15,      // 稍短的衰减
+            sustain: 0.2,     // 稍短的延音
+            release: 0.25     // 稍长的释放
+        }
+    }).toDestination();
+    
+    // 播放新的欢快音调组合
+    synth.triggerAttackRelease("G5", "8n", undefined, 0.9); // G5音符，音量稍小
+    setTimeout(() => {
+        synth.triggerAttackRelease("B5", "8n", undefined, 0.8); // B5音符
+    }, 90); // 稍快的节奏
+    setTimeout(() => {
+        synth.triggerAttackRelease("D6", "8n", undefined, 1.0); // D6音符，音量恢复
+    }, 180);
+    
+    // 播放完成后释放资源
+    setTimeout(() => {
+        synth.dispose();
+    }, 1000);
+}
+
 // 收集太阳（增加能量）
 function collectSun(sunId, clickX, clickY) {
     // 使用更高效的查找方式
@@ -451,6 +480,9 @@ function collectSun(sunId, clickX, clickY) {
     sun.element.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
     sun.element.style.transform = 'scale(1.3)';
     sun.element.style.opacity = '0';
+    
+    // 播放能量收集音效
+    playEnergyGainSound();
     
     // 使用更轻量的收集效果
     const collectEffect = document.createElement('div');
