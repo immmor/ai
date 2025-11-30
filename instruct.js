@@ -15,6 +15,12 @@ class StepByStepGuide {
                 position: "bottom"
             },
             {
+                title: "能量道具",
+                content: "点击'能量道具'可以输入充能码补充能量。能量值用于回答问题。",
+                target: "#energy-display",
+                position: "bottom"
+            },
+            {
                 title: "勋章系统",
                 content: "点击'勋'字可以查看你获得的勋章。连续答对题目、完成特定题库等都可以获得勋章。",
                 target: "#badge-collapsed",

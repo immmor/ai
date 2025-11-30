@@ -105,7 +105,7 @@ function setupEnergyEventListeners() {
                 }
                 
                 // 更新提示框中的进度条
-                const tooltipProgressBar = energyTooltip.querySelector('.h-full.bg-gradient-to-r.from-blue-400.to-blue-600.rounded-full');
+                const tooltipProgressBar = energyTooltip.querySelector('.h-full.bg-gradient-to-r.from-yellow-400.to-yellow-600.rounded-full');
                 if (tooltipProgressBar) {
                     tooltipProgressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
                 }
@@ -113,7 +113,7 @@ function setupEnergyEventListeners() {
                 // 更新提示框中的能量值
                 const energyText = energyTooltip.querySelector('.font-medium.text-gray-800.flex.items-center');
                 if (energyText) {
-                    energyText.innerHTML = '<i class="fas fa-bolt text-blue-500 mr-2"></i>能量值：' + energy + '/' + MAX_ENERGY;
+                    energyText.innerHTML = '<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：' + energy + '/' + MAX_ENERGY;
                 }
                 
                 // 保存到localStorage
@@ -155,9 +155,9 @@ function createEnergyDisplay() {
     energyContainer.innerHTML = `
         <div id="energy-display" class="relative cursor-pointer w-10 px-2 py-0.5 rounded-md overflow-hidden" title="点击查看能量详情">
             <div class="absolute inset-0 bg-gray-200"></div>
-            <div id="energy-progress-bar" class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500" style="width: ${(energy / MAX_ENERGY) * 100}%"></div>
+            <div id="energy-progress-bar" class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-600 transition-all duration-500" style="width: ${(energy / MAX_ENERGY) * 100}%"></div>
             <div class="relative flex items-center justify-center z-10">
-                <i id="energy-icon" class="fas fa-bolt text-white text-xs mr-0.5"></i>
+                <i id="energy-icon" class="fas fa-sun text-white text-xs mr-0.5"></i>
                 <span id="energy-count" class="text-white font-medium text-xs">${energy}</span>
             </div>
         </div>
@@ -210,7 +210,7 @@ function updateEnergyDisplay() {
             // 更新标题
             const titleElement = tooltip.querySelector('.font-medium');
             if (titleElement) {
-                titleElement.innerHTML = `<i class="fas fa-bolt text-blue-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
+                titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
             }
             
             // 更新提示框中的进度条
@@ -321,4 +321,196 @@ function getCurrentEnergy() {
 // 检查能量是否充足
 function hasEnoughEnergy() {
     return energy > 0;
+}
+
+// 太阳掉落动画系统
+let fallingSuns = [];
+let lastSunDropTime = 0;
+const MIN_SUN_INTERVAL = 15000; // 最小太阳掉落间隔（毫秒）
+const MAX_SUN_INTERVAL = 45000; // 最大太阳掉落间隔（毫秒）
+const SUN_FALL_SPEED = 2; // 太阳掉落速度
+const SUN_SWING_AMPLITUDE = 30; // 太阳左右摆动幅度
+const SUN_SIZE = 30; // 太阳大小
+
+// 初始化太阳掉落系统
+function initSunDropSystem() {
+    // 在能量系统初始化后启动太阳掉落
+    lastSunDropTime = Date.now();
+    requestAnimationFrame(updateSunDropSystem);
+}
+
+// 更新太阳掉落系统
+function updateSunDropSystem() {
+    const currentTime = Date.now();
+    
+    // 检查是否需要生成新的太阳
+    const timeSinceLastDrop = currentTime - lastSunDropTime;
+    const nextDropInterval = Math.random() * (MAX_SUN_INTERVAL - MIN_SUN_INTERVAL) + MIN_SUN_INTERVAL;
+    
+    if (timeSinceLastDrop > nextDropInterval && fallingSuns.length < 3) { // 限制同时最多3个太阳
+        createFallingSun();
+        lastSunDropTime = currentTime;
+    }
+    
+    // 更新所有掉落中的太阳
+    updateFallingSuns();
+    
+    // 继续下一帧
+    requestAnimationFrame(updateSunDropSystem);
+}
+
+// 创建掉落的太阳
+function createFallingSun() {
+    const sun = document.createElement('div');
+    const startX = Math.random() * (window.innerWidth - SUN_SIZE);
+    const startY = -SUN_SIZE;
+    const swingPhase = Math.random() * Math.PI * 2; // 随机相位
+    
+    sun.className = 'fixed z-50 cursor-pointer transform transition-all duration-300 hover:scale-110 hover:brightness-110';
+    sun.style.left = `${startX}px`;
+    sun.style.top = `${startY}px`;
+    sun.innerHTML = `<i class="fas fa-sun text-yellow-400 text-${Math.floor(SUN_SIZE/8)}xl animate-pulse"></i>`;
+    
+    // 添加到页面
+    document.body.appendChild(sun);
+    
+    // 存储太阳信息
+    const sunInfo = {
+        element: sun,
+        x: startX,
+        y: startY,
+        swingPhase: swingPhase,
+        startTime: Date.now(),
+        id: fallingSuns.length
+    };
+    
+    fallingSuns.push(sunInfo);
+    
+    // 添加点击事件
+    sun.addEventListener('click', function() {
+        collectSun(sunInfo.id);
+    });
+    
+    // 添加悬停效果（轻微放大和发光）
+    sun.addEventListener('mouseenter', function() {
+        sun.classList.add('brightness-125');
+    });
+    
+    sun.addEventListener('mouseleave', function() {
+        sun.classList.remove('brightness-125');
+    });
+}
+
+// 更新所有掉落中的太阳
+function updateFallingSuns() {
+    const currentTime = Date.now();
+    const newFallingSuns = [];
+    
+    for (let i = 0; i < fallingSuns.length; i++) {
+        const sun = fallingSuns[i];
+        const elapsedTime = currentTime - sun.startTime;
+        
+        // 更新位置 - 减慢下落速度，确保用户能清楚看到下落过程
+        sun.y += SUN_FALL_SPEED * 0.8; // 减慢速度到原来的80%
+        sun.x += Math.sin(sun.swingPhase + elapsedTime * 0.0015) * 0.4; // 左右摆动，稍微减少幅度
+        
+        // 应用旋转效果
+        const rotation = Math.sin(sun.swingPhase + elapsedTime * 0.0008) * 10; // 轻微旋转
+        
+        // 更新DOM
+        sun.element.style.top = `${sun.y}px`;
+        sun.element.style.left = `${sun.x}px`;
+        sun.element.style.transform = `rotate(${rotation}deg)`;
+        
+        // 设置一个非常大的阈值，确保太阳能够完全下落到屏幕底部并继续下落一段距离
+        // 这样用户可以清楚地看到太阳从顶部到底部的完整过程
+        if (sun.y < window.innerHeight + SUN_SIZE * 10) {
+            newFallingSuns.push(sun);
+        } else {
+            // 移除超出屏幕的太阳
+            if (document.body.contains(sun.element)) {
+                document.body.removeChild(sun.element);
+            }
+        }
+    }
+    
+    fallingSuns = newFallingSuns;
+}
+
+// 收集太阳（增加能量）
+function collectSun(sunId) {
+    for (let i = 0; i < fallingSuns.length; i++) {
+        if (fallingSuns[i].id === sunId) {
+            const sun = fallingSuns[i];
+            
+            // 播放收集动画
+            sun.element.style.transition = 'all 0.3s ease-out';
+            sun.element.style.transform = 'scale(1.5) rotate(360deg)';
+            sun.element.style.opacity = '0';
+            sun.element.style.filter = 'brightness(150%)';
+            
+            // 显示收集成功效果
+            const collectEffect = document.createElement('div');
+            collectEffect.className = 'fixed z-50 text-yellow-500 font-bold animate-bounce-in';
+            collectEffect.style.left = `${sun.x + SUN_SIZE/2}px`;
+            collectEffect.style.top = `${sun.y + SUN_SIZE/2}px`;
+            collectEffect.style.transform = 'translate(-50%, -50%)';
+            collectEffect.textContent = '+1 能量';
+            collectEffect.style.fontSize = '14px';
+            
+            document.body.appendChild(collectEffect);
+            
+            // 2秒后移除收集效果
+            setTimeout(() => {
+                collectEffect.style.transition = 'all 0.5s ease-out';
+                collectEffect.style.opacity = '0';
+                collectEffect.style.transform = 'translate(-50%, -50px) scale(1.2)';
+                
+                setTimeout(() => {
+                    if (document.body.contains(collectEffect)) {
+                        document.body.removeChild(collectEffect);
+                    }
+                }, 500);
+            }, 1500);
+            
+            // 增加能量
+            if (energy < MAX_ENERGY) {
+                energy += 1;
+                updateEnergyDisplay();
+                console.log('收集到太阳！增加1点能量，当前能量：', energy);
+            }
+            
+            // 移除太阳
+            setTimeout(() => {
+                if (document.body.contains(sun.element)) {
+                    document.body.removeChild(sun.element);
+                }
+                
+                // 从数组中移除
+                fallingSuns = fallingSuns.filter(s => s.id !== sunId);
+            }, 300);
+            
+            break;
+        }
+    }
+}
+
+// 在initEnergy函数末尾调用初始化太阳掉落系统
+function initEnergy() {
+    // 从localStorage加载能量值
+    loadEnergy();
+    
+    // 创建能量显示元素
+    createEnergyDisplay();
+    
+    // 更新能量显示
+    updateEnergyDisplay();
+    
+    // 设置能量自动恢复定时器
+    setupEnergyRecovery();
+    
+    // 初始化太阳掉落系统
+    initSunDropSystem();
+    
+    // console.log('能量系统初始化完成，当前能量：', energy);
 }
