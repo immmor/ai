@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI | 未来智能研修院</title>
+    <style>
+        /* --- 全局变量与重置 --- */
+        :root {
+            --bg-color: #050509;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-gradient: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            --accent-glow: 0 0 20px rgba(0, 198, 255, 0.5);
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+
+        /* --- 导航栏 --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .btn-primary {
+            padding: 10px 25px;
+            border-radius: 30px;
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--accent-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 198, 255, 0.7);
+        }
+
+        /* --- Hero 区域 --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        #canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ffffff, #888888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* --- 通用 Section --- */
+        section {
+            padding: 100px 10%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .section-header .line {
+            width: 60px;
+            height: 4px;
+            background: var(--accent-gradient);
+            margin: 0 auto;
+            border-radius: 2px;
+        }
+
+        /* --- 课程卡片 (玻璃拟态) --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 198, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: 0.4s;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #00c6ff;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .card-tags span {
+            display: inline-block;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            border-radius: 15px;
+            background: rgba(0, 198, 255, 0.1);
+            color: #00c6ff;
+            margin-right: 8px;
+        }
+
+        /* --- 数据展示 --- */
+        .stats {
+            background: linear-gradient(180deg, transparent, rgba(0, 198, 255, 0.05), transparent);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item p {
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 50px 10%;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* --- 动画类 --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- 响应式 --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; } /* 简化处理：移动端隐藏菜单 */
+            section { padding: 60px 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">NEXUS AI.</div>
+        <div class="nav-links">
+            <a href="#courses">核心课程</a>
+            <a href="#methodology">教学体系</a>
+            <a href="#faculty">专家团队</a>
+            <a href="#about">关于我们</a>
+        </div>
+        <button class="btn-primary">立即预约试听</button>
+    </nav>
+
+    <header class="hero">
+        <canvas id="canvas-bg"></canvas>
+        <div class="hero-content fade-in">
+            <div style="margin-bottom: 20px; display: inline-block; padding: 5px 15px; border: 1px solid #00c6ff; border-radius: 50px; color: #00c6ff; font-size: 0.8rem; letter-spacing: 2px;">
+                AI 2.0 时代已来
+            </div>
+            <h1>重塑你的<br>智能未来</h1>
+            <p>从大语言模型原理到生成式 AI 实战，NEXUS 为您提供世界级的 AI 工程师培养方案。掌握改变世界的核心技术。</p>
+            <button class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem;">探索课程体系</button>
+        </div>
+    </header>
+
+    <section id="courses">
+        <div class="section-header fade-in">
+            <h2>精英课程体系</h2>
+            <div class="line"></div>
+        </div>
+        <div class="grid-container">
+            <div class="card fade-in">
+                <div class="card-icon">🧠</div>
+                <h3>LLM 大模型全栈开发</h3>
+                <p>深入 Transformer 架构，掌握 Prompt Engineering、RAG 检索增强生成及模型微调技术。</p>
+                <div class="card-tags">
+                    <span>Python</span>
+                    <span>PyTorch</span>
+                    <span>OpenAI API</span>
+                </div>
+            </div>
+            <div class="card fade-in" style="transition-delay: 0.1s;">
+                <div class="card-icon">🎨</div>
+                <h3>AIGC 视觉创作大师</h3>
+                <p>精通 Midjourney 与 Stable Diffusion 商业级应用，探索 ComfyUI 工作流与 LoRA 模型训练。</p>
+                <div class="card-tags">
+                    <span>Stable Diffusion</span>
+                    <span>ControlNet</span>
+                    <span>ComfyUI</span>
+                </div>
+            </div>
+            <div class="card fade-in" style="transition-delay: 0.2s;">
+                <div class="card-icon">🤖</div>
+                <h3>AI Agent 智能体构建</h3>
+                <p>学习构建自主决策的 AI 智能体，掌握 LangChain 框架与多智能体协作系统的开发实战。</p>
+                <div class="card-tags">
+                    <span>LangChain</span>
+                    <span>AutoGPT</span>
+                    <span>MetaGPT</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats fade-in">
+        <div class="stat-item">
+            <h3>500+</h3>
+            <p>实战项目案例</p>
+        </div>
+        <div class="stat-item">
+            <h3>98%</h3>
+            <p>学员就业率</p>
+        </div>
+        <div class="stat-item">
+            <h3>50+</h3>
+            <p>顶尖企业合作</p>
+        </div>
+    </section>
+
+    <section id="methodology">
+        <div class="section-header fade-in">
+            <h2>为什么选择 NEXUS</h2>
+            <div class="line"></div>
+        </div>
+        <div class="grid-container">
+            <div class="card fade-in">
+                <h3>实战驱动教学</h3>
+                <p>拒绝纸上谈兵。所有课程均基于真实商业项目案例，让你在学习中积累工作经验。</p>
+            </div>
+            <div class="card fade-in">
+                <h3>硅谷级师资</h3>
+                <p>讲师均来自 Google、Meta、BAT 等一线大厂核心算法团队，带来最前沿的技术视野。</p>
+            </div>
+            <div class="card fade-in">
+                <h3>终身学习社区</h3>
+                <p>加入 NEXUS 校友会，获取持续更新的技术资源，拓展高端人脉网络。</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="logo">NEXUS AI.</div>
+        <div class="footer-text">
+            &copy; 2023 NEXUS AI Training Academy. All rights reserved. <br>
+            Designed for the Future.
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. 粒子神经网络背景动画 ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        // 调整 Canvas 尺寸
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 粒子类
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5; // 速度
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 边界反弹
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(0, 198, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 初始化粒子
+        function initParticles() {
+            particles = [];
+            const particleCount = width > 768 ? 100 : 50; // 移动端减少粒子数
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        initParticles();
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制粒子和连线
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // 绘制连线 (模拟神经网络)
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 198, 255, ${0.1 - distance/1500})`;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+
+        // --- 2. 滚动淡入效果 (Scroll Reveal) ---
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
