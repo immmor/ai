@@ -4,7 +4,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const musicList = [
     // { title: '轻松音乐', url: 'static/music1.mp3' },
     // { title: '专注音乐', url: 'static/music2.mp3' },
-    { title: '放松音乐', url: 'ThroughThisLifeAndBeyondIt.mp3' }
+    { title: '放松音乐', url: 'https://ai-byh.pages.dev/ThroughThisLifeAndBeyondIt.mp3' }
   ];
   
   let currentTrackIndex = 0;

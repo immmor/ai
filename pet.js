@@ -65,7 +65,7 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // 播放猫叫声 - 添加移动设备支持
     try {
-      const audio = new Audio('meow.mp3');
+      const audio = new Audio('https://ai-byh.pages.dev/meow.mp3');
       audio.volume = 0.3;
       
       // 尝试播放音频
@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', function() {
           }
           
           // 再次尝试播放
-          const audio = new Audio('meow.mp3');
+          const audio = new Audio('https://ai-byh.pages.dev/meow.mp3');
           audio.volume = 0.3;
           await audio.play();
         }
