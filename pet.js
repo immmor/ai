@@ -1,6 +1,4 @@
-// 创建一个从右往左循环移动的cat1.gif动画
 window.addEventListener('DOMContentLoaded', function() {
-  // 创建图片元素
   const cat = document.createElement('img');
   cat.src = 'cat1.gif';
   cat.style.position = 'fixed';
@@ -85,21 +83,111 @@ window.addEventListener('DOMContentLoaded', function() {
   let position = window.innerWidth;
   cat.style.left = position + 'px';
   
+  // 拖拽相关变量
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartPos = 0;
+  let isAutoMoving = true; // 标记是否自动移动
+  
   // 设置移动速度
   const speed = 1; // 像素/帧
   
+  // 添加拖拽功能
+  cat.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    isAutoMoving = false; // 停止自动移动
+    dragStartX = e.clientX;
+    dragStartPos = position;
+    cat.style.cursor = 'grabbing';
+    e.preventDefault(); // 防止选中文本
+  });
+  
+  // 全局鼠标移动和释放事件
+  document.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+      const deltaX = e.clientX - dragStartX;
+      position = dragStartPos + deltaX;
+      
+      // 限制在屏幕范围内
+      position = Math.max(0, Math.min(position, window.innerWidth - 80));
+      
+      cat.style.left = position + 'px';
+      
+      // 如果消息气泡正在显示，更新其位置跟随猫
+      if (messageBubble.style.display === 'block') {
+        const catRect = cat.getBoundingClientRect();
+        messageBubble.style.left = (catRect.left + catRect.width / 2 - messageBubble.offsetWidth / 2) + 'px';
+        messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px';
+      }
+    }
+  });
+  
+  document.addEventListener('mouseup', function() {
+    if (isDragging) {
+      isDragging = false;
+      cat.style.cursor = 'pointer';
+      
+      // 1秒后恢复自动移动
+      setTimeout(() => {
+        isAutoMoving = true;
+      }, 1000);
+    }
+  });
+  
+  // 添加触摸支持（移动设备）
+  cat.addEventListener('touchstart', function(e) {
+    isDragging = true;
+    isAutoMoving = false; // 停止自动移动
+    dragStartX = e.touches[0].clientX;
+    dragStartPos = position;
+    e.preventDefault();
+  });
+  
+  document.addEventListener('touchmove', function(e) {
+    if (isDragging) {
+      const deltaX = e.touches[0].clientX - dragStartX;
+      position = dragStartPos + deltaX;
+      
+      // 限制在屏幕范围内
+      position = Math.max(0, Math.min(position, window.innerWidth - 80));
+      
+      cat.style.left = position + 'px';
+      
+      // 如果消息气泡正在显示，更新其位置跟随猫
+      if (messageBubble.style.display === 'block') {
+        const catRect = cat.getBoundingClientRect();
+        messageBubble.style.left = (catRect.left + catRect.width / 2 - messageBubble.offsetWidth / 2) + 'px';
+        messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px';
+      }
+    }
+  });
+  
+  document.addEventListener('touchend', function() {
+    if (isDragging) {
+      isDragging = false;
+      
+      // 1秒后恢复自动移动
+      setTimeout(() => {
+        isAutoMoving = true;
+      }, 1000);
+    }
+  });
+  
   // 动画函数
   function moveCat() {
-    // 更新位置
-    position -= speed;
-    
-    // 如果猫完全移出屏幕左侧，重置到右侧
-    if (position < -100) {
-      position = window.innerWidth;
+    // 只有在自动移动状态下才更新位置
+    if (isAutoMoving) {
+      // 更新位置
+      position -= speed;
+      
+      // 如果猫完全移出屏幕左侧，重置到右侧
+      if (position < -100) {
+        position = window.innerWidth;
+      }
+      
+      // 更新猫的位置
+      cat.style.left = position + 'px';
     }
-    
-    // 更新猫的位置
-    cat.style.left = position + 'px';
     
     // 如果消息气泡正在显示，更新其位置跟随猫
     if (messageBubble.style.display === 'block') {
