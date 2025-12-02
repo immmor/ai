@@ -4,7 +4,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const musicList = [
     // { title: '轻松音乐', url: 'static/music1.mp3' },
     // { title: '专注音乐', url: 'static/music2.mp3' },
-    { title: '放松音乐', url: 'https://ai-byh.pages.dev/ThroughThisLifeAndBeyondIt.mp3' }
+    { title: '放松音乐', url: 'ThroughThisLifeAndBeyondIt.mp3' }
   ];
   
   let currentTrackIndex = 0;
@@ -15,10 +15,10 @@ window.addEventListener('DOMContentLoaded', function() {
   const musicButton = document.createElement('div');
   musicButton.id = 'music-player';
   musicButton.style.position = 'fixed';
-  musicButton.style.right = '30px';
+  musicButton.style.right = '15px'; // 从30px减小到15px，更靠右
   musicButton.style.bottom = '30px';
-  musicButton.style.width = '60px';
-  musicButton.style.height = '60px';
+  musicButton.style.width = '40px'; // 从50px减小到40px
+  musicButton.style.height = '40px'; // 从50px减小到40px
   musicButton.style.borderRadius = '50%';
   musicButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
   musicButton.style.backdropFilter = 'blur(10px)';
@@ -36,34 +36,34 @@ window.addEventListener('DOMContentLoaded', function() {
   const playIcon = document.createElement('div');
   playIcon.style.width = '0';
   playIcon.style.height = '0';
-  playIcon.style.borderLeft = '18px solid rgba(255, 182, 193, 0.8)'; // 浅粉色
-  playIcon.style.borderTop = '12px solid transparent';
-  playIcon.style.borderBottom = '12px solid transparent';
-  playIcon.style.marginLeft = '6px';
+  playIcon.style.borderLeft = '12px solid rgba(255, 182, 193, 0.8)'; // 从15px减小到12px
+  playIcon.style.borderTop = '8px solid transparent'; // 从10px减小到8px
+  playIcon.style.borderBottom = '8px solid transparent'; // 从10px减小到8px
+  playIcon.style.marginLeft = '4px'; // 从5px减小到4px
   playIcon.style.transition = 'all 0.3s ease';
   
   const pauseIcon = document.createElement('div');
   pauseIcon.style.display = 'none';
-  pauseIcon.style.width = '30px'; // 从36px减小到30px
-  pauseIcon.style.height = '30px'; // 从36px减小到30px
+  pauseIcon.style.width = '20px'; // 从24px减小到20px
+  pauseIcon.style.height = '20px'; // 从24px减小到20px
   pauseIcon.style.position = 'relative';
   pauseIcon.style.transition = 'all 0.3s ease';
   
   const pauseBar1 = document.createElement('div');
   pauseBar1.style.position = 'absolute';
-  pauseBar1.style.width = '8px'; // 从10px减小到8px
-  pauseBar1.style.height = '30px'; // 从36px减小到30px
+  pauseBar1.style.width = '5px'; // 从6px减小到5px
+  pauseBar1.style.height = '20px'; // 从24px减小到20px
   pauseBar1.style.backgroundColor = 'rgba(255, 182, 193, 0.8)'; // 浅粉色
-  pauseBar1.style.borderRadius = '4px'; // 从5px减小到4px
-  pauseBar1.style.left = '5px'; // 从6px调整为5px
+  pauseBar1.style.borderRadius = '2.5px'; // 从3px减小到2.5px
+  pauseBar1.style.left = '3px'; // 从4px减小到3px
   
   const pauseBar2 = document.createElement('div');
   pauseBar2.style.position = 'absolute';
-  pauseBar2.style.width = '8px'; // 从10px减小到8px
-  pauseBar2.style.height = '30px'; // 从36px减小到30px
+  pauseBar2.style.width = '5px'; // 从6px减小到5px
+  pauseBar2.style.height = '20px'; // 从24px减小到20px
   pauseBar2.style.backgroundColor = 'rgba(255, 182, 193, 0.8)'; // 浅粉色
-  pauseBar2.style.borderRadius = '4px'; // 从5px减小到4px
-  pauseBar2.style.right = '5px'; // 从6px调整为5px
+  pauseBar2.style.borderRadius = '2.5px'; // 从3px减小到2.5px
+  pauseBar2.style.right = '3px'; // 从4px减小到3px
   
   pauseIcon.appendChild(pauseBar1);
   pauseIcon.appendChild(pauseBar2);
@@ -204,6 +204,7 @@ window.addEventListener('DOMContentLoaded', function() {
   let buttonStartY = 0;
   let touchStartTime = 0;
   const dragThreshold = 5; // 拖拽阈值，超过5px才算拖拽
+  const edgeMargin = 15; // 边缘间距，与按钮初始右边距一致
   
   musicButton.addEventListener('mousedown', function(e) {
     isDragging = true;
@@ -240,7 +241,7 @@ window.addEventListener('DOMContentLoaded', function() {
       const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
       
       // 边缘间距
-      const edgeMargin = 30;
+      // const edgeMargin = 30; // 使用全局变量edgeMargin
       
       // 根据最近的边缘吸附，但保持一定距离
       if (minDistance === distToLeft) {
@@ -311,7 +312,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
         
         // 边缘间距
-        const edgeMargin = 30;
+        // const edgeMargin = 15; // 使用全局变量edgeMargin
         
         // 根据最近的边缘吸附，但保持一定距离
         if (minDistance === distToLeft) {
