@@ -252,15 +252,18 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // 添加触摸支持
   musicButton.addEventListener('touchstart', function(e) {
-    isDragging = true;
-    dragStartX = e.touches[0].clientX;
-    dragStartY = e.touches[0].clientY;
-    
-    const rect = musicButton.getBoundingClientRect();
-    buttonStartX = rect.left;
-    buttonStartY = rect.top;
-    
-    e.preventDefault();
+    // 只有在单点触摸时才开始拖拽
+    if (e.touches.length === 1) {
+      isDragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      
+      const rect = musicButton.getBoundingClientRect();
+      buttonStartX = rect.left;
+      buttonStartY = rect.top;
+      
+      e.preventDefault();
+    }
   });
   
   document.addEventListener('touchmove', function(e) {
@@ -305,7 +308,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  document.addEventListener('touchend', function() {
+  document.addEventListener('touchend', function(e) {
     if (isDragging) {
       isDragging = false;
     }
