@@ -87,6 +87,21 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // 播放/暂停功能
   musicButton.addEventListener('click', async function() {
+    if (!isDragging) {
+      handleMusicPlayPause();
+    }
+  });
+  
+  // 添加触摸事件处理
+  musicButton.addEventListener('touchend', async function(e) {
+    e.preventDefault(); // 防止默认行为干扰
+    if (!isDragging) {
+      handleMusicPlayPause();
+    }
+  });
+  
+  // 处理音乐播放/暂停的函数
+  async function handleMusicPlayPause() {
     if (!isPlaying) {
       // 播放音乐
       if (!audio) {
@@ -127,7 +142,7 @@ window.addEventListener('DOMContentLoaded', function() {
       playIcon.style.display = 'block';
       pauseIcon.style.display = 'none';
     }
-  });
+  }
   
   // 播放音频的辅助函数，处理移动设备兼容性
   async function playAudio() {
@@ -187,6 +202,8 @@ window.addEventListener('DOMContentLoaded', function() {
   let dragStartY = 0;
   let buttonStartX = 0;
   let buttonStartY = 0;
+  let touchStartTime = 0;
+  const dragThreshold = 5; // 拖拽阈值，超过5px才算拖拽
   
   musicButton.addEventListener('mousedown', function(e) {
     isDragging = true;
@@ -252,65 +269,73 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // 添加触摸支持
   musicButton.addEventListener('touchstart', function(e) {
-    // 只有在单点触摸时才开始拖拽
+    // 只有在单点触摸时才开始跟踪
     if (e.touches.length === 1) {
-      isDragging = true;
       dragStartX = e.touches[0].clientX;
       dragStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
       
       const rect = musicButton.getBoundingClientRect();
       buttonStartX = rect.left;
       buttonStartY = rect.top;
       
+      // 不立即设置isDragging为true，等待touchmove判断
       e.preventDefault();
     }
   });
   
   document.addEventListener('touchmove', function(e) {
-    if (isDragging) {
+    if (e.touches.length === 1) {
       const deltaX = e.touches[0].clientX - dragStartX;
       const deltaY = e.touches[0].clientY - dragStartY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       
-      let newX = buttonStartX + deltaX;
-      let newY = buttonStartY + deltaY;
-      
-      // 获取按钮尺寸
-      const buttonWidth = musicButton.offsetWidth;
-      const buttonHeight = musicButton.offsetHeight;
-      
-      // 计算与各边缘的距离
-      const distToLeft = newX;
-      const distToRight = window.innerWidth - (newX + buttonWidth);
-      const distToTop = newY;
-      const distToBottom = window.innerHeight - (newY + buttonHeight);
-      
-      // 找出最近的边缘
-      const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-      
-      // 边缘间距
-      const edgeMargin = 30;
-      
-      // 根据最近的边缘吸附，但保持一定距离
-      if (minDistance === distToLeft) {
-        newX = edgeMargin; // 吸附到左边缘，但保持30px距离
-      } else if (minDistance === distToRight) {
-        newX = window.innerWidth - buttonWidth - edgeMargin; // 吸附到右边缘，但保持30px距离
-      } else if (minDistance === distToTop) {
-        newY = edgeMargin; // 吸附到上边缘，但保持30px距离
-      } else {
-        newY = window.innerHeight - buttonHeight - edgeMargin; // 吸附到底部，但保持30px距离
+      // 只有当移动距离超过阈值时才认为是拖拽
+      if (distance > dragThreshold) {
+        isDragging = true;
+        
+        let newX = buttonStartX + deltaX;
+        let newY = buttonStartY + deltaY;
+        
+        // 获取按钮尺寸
+        const buttonWidth = musicButton.offsetWidth;
+        const buttonHeight = musicButton.offsetHeight;
+        
+        // 计算与各边缘的距离
+        const distToLeft = newX;
+        const distToRight = window.innerWidth - (newX + buttonWidth);
+        const distToTop = newY;
+        const distToBottom = window.innerHeight - (newY + buttonHeight);
+        
+        // 找出最近的边缘
+        const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+        
+        // 边缘间距
+        const edgeMargin = 30;
+        
+        // 根据最近的边缘吸附，但保持一定距离
+        if (minDistance === distToLeft) {
+          newX = edgeMargin; // 吸附到左边缘，但保持30px距离
+        } else if (minDistance === distToRight) {
+          newX = window.innerWidth - buttonWidth - edgeMargin; // 吸附到右边缘，但保持30px距离
+        } else if (minDistance === distToTop) {
+          newY = edgeMargin; // 吸附到上边缘，但保持30px距离
+        } else {
+          newY = window.innerHeight - buttonHeight - edgeMargin; // 吸附到底部，但保持30px距离
+        }
+        
+        musicButton.style.left = newX + 'px';
+        musicButton.style.top = newY + 'px';
+        musicButton.style.right = 'auto';
+        musicButton.style.bottom = 'auto';
       }
-      
-      musicButton.style.left = newX + 'px';
-      musicButton.style.top = newY + 'px';
-      musicButton.style.right = 'auto';
-      musicButton.style.bottom = 'auto';
     }
   });
   
   document.addEventListener('touchend', function(e) {
-    if (isDragging) {
+    // 重置拖拽状态
+    setTimeout(() => {
       isDragging = false;
-    }
+    }, 10);
   });
 });
