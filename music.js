@@ -15,10 +15,10 @@ window.addEventListener('DOMContentLoaded', function() {
   const musicButton = document.createElement('div');
   musicButton.id = 'music-player';
   musicButton.style.position = 'fixed';
-  musicButton.style.right = '15px'; // 从30px减小到15px，更靠右
+  musicButton.style.right = '5px'; // 从10px减小到5px，更靠右
   musicButton.style.bottom = '30px';
-  musicButton.style.width = '40px'; // 从50px减小到40px
-  musicButton.style.height = '40px'; // 从50px减小到40px
+  musicButton.style.width = '30px'; // 从40px减小到30px
+  musicButton.style.height = '30px'; // 从40px减小到30px
   musicButton.style.borderRadius = '50%';
   musicButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
   musicButton.style.backdropFilter = 'blur(10px)';
@@ -36,34 +36,34 @@ window.addEventListener('DOMContentLoaded', function() {
   const playIcon = document.createElement('div');
   playIcon.style.width = '0';
   playIcon.style.height = '0';
-  playIcon.style.borderLeft = '12px solid rgba(255, 182, 193, 0.8)'; // 从15px减小到12px
-  playIcon.style.borderTop = '8px solid transparent'; // 从10px减小到8px
-  playIcon.style.borderBottom = '8px solid transparent'; // 从10px减小到8px
-  playIcon.style.marginLeft = '4px'; // 从5px减小到4px
+  playIcon.style.borderLeft = '9px solid rgba(255, 182, 193, 0.8)'; // 从12px减小到9px
+  playIcon.style.borderTop = '6px solid transparent'; // 从8px减小到6px
+  playIcon.style.borderBottom = '6px solid transparent'; // 从8px减小到6px
+  playIcon.style.marginLeft = '3px'; // 从4px减小到3px
   playIcon.style.transition = 'all 0.3s ease';
   
   const pauseIcon = document.createElement('div');
   pauseIcon.style.display = 'none';
-  pauseIcon.style.width = '20px'; // 从24px减小到20px
-  pauseIcon.style.height = '20px'; // 从24px减小到20px
+  pauseIcon.style.width = '15px'; // 从20px减小到15px
+  pauseIcon.style.height = '15px'; // 从20px减小到15px
   pauseIcon.style.position = 'relative';
   pauseIcon.style.transition = 'all 0.3s ease';
   
   const pauseBar1 = document.createElement('div');
   pauseBar1.style.position = 'absolute';
-  pauseBar1.style.width = '5px'; // 从6px减小到5px
-  pauseBar1.style.height = '20px'; // 从24px减小到20px
+  pauseBar1.style.width = '4px'; // 从5px减小到4px
+  pauseBar1.style.height = '15px'; // 从20px减小到15px
   pauseBar1.style.backgroundColor = 'rgba(255, 182, 193, 0.8)'; // 浅粉色
-  pauseBar1.style.borderRadius = '2.5px'; // 从3px减小到2.5px
-  pauseBar1.style.left = '3px'; // 从4px减小到3px
+  pauseBar1.style.borderRadius = '2px'; // 从2.5px减小到2px
+  pauseBar1.style.left = '2px'; // 从3px减小到2px
   
   const pauseBar2 = document.createElement('div');
   pauseBar2.style.position = 'absolute';
-  pauseBar2.style.width = '5px'; // 从6px减小到5px
-  pauseBar2.style.height = '20px'; // 从24px减小到20px
+  pauseBar2.style.width = '4px'; // 从5px减小到4px
+  pauseBar2.style.height = '15px'; // 从20px减小到15px
   pauseBar2.style.backgroundColor = 'rgba(255, 182, 193, 0.8)'; // 浅粉色
-  pauseBar2.style.borderRadius = '2.5px'; // 从3px减小到2.5px
-  pauseBar2.style.right = '3px'; // 从4px减小到3px
+  pauseBar2.style.borderRadius = '2px'; // 从2.5px减小到2px
+  pauseBar2.style.right = '2px'; // 从3px减小到2px
   
   pauseIcon.appendChild(pauseBar1);
   pauseIcon.appendChild(pauseBar2);
@@ -204,7 +204,9 @@ window.addEventListener('DOMContentLoaded', function() {
   let buttonStartY = 0;
   let touchStartTime = 0;
   const dragThreshold = 5; // 拖拽阈值，超过5px才算拖拽
-  const edgeMargin = 15; // 边缘间距，与按钮初始右边距一致
+  const edgeMargin = 5; // 边缘间距，与按钮初始右边距一致
+  const snapThreshold = 20; // 吸附阈值
+  const horizontalLock = true; // 水平锁定，只允许在右侧边缘移动
   
   musicButton.addEventListener('mousedown', function(e) {
     isDragging = true;
@@ -216,6 +218,7 @@ window.addEventListener('DOMContentLoaded', function() {
     buttonStartY = rect.top;
     
     musicButton.style.cursor = 'grabbing';
+    musicButton.style.transition = 'none'; // 拖拽时禁用过渡效果
     e.preventDefault();
   });
   
@@ -224,39 +227,22 @@ window.addEventListener('DOMContentLoaded', function() {
       const deltaX = e.clientX - dragStartX;
       const deltaY = e.clientY - dragStartY;
       
-      let newX = buttonStartX + deltaX;
       let newY = buttonStartY + deltaY;
       
       // 获取按钮尺寸
-      const buttonWidth = musicButton.offsetWidth;
       const buttonHeight = musicButton.offsetHeight;
       
-      // 计算与各边缘的距离
-      const distToLeft = newX;
-      const distToRight = window.innerWidth - (newX + buttonWidth);
-      const distToTop = newY;
-      const distToBottom = window.innerHeight - (newY + buttonHeight);
-      
-      // 找出最近的边缘
-      const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-      
-      // 边缘间距
-      // const edgeMargin = 30; // 使用全局变量edgeMargin
-      
-      // 根据最近的边缘吸附，但保持一定距离
-      if (minDistance === distToLeft) {
-        newX = edgeMargin; // 吸附到左边缘，但保持30px距离
-      } else if (minDistance === distToRight) {
-        newX = window.innerWidth - buttonWidth - edgeMargin; // 吸附到右边缘，但保持30px距离
-      } else if (minDistance === distToTop) {
-        newY = edgeMargin; // 吸附到上边缘，但保持30px距离
-      } else {
-        newY = window.innerHeight - buttonHeight - edgeMargin; // 吸附到底部，但保持30px距离
+      // 垂直方向自由移动，但限制在屏幕范围内
+      if (newY < edgeMargin) {
+        newY = edgeMargin;
+      } else if (newY + buttonHeight > window.innerHeight - edgeMargin) {
+        newY = window.innerHeight - buttonHeight - edgeMargin;
       }
       
-      musicButton.style.left = newX + 'px';
+      // 使用right定位，保持与右边框的固定距离
+      musicButton.style.left = 'auto';
       musicButton.style.top = newY + 'px';
-      musicButton.style.right = 'auto';
+      musicButton.style.right = edgeMargin + 'px';
       musicButton.style.bottom = 'auto';
     }
   });
@@ -265,6 +251,29 @@ window.addEventListener('DOMContentLoaded', function() {
     if (isDragging) {
       isDragging = false;
       musicButton.style.cursor = 'pointer';
+      musicButton.style.transition = 'all 0.3s ease'; // 恢复过渡效果
+      
+      // 边缘吸附算法 - 只考虑垂直方向的吸附
+      const currentY = parseInt(musicButton.style.top);
+      const windowHeight = window.innerHeight;
+      const buttonHeight = musicButton.offsetHeight;
+      
+      let finalY = currentY;
+      
+      // 检查是否接近顶部边缘
+      if (currentY < snapThreshold) {
+        finalY = edgeMargin;
+      }
+      // 检查是否接近底部边缘
+      else if (windowHeight - currentY - buttonHeight < snapThreshold) {
+        finalY = windowHeight - buttonHeight - edgeMargin;
+      }
+      
+      // 应用吸附位置，使用right定位保持与右边框的固定距离
+      musicButton.style.left = 'auto';
+      musicButton.style.top = finalY + 'px';
+      musicButton.style.right = edgeMargin + 'px';
+      musicButton.style.bottom = 'auto';
     }
   });
   
@@ -295,39 +304,23 @@ window.addEventListener('DOMContentLoaded', function() {
       if (distance > dragThreshold) {
         isDragging = true;
         
-        let newX = buttonStartX + deltaX;
-        let newY = buttonStartY + deltaY;
-        
         // 获取按钮尺寸
         const buttonWidth = musicButton.offsetWidth;
         const buttonHeight = musicButton.offsetHeight;
         
-        // 计算与各边缘的距离
-        const distToLeft = newX;
-        const distToRight = window.innerWidth - (newX + buttonWidth);
-        const distToTop = newY;
-        const distToBottom = window.innerHeight - (newY + buttonHeight);
+        // 强制水平锁定：始终保持在右侧边缘
+        let newY = buttonStartY + deltaY;
         
-        // 找出最近的边缘
-        const minDistance = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-        
-        // 边缘间距
-        // const edgeMargin = 15; // 使用全局变量edgeMargin
-        
-        // 根据最近的边缘吸附，但保持一定距离
-        if (minDistance === distToLeft) {
-          newX = edgeMargin; // 吸附到左边缘，但保持30px距离
-        } else if (minDistance === distToRight) {
-          newX = window.innerWidth - buttonWidth - edgeMargin; // 吸附到右边缘，但保持30px距离
-        } else if (minDistance === distToTop) {
-          newY = edgeMargin; // 吸附到上边缘，但保持30px距离
-        } else {
-          newY = window.innerHeight - buttonHeight - edgeMargin; // 吸附到底部，但保持30px距离
+        // 垂直方向自由移动，但限制在屏幕范围内
+        if (newY < edgeMargin) {
+          newY = edgeMargin;
+        } else if (newY + buttonHeight > window.innerHeight - edgeMargin) {
+          newY = window.innerHeight - buttonHeight - edgeMargin;
         }
         
-        musicButton.style.left = newX + 'px';
+        musicButton.style.left = 'auto';
+        musicButton.style.right = edgeMargin + 'px';
         musicButton.style.top = newY + 'px';
-        musicButton.style.right = 'auto';
         musicButton.style.bottom = 'auto';
       }
     }
@@ -337,6 +330,25 @@ window.addEventListener('DOMContentLoaded', function() {
     // 重置拖拽状态
     setTimeout(() => {
       isDragging = false;
+      
+      // 确保按钮始终在右侧边缘
+      const buttonWidth = musicButton.offsetWidth;
+      const buttonHeight = musicButton.offsetHeight;
+      const currentY = parseInt(musicButton.style.top) || buttonStartY;
+      
+      // 垂直方向边缘吸附
+      let finalY = currentY;
+      if (currentY < edgeMargin) {
+        finalY = edgeMargin;
+      } else if (currentY + buttonHeight > window.innerHeight - edgeMargin) {
+        finalY = window.innerHeight - buttonHeight - edgeMargin;
+      }
+      
+      // 应用最终位置，确保在右侧
+      musicButton.style.left = 'auto';
+      musicButton.style.right = edgeMargin + 'px';
+      musicButton.style.top = finalY + 'px';
+      musicButton.style.bottom = 'auto';
     }, 10);
   });
 });
