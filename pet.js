@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', function() {
   ];
   
   // 添加点击事件
-  cat.addEventListener('click', function() {
+  cat.addEventListener('click', async function() {
     // 跳跃动画
     cat.style.transition = 'transform 0.3s ease-out';
     cat.style.transform = 'translateY(-30px)';
@@ -63,10 +63,41 @@ window.addEventListener('DOMContentLoaded', function() {
       messageBubble.style.display = 'none';
     }, 2000);
     
-    // 播放猫叫声
-    const audio = new Audio('meow.mp3');
-    audio.volume = 0.3;
-    audio.play().catch(e => console.log('无法播放声音:', e));
+    // 播放猫叫声 - 添加移动设备支持
+    try {
+      const audio = new Audio('meow.mp3');
+      audio.volume = 0.3;
+      
+      // 尝试播放音频
+      const playPromise = audio.play();
+      
+      // 现代浏览器返回Promise
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (error) {
+      console.log('无法播放声音:', error);
+      
+      // 尝试使用音频上下文方法（解决某些移动设备的问题）
+      try {
+        if (window.AudioContext || window.webkitAudioContext) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          const audioContext = new AudioContext();
+          
+          // 如果音频上下文被暂停，尝试恢复
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
+          
+          // 再次尝试播放
+          const audio = new Audio('meow.mp3');
+          audio.volume = 0.3;
+          await audio.play();
+        }
+      } catch (contextError) {
+        console.log('使用音频上下文也无法播放声音:', contextError);
+      }
+    }
   });
   
   // 添加鼠标悬停效果

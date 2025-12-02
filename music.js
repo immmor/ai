@@ -86,21 +86,31 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   
   // 播放/暂停功能
-  musicButton.addEventListener('click', function() {
+  musicButton.addEventListener('click', async function() {
     if (!isPlaying) {
       // 播放音乐
       if (!audio) {
         audio = new Audio();
+        // 添加移动设备兼容性设置
+        audio.preload = 'auto';
+        audio.loop = false;
+        
         audio.addEventListener('ended', function() {
           // 播放下一首
           currentTrackIndex = (currentTrackIndex + 1) % musicList.length;
           audio.src = musicList[currentTrackIndex].url;
-          audio.play();
+          playAudio();
+        });
+        
+        audio.addEventListener('error', function(e) {
+          console.error('音频播放错误:', e);
+          // 尝试重新加载
+          audio.load();
         });
       }
       
       audio.src = musicList[currentTrackIndex].url;
-      audio.play();
+      await playAudio();
       isPlaying = true;
       
       // 更新UI
@@ -118,6 +128,58 @@ window.addEventListener('DOMContentLoaded', function() {
       pauseIcon.style.display = 'none';
     }
   });
+  
+  // 播放音频的辅助函数，处理移动设备兼容性
+  async function playAudio() {
+    try {
+      // 确保音频已加载
+      if (audio.readyState < 2) {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('音频加载超时')), 5000);
+          audio.addEventListener('canplaythrough', () => {
+            clearTimeout(timeout);
+            resolve();
+          }, { once: true });
+          audio.addEventListener('error', () => {
+            clearTimeout(timeout);
+            reject(new Error('音频加载失败'));
+          }, { once: true });
+          audio.load();
+        });
+      }
+      
+      // 尝试播放
+      const playPromise = audio.play();
+      
+      // 现代浏览器返回Promise
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (error) {
+      console.error('播放音频失败:', error);
+      
+      // 尝试创建新的音频上下文（解决某些移动设备的问题）
+      try {
+        if (window.AudioContext || window.webkitAudioContext) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          const audioContext = new AudioContext();
+          
+          // 如果音频上下文被暂停，尝试恢复
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
+          
+          // 再次尝试播放
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            await playPromise;
+          }
+        }
+      } catch (contextError) {
+        console.error('创建音频上下文失败:', contextError);
+      }
+    }
+  }
   
   // 拖拽功能
   let isDragging = false;
