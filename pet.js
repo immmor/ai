@@ -4,7 +4,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const cat = document.createElement('img');
   cat.src = 'cat1.gif';
   cat.style.position = 'fixed';
-  cat.style.bottom = '20px'; // 距离底部20px，沿着footer边
+  cat.style.bottom = '16px'; // 距离底部20px，沿着footer边
   cat.style.width = '80px'; // 稍微调整大小，更适合底部显示
   cat.style.height = 'auto';
   cat.style.zIndex = '1000';
