@@ -48,10 +48,83 @@ window.addEventListener('DOMContentLoaded', function() {
     messageBubble.textContent = randomMessage;
     messageBubble.style.display = 'block';
     
-    // 定位消息气泡在猫的上方
-    const catRect = cat.getBoundingClientRect();
-    messageBubble.style.left = (catRect.left + catRect.width / 2 - messageBubble.offsetWidth / 2) + 'px';
-    messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px'; // 调整为-10，让气泡稍微往下
+    // 使用setTimeout确保DOM已更新
+    setTimeout(() => {
+      // 定位消息气泡在猫的上方
+      const catRect = cat.getBoundingClientRect();
+      const bubbleWidth = messageBubble.offsetWidth || 200; // 使用默认宽度，如果offsetWidth为0
+      messageBubble.style.left = (catRect.left + catRect.width / 2 - bubbleWidth / 2) + 'px';
+      messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px'; // 调整为-10，让气泡稍微往下
+    }, 10);
+    
+    // 300ms后恢复原始位置
+    setTimeout(() => {
+      cat.style.transform = 'translateY(0)';
+    }, 300);
+    
+    // 2秒后隐藏消息
+    setTimeout(() => {
+      messageBubble.style.display = 'none';
+    }, 2000);
+    
+    // 播放猫叫声 - 添加移动设备支持
+    // try {
+    //   const audio = new Audio('https://ai-byh.pages.dev/meow.mp3');
+    //   audio.volume = 0.3;
+      
+    //   // 尝试播放音频
+    //   const playPromise = audio.play();
+      
+    //   // 现代浏览器返回Promise
+    //   if (playPromise !== undefined) {
+    //     await playPromise;
+    //   }
+    // } catch (error) {
+    //   console.log('无法播放声音:', error);
+      
+    //   // 尝试使用音频上下文方法（解决某些移动设备的问题）
+    //   try {
+    //     if (window.AudioContext || window.webkitAudioContext) {
+    //       const AudioContext = window.AudioContext || window.webkitAudioContext;
+    //       const audioContext = new AudioContext();
+          
+    //       // 如果音频上下文被暂停，尝试恢复
+    //       if (audioContext.state === 'suspended') {
+    //         await audioContext.resume();
+    //       }
+          
+    //       // 再次尝试播放
+    //       const audio = new Audio('https://ai-byh.pages.dev/meow.mp3');
+    //       audio.volume = 0.3;
+    //       await audio.play();
+    //     }
+    //   } catch (contextError) {
+    //     console.log('使用音频上下文也无法播放声音:', contextError);
+    //   }
+    // }
+  });
+  
+  // 添加触摸事件支持（移动设备）
+  cat.addEventListener('touchend', async function(e) {
+    e.preventDefault(); // 防止触发点击事件的默认行为
+    
+    // 跳跃动画
+    cat.style.transition = 'transform 0.3s ease-out';
+    cat.style.transform = 'translateY(-30px)';
+    
+    // 显示随机消息
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    messageBubble.textContent = randomMessage;
+    messageBubble.style.display = 'block';
+    
+    // 使用setTimeout确保DOM已更新
+    setTimeout(() => {
+      // 定位消息气泡在猫的上方
+      const catRect = cat.getBoundingClientRect();
+      const bubbleWidth = messageBubble.offsetWidth || 200; // 使用默认宽度，如果offsetWidth为0
+      messageBubble.style.left = (catRect.left + catRect.width / 2 - bubbleWidth / 2) + 'px';
+      messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px'; // 调整为-10，让气泡稍微往下
+    }, 10);
     
     // 300ms后恢复原始位置
     setTimeout(() => {
@@ -193,7 +266,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  document.addEventListener('touchend', function() {
+  document.addEventListener('touchend', function(e) {
     if (isDragging) {
       isDragging = false;
       
