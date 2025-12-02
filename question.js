@@ -1,3 +1,7 @@
+// 全局变量：当前题目计时器
+window.currentQuestionTimer = null;
+window.currentQuestionTime = 0;
+
 // 初始化随机题目数组
 function initRandomQuestions() {
     // 获取当前题库的题目数组
@@ -125,6 +129,9 @@ function setupQuestionBankToggle() {
 function switchQuestionBank(bankName) {
     if (currentQuestionBank === bankName) return;
     
+    // 清除当前题目计时器
+    clearQuestionTimer();
+    
     // 更新当前题库
     currentQuestionBank = bankName;
     
@@ -133,6 +140,7 @@ function switchQuestionBank(bankName) {
     completed = [];
     totalCorrectAnswers = 0;
     consecutiveCorrect = 0;
+    window.currentQuestionTime = 0;
     
     // 重新初始化题目数组
     initRandomQuestions();
@@ -175,6 +183,167 @@ function getBankDisplayName(bankName) {
     return bankDisplayName;
 }
 
+// 清除当前题目计时器
+window.clearQuestionTimer = function() {
+    if (window.currentQuestionTimer) {
+        clearInterval(window.currentQuestionTimer);
+        window.currentQuestionTimer = null;
+        window.currentQuestionTime = 0;
+    }
+};
+
+// 更新题目计时器显示
+window.updateTimerDisplay = function() {
+    const timerElement = document.getElementById('question-timer');
+    if (timerElement) {
+        timerElement.textContent = `${window.currentQuestionTime}s`;
+    }
+};
+
+// 确保全局currentQuestionBank可用
+window.currentQuestionBank = window.currentQuestionBank || 'default';
+
+// 获取当前题库名称
+window.getCurrentQuestionBank = function() {
+    return window.currentQuestionBank;
+};
+
+// 设置当前题库名称
+window.setCurrentQuestionBank = function(bank) {
+    window.currentQuestionBank = bank;
+    console.log('设置当前题库:', bank);
+};
+
+// 获取题目答题统计
+window.getQuestionStats = function(questionIndex) {
+    try {
+        const bank = window.getCurrentQuestionBank();
+        console.log('获取统计 - 题库:', bank, '题目索引:', questionIndex);
+        
+        // 从localStorage获取答题统计数据
+        let statsData;
+        try {
+            const storedData = localStorage.getItem('questionStats');
+            statsData = storedData ? JSON.parse(storedData) : {};
+        } catch (e) {
+            console.error('解析localStorage数据失败:', e);
+            statsData = {};
+        }
+        
+        const key = `${bank}_${questionIndex}`;
+        const result = statsData[key] || { correct: 0, wrong: 0 };
+        console.log('获取统计数据:', key, result);
+        return result;
+    } catch (error) {
+        console.error('获取统计时出错:', error);
+        return { correct: 0, wrong: 0 };
+    }
+};
+
+// 更新题目答题统计
+window.updateQuestionStats = function(questionIndex, isCorrect) {
+    try {
+        const bank = window.getCurrentQuestionBank();
+        console.log('更新统计 - 题库:', bank, '题目索引:', questionIndex, '是否正确:', isCorrect);
+        
+        // 从localStorage获取答题统计数据
+        let statsData;
+        try {
+            const storedData = localStorage.getItem('questionStats');
+            statsData = storedData ? JSON.parse(storedData) : {};
+            console.log('从localStorage获取数据成功');
+        } catch (e) {
+            console.error('解析localStorage数据失败:', e);
+            statsData = {};
+        }
+        
+        const key = `${bank}_${questionIndex}`;
+        
+        // 初始化或获取现有统计
+        if (!statsData[key]) {
+            statsData[key] = { correct: 0, wrong: 0 };
+            console.log('初始化统计数据');
+        }
+        
+        // 记录更新前的值用于调试
+        const prevCorrect = statsData[key].correct;
+        const prevWrong = statsData[key].wrong;
+        
+        // 更新统计
+        if (isCorrect) {
+            statsData[key].correct++;
+            console.log('增加正确次数:', prevCorrect, '->', statsData[key].correct);
+        } else {
+            statsData[key].wrong++;
+            console.log('增加错误次数:', prevWrong, '->', statsData[key].wrong);
+        }
+        
+        // 保存回localStorage
+        try {
+            localStorage.setItem('questionStats', JSON.stringify(statsData));
+            console.log('保存到localStorage成功');
+            // 验证保存是否成功
+            const verifyData = JSON.parse(localStorage.getItem('questionStats'));
+            console.log('验证保存结果:', verifyData[key]);
+        } catch (e) {
+            console.error('保存到localStorage失败:', e);
+        }
+        
+        // 使用setTimeout确保DOM已准备好
+        setTimeout(() => {
+            const correctElement = document.getElementById('question-correct-count');
+            const wrongElement = document.getElementById('question-wrong-count');
+            
+            if (correctElement && wrongElement) {
+                const stats = statsData[key];
+                correctElement.textContent = `${stats.correct}`;
+                wrongElement.textContent = `${stats.wrong}`;
+                console.log('更新显示成功:', stats.correct, stats.wrong);
+                
+                // 添加视觉反馈，让用户看到数字变化
+                if (isCorrect) {
+                    correctElement.classList.add('scale-125');
+                    setTimeout(() => correctElement.classList.remove('scale-125'), 300);
+                } else {
+                    wrongElement.classList.add('scale-125');
+                    setTimeout(() => wrongElement.classList.remove('scale-125'), 300);
+                }
+            } else {
+                console.error('无法找到显示元素');
+            }
+        }, 100);
+    } catch (error) {
+        console.error('更新统计时出错:', error);
+    }
+};
+
+// 更新答题统计显示
+window.updateQuestionStatsDisplay = function() {
+    try {
+        const correctElement = document.getElementById('question-correct-count');
+        const wrongElement = document.getElementById('question-wrong-count');
+        const bank = window.getCurrentQuestionBank();
+        
+        console.log('更新显示函数被调用，当前索引:', window.currentQuestionIndex, '当前题库:', bank);
+        
+        if (correctElement && wrongElement && window.currentQuestionIndex !== undefined) {
+            const stats = window.getQuestionStats(window.currentQuestionIndex);
+            console.log('获取到的统计数据:', stats);
+            correctElement.textContent = `${stats.correct}`;
+            wrongElement.textContent = `${stats.wrong}`;
+            console.log('通过显示函数更新:', stats.correct, stats.wrong);
+        } else {
+            console.error('无法更新显示:', { 
+                correctElementExists: !!correctElement, 
+                wrongElementExists: !!wrongElement, 
+                indexDefined: window.currentQuestionIndex !== undefined 
+            });
+        }
+    } catch (error) {
+        console.error('更新显示时出错:', error);
+    }
+};
+
 // 更新题库选择按钮的选中状态
 function updateQuestionBankSelection() {
     // 获取所有题库选项
@@ -187,7 +356,7 @@ function updateQuestionBankSelection() {
     });
     
     // 为当前选中的题库添加颜色标记
-    const currentOption = document.querySelector(`.question-bank-option[data-bank="${currentQuestionBank}"]`);
+    const currentOption = document.querySelector(`.question-bank-option[data-bank="${window.currentQuestionBank}"]`);
     if (currentOption) {
         currentOption.classList.add('bg-blue-50', 'text-blue-600', 'font-medium');
         currentOption.classList.remove('hover:bg-gray-100');

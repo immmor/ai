@@ -1720,6 +1720,11 @@
                 return false;
             }
             
+            // 清除之前的计时器
+            if (window.clearQuestionTimer) {
+                window.clearQuestionTimer();
+            }
+            
             // 消耗1点能量
             consumeEnergy();
             
@@ -1742,7 +1747,12 @@
             questionContainer.innerHTML = `
                 <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500 flex justify-between items-center">
                     <span>${getBankDisplayName(currentQuestionBank)} ${index + 1}/${randomQuestions.length}: ${question.title}</span>
-                    ${question.type === "sentence" ? '<button id="title-speech-btn" class="text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none" title="语音播报 (快捷键: Ctrl+B/Command+B)"><i class="fa fa-volume-up mr-1 text-purple-500"></i></button>' : ''}
+                    <div class="flex items-center">
+                        <span id="question-timer" class="mr-2 text-gray-600 font-medium">0秒</span>
+                        <span id="question-correct-count" class="mr-1 text-xs text-green-600 font-medium">0</span>
+                        <span id="question-wrong-count" class="text-xs text-red-600 font-medium">0</span>
+                        ${question.type === "sentence" ? '<button id="title-speech-btn" class="ml-3 text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none" title="语音播报 (快捷键: Ctrl+B/Command+B)"><i class="fa fa-volume-up mr-1 text-purple-500"></i></button>' : ''}
+                    </div>
                 </div>
                 ${question.type === "sentence" ? '' : question.content}
             `;
@@ -2075,10 +2085,52 @@
             
             // 更新进度
             updateProgress();
+            
+            // 保存当前题目索引到全局
+            window.currentQuestionIndex = questionIndex;
+            
+            // 设置当前题库名称
+            if (window.setCurrentQuestionBank) {
+                window.setCurrentQuestionBank(currentQuestionBank);
+                console.log('设置当前题库:', currentQuestionBank);
+            }
+            
+            // 更新答题统计显示
+            if (window.updateQuestionStatsDisplay) {
+                window.updateQuestionStatsDisplay();
+            }
+            
+            // 启动新的计时器
+            window.currentQuestionTime = 0;
+            
+            // 先清除可能存在的旧计时器
+            clearInterval(window.currentQuestionTimer);
+            
+            // 立即更新一次计时器显示
+                const timerElement = document.getElementById('question-timer');
+                if (timerElement) {
+                    timerElement.textContent = '0s';
+                }
+                
+                // 启动新的计时器
+                window.currentQuestionTimer = setInterval(() => {
+                    window.currentQuestionTime++;
+                    const timerElement = document.getElementById('question-timer');
+                    if (timerElement) {
+                        timerElement.textContent = `${window.currentQuestionTime}s`;
+                    }
+                }, 1000);
         }
         
         // 检查答案
-        function checkAnswer(answer) {
+            function checkAnswer(answer) {
+                // 清除计时器
+                if (window.clearQuestionTimer) {
+                    window.clearQuestionTimer();
+                } else if (window.currentQuestionTimer) {
+                    clearInterval(window.currentQuestionTimer);
+                    window.currentQuestionTimer = null;
+                }
             const questionIndex = randomQuestions[currentRandomIndex];
             const question = getCurrentQuestions()[questionIndex];
             let isCorrect = false;
@@ -2177,6 +2229,15 @@
                                 firstInput.focus();
                             }
                         }, 100);
+                        
+                        // 第一阶段正确，奖励5分经验值
+                        addXP(5, '句子记忆题第一阶段正确');
+                        
+                        // 更新答题统计（正确）
+                        if (window.updateQuestionStats) {
+                            console.log('句子第一阶段答对，更新统计:', questionIndex);
+                            window.updateQuestionStats(questionIndex, true);
+                        }
                         
                         // 第一阶段正确，返回false避免进入后续的显示结果处理
                         return false;
@@ -2310,7 +2371,7 @@
                     lastCorrectTime = now;
                     
                     const totalXP = baseXP + bonusXP;
-                    let reason = `句子记忆题正确`;
+                    let reason = `句子记忆题第二阶段正确`;
                     if (comboCount > 1) {
                         reason += ` (Combo x${comboCount} +5)`;
                     }
@@ -2328,6 +2389,12 @@
                     // 标记为已完成
                     if (!completed.includes(questionIndex)) {
                         completed.push(questionIndex);
+                    }
+                    
+                    // 更新答题统计（正确）
+                    if (window.updateQuestionStats) {
+                        console.log('答对，更新统计:', questionIndex);
+                        window.updateQuestionStats(questionIndex, true);
                     }
                     
                     // 显示完整句子的正确答案
@@ -2412,6 +2479,12 @@
                         completed.push(questionIndex);
                     }
                     
+                    // 更新答题统计（正确）
+                    if (window.updateQuestionStats) {
+                        console.log('答对，更新统计:', questionIndex);
+                        window.updateQuestionStats(questionIndex, true);
+                    }
+                    
                     // 对于填空题，更新UI显示正确答案
                     if (question.type === "fill") {
                         const blankEl = document.querySelector('.code-blank');
@@ -2482,6 +2555,12 @@
             setTimeout(() => {
                 questionContainer.classList.remove('shake');
             }, 500);
+                
+                // 更新答题统计（错误）
+                if (window.updateQuestionStats) {
+                    console.log('答错，更新统计:', questionIndex);
+                    window.updateQuestionStats(questionIndex, false);
+                }
                 
                 // 对于选择题，标记错误选项
                 if (question.type === "select") {
