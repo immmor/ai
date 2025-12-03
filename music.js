@@ -2,12 +2,13 @@
 window.addEventListener('DOMContentLoaded', function() {
   // 音乐列表
   const musicList = [
-    // { title: '轻松音乐', url: 'static/music1.mp3' },
-    // { title: '专注音乐', url: 'static/music2.mp3' },
-    { title: '放松音乐', url: 'ThroughThisLifeAndBeyondIt.mp3' }
+    { title: '轻松音乐', url: 'music/mojave.mp3' },
+    // { title: '专注音乐', url: 'music/music2.mp3' },
+    { title: '放松音乐', url: 'music/ThroughThisLifeAndBeyondIt.mp3' }
   ];
   
-  let currentTrackIndex = 0;
+  // 随机选择初始歌曲
+  let currentTrackIndex = Math.floor(Math.random() * musicList.length);
   let isPlaying = false;
   let audio = null;
   
@@ -31,6 +32,7 @@ window.addEventListener('DOMContentLoaded', function() {
   musicButton.style.zIndex = '1000';
   musicButton.style.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.37)';
   musicButton.style.transition = 'all 0.3s ease';
+  musicButton.style.willChange = 'transform'; // 优化性能
   
   // 创建播放/暂停图标
   const playIcon = document.createElement('div');
@@ -111,8 +113,13 @@ window.addEventListener('DOMContentLoaded', function() {
         audio.loop = false;
         
         audio.addEventListener('ended', function() {
-          // 播放下一首
-          currentTrackIndex = (currentTrackIndex + 1) % musicList.length;
+          // 随机播放下一首
+          let nextTrackIndex;
+          do {
+            nextTrackIndex = Math.floor(Math.random() * musicList.length);
+          } while (nextTrackIndex === currentTrackIndex && musicList.length > 1);
+          
+          currentTrackIndex = nextTrackIndex;
           audio.src = musicList[currentTrackIndex].url;
           playAudio();
         });
@@ -124,6 +131,13 @@ window.addEventListener('DOMContentLoaded', function() {
         });
       }
       
+      // 每次点击播放时随机选择一首歌曲
+      let newTrackIndex;
+      do {
+        newTrackIndex = Math.floor(Math.random() * musicList.length);
+      } while (newTrackIndex === currentTrackIndex && musicList.length > 1);
+      
+      currentTrackIndex = newTrackIndex;
       audio.src = musicList[currentTrackIndex].url;
       await playAudio();
       isPlaying = true;
@@ -208,11 +222,29 @@ window.addEventListener('DOMContentLoaded', function() {
   const snapThreshold = 20; // 吸附阈值
   const horizontalLock = true; // 水平锁定，只允许在右侧边缘移动
   
+  // 获取视口尺寸
+  function getViewportSize() {
+    return {
+      width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+      height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+    };
+  }
+  
+  // 获取滚动位置
+  function getScrollPosition() {
+    return {
+      x: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
+      y: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    };
+  }
+  
   musicButton.addEventListener('mousedown', function(e) {
     isDragging = true;
+    const scrollPos = getScrollPosition();
     dragStartX = e.clientX;
     dragStartY = e.clientY;
     
+    // 获取按钮相对于视口的位置
     const rect = musicButton.getBoundingClientRect();
     buttonStartX = rect.left;
     buttonStartY = rect.top;
@@ -226,17 +258,18 @@ window.addEventListener('DOMContentLoaded', function() {
     if (isDragging) {
       const deltaX = e.clientX - dragStartX;
       const deltaY = e.clientY - dragStartY;
+      const viewport = getViewportSize();
       
       let newY = buttonStartY + deltaY;
       
       // 获取按钮尺寸
       const buttonHeight = musicButton.offsetHeight;
       
-      // 垂直方向自由移动，但限制在屏幕范围内
+      // 垂直方向自由移动，但限制在视口范围内
       if (newY < edgeMargin) {
         newY = edgeMargin;
-      } else if (newY + buttonHeight > window.innerHeight - edgeMargin) {
-        newY = window.innerHeight - buttonHeight - edgeMargin;
+      } else if (newY + buttonHeight > viewport.height - edgeMargin) {
+        newY = viewport.height - buttonHeight - edgeMargin;
       }
       
       // 使用right定位，保持与右边框的固定距离
@@ -255,7 +288,7 @@ window.addEventListener('DOMContentLoaded', function() {
       
       // 边缘吸附算法 - 只考虑垂直方向的吸附
       const currentY = parseInt(musicButton.style.top);
-      const windowHeight = window.innerHeight;
+      const viewport = getViewportSize();
       const buttonHeight = musicButton.offsetHeight;
       
       let finalY = currentY;
@@ -265,8 +298,8 @@ window.addEventListener('DOMContentLoaded', function() {
         finalY = edgeMargin;
       }
       // 检查是否接近底部边缘
-      else if (windowHeight - currentY - buttonHeight < snapThreshold) {
-        finalY = windowHeight - buttonHeight - edgeMargin;
+      else if (viewport.height - currentY - buttonHeight < snapThreshold) {
+        finalY = viewport.height - buttonHeight - edgeMargin;
       }
       
       // 应用吸附位置，使用right定位保持与右边框的固定距离
@@ -285,6 +318,7 @@ window.addEventListener('DOMContentLoaded', function() {
       dragStartY = e.touches[0].clientY;
       touchStartTime = Date.now();
       
+      // 获取按钮相对于视口的位置
       const rect = musicButton.getBoundingClientRect();
       buttonStartX = rect.left;
       buttonStartY = rect.top;
@@ -303,6 +337,7 @@ window.addEventListener('DOMContentLoaded', function() {
       // 只有当移动距离超过阈值时才认为是拖拽
       if (distance > dragThreshold) {
         isDragging = true;
+        const viewport = getViewportSize();
         
         // 获取按钮尺寸
         const buttonWidth = musicButton.offsetWidth;
@@ -311,11 +346,11 @@ window.addEventListener('DOMContentLoaded', function() {
         // 强制水平锁定：始终保持在右侧边缘
         let newY = buttonStartY + deltaY;
         
-        // 垂直方向自由移动，但限制在屏幕范围内
+        // 垂直方向自由移动，但限制在视口范围内
         if (newY < edgeMargin) {
           newY = edgeMargin;
-        } else if (newY + buttonHeight > window.innerHeight - edgeMargin) {
-          newY = window.innerHeight - buttonHeight - edgeMargin;
+        } else if (newY + buttonHeight > viewport.height - edgeMargin) {
+          newY = viewport.height - buttonHeight - edgeMargin;
         }
         
         musicButton.style.left = 'auto';
@@ -330,6 +365,7 @@ window.addEventListener('DOMContentLoaded', function() {
     // 重置拖拽状态
     setTimeout(() => {
       isDragging = false;
+      const viewport = getViewportSize();
       
       // 确保按钮始终在右侧边缘
       const buttonWidth = musicButton.offsetWidth;
@@ -340,8 +376,8 @@ window.addEventListener('DOMContentLoaded', function() {
       let finalY = currentY;
       if (currentY < edgeMargin) {
         finalY = edgeMargin;
-      } else if (currentY + buttonHeight > window.innerHeight - edgeMargin) {
-        finalY = window.innerHeight - buttonHeight - edgeMargin;
+      } else if (currentY + buttonHeight > viewport.height - edgeMargin) {
+        finalY = viewport.height - buttonHeight - edgeMargin;
       }
       
       // 应用最终位置，确保在右侧
