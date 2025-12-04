@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>3D 无人机竞速 - Three.js</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ff00;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            opacity: 0.7;
+            font-size: 14px;
+        }
+        #center-cross {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        h1 { margin: 0; font-size: 24px; }
+        p { margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <h1>DRONE RACING SIM</h1>
+        <p>分数: <span id="score">0</span> / <span id="total">0</span></p>
+        <p>速度: <span id="speed">0</span> km/h</p>
+        <p id="message" style="color: yellow;"></p>
+    </div>
+
+    <div id="center-cross"></div>
+
+    <div id="controls-hint">
+        <b>W / S</b>: 前进/后退 (俯仰) <br>
+        <b>A / D</b>: 左移/右移 (横滚) <br>
+        <b>Q / E</b>: 左转/右转 (偏航) <br>
+        <b>Shift / Space</b>: 上升/下降 (油门) <br>
+        <b>R</b>: 重置位置
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 1. 初始化场景 ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x101020);
+        scene.fog = new THREE.Fog(0x101020, 10, 150);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. 灯光 ---
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // 环境光
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // --- 3. 地面与环境 ---
+        const gridHelper = new THREE.GridHelper(500, 50, 0x00ff00, 0x333333);
+        scene.add(gridHelper);
+
+        const planeGeometry = new THREE.PlaneGeometry(500, 500);
+        const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = -Math.PI / 2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        // --- 4. 构建无人机 (简单的几何体组合) ---
+        const droneGroup = new THREE.Group();
+        
+        // 机身
+        const bodyGeo = new THREE.BoxGeometry(1, 0.2, 0.6);
+        const bodyMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.castShadow = true;
+        droneGroup.add(body);
+
+        // 螺旋桨臂
+        const armGeo = new THREE.BoxGeometry(1.8, 0.1, 0.1);
+        const arm1 = new THREE.Mesh(armGeo, bodyMat);
+        const arm2 = new THREE.Mesh(armGeo, bodyMat);
+        arm2.rotation.y = Math.PI / 2;
+        droneGroup.add(arm1);
+        droneGroup.add(arm2);
+
+        // 螺旋桨
+        const propGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.05, 8);
+        const propMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, opacity: 0.5, transparent: true });
+        const props = [];
+        const positions = [
+            { x: -0.8, z: 0 }, { x: 0.8, z: 0 }, 
+            { x: 0, z: -0.8 }, { x: 0, z: 0.8 }
+        ];
+
+        positions.forEach(pos => {
+            const prop = new THREE.Mesh(propGeo, propMat);
+            prop.position.set(pos.x, 0.15, pos.z);
+            droneGroup.add(prop);
+            props.push(prop);
+        });
+
+        // 尾灯
+        const lightGeo = new THREE.BoxGeometry(0.2, 0.1, 0.1);
+        const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const tailLight = new THREE.Mesh(lightGeo, lightMat);
+        tailLight.position.set(0, 0, 0.35);
+        droneGroup.add(tailLight);
+
+        scene.add(droneGroup);
+        droneGroup.position.y = 2; // 初始高度
+
+        // --- 5. 赛道系统 (光圈门) ---
+        const gates = [];
+        const gateCount = 10;
+        let score = 0;
+        
+        document.getElementById('total').innerText = gateCount;
+
+        function createGate(x, y, z, index) {
+            const geometry = new THREE.TorusGeometry(3, 0.2, 16, 50);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+            const gate = new THREE.Mesh(geometry, material);
+            gate.position.set(x, y, z);
+            gate.lookAt(x + (Math.random()-0.5)*10, y, z + 20); // 稍微随机旋转
+            
+            // 碰撞检测用的属性
+            gate.userData = { id: index, passed: false };
+            
+            scene.add(gate);
+            gates.push(gate);
+        }
+
+        // 生成随机赛道
+        let nextZ = -20;
+        for(let i=0; i<gateCount; i++) {
+            const x = (Math.random() - 0.5) * 40;
+            const y = 3 + Math.random() * 10;
+            nextZ -= (30 + Math.random() * 20);
+            createGate(x, y, nextZ, i);
+        }
+
+        // --- 6. 物理与控制逻辑 ---
+        const input = { w: false, s: false, a: false, d: false, q: false, e: false, shift: false, space: false };
+        const velocity = new THREE.Vector3();
+        const angularVelocity = new THREE.Vector3(); // x: pitch, y: yaw, z: roll
+        const acceleration = 0.5;
+        const friction = 0.95;
+        const maxTilt = 0.5; // 最大倾斜角度
+
+        // 键盘监听
+        window.addEventListener('keydown', (e) => handleKey(e.code, true));
+        window.addEventListener('keyup', (e) => handleKey(e.code, false));
+
+        function handleKey(code, isPressed) {
+            switch(code) {
+                case 'KeyW': input.w = isPressed; break;
+                case 'KeyS': input.s = isPressed; break;
+                case 'KeyA': input.a = isPressed; break;
+                case 'KeyD': input.d = isPressed; break;
+                case 'KeyQ': input.q = isPressed; break;
+                case 'KeyE': input.e = isPressed; break;
+                case 'ShiftLeft': input.shift = isPressed; break;
+                case 'Space': input.space = isPressed; break;
+                case 'KeyR': if(isPressed) resetGame(); break;
+            }
+        }
+
+        function resetGame() {
+            droneGroup.position.set(0, 2, 0);
+            velocity.set(0, 0, 0);
+            droneGroup.rotation.set(0, 0, 0);
+            score = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('message').innerText = "重置!";
+            gates.forEach(g => {
+                g.userData.passed = false;
+                g.material.color.setHex(0xffaa00);
+            });
+        }
+
+        // --- 7. 游戏循环 ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. 处理输入与物理
+            // Yaw (左右旋转)
+            if (input.q) droneGroup.rotation.y += 0.04;
+            if (input.e) droneGroup.rotation.y -= 0.04;
+
+            // 获取无人机的前方向量和右方向量
+            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), droneGroup.rotation.y);
+            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), droneGroup.rotation.y);
+
+            // 加速逻辑
+            if (input.w) velocity.add(forward.clone().multiplyScalar(acceleration * 0.1));
+            if (input.s) velocity.add(forward.clone().multiplyScalar(-acceleration * 0.05));
+            if (input.a) velocity.add(right.clone().multiplyScalar(-acceleration * 0.1));
+            if (input.d) velocity.add(right.clone().multiplyScalar(acceleration * 0.1));
+            
+            // 垂直升降
+            if (input.shift) velocity.y += 0.05;
+            if (input.space) velocity.y -= 0.05;
+
+            // 应用阻力 (模拟空气阻力)
+            velocity.multiplyScalar(friction);
+
+            // 应用速度到位置
+            droneGroup.position.add(velocity);
+
+            // 地面碰撞保护
+            if (droneGroup.position.y < 0.5) {
+                droneGroup.position.y = 0.5;
+                velocity.y = 0;
+            }
+
+            // 视觉倾斜效果 (根据速度倾斜机身)
+            // 这是一个简化的视觉效果，不是真实的物理倾斜
+            const targetTiltX = velocity.z * 1.5; // 前后倾斜
+            const targetTiltZ = -velocity.x * 1.5; // 左右倾斜
+            
+            // 使用 lerp 平滑过渡倾斜角度
+            droneGroup.rotation.x = THREE.MathUtils.lerp(droneGroup.rotation.x, targetTiltX, 0.1);
+            droneGroup.rotation.z = THREE.MathUtils.lerp(droneGroup.rotation.z, targetTiltZ, 0.1);
+
+            // 螺旋桨旋转动画
+            props.forEach(p => p.rotation.y += 0.5 + velocity.length());
+
+            // 2. 相机跟随 (第三人称视角)
+            // 计算相机目标位置：无人机后上方
+            const relativeCameraOffset = new THREE.Vector3(0, 3, 6);
+            const cameraOffset = relativeCameraOffset.applyMatrix4(droneGroup.matrixWorld);
+            
+            // 让相机平滑移动到目标位置
+            camera.position.lerp(cameraOffset, 0.1);
+            // 让相机看着无人机
+            camera.lookAt(droneGroup.position);
+
+            // 3. 检测通过门
+            gates.forEach(gate => {
+                if (!gate.userData.passed) {
+                    // 计算无人机与门中心的距离
+                    const dist = droneGroup.position.distanceTo(gate.position);
+                    if (dist < 3) { // 3 是门的半径
+                        gate.userData.passed = true;
+                        gate.material.color.setHex(0x00ff00); // 变绿
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        document.getElementById('message').innerText = "通过!";
+                        setTimeout(() => document.getElementById('message').innerText = "", 1000);
+                        
+                        if(score === gateCount) {
+                            document.getElementById('message').innerText = "完成赛道! 按 R 重置";
+                        }
+                    }
+                }
+            });
+
+            // 更新 HUD 速度显示
+            const speedKmh = Math.round(velocity.length() * 30);
+            document.getElementById('speed').innerText = speedKmh;
+
+            renderer.render(scene, camera);
+        }
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 启动
+        animate();
+    </script>
+</body>
+</html>

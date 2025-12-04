@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>3D 无人机竞速 - 手机适配版</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: 'Courier New', Courier, monospace; 
+            touch-action: none; /* 禁止手机默认的滑动行为 */
+            user-select: none; /* 禁止选中文本 */
+            -webkit-user-select: none;
+        }
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #00ff00;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        #center-cross {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        h1 { margin: 0; font-size: 18px; }
+        p { margin: 2px 0; font-size: 14px; }
+
+        /* --- 手机虚拟控制器样式 --- */
+        .control-pad {
+            position: absolute;
+            bottom: 20px;
+            width: 160px;
+            height: 160px;
+            z-index: 200;
+            display: none; /* 默认隐藏，JS检测到触摸屏开启 */
+        }
+        .left-pad { left: 20px; }
+        .right-pad { right: 20px; }
+
+        .btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            cursor: pointer;
+        }
+        .btn:active { background: rgba(0, 255, 255, 0.5); }
+        
+        /* 按钮布局 */
+        .btn-top { top: 0; left: 55px; }
+        .btn-bottom { bottom: 0; left: 55px; }
+        .btn-left { top: 55px; left: 0; }
+        .btn-right { top: 55px; right: 0; }
+        .btn-center { top: 55px; left: 55px; font-size: 12px; border-radius: 10px;}
+
+        /* 横屏提示 */
+        #landscape-hint {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+        }
+        @media screen and (orientation: portrait) {
+            #landscape-hint { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="landscape-hint">
+        <h1>请旋转手机屏幕</h1>
+        <p>横屏体验最佳</p>
+    </div>
+
+    <div id="hud">
+        <h1>DRONE SIM MOBILE</h1>
+        <p>GATE: <span id="score">0</span> / <span id="total">0</span></p>
+        <p>SPD: <span id="speed">0</span> km/h</p>
+        <p id="message" style="color: yellow; font-size:16px;"></p>
+    </div>
+
+    <div id="center-cross"></div>
+
+    <div id="controls-left" class="control-pad left-pad">
+        <div class="btn btn-top" data-key="shift">↑</div> <div class="btn btn-bottom" data-key="space">↓</div> <div class="btn btn-left" data-key="q">↺</div> <div class="btn btn-right" data-key="e">↻</div> <div class="btn btn-center" data-key="r" style="background: rgba(255,0,0,0.3)">重置</div>
+    </div>
+
+    <div id="controls-right" class="control-pad right-pad">
+        <div class="btn btn-top" data-key="w">W</div> <div class="btn btn-bottom" data-key="s">S</div> <div class="btn btn-left" data-key="a">A</div> <div class="btn btn-right" data-key="d">D</div> </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 1. 场景初始化 ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x101020);
+        scene.fog = new THREE.Fog(0x101020, 10, 150);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. 环境构建 ---
+        const ambientLight = new THREE.AmbientLight(0x404040, 2);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const gridHelper = new THREE.GridHelper(500, 50, 0x00ff00, 0x333333);
+        scene.add(gridHelper);
+        const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(500, 500),
+            new THREE.MeshLambertMaterial({ color: 0x222222 })
+        );
+        plane.rotation.x = -Math.PI / 2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        // --- 3. 无人机模型 ---
+        const droneGroup = new THREE.Group();
+        const bodyMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.2, 0.6), bodyMat);
+        body.castShadow = true;
+        droneGroup.add(body);
+        
+        // 简易机臂
+        const armGeo = new THREE.BoxGeometry(1.8, 0.1, 0.1);
+        droneGroup.add(new THREE.Mesh(armGeo, bodyMat));
+        const arm2 = new THREE.Mesh(armGeo, bodyMat);
+        arm2.rotation.y = Math.PI / 2;
+        droneGroup.add(arm2);
+
+        // 螺旋桨
+        const props = [];
+        const propGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.05, 8);
+        const propMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, opacity: 0.6, transparent: true });
+        [{x:-0.8,z:0},{x:0.8,z:0},{x:0,z:-0.8},{x:0,z:0.8}].forEach(pos => {
+            const prop = new THREE.Mesh(propGeo, propMat);
+            prop.position.set(pos.x, 0.15, pos.z);
+            droneGroup.add(prop);
+            props.push(prop);
+        });
+        
+        // 尾灯
+        const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.1,0.1), new THREE.MeshBasicMaterial({color:0xff0000}));
+        tailLight.position.set(0,0,0.35);
+        droneGroup.add(tailLight);
+
+        scene.add(droneGroup);
+        droneGroup.position.y = 2;
+
+        // --- 4. 游戏逻辑 (门 & 分数) ---
+        const gates = [];
+        const gateCount = 8;
+        let score = 0;
+        document.getElementById('total').innerText = gateCount;
+
+        function createGate(x, y, z, index) {
+            const gate = new THREE.Mesh(
+                new THREE.TorusGeometry(3, 0.3, 8, 30),
+                new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+            );
+            gate.position.set(x, y, z);
+            gate.lookAt(x, y, z + 20);
+            gate.userData = { id: index, passed: false };
+            scene.add(gate);
+            gates.push(gate);
+        }
+
+        let nextZ = -30;
+        for(let i=0; i<gateCount; i++) {
+            createGate((Math.random()-0.5)*50, 4 + Math.random()*8, nextZ, i);
+            nextZ -= 40;
+        }
+
+        // --- 5. 统一控制输入系统 (键盘 + 触摸) ---
+        const input = { w: false, s: false, a: false, d: false, q: false, e: false, shift: false, space: false };
+        
+        // 键盘事件
+        window.addEventListener('keydown', (e) => handleKey(e.code, true));
+        window.addEventListener('keyup', (e) => handleKey(e.code, false));
+
+        function handleKey(code, isPressed) {
+            const map = {
+                'KeyW': 'w', 'KeyS': 's', 'KeyA': 'a', 'KeyD': 'd',
+                'KeyQ': 'q', 'KeyE': 'e', 'ShiftLeft': 'shift', 'Space': 'space', 'KeyR': 'reset'
+            };
+            if(map[code]) {
+                if(map[code] === 'reset' && isPressed) resetGame();
+                else input[map[code]] = isPressed;
+            }
+        }
+
+        // 触摸事件 (手机)
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) {
+            document.querySelectorAll('.control-pad').forEach(el => el.style.display = 'block');
+            
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(btn => {
+                const key = btn.getAttribute('data-key');
+                
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // 防止滚动
+                    if(key === 'r') resetGame();
+                    else input[key] = true;
+                }, { passive: false });
+
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if(key !== 'r') input[key] = false;
+                });
+            });
+        }
+
+        function resetGame() {
+            droneGroup.position.set(0, 2, 0);
+            droneGroup.rotation.set(0, 0, 0);
+            velocity.set(0, 0, 0);
+            score = 0;
+            document.getElementById('score').innerText = 0;
+            document.getElementById('message').innerText = "已重置";
+            gates.forEach(g => {
+                g.userData.passed = false;
+                g.material.color.setHex(0xffaa00);
+            });
+        }
+
+        // --- 6. 物理循环 ---
+        const velocity = new THREE.Vector3();
+        const acc = 0.6; // 加速度
+        const friction = 0.92; // 阻力
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 偏航 (Yaw)
+            if (input.q) droneGroup.rotation.y += 0.05;
+            if (input.e) droneGroup.rotation.y -= 0.05;
+
+            // 计算方向
+            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), droneGroup.rotation.y);
+            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), droneGroup.rotation.y);
+
+            // 移动
+            if (input.w) velocity.add(forward.clone().multiplyScalar(acc * 0.1));
+            if (input.s) velocity.add(forward.clone().multiplyScalar(-acc * 0.05));
+            if (input.a) velocity.add(right.clone().multiplyScalar(-acc * 0.1));
+            if (input.d) velocity.add(right.clone().multiplyScalar(acc * 0.1));
+            if (input.shift) velocity.y += 0.06;
+            if (input.space) velocity.y -= 0.06;
+
+            velocity.multiplyScalar(friction);
+            droneGroup.position.add(velocity);
+
+            // 地面碰撞
+            if (droneGroup.position.y < 0.5) {
+                droneGroup.position.y = 0.5;
+                velocity.y = 0;
+            }
+
+            // 视觉倾斜
+            droneGroup.rotation.x = THREE.MathUtils.lerp(droneGroup.rotation.x, velocity.z * 1.5, 0.1);
+            droneGroup.rotation.z = THREE.MathUtils.lerp(droneGroup.rotation.z, -velocity.x * 1.5, 0.1);
+
+            // 螺旋桨
+            props.forEach(p => p.rotation.y += 0.5 + velocity.length());
+
+            // 相机跟随
+            const camOffset = new THREE.Vector3(0, 4, 8).applyMatrix4(droneGroup.matrixWorld);
+            camera.position.lerp(camOffset, 0.1);
+            camera.lookAt(droneGroup.position);
+
+            // 碰撞判定
+            gates.forEach(gate => {
+                if(!gate.userData.passed && droneGroup.position.distanceTo(gate.position) < 3.5) {
+                    gate.userData.passed = true;
+                    gate.material.color.setHex(0x00ff00);
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    document.getElementById('message').innerText = "Nice!";
+                    setTimeout(() => document.getElementById('message').innerText = "", 1000);
+                }
+            });
+
+            // 速度
+            document.getElementById('speed').innerText = Math.round(velocity.length() * 30);
+            
+            renderer.render(scene, camera);
+        }
+
+        // 自适应屏幕
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
