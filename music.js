@@ -35,7 +35,7 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // 创建音乐文本标签
   const musicText = document.createElement('span');
-  musicText.textContent = ' 音乐';
+  // musicText.textContent = ' 音乐';
   
   musicButton.appendChild(playIcon);
   musicButton.appendChild(pauseIcon);
