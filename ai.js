@@ -30,7 +30,7 @@ class AIChatInterface {
             /* 浮动AI按钮 */
             #ai-chat-button {
                 position: fixed;
-                bottom: 20px;
+                bottom: 60px;
                 right: 20px;
                 width: 60px;
                 height: 60px;
@@ -53,7 +53,7 @@ class AIChatInterface {
             /* AI聊天窗口 */
             #ai-chat-window {
                 position: fixed;
-                bottom: 90px;
+                bottom: 140px;
                 right: 20px;
                 width: 350px;
                 max-width: calc(100vw - 40px);
@@ -172,23 +172,23 @@ class AIChatInterface {
 
             /* 输入区域 */
             #ai-chat-input-area {
-                padding: 15px;
+                padding: 12px;
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 display: flex;
-                gap: 10px;
+                gap: 8px;
             }
 
             #ai-chat-input {
                 flex: 1;
-                padding: 10px 15px;
+                padding: 8px 12px;
                 border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 20px;
+                border-radius: 18px;
                 background: rgba(255, 255, 255, 0.9);
                 color: #333;
-                font-size: 14px;
+                font-size: 13px;
                 resize: none;
-                min-height: 40px;
-                max-height: 100px;
+                min-height: 36px;
+                max-height: 80px;
             }
 
             #ai-chat-input::placeholder {
@@ -196,14 +196,14 @@ class AIChatInterface {
             }
 
             #ai-chat-send {
-                padding: 10px 20px;
+                padding: 8px 16px;
                 border: none;
-                border-radius: 20px;
+                border-radius: 18px;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
                 cursor: pointer;
-                font-size: 14px;
-                font-weight: 600;
+                font-size: 13px;
+                font-weight: 500;
                 transition: all 0.3s ease;
             }
 
@@ -228,13 +228,17 @@ class AIChatInterface {
             }
 
             /* 响应式设计 */
-            @media (max-width: 480px) {
+            @media (max-width: 768px) {
                 #ai-chat-window {
                     width: calc(100vw - 20px);
                     height: 70vh;
-                    bottom: 70px;
-                    right: 10px;
-                    left: 10px;
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    right: auto;
+                    bottom: auto;
+                    transform: translate(-50%, -50%);
+                    margin: 0;
                 }
             }
         `;
