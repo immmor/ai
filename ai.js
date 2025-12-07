@@ -4,7 +4,7 @@ class AIChatInterface {
         this.isOpen = false;
         this.messages = [];
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://openai-gemini.vercel.app/v1';
+        this.apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://immmor.dpdns.org/v1';
         this.init();
     }
 
