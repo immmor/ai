@@ -1,0 +1,8 @@
+name = "learn"
+main = "worker.js"
+
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "learn"
+database_id = "5f493473-4988-40e5-b7da-d5872ae1db9d"
