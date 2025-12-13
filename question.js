@@ -89,6 +89,8 @@ function getCurrentQuestions() {
         return questionsstock;
     } else if (currentQuestionBank === 'questionsgerman') {
         return questionsgerman;
+    } else if (currentQuestionBank === 'questionsroutine') {
+        return questionsroutine;
     } else {
         return questions;
     }
@@ -179,6 +181,8 @@ function getBankDisplayName(bankName) {
         bankDisplayName = '股票投资';
     } else if (bankName === 'questionsgerman') {
         bankDisplayName = '德语学习';
+    } else if (bankName === 'questionsroutine') {
+        bankDisplayName = '多语学习';
     }
     return bankDisplayName;
 }
