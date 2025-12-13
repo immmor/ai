@@ -1,4 +1,4 @@
-// 检测文本语言（中文、英文、德语、阿拉伯语、日语、韩语、俄语、西班牙语、法语或意大利语）
+// 检测文本语言（中文、英文、德语、阿拉伯语、日语、韩语、俄语、西班牙语、法语、意大利语、葡萄牙语、荷兰语、瑞典语、越南语、缅甸语或希伯来语）
 function detectLanguage(text) {
     // 统计中文字符数量
     const chineseChars = text.match(/[\u4e00-\u9fff]/g) || [];
@@ -28,6 +28,42 @@ function detectLanguage(text) {
     const russianChars = text.match(/[\u0400-\u04FF]/g) || [];
     const russianCount = russianChars.length;
     
+    // 统计葡萄牙语特有字符数量
+    const portugueseChars = text.match(/[çãáéíóúâêôàèìòù]/gi) || [];
+    const portugueseCount = portugueseChars.length;
+    
+    // 统计荷兰语特有字符数量
+    const dutchChars = text.match(/[ëïüäöêéè]/gi) || [];
+    const dutchCount = dutchChars.length;
+    
+    // 统计瑞典语特有字符数量
+    const swedishChars = text.match(/[åäöÅÄÖ]/g) || [];
+    const swedishCount = swedishChars.length;
+    
+    // 统计越南语字符数量（越南语字母和声调符号）
+    const vietnameseChars = text.match(/[ăâêôơưàằầèềìòồờùừỳắấếốớứỹẫẩễổởửữđ]/gi) || [];
+    const vietnameseCount = vietnameseChars.length;
+    
+    // 统计缅甸语字符数量（缅甸语字母）
+    const burmeseChars = text.match(/[\u1000-\u109F]/g) || [];
+    const burmeseCount = burmeseChars.length;
+    
+    // 统计希伯来语字符数量（希伯来语字母）
+    const hebrewChars = text.match(/[\u0590-\u05FF]/g) || [];
+    const hebrewCount = hebrewChars.length;
+    
+    // 统计藏语字符数量（藏语字母）
+    const tibetanChars = text.match(/[\u0F00-\u0FFF]/g) || [];
+    const tibetanCount = tibetanChars.length;
+    
+    // 统计蒙古语字符数量（蒙古语字母）
+    const mongolianChars = text.match(/[\u1800-\u18AF]/g) || [];
+    const mongolianCount = mongolianChars.length;
+    
+    // 统计印度尼西亚语特有字符数量
+    const indonesianChars = text.match(/[áàâäéèêëíìîïóòôöúùûüñ]/gi) || [];
+    const indonesianCount = indonesianChars.length;
+    
     // 常见德语词汇列表（用于检测不含特殊字符的德语文本）
     const commonGermanWords = [
         'der', 'die', 'das', 'und', 'ist', 'ich', 'zu', 'ein', 'eine',
@@ -55,6 +91,60 @@ function detectLanguage(text) {
         'il', 'lo','gli', 'di',
         'è', 'mi', 'ti', 'si', 'noi', 'voi', 'loro',
         'con', 'il', 'del', 'della', 'dei', 'delle', 'questo', 'quella'
+    ];
+    
+    // 常见葡萄牙语词汇列表（用于检测葡萄牙语）
+    const commonPortugueseWords = [
+        'o', 'a', 'os', 'as', 'e', 'de', 'que', 'em', 'um', 'uma',
+        'é', 'para', 'com', 'não', 'sua', 'se', 'por', 'lo', 'como', 'mais'
+    ];
+    
+    // 常见荷兰语词汇列表（用于检测荷兰语）
+    const commonDutchWords = [
+        'de', 'het', 'en', 'in', 'van', 'ik', 'dat', 'die', 'je', 'een',
+        'hij', 'we', 'ze', 'te', 'zijn', 'naar', 'op', 'bij', 'met', 'voor'
+    ];
+    
+    // 常见瑞典语词汇列表（用于检测瑞典语）
+    const commonSwedishWords = [
+        'och', 'i', 'jag', 'att', 'det', 'är', 'en', 'för', 'vi', 'av',
+        'de', 'som', 'med', 'till', 'om', 'han', 'men', 'är', 'hon', 'ska'
+    ];
+    
+    // 常见越南语词汇列表（用于检测越南语）
+    const commonVietnameseWords = [
+        'và', 'tôi', 'có', 'không', 'là', 'được', 'của', 'trong', 'đến', 'như',
+        'một', 'các', 'để', 'thì', 'khi', 'này', 'đó', 'bạn', 'nhà', 'người'
+    ];
+    
+    // 常见缅甸语词汇列表（用于检测缅甸语）
+    const commonBurmeseWords = [
+        'နှင့်', 'ငါ', 'ရှိသည်', 'မဟုတ်', 'သည်', 'ပေးသည်', '၏', 'အတွင်း', 'မှ', 'ကဲ့သို့',
+        'တစ်', 'သူ', 'အဘို့', 'ထို့ကြောင့်', 'အခါ', 'ဤ', 'ထို', 'သင်', 'အိမ်', 'လူတို့'
+    ];
+    
+    // 常见希伯来语词汇列表（用于检测希伯来语）
+    const commonHebrewWords = [
+        'וגם', 'אני', 'יש', 'לא', 'זה', 'את', 'של', 'בתוך', 'ל', 'כמו',
+        'אחד', 'הם', 'לשם', 'אז', 'כשם', 'זה', 'אלה', 'אתה', 'בית', 'אנשים'
+    ];
+    
+    // 常见藏语词汇列表（用于检测藏语）
+    const commonTibetanWords = [
+        'དང་', 'ང་', 'ཡོད་', 'མིན་', 'འདི་', 'ལ་', 'གི་', 'ནང་', 'ལ་', 'ཤེས་',
+        'གཅིག་', 'ཁོང་ཚོ་', 'དེ་', 'ན་', 'ནང་', 'གི་', 'ཁོང་', 'ནང་', 'གི་', 'མི'
+    ];
+    
+    // 常见蒙古语词汇列表（用于检测蒙古语）
+    const commonMongolianWords = [
+        'болон', 'би', 'байна', 'биш', 'энэ', 'даа', 'хүн', 'мөн', 'өөр', 'байх',
+        'ван', 'тэр', 'юм', 'төгрөг', 'орчуулсан', 'бид', 'ч', 'юу', 'гэж', 'санаа'
+    ];
+    
+    // 常见印度尼西亚语词汇列表（用于检测印度尼西亚语）
+    const commonIndonesianWords = [
+        'dan', 'saya', 'yang', 'di', 'itu', 'untuk', 'dari', 'adalah', 'ini', 'ke',
+        'dengan', 'yang', 'pada', 'kita', 'telah', 'dalam', 'juga', 'akan', 'tidak', 'sudah'
     ];
     
     // 转换文本为小写用于词汇匹配
@@ -96,6 +186,83 @@ function detectLanguage(text) {
         italianWordCount += matches.length;
     });
     
+    // 计算文本中包含的葡萄牙语词汇数量
+    let portugueseWordCount = 0;
+    commonPortugueseWords.forEach(word => {
+        // 使用单词边界正则表达式确保完整匹配单词
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'g');
+        const matches = textLower.match(wordRegex) || [];
+        portugueseWordCount += matches.length;
+    });
+    
+    // 计算文本中包含的荷兰语词汇数量
+    let dutchWordCount = 0;
+    commonDutchWords.forEach(word => {
+        // 使用单词边界正则表达式确保完整匹配单词
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'g');
+        const matches = textLower.match(wordRegex) || [];
+        dutchWordCount += matches.length;
+    });
+    
+    // 计算文本中包含的瑞典语词汇数量
+    let swedishWordCount = 0;
+    commonSwedishWords.forEach(word => {
+        // 使用单词边界正则表达式确保完整匹配单词
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'g');
+        const matches = textLower.match(wordRegex) || [];
+        swedishWordCount += matches.length;
+    });
+    
+    // 计算文本中包含的越南语词汇数量
+    let vietnameseWordCount = 0;
+    commonVietnameseWords.forEach(word => {
+        // 使用单词边界正则表达式确保完整匹配单词
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'g');
+        const matches = textLower.match(wordRegex) || [];
+        vietnameseWordCount += matches.length;
+    });
+    
+    // 计算文本中包含的缅甸语词汇数量
+    let burmeseWordCount = 0;
+    commonBurmeseWords.forEach(word => {
+        // 缅甸语不使用单词边界，直接匹配字符序列
+        const matches = textLower.split(word).length - 1;
+        burmeseWordCount += matches;
+    });
+    
+    // 计算文本中包含的希伯来语词汇数量
+    let hebrewWordCount = 0;
+    commonHebrewWords.forEach(word => {
+        // 希伯来语不使用单词边界，直接匹配字符序列
+        const matches = textLower.split(word).length - 1;
+        hebrewWordCount += matches;
+    });
+    
+    // 计算文本中包含的藏语词汇数量
+    let tibetanWordCount = 0;
+    commonTibetanWords.forEach(word => {
+        // 藏语不使用单词边界，直接匹配字符序列
+        const matches = textLower.split(word).length - 1;
+        tibetanWordCount += matches;
+    });
+    
+    // 计算文本中包含的蒙古语词汇数量
+    let mongolianWordCount = 0;
+    commonMongolianWords.forEach(word => {
+        // 蒙古语不使用单词边界，直接匹配字符序列
+        const matches = textLower.split(word).length - 1;
+        mongolianWordCount += matches;
+    });
+    
+    // 计算文本中包含的印度尼西亚语词汇数量
+    let indonesianWordCount = 0;
+    commonIndonesianWords.forEach(word => {
+        // 使用单词边界正则表达式确保完整匹配单词
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'g');
+        const matches = textLower.match(wordRegex) || [];
+        indonesianWordCount += matches.length;
+    });
+    
     // 如果中文字符数量最多，则认为是中文
     if (japaneseCount >= 1) {
         return 'ja-JP';
@@ -131,6 +298,42 @@ function detectLanguage(text) {
     // 如果包含较多意大利语词汇，则认为是意大利语
     else if (italianWordCount >= 2) {
         return 'it-IT';
+    }
+    // 如果包含较多葡萄牙语词汇或特有字符，则认为是葡萄牙语
+    else if (portugueseWordCount >= 2 || portugueseCount >= 1) {
+        return 'pt-PT';
+    }
+    // 如果包含较多荷兰语词汇或特有字符，则认为是荷兰语
+    else if (dutchWordCount >= 2 || dutchCount >= 1) {
+        return 'nl-NL';
+    }
+    // 如果包含较多瑞典语词汇或特有字符，则认为是瑞典语
+    else if (swedishWordCount >= 2 || swedishCount >= 1) {
+        return 'sv-SE';
+    }
+    // 如果包含较多越南语词汇或特有字符，则认为是越南语
+    else if (vietnameseWordCount >= 2 || vietnameseCount >= 1) {
+        return 'vi-VN';
+    }
+    // 如果包含较多缅甸语词汇或特有字符，则认为是缅甸语
+    else if (burmeseWordCount >= 2 || burmeseCount >= 1) {
+        return 'my-MM';
+    }
+    // 如果包含较多希伯来语词汇或特有字符，则认为是希伯来语
+    else if (hebrewWordCount >= 2 || hebrewCount >= 1) {
+        return 'he-IL';
+    }
+    // 如果包含较多藏语词汇或特有字符，则认为是藏语
+    else if (tibetanWordCount >= 2 || tibetanCount >= 1) {
+        return 'bo-CN';
+    }
+    // 如果包含较多蒙古语词汇或特有字符，则认为是蒙古语
+    else if (mongolianWordCount >= 2 || mongolianCount >= 1) {
+        return 'mn-MN';
+    }
+    // 如果包含较多印度尼西亚语词汇或特有字符，则认为是印度尼西亚语
+    else if (indonesianWordCount >= 2 || indonesianCount >= 1) {
+        return 'id-ID';
     }
     // 默认为英语
     else {
