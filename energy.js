@@ -5,6 +5,12 @@ let energy = 20;
 const MAX_ENERGY = 20; // 最大能量值
 const ENERGY_RECOVERY_INTERVAL = 7200000; // 能量恢复间隔（毫秒）- 1分钟
 
+// 会员相关常量
+const VIP_MONTHLY_PRICE = 10; // 会员月费（USDT）
+const VIP_DURATION = 30 * 24 * 60 * 60 * 1000; // 会员有效期（毫秒）
+let isVip = false; // 当前是否为会员
+let vipExpiryTime = 0; // 会员过期时间
+
 // 获取能量元素
 let energyDisplay = null;
 let energyIcon = null;
@@ -37,6 +43,30 @@ function loadEnergy() {
     energy = Math.max(0, Math.min(energy, MAX_ENERGY));
 }
 
+// 加载会员状态
+function loadVipStatus() {
+    const savedVipExpiryTime = localStorage.getItem('goBlockchainVipExpiry');
+    if (savedVipExpiryTime) {
+        vipExpiryTime = parseInt(savedVipExpiryTime);
+        // 检查会员是否过期
+        isVip = Date.now() < vipExpiryTime;
+    }
+}
+
+// 保存会员状态
+function saveVipStatus() {
+    localStorage.setItem('goBlockchainVipExpiry', vipExpiryTime.toString());
+}
+
+// 激活会员
+function activateVip() {
+    vipExpiryTime = Date.now() + VIP_DURATION;
+    isVip = true;
+    saveVipStatus();
+    console.log('会员已激活，到期时间：', new Date(vipExpiryTime));
+    showFeedback('会员购买成功！已获得无限能量', 'success');
+}
+
 // 保存能量到localStorage
 function saveEnergy() {
     localStorage.setItem('goBlockchainEnergy', energy.toString());
@@ -49,6 +79,7 @@ function setupEnergyEventListeners() {
     const energyTooltip = document.getElementById('energy-tooltip');
     const codeInput = document.getElementById('energy-code-input');
     const codeSubmit = document.getElementById('energy-code-submit');
+    const buyVipBtn = document.getElementById('buy-vip-btn');
     // const messageEl = document.getElementById('energy-code-message');
     
     if (!energyDisplay || !energyTooltip) {
@@ -61,6 +92,8 @@ function setupEnergyEventListeners() {
         e.stopPropagation(); // 防止事件冒泡
         // 切换提示框显示状态
         energyTooltip.classList.toggle('hidden');
+        // 更新会员状态显示
+        updateVipStatusDisplay();
     });
     
     // 点击页面其他地方关闭提示框
@@ -121,6 +154,36 @@ function setupEnergyEventListeners() {
             codeInput.value = '';
         });
     }
+    
+    // 为购买会员按钮添加事件监听器
+    if (buyVipBtn) {
+        buyVipBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            buyVip();
+        });
+    }
+}
+
+// 更新会员状态显示
+function updateVipStatusDisplay() {
+    const vipStatusEl = document.getElementById('vip-status');
+    if (!vipStatusEl) return;
+    
+    if (isVip) {
+        const remainingTime = vipExpiryTime - Date.now();
+        const daysRemaining = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
+        vipStatusEl.textContent = `会员剩余 ${daysRemaining} 天`;
+        vipStatusEl.className = 'text-xs text-center mt-1 text-green-500';
+    } else {
+        vipStatusEl.textContent = '非会员状态';
+        vipStatusEl.className = 'text-xs text-center mt-1 text-gray-500';
+    }
+}
+
+// 购买会员
+function buyVip() {
+    // 调用支付函数，第一个参数是TRON钱包地址
+    pay('TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV', VIP_MONTHLY_PRICE, 'usdt');
 }
 
 // 创建能量显示元素
@@ -152,6 +215,18 @@ function createEnergyDisplay() {
                     充能
                 </button>
             </div>
+            <!-- 购买会员区域 -->
+            <div class="mt-2 pt-2 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-200 shadow-sm">
+                        ${VIP_MONTHLY_PRICE} USDT/月
+                    </span>
+                    <button id="buy-vip-btn" class="px-3 py-1.5 bg-purple-500 text-white text-sm rounded hover:bg-purple-600 transition-colors whitespace-nowrap">
+                        购买
+                    </button>
+                </div>
+                <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
+            </div>
         </div>
     `;
     
@@ -163,6 +238,7 @@ function createEnergyDisplay() {
     energyIcon = document.getElementById('energy-icon');
     
     setupEnergyEventListeners();
+    updateVipStatusDisplay();
 }
 
 // 更新能量显示
@@ -235,6 +311,12 @@ function setupEnergyRecovery() {
 
 // 消耗能量
 function consumeEnergy() {
+    // 如果是会员，不消耗能量
+    if (isVip) {
+        console.log('会员用户，不消耗能量');
+        return true;
+    }
+    
     if (energy > 0) {
         energy -= 1;
         updateEnergyDisplay();
@@ -303,6 +385,10 @@ function getCurrentEnergy() {
 
 // 检查能量是否充足
 function hasEnoughEnergy() {
+    // 如果是会员，能量无限
+    if (isVip) {
+        return true;
+    }
     return energy > 0;
 }
 
@@ -451,6 +537,188 @@ function playEnergyGainSound() {
     }, 1000);
 }
 
+// 添加支付相关函数
+function paycheck(the_oid) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    fetch("https://tronusdt.xyz/?way=paycheck&oid=" + the_oid, {
+        method: 'GET',
+        signal: controller.signal
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        clearTimeout(timeoutId);
+        console.log('支付检查结果:', data);
+        if (data.code === 1) {
+            activateVip();
+            alert("支付成功，会员已激活！");
+            // 关闭模态框
+            const qrContainer = document.querySelector('[style*="z-index: 9999"]');
+            if (qrContainer) {
+                document.body.removeChild(qrContainer);
+                // 恢复背景滚动
+                document.body.style.overflow = '';
+            }
+        } else {
+            alert("支付未完成。刚转币请等待大约30秒即可！");
+        }
+    })
+    .catch(error => {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            alert("请求超时，请稍后重试。");
+        } else {
+            alert("网络请求失败，请稍后重试。");
+        }
+    });
+}
+
+function pay(the_name, the_value, the_type) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    fetch("https://tronusdt.xyz/?way=pay&jump=-&product=buy_vip&name=" + the_name + "&type=" + the_type + "&value=" + the_value, {
+        method: 'GET',
+        signal: controller.signal
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        clearTimeout(timeoutId);
+        console.log('创建订单结果:', data);
+        if (data.oid) {
+            // 调试：打印完整响应数据
+            console.log('API Response:', data);
+            
+            // 创建二维码展示容器
+            const qrContainer = document.createElement('div');
+                qrContainer.style.cssText = `
+                    position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+                    background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                    z-index: 9999; text-align: center;
+                    width: 400px;
+                    max-height: calc(100vh - 100px);
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                `;
+                
+                // 保存当前body的overflow属性并禁止背景滚动
+                const originalBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                
+                // 标题
+                const title = document.createElement('h3');
+                title.textContent = '购买会员 - USDT支付';
+                title.style.margin = '0 0 20px 0';
+                title.style.color = '#333333';
+                title.style.fontSize = '20px';
+                
+                // 生成二维码
+                const qrImg = document.createElement('img');
+                const address = data.address || 'TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
+                const amount = data.value || VIP_MONTHLY_PRICE;
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`tron:${address}?amount=${amount}`)}`;
+                qrImg.alt = 'Payment QR Code';
+                qrImg.style.width = '250px';
+                qrImg.style.height = '250px';
+                qrImg.style.borderRadius = '8px';
+                qrImg.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                qrImg.style.margin = '0 auto 20px auto';
+                qrImg.style.display = 'block';
+                qrImg.style.objectFit = 'contain';
+                
+                // 支付信息容器
+                const infoContainer = document.createElement('div');
+                infoContainer.style.margin = '20px 0';
+                infoContainer.style.textAlign = 'left';
+                infoContainer.style.width = '350px';
+                infoContainer.style.marginLeft = 'auto';
+                infoContainer.style.marginRight = 'auto';
+                
+                // 订单ID
+                const oidDiv = document.createElement('div');
+                oidDiv.style.margin = '10px 0';
+                oidDiv.innerHTML = `
+                    <div style="color: #666; font-size: 12px; margin-bottom: 4px;">订单ID</div>
+                    <div style="background: #f5f5f5; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all;">${data.oid}</div>
+                `;
+                
+                // 收款地址
+                const addressDiv = document.createElement('div');
+                addressDiv.style.margin = '10px 0';
+                addressDiv.innerHTML = `
+                    <div style="color: #666; font-size: 12px; margin-bottom: 4px;">收款地址</div>
+                    <div style="background: #f5f5f5; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all;">${address}</div>
+                `;
+                
+                // 金额
+                const amountDiv = document.createElement('div');
+                amountDiv.style.margin = '10px 0';
+                amountDiv.innerHTML = `
+                    <div style="color: #666; font-size: 12px; margin-bottom: 4px;">支付金额</div>
+                    <div style="background: #e8f5e9; padding: 8px 12px; border-radius: 6px; font-weight: 600; color: #2e7d32;">${amount} USDT</div>
+                `;
+                
+                // 添加支付确认按钮
+                const checkPaymentBtn = document.createElement('button');
+                checkPaymentBtn.textContent = '确认支付完成';
+                checkPaymentBtn.style.cssText = `
+                    width: 100%; padding: 12px; background: #2385bb; color: white;
+                    border: none; border-radius: 8px; cursor: pointer; font-size: 16px;
+                    font-weight: 600; margin-bottom: 10px;
+                `;
+                checkPaymentBtn.onclick = () => paycheck(data.oid);
+                
+                // 添加关闭按钮
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '关闭';
+                closeBtn.style.cssText = `
+                    width: 100%; padding: 12px; background: #666; color: white;
+                    border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
+                `;
+                closeBtn.onclick = () => {
+                    document.body.removeChild(qrContainer);
+                    // 恢复body的overflow属性
+                    document.body.style.overflow = originalBodyOverflow;
+                }
+                
+                // 组装容器
+                infoContainer.appendChild(oidDiv);
+                infoContainer.appendChild(addressDiv);
+                infoContainer.appendChild(amountDiv);
+                
+                qrContainer.appendChild(title);
+                qrContainer.appendChild(qrImg);
+                qrContainer.appendChild(infoContainer);
+                qrContainer.appendChild(checkPaymentBtn);
+                qrContainer.appendChild(closeBtn);
+                
+                document.body.appendChild(qrContainer);
+            } else {
+                alert("创建订单失败：" + data.msg);
+            }
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                alert("请求超时，请稍后重试。");
+            } else {
+                alert("网络请求失败，请稍后重试。");
+            }
+        });
+}
+
 // 收集太阳（增加能量）
 function collectSun(sunId, clickX, clickY) {
     // 使用更高效的查找方式
@@ -526,6 +794,9 @@ function initEnergy() {
     // 从localStorage加载能量值
     loadEnergy();
     
+    // 加载会员状态
+    loadVipStatus();
+    
     // 创建能量显示元素
     createEnergyDisplay();
     
@@ -539,4 +810,17 @@ function initEnergy() {
     initSunDropSystem();
     
     // console.log('能量系统初始化完成，当前能量：', energy);
+    // console.log('会员状态：', isVip ? '是' : '否');
 }
+
+// 更新会员状态
+function updateVipStatus() {
+    if (isVip && Date.now() >= vipExpiryTime) {
+        isVip = false;
+        saveVipStatus();
+        console.log('会员已过期');
+    }
+}
+
+// 定期检查会员状态
+setInterval(updateVipStatus, 60000); // 每分钟检查一次
