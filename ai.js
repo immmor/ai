@@ -30,17 +30,17 @@ class AIChatInterface {
             /* 浮动AI按钮 */
             #ai-chat-button {
                 position: fixed;
-                bottom: 60px;
+                bottom: 40px;
                 right: 20px;
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
                 border-radius: 50%;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
                 border: none;
-                font-size: 24px;
+                font-size: 20px;
                 cursor: pointer;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
                 transition: all 0.3s ease;
                 z-index: 1000;
             }
