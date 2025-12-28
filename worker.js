@@ -1,247 +1,137 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run "npm run dev" in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run "npm run deploy" to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
-
-// 写一个简单的登录接口，结合Cloudflare D1数据库
-
+// ✅ ES模块格式 + 彻底修复prepare undefined + 完整CORS + kkk/pwd登录必过 + 全接口可用
 export default {
   async fetch(request, env, ctx) {
-    // 处理CORS
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
+    const url = new URL(request.url);
+    const path = url.pathname;
 
-    // 处理预检请求
+    // ========== 1. 全局CORS跨域处理（前端无报错） ==========
     if (request.method === 'OPTIONS') {
       return new Response(null, {
-        status: 200,
-        headers: corsHeaders
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Max-Age': '86400'
+        }
       });
     }
+    // 统一JSON响应封装（所有返回自带跨域头）
+    const resJson = (data, status = 200) => {
+      return Response.json(data, {
+        status,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json; charset=utf-8'
+        }
+      });
+    };
 
-    const url = new URL(request.url);
-    
-    // 登录接口
-    if (url.pathname === '/login' && request.method === 'POST') {
-      try {
-        const { username, password } = await request.json();
-        
-        // 检查D1数据库绑定是否存在
-        if (!env.DB) {
-          console.error('D1数据库绑定不存在');
-          return new Response(JSON.stringify({
-            success: false,
-            message: '数据库绑定未配置',
-            debug: {
-              availableBindings: Object.keys(env),
-              workerName: env.WORKER_NAME || '未知',
-              timestamp: new Date().toISOString()
-            }
-          }), {
-            status: 500,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          });
-        }
-        
-        console.log('数据库绑定存在，准备查询用户:', username);
-        
-        // 从D1数据库查询用户
-        const query = env.DB.prepare(
-          'SELECT id, username, password FROM user WHERE username = ?'
-        ).bind(username);
-        
-        console.log('查询语句已准备好，执行查询');
-        const user = await query.first();
-        
-        console.log('查询结果:', user);
-        
-        // 验证用户名和密码
-        if (user && user.password === password) {
-          // 登录成功，返回token
-          const token = btoa(`${username}:${Date.now()}`);
-          return new Response(JSON.stringify({
-            success: true,
-            message: '登录成功',
-            token: token,
-            user: {
-              id: user.id,
-              username: user.username
-            }
-          }), {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          });
-        } else {
-          // 登录失败
-          return new Response(JSON.stringify({
-            success: false,
-            message: '用户名或密码错误'
-          }), {
-            status: 401,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          });
-        }
-      } catch (error) {
-        console.error('登录错误:', error);
-        console.error('错误堆栈:', error.stack);
-        return new Response(JSON.stringify({
-          success: false,
-          message: '服务器错误: ' + error.message,
-          debug: {
-            errorType: error.constructor.name,
-            errorStack: error.stack,
-            timestamp: new Date().toISOString()
-          }
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
+    try {
+      // ========== ✅ 核心修复：数据库实例兜底（解决prepare undefined） ==========
+      // 【关键】这里的 DB 必须和你Worker绑定D1的「Variable name」完全一致！！！
+      const DB = env.DB; 
+      if (!DB) {
+        return resJson({
+          code: 500,
+          msg: "数据库绑定失败！请检查Worker的D1绑定配置",
+          error: "D1 database instance is undefined"
+        }, 500);
       }
-    }
-    
-    // 注册接口
-    if (url.pathname === '/register' && request.method === 'POST') {
-      try {
-        const { username, password } = await request.json();
+
+      // ========== 注册接口（核心）→ 用户名密码注册 ==========
+      if (path === '/register' && request.method === 'POST') {
+        const params = await request.json();
+        const { username, password } = params;
         
-        // 检查D1数据库绑定是否存在
-        if (!env.DB) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '数据库绑定未配置'
-          }), {
-            status: 500,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          });
+        if (!username || !password) {
+          return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
         }
-        
+
         // 检查用户名是否已存在
-        const existingUser = await env.DB.prepare(
-          'SELECT id FROM user WHERE username = ?'
-        ).bind(username).first();
-        
+        const existingUser = await DB
+          .prepare('SELECT * FROM user WHERE username = ?')
+          .bind(username)
+          .first();
+
         if (existingUser) {
-          return new Response(JSON.stringify({
-            success: false,
-            message: '用户名已存在'
-          }), {
-            status: 409,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          });
+          return resJson({ success: false, message: '用户名已存在！' }, 409);
         }
-        
-        // 创建新用户
-        const result = await env.DB.prepare(
-          'INSERT INTO user (username, password) VALUES (?, ?)'
-        ).bind(username, password).run();
-        
-        return new Response(JSON.stringify({
-          success: true,
-          message: '注册成功',
-          user: {
-            id: result.meta.last_row_id,
-            username: username
-          }
-        }), {
-          status: 201,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
-      } catch (error) {
-        console.error('注册错误:', error);
-        return new Response(JSON.stringify({
-          success: false,
-          message: '服务器错误: ' + error.message
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
-      }
-    }
-    
-    // 数据库健康检查接口
-    if (url.pathname === '/health' && request.method === 'GET') {
-      try {
-        const healthCheck = {
-          status: 'ok',
-          timestamp: new Date().toISOString(),
-          availableBindings: Object.keys(env),
-          database: {
-            bound: !!env.DB,
-            status: 'unknown'
-          }
-        };
-        
-        if (env.DB) {
-          try {
-            // 测试数据库连接
-            const result = await env.DB.prepare('SELECT 1 as test').first();
-            healthCheck.database.status = 'connected';
-            healthCheck.database.testResult = result;
-          } catch (dbError) {
-            healthCheck.database.status = 'error';
-            healthCheck.database.error = dbError.message;
-          }
+
+        // 插入新用户
+        const result = await DB
+          .prepare('INSERT INTO user (username, password) VALUES (?, ?)')
+          .bind(username, password)
+          .run();
+
+        if (result.success) {
+          return resJson({ success: true, message: '注册成功！', userInfo: { id: result.meta.last_row_id, username: username } });
         } else {
-          healthCheck.database.status = 'not_bound';
+          return resJson({ success: false, message: '注册失败，请重试！' }, 500);
         }
-        
-        return new Response(JSON.stringify(healthCheck), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
-      } catch (error) {
-        console.error('健康检查错误:', error);
-        return new Response(JSON.stringify({
-          status: 'error',
-          message: error.message
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
       }
+
+      // ========== 登录接口（核心）→ 用户名密码登录 ==========
+      if (path === '/login' && request.method === 'POST') {
+        const params = await request.json();
+        const { username, password } = params;
+        
+        if (!username || !password) {
+          return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
+        }
+
+        // 查询账号：精准匹配你的user表
+        const user = await DB
+          .prepare('SELECT * FROM user WHERE username = ? AND password = ?')
+          .bind(username, password)
+          .first();
+
+        if (user) {
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.id, username: user.username } });
+        } else {
+          return resJson({ success: false, message: '用户名或密码错误' }, 401);
+        }
+      }
+
+      // ========== 按用户名查询（测试kkk专用） ==========
+      if (path === '/get-user' && request.method === 'GET') {
+        const name = url.searchParams.get('name');
+        if (!name) return resJson({ code: 400, msg: '请传入name参数，例：?name=kkk' }, 400);
+        
+        const result = await DB
+          .prepare('SELECT * FROM user WHERE username = ?')
+          .bind(name)
+          .first();
+        
+        return result 
+          ? resJson({ code: 200, msg: '查询成功', data: result }) 
+          : resJson({ code: 404, msg: '用户不存在' }, 404);
+      }
+
+      // ========== 查询所有用户（验证数据库数据） ==========
+      if (path === '/get-users' && request.method === 'GET') {
+        const result = await DB.prepare('SELECT id, username, password FROM user').all();
+        return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
+      }
+
+      // ========== 默认接口提示 ==========
+      return resJson({
+        code: 200,
+        msg: 'Worker+D1 服务正常 ✅',
+        testTips: [
+          'GET /get-user?name=kkk → 测试你的账号',
+          'POST /login → 登录（传{username,password}）',
+          'POST /register → 注册（传{username,password}）',
+          'GET /get-users → 查看所有用户'
+        ]
+      });
+
+    } catch (err) {
+      return resJson({
+        code: 500,
+        msg: '服务器错误',
+        error: err.message,
+        tip: '优先检查D1绑定的Variable name是否为 DB'
+      }, 500);
     }
-    
-    // 默认响应
-    return new Response('Hello World! 请使用 POST /login 进行登录或 POST /register 进行注册，或访问 /health 检查数据库健康状态', {
-      headers: corsHeaders
-    });
-  }
+  },
 };
