@@ -66,15 +66,53 @@ class AIChatInterface {
             }
 
             /* 聊天窗口头部 */
-            #ai-chat-header {
-                padding: 15px 20px;
-                border-radius: 20px 20px 0 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
+        #ai-chat-header {
+            padding: 15px 20px;
+            border-radius: 20px 20px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* API设置按钮样式 */
+        .api-toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-right: 15px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .api-toggle-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* 解释按钮样式 */
+        .explain-btn {
+            background: rgba(0, 180, 255, 0.8);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .explain-btn:hover {
+            background: rgba(0, 180, 255, 1);
+            box-shadow: 0 2px 4px rgba(0, 180, 255, 0.3);
+        }
 
             #ai-chat-header h3 {
                 margin: 0;
@@ -211,6 +249,23 @@ class AIChatInterface {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
             }
+            
+            /* 解释按钮样式 */
+            #ai-explain-question {
+                padding: 8px;
+                border: none;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            }
+            
+            #ai-explain-question:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+            }
 
             /* 加载动画 */
             .ai-loading {
@@ -261,16 +316,20 @@ class AIChatInterface {
         this.chatWindow.innerHTML = `
             <div id="ai-chat-header">
                 <h3>AI助手</h3>
+                <button id="ai-api-toggle" class="api-toggle-btn" title="API设置"><i class="fas fa-cog"></i></button>
                 <button id="ai-chat-close"><i class="fas fa-times"></i></button>
             </div>
-            <div id="ai-api-settings">
-                <input type="text" id="ai-api-key" placeholder="请输入Gemini API Key" />
-                <input type="text" id="ai-api-base-url" placeholder="API Base URL (可选)" />
+            <div id="ai-api-settings" style="display: none;">
+                <div id="ai-api-fields" style="display: block;">
+                    <input type="text" id="ai-api-key" placeholder="请输入Gemini API Key" />
+                    <input type="text" id="ai-api-base-url" placeholder="API Base URL (可选)" />
+                </div>
             </div>
             <div id="ai-chat-messages"></div>
             <div id="ai-chat-input-area">
                 <textarea id="ai-chat-input" placeholder="输入您的问题..."></textarea>
-                <button id="ai-chat-send">发送</button>
+        <button id="ai-chat-send">发送</button>
+        <button id="ai-explain-question" class="explain-btn" title="详细解释当前题目">📚 解释</button>
             </div>
         `;
         document.body.appendChild(this.chatWindow);
@@ -295,6 +354,26 @@ class AIChatInterface {
             this.apiBaseUrl = e.target.value;
             localStorage.setItem('geminiApiBaseUrl', this.apiBaseUrl);
         });
+
+        // API设置切换
+        const apiToggle = this.chatWindow.querySelector('#ai-api-toggle');
+        const apiSettings = this.chatWindow.querySelector('#ai-api-settings');
+        const apiFields = this.chatWindow.querySelector('#ai-api-fields');
+        let apiSettingsVisible = false;
+        apiToggle.addEventListener('click', () => {
+            if (apiSettingsVisible) {
+                apiSettings.style.display = 'none';
+                apiToggle.innerHTML = '<i class="fas fa-cog"></i>';
+            } else {
+                apiSettings.style.display = 'block';
+                apiToggle.innerHTML = '<i class="fas fa-cog"></i>';
+            }
+            apiSettingsVisible = !apiSettingsVisible;
+        });
+
+        // 解释当前题目按钮
+        const explainBtn = this.chatWindow.querySelector('#ai-explain-question');
+        explainBtn.addEventListener('click', () => this.explainCurrentQuestion());
     }
 
     loadApiKey() {
@@ -384,6 +463,72 @@ class AIChatInterface {
         this.addMessage('bot', `⚠️ ${message}`);
     }
 
+    // 详细解释当前题目
+    async explainCurrentQuestion() {
+        // 检查是否有当前题目
+        const currentQuestion = this.getCurrentQuestion();
+        if (!currentQuestion) {
+            // 如果没有找到当前题目，显示提示消息
+            this.addMessage('bot', '⚠️ 没有找到当前题目');
+            return;
+        }
+        
+        if (!this.apiKey) {
+            this.showError('请先输入Gemini API Key');
+            return;
+        }
+        
+        // 构建解释请求消息
+        const explainMessage = `请详细解释以下题目：\n\n${currentQuestion.question}\n\n选项：\n${currentQuestion.options.map((option, index) => `${String.fromCharCode(65 + index)}. ${option}`).join('\n')}\n\n正确答案：${String.fromCharCode(65 + currentQuestion.correctAnswer)}`;
+        
+        // 添加请求消息
+        this.addMessage('user', explainMessage);
+        
+        // 显示加载状态
+        const loadingMessage = this.addLoadingMessage();
+        
+        try {
+            const response = await this.callGeminiAPI(explainMessage);
+            
+            // 移除加载状态
+            loadingMessage.remove();
+            
+            // 添加AI解释
+            this.addMessage('bot', response);
+        } catch (error) {
+            // 移除加载状态
+            loadingMessage.remove();
+            this.showError(error.message || '解释请求失败');
+        }
+    }
+    
+    // 获取当前题目（需要根据实际页面结构调整）
+    getCurrentQuestion() {
+        try {
+            // 这里需要根据实际页面结构来获取当前题目
+            // 假设题目在id为question-text的元素中
+            const questionText = document.getElementById('question-text');
+            if (!questionText) return null;
+            
+            // 假设选项在class为option的元素中
+            const optionElements = document.querySelectorAll('.option');
+            const options = Array.from(optionElements).map(opt => opt.textContent.trim());
+            
+            // 假设正确答案存储在某个元素的属性中
+            // 这里需要根据实际情况调整
+            const correctAnswer = 0; // 临时默认值
+            
+            return {
+                question: questionText.textContent.trim(),
+                options: options,
+                correctAnswer: correctAnswer
+            };
+        } catch (error) {
+            console.error('获取当前题目失败:', error);
+            return null;
+        }
+    }
+    
     async callGeminiAPI(message) {
         // 确保API基础URL格式正确
         let apiBaseUrl = this.apiBaseUrl;
@@ -393,7 +538,7 @@ class AIChatInterface {
         
         // 构造简单的消息格式，避免复杂的消息历史可能导致的格式问题
         const messages = [
-            { role: 'system', content: 'You are a helpful AI assistant.' },
+            { role: 'system', content: 'You are a helpful AI assistant. When explaining questions, please provide detailed explanations including the concept, reasoning process, and why each option is correct or incorrect.' },
             { role: 'user', content: message }
         ];
         
