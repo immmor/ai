@@ -1,8 +1,8 @@
 // 登录状态管理
 let isLoggedIn = false;
 // ✅ 固定Worker接口地址（已写死你的域名，无需修改）
-const WORKER_LOGIN_URL = "https://quiet-bread-0739.ninenine000099.workers.dev/login";
-const WORKER_REGISTER_URL = "https://quiet-bread-0739.ninenine000099.workers.dev/register";
+const WORKER_LOGIN_URL = "https://api.immmor.com/login";
+const WORKER_REGISTER_URL = "https://api.immmor.com/register";
 
 // 创建登录按钮
 function createLoginButton() {
