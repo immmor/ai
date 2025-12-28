@@ -4,7 +4,7 @@ class AIChatInterface {
         this.isOpen = false;
         this.messages = [];
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://immmor.dpdns.org/v1';
+        this.apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://mrok.dpdns.org/v1';
         this.init();
     }
 
@@ -83,7 +83,6 @@ class AIChatInterface {
             color: white;
             font-size: 18px;
             cursor: pointer;
-            margin-right: 15px;
             padding: 5px;
             border-radius: 4px;
             transition: background-color 0.2s;
@@ -317,7 +316,6 @@ class AIChatInterface {
             <div id="ai-chat-header">
                 <h3>AI助手</h3>
                 <button id="ai-api-toggle" class="api-toggle-btn" title="API设置"><i class="fas fa-cog"></i></button>
-                <button id="ai-chat-close"><i class="fas fa-times"></i></button>
             </div>
             <div id="ai-api-settings" style="display: none;">
                 <div id="ai-api-fields" style="display: block;">
@@ -329,13 +327,11 @@ class AIChatInterface {
             <div id="ai-chat-input-area">
                 <textarea id="ai-chat-input" placeholder="输入您的问题..."></textarea>
         <button id="ai-chat-send">发送</button>
-        <button id="ai-explain-question" class="explain-btn" title="详细解释当前题目">📚 解释</button>
             </div>
         `;
         document.body.appendChild(this.chatWindow);
 
         // 绑定事件
-        this.chatWindow.querySelector('#ai-chat-close').addEventListener('click', () => this.toggleChat());
         this.chatWindow.querySelector('#ai-chat-send').addEventListener('click', () => this.sendMessage());
         this.chatWindow.querySelector('#ai-chat-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
