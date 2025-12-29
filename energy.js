@@ -155,6 +155,15 @@ function setupEnergyEventListeners() {
         });
     }
     
+    // 为看广告按钮添加事件监听器
+    const watchAdBtn = document.getElementById('watch-ad-btn');
+    if (watchAdBtn) {
+        watchAdBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            watchAdForEnergy();
+        });
+    }
+    
     // 为购买会员按钮添加事件监听器
     if (buyVipBtn) {
         buyVipBtn.addEventListener('click', function(e) {
@@ -213,6 +222,12 @@ function createEnergyDisplay() {
                 <input type="text" placeholder="输入充能码" id="energy-code-input" class="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24">
                 <button id="energy-code-submit" class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap">
                     充能
+                </button>
+            </div>
+            <!-- 看广告获取能量 -->
+            <div class="mt-2">
+                <button id="watch-ad-btn" class="w-full px-3 py-1.5 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 transition-colors whitespace-nowrap flex items-center justify-center">
+                    <i class="fas fa-play-circle mr-1"></i>看广告获得5个能量
                 </button>
             </div>
             <!-- 购买会员区域 -->
@@ -390,6 +405,301 @@ function hasEnoughEnergy() {
         return true;
     }
     return energy > 0;
+}
+
+// 看广告获取能量
+function watchAdForEnergy() {
+    // 创建广告视频播放器
+    createAdVideoPlayer();
+}
+
+// 创建广告视频播放器
+function createAdVideoPlayer() {
+    // 视频URL数组，包含多个广告视频
+    const adVideos = [
+        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/1218.mp4',
+        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/jianying.mp4',
+        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/1160729.mp4'
+    ];
+    
+    // 随机选择一个视频URL
+    const randomVideoUrl = adVideos[Math.floor(Math.random() * adVideos.length)];
+    
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center';
+    overlay.style.backdropFilter = 'blur(2px)';
+    
+    // 创建播放器容器
+    const playerContainer = document.createElement('div');
+    playerContainer.className = 'bg-gray-900 rounded-lg overflow-hidden shadow-2xl w-full max-w-md';
+    
+    // 创建视频元素
+    const video = document.createElement('video');
+    video.src = randomVideoUrl;
+    video.className = 'w-full';
+    video.controls = true;
+    video.autoplay = true;
+    video.muted = false;
+    
+    // 禁用默认控制栏的进度条交互
+    video.controlsList = 'nodownload noplaybackrate';
+    
+    // 创建播放器控制栏
+    const controlBar = document.createElement('div');
+    controlBar.className = 'flex items-center justify-between p-3 bg-gray-800';
+    
+    // 播放状态显示
+    const statusText = document.createElement('div');
+    statusText.className = 'text-white text-sm font-medium';
+    statusText.textContent = '广告播放中...';
+    
+    // 关闭按钮
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded transition-colors';
+    closeBtn.textContent = '关闭';
+    
+    // 将元素组合起来
+    controlBar.appendChild(statusText);
+    controlBar.appendChild(closeBtn);
+    
+    playerContainer.appendChild(video);
+    playerContainer.appendChild(controlBar);
+    
+    overlay.appendChild(playerContainer);
+    
+    // 添加到页面
+    document.body.appendChild(overlay);
+    
+    // 禁止页面滚动
+    document.body.style.overflow = 'hidden';
+    
+    // 标记广告是否可跳过或已完成
+    let isAdSkippable = false;
+    let isAdCompleted = false;
+    
+    // 记录当前播放位置，防止快进
+    let lastCurrentTime = 0;
+    
+    // 剩余可跳过时间
+    let skipCountdown = 60;
+    
+    // 创建倒计时显示
+    const countdownText = document.createElement('span');
+    countdownText.className = 'ml-2 text-yellow-400';
+    
+    // 更新倒计时的定时器
+    let countdownTimer;
+    
+    // 监听视频元数据加载完成事件，获取视频时长
+    video.addEventListener('loadedmetadata', () => {
+        // 检查视频时长是否大于等于60秒
+        if (video.duration >= 60) {
+            // 视频足够长，显示倒计时
+            countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+            statusText.appendChild(countdownText);
+            
+            // 启动倒计时
+            countdownTimer = setInterval(() => {
+                skipCountdown--;
+                if (skipCountdown <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownText.textContent = '';
+                    isAdSkippable = true;
+                    
+                    // 更新状态和按钮
+                    statusText.textContent = '广告播放中...';
+                    closeBtn.textContent = '跳过广告';
+                    closeBtn.className = 'px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors';
+                } else {
+                    countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+                }
+            }, 1000);
+        } else {
+            // 视频不足60秒，必须完整观看
+            isAdSkippable = false;
+            closeBtn.textContent = '关闭';
+            closeBtn.className = 'px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded transition-colors';
+        }
+    });
+    
+    // 处理视频加载失败的情况
+    video.addEventListener('error', () => {
+        // 视频加载失败时，仍然需要用户观看足够时间
+        countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+        statusText.appendChild(countdownText);
+        
+        // 启动倒计时
+        countdownTimer = setInterval(() => {
+            skipCountdown--;
+            if (skipCountdown <= 0) {
+                clearInterval(countdownTimer);
+                countdownText.textContent = '';
+                isAdSkippable = true;
+                
+                // 更新状态和按钮
+                statusText.textContent = '广告播放中...';
+                closeBtn.textContent = '跳过广告';
+                closeBtn.className = 'px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors';
+            } else {
+                countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+            }
+        }, 1000);
+    });
+    
+    // 监听视频播放完成事件
+    video.addEventListener('ended', () => {
+        // 只在定时器存在时清理
+        if (countdownTimer) {
+            clearInterval(countdownTimer);
+        }
+        isAdCompleted = true;
+        isAdSkippable = true;
+        countdownText.textContent = '';
+        statusText.textContent = '广告播放完成！';
+        
+        // 更新按钮
+        closeBtn.textContent = '领取能量';
+        closeBtn.className = 'px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded transition-colors';
+        
+        // 自动给予能量
+        setTimeout(() => {
+            grantEnergyAfterAd();
+            closeAdPlayer(overlay);
+        }, 1000);
+    });
+    
+    // 监听视频时间更新，判断是否接近完成并防止快进
+    video.addEventListener('timeupdate', () => {
+        // 检测用户是否快进
+        if (video.currentTime - lastCurrentTime > 1) {
+            // 用户快进了，将播放位置重置到上次记录的位置
+            video.currentTime = lastCurrentTime;
+            showFeedback('广告不允许快进', 'warning');
+        }
+        
+        // 更新上次播放位置
+        lastCurrentTime = video.currentTime;
+        
+        if (video.duration - video.currentTime < 1) {
+            statusText.textContent = '广告即将完成...';
+            if (countdownText.parentNode) {
+                statusText.appendChild(countdownText);
+            }
+        }
+    });
+    
+    // 监听seeked事件，防止用户拖拽进度条
+    video.addEventListener('seeked', () => {
+        // 如果不是自然播放到当前位置，重置到之前的位置
+        if (Math.abs(video.currentTime - lastCurrentTime) > 0.1 && !isAdCompleted) {
+            video.currentTime = lastCurrentTime;
+            showFeedback('广告不允许快进或跳转', 'warning');
+        }
+    });
+    
+    // 关闭按钮点击事件
+    closeBtn.addEventListener('click', () => {
+        // 只在定时器存在时清理
+        if (countdownTimer) {
+            clearInterval(countdownTimer);
+        }
+        
+        if (isAdCompleted) {
+            // 广告播放完成，给予能量
+            grantEnergyAfterAd();
+        } else if (isAdSkippable) {
+            // 已过可跳过时间，允许跳过并给予能量
+            grantEnergyAfterAd();
+        } else {
+            // 还未到可跳过时间或视频未播放完成，提前退出
+            showFeedback('您已提前退出广告，无法获得能量', 'warning');
+        }
+        
+        closeAdPlayer(overlay);
+    });
+    
+    // 移除点击遮罩层关闭功能，用户只能通过按钮关闭广告
+    // 移除ESC键关闭功能，用户只能通过按钮关闭广告
+}
+
+// 关闭广告播放器
+function closeAdPlayer(overlay) {
+    // 恢复页面滚动
+    document.body.style.overflow = '';
+    
+    // 移除播放器
+    if (document.body.contains(overlay)) {
+        document.body.removeChild(overlay);
+    }
+}
+
+// 广告播放完成后给予能量
+function grantEnergyAfterAd() {
+    // 增加5点能量
+    window.energy = energy = Math.min(energy + 5, MAX_ENERGY);
+    
+    // 更新UI显示
+    if (document.getElementById('energy-count')) {
+        document.getElementById('energy-count').textContent = energy;
+    }
+    
+    // 更新主界面进度条
+    const energyProgressBar = document.getElementById('energy-progress-bar');
+    if (energyProgressBar) {
+        energyProgressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
+    }
+    
+    saveEnergy();
+    showFeedback('广告播放完成！获得5点能量', 'success');
+    
+    // 显示能量获得效果
+    showEnergyGainEffect(5);
+    
+    // 播放能量获取音效
+    playEnergyGainSound();
+}
+
+// 显示能量获得效果
+function showEnergyGainEffect(amount) {
+    // 创建能量获得效果元素
+    const effect = document.createElement('div');
+    effect.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl font-bold text-yellow-500 z-50';
+    effect.textContent = `+${amount} 能量`;
+    effect.style.pointerEvents = 'none';
+    effect.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.7)';
+    
+    // 添加到页面
+    document.body.appendChild(effect);
+    
+    // 动画效果
+    effect.animate([
+        { opacity: 0, transform: 'translate(-50%, -50%) scale(0.5)' },
+        { opacity: 1, transform: 'translate(-50%, -70%) scale(1.2)' },
+        { opacity: 0, transform: 'translate(-50%, -100%) scale(1)' }
+    ], {
+        duration: 1500,
+        easing: 'ease-out'
+    }).onfinish = () => {
+        // 动画结束后移除元素
+        document.body.removeChild(effect);
+    };
+}
+
+// 播放能量获取音效
+function playEnergyGainSound() {
+    // 这里可以添加实际的音效播放逻辑
+    // 例如使用HTML5 Audio API播放音效
+    try {
+        // 创建音频元素
+        const audio = new Audio('/ai/audio/energy-gain.mp3'); // 假设音效文件路径
+        audio.volume = 0.5; // 设置音量
+        audio.play().catch(error => {
+            console.log('无法自动播放音效，需要用户交互后才能播放');
+        });
+    } catch (error) {
+        console.error('播放音效失败:', error);
+    }
 }
 
 // 太阳掉落动画系统
