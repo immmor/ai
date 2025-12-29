@@ -201,7 +201,7 @@ class WrongQuestions {
                     <h3 class="text-lg font-bold text-white flex items-center justify-between">
                         <span>
                             <i class="fas fa-book mr-2"></i>
-                            错题本 (${wrongQuestions.length})
+                            错题笔记 (${wrongQuestions.length})
                         </span>
                         <button onclick="this.closest('.fixed').remove()" class="text-white hover:text-gray-200">
                             <i class="fas fa-times"></i>
