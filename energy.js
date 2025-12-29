@@ -548,7 +548,7 @@ function updateEnergyDisplay() {
             energyCount.classList.add('animate-bounce-in');
             // 更新能量值
             if (isVip) {
-                energyCount.textContent = '♾️';
+                energyCount.textContent = 'VIP';
             } else {
                 energyCount.textContent = energy;
             }
@@ -567,7 +567,7 @@ function updateEnergyDisplay() {
             const titleElement = tooltip.querySelector('.font-medium');
             if (titleElement) {
                 if (isVip) {
-                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：∞`;
+                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：VIP`;
                 } else {
                     titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
                 }
