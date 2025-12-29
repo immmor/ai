@@ -447,29 +447,6 @@ function createAdVideoPlayer() {
     video.autoplay = true;
     video.muted = false;
     
-    // 初始化视频缓存功能
-    initVideoCache().then(() => {
-        // 检查本地是否有缓存的视频
-        getCachedVideo(randomVideoUrl).then(cachedUrl => {
-            if (cachedUrl) {
-                // 使用缓存的视频
-                video.src = cachedUrl;
-            } else {
-                // 从服务器获取视频
-                video.src = randomVideoUrl;
-                
-                // 缓存视频
-                cacheVideo(randomVideoUrl);
-            }
-        }).catch(error => {
-            console.error('视频缓存操作失败:', error);
-            video.src = randomVideoUrl;
-        });
-    }).catch(error => {
-        console.error('视频缓存初始化失败:', error);
-        video.src = randomVideoUrl;
-    });
-    
     // 禁用默认控制栏的进度条交互
     video.controlsList = 'nodownload noplaybackrate';
     
@@ -519,19 +496,14 @@ function createAdVideoPlayer() {
     // 更新倒计时的定时器
     let countdownTimer;
     
-    // 监听视频元数据加载完成事件，获取视频时长
-    video.addEventListener('loadedmetadata', () => {
-        // 检查视频时长是否大于等于60秒
-        if (video.duration >= 60) {
-            // 视频足够长，显示倒计时
-            countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
-            statusText.appendChild(countdownText);
-            
-            // 启动倒计时
+    // 启动倒计时的函数
+    function startCountdown() {
+        if (!countdownTimer && skipCountdown > 0) {
             countdownTimer = setInterval(() => {
                 skipCountdown--;
                 if (skipCountdown <= 0) {
                     clearInterval(countdownTimer);
+                    countdownTimer = null;
                     countdownText.textContent = '';
                     isAdSkippable = true;
                     
@@ -543,36 +515,91 @@ function createAdVideoPlayer() {
                     countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
                 }
             }, 1000);
-        } else {
-            // 视频不足60秒，必须完整观看
-            isAdSkippable = false;
-            closeBtn.textContent = '关闭';
-            closeBtn.className = 'px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded transition-colors';
         }
-    });
+    }
     
-    // 处理视频加载失败的情况
-    video.addEventListener('error', () => {
-        // 视频加载失败时，仍然需要用户观看足够时间
-        countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
-        statusText.appendChild(countdownText);
-        
-        // 启动倒计时
-        countdownTimer = setInterval(() => {
-            skipCountdown--;
-            if (skipCountdown <= 0) {
-                clearInterval(countdownTimer);
-                countdownText.textContent = '';
-                isAdSkippable = true;
-                
-                // 更新状态和按钮
-                statusText.textContent = '广告播放中...';
-                closeBtn.textContent = '跳过广告';
-                closeBtn.className = 'px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition-colors';
-            } else {
+    // 设置视频事件监听器
+    function setupVideoEventListeners() {
+        // 监听视频元数据加载完成事件，获取视频时长
+        video.addEventListener('loadedmetadata', () => {
+            // 检查视频时长是否大于等于60秒
+            if (video.duration >= 60) {
+                // 视频足够长，显示倒计时
                 countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+                statusText.appendChild(countdownText);
+                
+                // 启动倒计时（只有在视频播放时才开始）
+                if (!video.paused) {
+                    startCountdown();
+                }
+            } else {
+                // 视频不足60秒，必须完整观看
+                isAdSkippable = false;
+                closeBtn.textContent = '关闭';
+                closeBtn.className = 'px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded transition-colors';
             }
-        }, 1000);
+        });
+        
+        // 处理视频加载失败的情况
+        video.addEventListener('error', () => {
+            // 视频加载失败时，仍然需要用户观看足够时间
+            countdownText.textContent = `(${skipCountdown}秒后可跳过)`;
+            statusText.appendChild(countdownText);
+            
+            // 启动倒计时
+            startCountdown();
+        });
+        
+        // 监听视频暂停事件，暂停倒计时
+        video.addEventListener('pause', () => {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+        });
+        
+        // 监听视频播放事件，恢复倒计时
+        video.addEventListener('play', () => {
+            // 只有当视频时长足够且倒计时未结束时才恢复
+            if (video.duration >= 60 && skipCountdown > 0) {
+                startCountdown();
+            }
+        });
+    }
+    
+    // 初始化视频缓存功能
+    initVideoCache().then(() => {
+        // 检查本地是否有缓存的视频
+        getCachedVideo(randomVideoUrl).then(cachedUrl => {
+            // 确保在设置视频src之前已经添加了事件监听器
+            setupVideoEventListeners();
+            
+            if (cachedUrl) {
+                // 使用缓存的视频
+                video.src = cachedUrl;
+            } else {
+                // 从服务器获取视频
+                video.src = randomVideoUrl;
+                
+                // 缓存视频
+                cacheVideo(randomVideoUrl);
+            }
+            
+            // 强制加载视频（解决某些浏览器中事件不触发的问题）
+            video.load();
+        }).catch(error => {
+            console.error('视频缓存操作失败:', error);
+            // 确保在设置视频src之前已经添加了事件监听器
+            setupVideoEventListeners();
+            video.src = randomVideoUrl;
+            video.load();
+        });
+    }).catch(error => {
+        console.error('视频缓存初始化失败:', error);
+        // 确保在设置视频src之前已经添加了事件监听器
+        setupVideoEventListeners();
+        video.src = randomVideoUrl;
+        video.load();
     });
     
     // 监听视频播放完成事件
