@@ -260,7 +260,7 @@ function showUserMenu() {
     if (menu) return menu.classList.toggle('hidden');
     menu = document.createElement('div');
     menu.id = 'user-menu';
-    menu.className = 'absolute top-full -right-1 mt-2 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-50';
+    menu.className = 'absolute top-full -right-1 mt-2.5 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-50';
     
     // 添加用户名显示
     const usernameDiv = document.createElement('div');
