@@ -177,6 +177,24 @@ function setupEnergyEventListeners() {
             buyVip();
         });
     }
+    
+    // 为支付宝购买按钮添加事件监听器
+    const alipayBtn = document.getElementById('alipay-btn');
+    if (alipayBtn) {
+        alipayBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            showPaymentPopup('alipay');
+        });
+    }
+    
+    // 为微信购买按钮添加事件监听器
+    const wechatBtn = document.getElementById('wechat-btn');
+    if (wechatBtn) {
+        wechatBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            showPaymentPopup('weixin');
+        });
+    }
 }
 
 // 更新会员状态显示
@@ -199,6 +217,251 @@ function updateVipStatusDisplay() {
 function buyVip() {
     // 调用支付函数，第一个参数是TRON钱包地址
     pay('TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV', VIP_MONTHLY_PRICE, 'usdt');
+}
+
+// 生成随机订单号
+function generateOrderNumber() {
+    const randomNum = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+    return `immmor-${randomNum}`;
+}
+
+// 复制订单号
+function copyOrderNumber(orderNumber) {
+    navigator.clipboard.writeText(orderNumber).then(() => {
+        showFeedback('订单号已复制到剪贴板', 'success');
+    }).catch(err => {
+        console.error('复制失败:', err);
+        showFeedback('复制失败，请手动复制', 'error');
+    });
+}
+
+// 显示支付弹窗
+function showPaymentPopup(paymentType) {
+    // 检查是否在1小时内已经点击过支付成功
+    const lastPaymentSuccess = localStorage.getItem('lastPaymentSuccessTime');
+    if (lastPaymentSuccess && Date.now() - parseInt(lastPaymentSuccess) < 3600000) {
+        showFeedback('您刚刚完成了支付，请稍后再试', 'warning');
+        return;
+    }
+    
+    // 生成订单号
+    const orderNumber = generateOrderNumber();
+    
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center';
+    overlay.style.backdropFilter = 'blur(2px)';
+    
+    // 创建弹窗容器
+    const popup = document.createElement('div');
+    popup.className = 'bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md transform transition-all duration-300 hover:shadow-3xl';
+    
+    // 弹窗标题
+    const title = document.createElement('div');
+    title.className = `px-5 py-4 border-b ${paymentType === 'alipay' ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'}`;
+    title.innerHTML = `<h3 class="text-lg font-bold text-gray-800 flex items-center">
+        <i class="${paymentType === 'alipay' ? 'fab fa-alipay text-blue-500' : 'fab fa-weixin text-green-500'} mr-2"></i>
+        ${paymentType === 'alipay' ? '支付宝支付' : '微信支付'}
+    </h3>`;
+    
+    // 弹窗内容
+    const content = document.createElement('div');
+    content.className = 'px-4 py-4';
+    
+    // 二维码区域
+    const qrCodeContainer = document.createElement('div');
+    qrCodeContainer.className = 'flex justify-center mb-4';
+    const qrCodeWrapper = document.createElement('div');
+    qrCodeWrapper.className = `bg-white p-2 rounded-lg shadow-md border ${paymentType === 'alipay' ? 'border-blue-200' : 'border-green-200'}`;
+    const qrCode = document.createElement('img');
+    qrCode.src = paymentType === 'alipay' ? 'zfb.jpg' : 'weixin.jpg';
+    qrCode.className = 'w-48 h-48 object-contain rounded-md';
+    qrCodeWrapper.appendChild(qrCode);
+    qrCodeContainer.appendChild(qrCodeWrapper);
+    
+    // 订单号区域
+    const orderContainer = document.createElement('div');
+    orderContainer.className = 'mb-4';
+    orderContainer.innerHTML = `
+        <div class="text-xs font-medium text-gray-700 mb-1.5 flex items-center">
+            <i class="fas fa-receipt mr-1.5 ${paymentType === 'alipay' ? 'text-blue-500' : 'text-green-500'}"></i>
+            订单号
+        </div>
+        <div class="flex items-center space-x-1.5">
+            <input type="text" value="${orderNumber}" readonly class="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-xs font-mono focus:ring-2 focus:ring-opacity-50 ${paymentType === 'alipay' ? 'focus:ring-blue-500' : 'focus:ring-green-500'}" id="payment-order-number">
+            <button onclick="copyOrderNumber('${orderNumber}')" class="px-3 py-2 ${paymentType === 'alipay' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'} text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                <i class="fas fa-copy mr-1"></i>复制
+            </button>
+        </div>
+    `;
+    
+    // 支付说明
+    const instruction = document.createElement('div');
+    instruction.className = `text-xs text-gray-500 mb-4 p-2 rounded-lg ${paymentType === 'alipay' ? 'bg-blue-50 border border-blue-100' : 'bg-green-50 border border-green-100'}`;
+    instruction.innerHTML = `
+        <div class="font-medium text-gray-700">支付说明：</div>
+        <ul class="list-disc list-inside text-xs space-y-1">
+            <li>请扫码支付10元</li>
+            <li>备注订单号</li>
+            <li>完成后点击支付成功</li>
+        </ul>
+    `;
+    
+    // 支付成功按钮（初始置灰）
+    const successBtn = document.createElement('button');
+    successBtn.className = 'w-full px-4 py-2.5 bg-gray-300 text-white text-sm font-medium rounded-lg cursor-not-allowed mb-2 transition-all duration-200 shadow-sm';
+    successBtn.textContent = '支付成功 (30s)';
+    successBtn.disabled = true;
+    
+    // 关闭按钮
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'w-full px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm';
+    closeBtn.textContent = '关闭';
+    
+    // 组合弹窗内容
+    content.appendChild(qrCodeContainer);
+    content.appendChild(orderContainer);
+    content.appendChild(instruction);
+    content.appendChild(successBtn);
+    content.appendChild(closeBtn);
+    
+    // 组合弹窗
+    popup.appendChild(title);
+    popup.appendChild(content);
+    overlay.appendChild(popup);
+    
+    // 添加到页面
+    document.body.appendChild(overlay);
+    
+    // 禁止页面滚动
+    document.body.style.overflow = 'hidden';
+    
+    // 30秒倒计时
+    let countdown = 30;
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            successBtn.className = `w-full px-4 py-2.5 ${paymentType === 'alipay' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'} text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 mb-2`;
+            successBtn.textContent = '支付成功';
+            successBtn.disabled = false;
+        } else {
+            successBtn.textContent = `支付成功 (${countdown}s)`;
+        }
+    }, 1000);
+    
+    // 支付成功按钮点击事件
+    successBtn.addEventListener('click', () => {
+        // 先关闭支付界面
+        clearInterval(timer);
+        document.body.style.overflow = 'auto';
+        document.body.removeChild(overlay);
+        
+        // 再显示确认弹窗
+        showPaymentConfirmPopup(orderNumber);
+    });
+    
+    // 关闭按钮点击事件
+    closeBtn.addEventListener('click', () => {
+        clearInterval(timer);
+        document.body.style.overflow = 'auto';
+        document.body.removeChild(overlay);
+    });
+    
+    // 点击遮罩层关闭
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            clearInterval(timer);
+            document.body.style.overflow = 'auto';
+            document.body.removeChild(overlay);
+        }
+    });
+}
+
+// 显示支付确认弹窗
+function showPaymentConfirmPopup(orderNumber) {
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center';
+    overlay.style.backdropFilter = 'blur(2px)';
+    
+    // 创建弹窗容器
+    const popup = document.createElement('div');
+    popup.className = 'bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md transform transition-all duration-300 hover:shadow-3xl';
+    
+    // 弹窗标题
+    const title = document.createElement('div');
+    title.className = 'bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-3 border-b border-purple-100';
+    title.innerHTML = '<h3 class="text-md font-bold text-gray-800 flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>支付确认</h3>';
+    
+    // 弹窗内容
+    const content = document.createElement('div');
+    content.className = 'px-4 py-4';
+    content.innerHTML = `
+        <p class="text-gray-700 mb-4 text-center font-medium">请确认您已经完成以下操作：</p>
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4">
+            <ul class="list-disc list-inside text-gray-600 space-y-1.5">
+                <li class="flex items-start">
+                    <i class="fas fa-circle-check text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                    <span>完成了转账支付</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-circle-check text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                    <span>在转账备注中填写了订单号：<span class="font-mono text-blue-600 bg-white px-1.5 py-0.5 rounded border border-blue-200 text-sm">${orderNumber}</span></span>
+                </li>
+            </ul>
+        </div>
+    `;
+    
+    // 确认按钮
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'w-full px-4 py-2.5 bg-green-500 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:bg-green-600 mb-2';
+    confirmBtn.innerHTML = '<i class="fas fa-thumbs-up mr-1.5"></i>确认支付成功';
+    
+    // 取消按钮
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'w-full px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:bg-gray-200';
+    cancelBtn.innerHTML = '<i class="fas fa-times mr-1.5"></i>取消';
+    
+    // 组合弹窗内容
+    content.appendChild(confirmBtn);
+    content.appendChild(cancelBtn);
+    
+    // 组合弹窗
+    popup.appendChild(title);
+    popup.appendChild(content);
+    overlay.appendChild(popup);
+    
+    // 添加到页面
+    document.body.appendChild(overlay);
+    
+    // 确认按钮点击事件
+    confirmBtn.addEventListener('click', () => {
+        // 记录支付成功时间
+        localStorage.setItem('lastPaymentSuccessTime', Date.now().toString());
+        
+        // 激活会员
+        activateVip();
+        
+        // 关闭弹窗
+        document.body.style.overflow = 'auto';
+        document.body.removeChild(overlay);
+        
+        // 显示成功提示
+        showFeedback('支付成功！会员已激活', 'success');
+    });
+    
+    // 取消按钮点击事件
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    // 点击遮罩层关闭
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
 }
 
 // 创建能量显示元素
@@ -233,7 +496,7 @@ function createEnergyDisplay() {
             <!-- 看广告获取能量 -->
             <div class="mt-2">
                 <button id="watch-ad-btn" class="w-full px-3 py-1.5 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 transition-colors whitespace-nowrap flex items-center justify-center">
-                    <i class="fas fa-play-circle mr-1"></i>看广告获得5个能量
+                    <i class="fas fa-play-circle mr-1"></i>看广告得5点能量
                 </button>
             </div>
             <!-- 购买会员区域 -->
@@ -244,6 +507,15 @@ function createEnergyDisplay() {
                     </span>
                     <button id="buy-vip-btn" class="px-3 py-1.5 bg-purple-500 text-white text-sm rounded hover:bg-purple-600 transition-colors whitespace-nowrap">
                         购买
+                    </button>
+                </div>
+                <!-- 支付宝和微信购买按钮 -->
+                <div class="mt-2 flex space-x-2">
+                    <button id="alipay-btn" class="flex-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap flex items-center justify-center">
+                        <i class="fab fa-alipay mr-1"></i>支付宝
+                    </button>
+                    <button id="wechat-btn" class="flex-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors whitespace-nowrap flex items-center justify-center">
+                        <i class="fab fa-weixin mr-1"></i>微信
                     </button>
                 </div>
                 <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
@@ -275,12 +547,16 @@ function updateEnergyDisplay() {
         if (energyCount) {
             energyCount.classList.add('animate-bounce-in');
             // 更新能量值
-            energyCount.textContent = energy;
+            if (isVip) {
+                energyCount.textContent = '♾️';
+            } else {
+                energyCount.textContent = energy;
+            }
         }
         
         // 更新进度条宽度
         if (energyProgressBar) {
-            const percentage = (energy / MAX_ENERGY) * 100;
+            const percentage = isVip ? 100 : (energy / MAX_ENERGY) * 100;
             energyProgressBar.style.width = `${percentage}%`;
         }
         
@@ -290,13 +566,17 @@ function updateEnergyDisplay() {
             // 更新标题
             const titleElement = tooltip.querySelector('.font-medium');
             if (titleElement) {
-                titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
+                if (isVip) {
+                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：∞`;
+                } else {
+                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
+                }
             }
             
             // 更新提示框中的进度条
             const progressBar = tooltip.querySelector('.h-full.bg-gradient-to-r.from-amber-400.to-red-500.rounded-full');
             if (progressBar) {
-                const percentage = (energy/MAX_ENERGY) * 100;
+                const percentage = isVip ? 100 : (energy/MAX_ENERGY) * 100;
                 progressBar.style.width = `${percentage}%`;
             }
         }
