@@ -42,7 +42,7 @@ class AIChatInterface {
                 cursor: pointer;
                 box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
                 transition: all 0.3s ease;
-                z-index: 1000;
+                z-index: 49;
             }
 
             #ai-chat-button:hover {

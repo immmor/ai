@@ -1,5 +1,11 @@
 // 能量系统功能实现
 
+// 视频缓存相关常量
+const VIDEO_CACHE_DB_NAME = 'VideoCacheDB';
+const VIDEO_CACHE_STORE_NAME = 'videos';
+const VIDEO_CACHE_DB_VERSION = 1;
+let videoCacheDB = null;
+
 // 能量初始值
 let energy = 20;
 const MAX_ENERGY = 20; // 最大能量值
@@ -436,11 +442,33 @@ function createAdVideoPlayer() {
     
     // 创建视频元素
     const video = document.createElement('video');
-    video.src = randomVideoUrl;
     video.className = 'w-full';
     video.controls = true;
     video.autoplay = true;
     video.muted = false;
+    
+    // 初始化视频缓存功能
+    initVideoCache().then(() => {
+        // 检查本地是否有缓存的视频
+        getCachedVideo(randomVideoUrl).then(cachedUrl => {
+            if (cachedUrl) {
+                // 使用缓存的视频
+                video.src = cachedUrl;
+            } else {
+                // 从服务器获取视频
+                video.src = randomVideoUrl;
+                
+                // 缓存视频
+                cacheVideo(randomVideoUrl);
+            }
+        }).catch(error => {
+            console.error('视频缓存操作失败:', error);
+            video.src = randomVideoUrl;
+        });
+    }).catch(error => {
+        console.error('视频缓存初始化失败:', error);
+        video.src = randomVideoUrl;
+    });
     
     // 禁用默认控制栏的进度条交互
     video.controlsList = 'nodownload noplaybackrate';
@@ -627,6 +655,12 @@ function createAdVideoPlayer() {
 function closeAdPlayer(overlay) {
     // 恢复页面滚动
     document.body.style.overflow = '';
+    
+    // 释放Blob URL，避免内存泄漏
+    const video = overlay.querySelector('video');
+    if (video && video.src.startsWith('blob:')) {
+        URL.revokeObjectURL(video.src);
+    }
     
     // 移除播放器
     if (document.body.contains(overlay)) {
@@ -1134,3 +1168,124 @@ function updateVipStatus() {
 
 // 定期检查会员状态
 setInterval(updateVipStatus, 60000); // 每分钟检查一次
+
+// 视频缓存功能实现
+// 初始化视频缓存数据库
+function initVideoCache() {
+    return new Promise((resolve, reject) => {
+        // 如果数据库已经初始化，直接返回
+        if (videoCacheDB) {
+            resolve(videoCacheDB);
+            return;
+        }
+        
+        // 打开或创建数据库
+        const request = indexedDB.open(VIDEO_CACHE_DB_NAME, VIDEO_CACHE_DB_VERSION);
+        
+        // 数据库升级或创建
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            
+            // 创建视频存储对象
+            if (!db.objectStoreNames.contains(VIDEO_CACHE_STORE_NAME)) {
+                const videoStore = db.createObjectStore(VIDEO_CACHE_STORE_NAME, {
+                    keyPath: 'url'
+                });
+                
+                // 创建索引
+                videoStore.createIndex('url', 'url', { unique: true });
+            }
+        };
+        
+        // 数据库打开成功
+        request.onsuccess = (event) => {
+            videoCacheDB = event.target.result;
+            resolve(videoCacheDB);
+        };
+        
+        // 数据库打开失败
+        request.onerror = (event) => {
+            console.error('视频缓存数据库打开失败:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
+
+// 缓存视频
+function cacheVideo(url) {
+    if (!navigator.onLine) {
+        console.log('离线状态，无法缓存视频');
+        return;
+    }
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`网络请求失败: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // 保存到IndexedDB
+            saveVideoToCache(url, blob);
+        })
+        .catch(error => {
+            console.error('视频缓存失败:', error);
+        });
+}
+
+// 保存视频到缓存
+function saveVideoToCache(url, blob) {
+    initVideoCache().then(db => {
+        const transaction = db.transaction(VIDEO_CACHE_STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(VIDEO_CACHE_STORE_NAME);
+        
+        const videoData = {
+            url: url,
+            blob: blob,
+            timestamp: Date.now()
+        };
+        
+        const request = store.put(videoData);
+        
+        request.onsuccess = () => {
+            console.log('视频缓存成功:', url);
+        };
+        
+        request.onerror = (event) => {
+            console.error('视频保存到缓存失败:', event.target.error);
+        };
+    }).catch(error => {
+        console.error('视频缓存保存失败:', error);
+    });
+}
+
+// 获取缓存的视频
+function getCachedVideo(url) {
+    return new Promise((resolve, reject) => {
+        initVideoCache().then(db => {
+            const transaction = db.transaction(VIDEO_CACHE_STORE_NAME, 'readonly');
+            const store = transaction.objectStore(VIDEO_CACHE_STORE_NAME);
+            
+            const request = store.get(url);
+            
+            request.onsuccess = () => {
+                if (request.result) {
+                    // 创建Blob URL
+                    const blobUrl = URL.createObjectURL(request.result.blob);
+                    resolve(blobUrl);
+                } else {
+                    resolve(null);
+                }
+            };
+            
+            request.onerror = (event) => {
+                console.error('获取缓存视频失败:', event.target.error);
+                resolve(null);
+            };
+        }).catch(error => {
+            console.error('获取缓存视频失败:', error);
+            resolve(null);
+        });
+    });
+}
