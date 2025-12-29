@@ -703,9 +703,9 @@ function watchAdForEnergy() {
 function createAdVideoPlayer() {
     // 视频URL数组，包含多个广告视频
     const adVideos = [
-        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/1218.mp4',
-        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/jianying.mp4',
-        'https://pub-0d055bde8a7347e4aacb02bbdafd3236.r2.dev/sp.mp4'
+        '1218.mp4',
+        'jianying.mp4',
+        'sp.mp4'
     ];
     
     // 随机选择一个视频URL
