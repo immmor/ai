@@ -31,7 +31,7 @@ class AIChatInterface {
             #ai-chat-button {
                 position: fixed;
                 bottom: 60px;
-                right: 20px;
+                left: 20px;
                 width: 50px;
                 height: 50px;
                 border-radius: 50%;
@@ -54,7 +54,7 @@ class AIChatInterface {
             #ai-chat-window {
                 position: fixed;
                 bottom: 140px;
-                right: 20px;
+                left: 20px;
                 width: 350px;
                 max-width: calc(100vw - 40px);
                 height: 500px;
