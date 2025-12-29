@@ -50,7 +50,7 @@ class LevelStyles {
         
         this.levelConfigs = {
             1: {
-                name: '初学者',
+                name: '菜鸟',
                 headerBg: 'bg-white',
                 headerBorder: 'border-gray-200',
                 mainBg: 'bg-gray-50',
@@ -84,7 +84,7 @@ class LevelStyles {
                 description: '正在快速成长的学徒'
             },
             3: {
-                name: '熟练者',
+                name: '熟练',
                 headerBg: 'bg-gradient-to-r from-green-50 to-blue-50',
                 headerBorder: 'border-green-200',
                 mainBg: 'bg-gradient-to-br from-green-50 via-blue-50 to-purple-50',
