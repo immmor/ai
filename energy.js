@@ -718,11 +718,12 @@ function createAdVideoPlayer() {
     
     // 创建播放器容器
     const playerContainer = document.createElement('div');
-    playerContainer.className = 'bg-gray-900 rounded-lg overflow-hidden shadow-2xl w-full max-w-md';
+    playerContainer.className = 'bg-gray-900 rounded-lg overflow-hidden shadow-2xl w-full h-full';
+    playerContainer.style.maxHeight = '100vh';
     
     // 创建视频元素
     const video = document.createElement('video');
-    video.className = 'w-full';
+    video.className = 'w-full h-full object-contain';
     video.controls = true;
     video.autoplay = true;
     video.muted = false;
@@ -732,7 +733,7 @@ function createAdVideoPlayer() {
     
     // 创建播放器控制栏
     const controlBar = document.createElement('div');
-    controlBar.className = 'flex items-center justify-between p-3 bg-gray-800';
+    controlBar.className = 'flex items-center justify-between p-3 absolute top-0 left-0 right-0';
     
     // 播放状态显示
     const statusText = document.createElement('div');
