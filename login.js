@@ -19,9 +19,9 @@ function createLoginButton() {
     // 创建登录按钮
     const loginBtn = document.createElement('button');
     loginBtn.id = 'login-btn';
-    loginBtn.className = 'text-xs text-gray-500 hover:text-blue-500 flex items-center px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors';
+    loginBtn.className = 'text-xs text-gray-500 hover:text-blue-500 flex items-center rounded transition-colors';
     loginBtn.title = '登录';
-    loginBtn.innerHTML = '<span>登</span>';
+    loginBtn.innerHTML = '<i class="fas fa-user"></i>';
     buttonsContainer.appendChild(loginBtn);
 
     const questionBankMenu = document.getElementById('question-bank-menu');
@@ -249,7 +249,7 @@ function handleRegister() {
 function updateLoginButton() {
     const btn = document.getElementById('login-btn');
     if (btn) {
-        btn.innerHTML = isLoggedIn ? '<span>我</span>' : '<span>登</span>';
+        btn.innerHTML = '<i class="fas fa-user"></i>';
         btn.title = isLoggedIn ? '用户信息' : '登录';
     }
 }
