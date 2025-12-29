@@ -251,6 +251,13 @@ function updateLoginButton() {
     if (btn) {
         btn.innerHTML = '<i class="fas fa-user"></i>';
         btn.title = isLoggedIn ? '用户信息' : '登录';
+        // 根据登录状态设置不同颜色
+        btn.className = 'text-xs flex items-center rounded transition-colors';
+        if (isLoggedIn) {
+            btn.classList.add('text-green-500', 'hover:text-green-600');
+        } else {
+            btn.classList.add('text-gray-500', 'hover:text-green-500');
+        }
     }
 }
 
