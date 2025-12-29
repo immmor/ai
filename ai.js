@@ -30,7 +30,7 @@ class AIChatInterface {
             /* 浮动AI按钮 */
             #ai-chat-button {
                 position: fixed;
-                bottom: 40px;
+                bottom: 60px;
                 right: 20px;
                 width: 50px;
                 height: 50px;
