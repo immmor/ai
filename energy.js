@@ -299,7 +299,6 @@ function showPaymentPopup(paymentType) {
     const instruction = document.createElement('div');
     instruction.className = `text-xs text-gray-500 mb-4 p-2 rounded-lg ${paymentType === 'alipay' ? 'bg-blue-50 border border-blue-100' : 'bg-green-50 border border-green-100'}`;
     instruction.innerHTML = `
-        <div class="font-medium text-gray-700">支付说明：</div>
         <ul class="list-disc list-inside text-xs space-y-1">
             <li>请扫码支付10元</li>
             <li>备注订单号</li>
