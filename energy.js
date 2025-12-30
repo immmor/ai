@@ -17,6 +17,16 @@ const VIP_DURATION = 30 * 24 * 60 * 60 * 1000; // 会员有效期（毫秒）
 let isVip = false; // 当前是否为会员
 let vipExpiryTime = 0; // 会员过期时间
 
+// API配置
+const API_CONFIG = {
+    // 支付API配置
+    PAYMENT: {
+        API_URL: 'https://epayapi.wxda.net',
+        MERCHANT_ID: '1001', // 平台商户号
+        SIGN_TYPE: 'RSA' // 签名类型
+    }
+};
+
 // 获取能量元素
 let energyDisplay = null;
 let energyIcon = null;
@@ -250,6 +260,16 @@ function wechatVip() {
 // 新：提交支付请求到后端
 async function submitPayment(paymentType, amount, description) {
     try {
+        // 参数检查
+        if (!paymentType || !['alipay', 'wechat'].includes(paymentType)) {
+            throw new Error('无效的支付类型');
+        }
+        if (!amount || isNaN(amount) || amount <= 0) {
+            throw new Error('无效的支付金额');
+        }
+        if (!description) {
+            throw new Error('支付描述不能为空');
+        }
         // 生成订单号
         const orderNumber = generateOrderNumber();
         
@@ -264,7 +284,7 @@ async function submitPayment(paymentType, amount, description) {
         };
         
         // 调用后端支付接口
-        const response = await fetch('/api/pay/submit', {
+        const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/submit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -421,7 +441,7 @@ function startPaymentPolling(orderNo) {
         
         try {
             // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
-            const response = await fetch(`/api/pay/query?order_no=${orderNo}`, {
+            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/query?order_no=${orderNo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

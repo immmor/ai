@@ -118,13 +118,28 @@ export default {
         try {
           const params = await request.json();
           
-          // 调用第三方支付API
-          const paymentResponse = await fetch('https://epayapi.wxda.net/api/pay/submit', {
+          // 转换参数格式以匹配新的API要求
+          const paymentParams = {
+            p_id: '1001', // 平台商户号（根据实际情况填写）
+            type: params.type === 'alipay' ? 'alipay' : 'wechat',
+            out_trade_no: params.order_no,
+            notify_url: window.location.origin + '/api/pay/notify', // 异步通知地址
+            return_url: window.location.origin, // 页面跳转地址
+            name: params.body,
+            money: params.amount.toFixed(2),
+            param: '', // 订单备注
+            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
+            sign: '', // 签名（需要根据API提供的签名规则生成）
+            sign_type: 'RSA' // 签名类型
+          };
+          
+          // 调用新的第三方支付API
+          const paymentResponse = await fetch('http://vip.pay.wexin.oiqipay.vip/pay', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(params)
+            body: JSON.stringify(paymentParams)
           });
           
           const paymentResult = await paymentResponse.json();
@@ -150,12 +165,22 @@ export default {
             }, 400);
           }
           
-          // 调用第三方支付查询API
-          const queryResponse = await fetch(`https://epayapi.wxda.net/api/pay/query?order_no=${orderNo}`, {
-            method: 'GET',
+          // 构建查询参数（根据新API文档的要求）
+          const queryParams = {
+            p_id: '1001', // 平台商户号（根据实际情况填写）
+            out_trade_no: orderNo,
+            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
+            sign: '', // 签名（需要根据API提供的签名规则生成）
+            sign_type: 'RSA' // 签名类型
+          };
+          
+          // 调用新的第三方支付查询API
+          const queryResponse = await fetch('http://vip.pay.wexin.oiqipay.vip/query', {
+            method: 'POST', // 注意：查询接口可能也需要POST请求
             headers: {
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify(queryParams)
           });
           
           const queryResult = await queryResponse.json();
