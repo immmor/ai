@@ -113,6 +113,62 @@ export default {
         return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
       }
 
+      // ========== 支付接口（调用第三方支付API） ==========
+      if (path === '/api/pay/submit' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          
+          // 调用第三方支付API
+          const paymentResponse = await fetch('https://epayapi.wxda.net/api/pay/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+          });
+          
+          const paymentResult = await paymentResponse.json();
+          return resJson(paymentResult, paymentResponse.status);
+        } catch (err) {
+          return resJson({
+            code: 500,
+            msg: '支付请求失败',
+            error: err.message
+          }, 500);
+        }
+      }
+      
+      // ========== 支付查询接口 ==========
+      if (path === '/api/pay/query' && request.method === 'GET') {
+        try {
+          const orderNo = url.searchParams.get('order_no');
+          
+          if (!orderNo) {
+            return resJson({
+              code: 400,
+              msg: '缺少订单号参数'
+            }, 400);
+          }
+          
+          // 调用第三方支付查询API
+          const queryResponse = await fetch(`https://epayapi.wxda.net/api/pay/query?order_no=${orderNo}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          const queryResult = await queryResponse.json();
+          return resJson(queryResult, queryResponse.status);
+        } catch (err) {
+          return resJson({
+            code: 500,
+            msg: '支付查询失败',
+            error: err.message
+          }, 500);
+        }
+      }
+
       // ========== 默认接口提示 ==========
       return resJson({
         code: 200,
@@ -121,7 +177,8 @@ export default {
           'GET /get-user?name=kkk → 测试你的账号',
           'POST /login → 登录（传{username,password}）',
           'POST /register → 注册（传{username,password}）',
-          'GET /get-users → 查看所有用户'
+          'GET /get-users → 查看所有用户',
+          'POST /api/pay/submit → 调用支付接口'
         ]
       });
 

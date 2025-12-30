@@ -195,6 +195,24 @@ function setupEnergyEventListeners() {
             showPaymentPopup('weixin');
         });
     }
+    
+    // 为新的支付宝在线支付按钮添加事件监听器
+    const alipayVipBtn = document.getElementById('alipay-vip-btn');
+    if (alipayVipBtn) {
+        alipayVipBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            alipayVip();
+        });
+    }
+    
+    // 为新的微信在线支付按钮添加事件监听器
+    const wechatVipBtn = document.getElementById('wechat-vip-btn');
+    if (wechatVipBtn) {
+        wechatVipBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止关闭提示框
+            wechatVip();
+        });
+    }
 }
 
 // 更新会员状态显示
@@ -213,10 +231,220 @@ function updateVipStatusDisplay() {
     }
 }
 
-// 购买会员
+// 购买会员 - 原有TRON支付
 function buyVip() {
     // 调用支付函数，第一个参数是TRON钱包地址
     pay('TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV', VIP_MONTHLY_PRICE, 'usdt');
+}
+
+// 新：支付宝支付
+function alipayVip() {
+    submitPayment('alipay', 10.00, '会员购买');
+}
+
+// 新：微信支付
+function wechatVip() {
+    submitPayment('wechat', 10.00, '会员购买');
+}
+
+// 新：提交支付请求到后端
+async function submitPayment(paymentType, amount, description) {
+    try {
+        // 生成订单号
+        const orderNumber = generateOrderNumber();
+        
+        // 准备支付参数
+        const paymentParams = {
+            type: paymentType, // alipay 或 wechat
+            amount: amount,    // 金额
+            order_no: orderNumber, // 订单号
+            body: description, // 商品描述
+            notify_url: window.location.origin + '/api/pay/notify', // 回调地址
+            return_url: window.location.origin // 返回地址
+        };
+        
+        // 调用后端支付接口
+        const response = await fetch('/api/pay/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentParams)
+        });
+        
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+            // 处理支付响应
+            handlePaymentResponse(paymentType, result.data);
+        } else {
+            showFeedback('支付请求失败: ' + (result.msg || '未知错误'), 'error');
+        }
+    } catch (error) {
+        console.error('支付请求错误:', error);
+        showFeedback('网络错误，请稍后重试', 'error');
+    }
+}
+
+// 新：处理支付响应
+function handlePaymentResponse(paymentType, paymentData) {
+    // 根据支付类型和响应数据处理
+    if (paymentType === 'alipay') {
+        // 支付宝支付处理
+        if (paymentData.pay_url) {
+            // 如果有支付URL，直接跳转到支付页面
+            window.location.href = paymentData.pay_url;
+        } else if (paymentData.qr_code) {
+            // 如果有二维码，显示二维码支付页面
+            showDynamicPaymentPopup(paymentType, paymentData);
+        }
+    } else if (paymentType === 'wechat') {
+        // 微信支付处理
+        if (paymentData.code_url) {
+            // 微信支付通常返回code_url用于生成二维码
+            showDynamicPaymentPopup(paymentType, paymentData);
+        } else if (paymentData.pay_url) {
+            window.location.href = paymentData.pay_url;
+        }
+    }
+}
+
+// 新：显示动态支付弹窗
+function showDynamicPaymentPopup(paymentType, paymentData) {
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center';
+    overlay.style.backdropFilter = 'blur(2px)';
+    
+    // 创建弹窗容器
+    const popup = document.createElement('div');
+    popup.className = 'bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md transform transition-all duration-300 hover:shadow-3xl';
+    
+    // 弹窗标题
+    const title = document.createElement('div');
+    title.className = `px-5 py-4 border-b ${paymentType === 'alipay' ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'}`;
+    title.innerHTML = `<h3 class="text-lg font-bold text-gray-800 flex items-center">
+        <i class="${paymentType === 'alipay' ? 'fab fa-alipay text-blue-500' : 'fab fa-weixin text-green-500'} mr-2"></i>
+        ${paymentType === 'alipay' ? '支付宝在线支付' : '微信在线支付'}
+    </h3>`;
+    
+    // 弹窗内容
+    const content = document.createElement('div');
+    content.className = 'px-4 py-4';
+    
+    // 订单信息
+    const orderInfo = document.createElement('div');
+    orderInfo.className = 'mb-4 p-3 bg-gray-50 rounded-lg';
+    orderInfo.innerHTML = `
+        <div class="text-xs text-gray-600 mb-1">订单号：<span class="font-mono text-blue-600">${paymentData.order_no || generateOrderNumber()}</span></div>
+        <div class="text-xs text-gray-600">金额：<span class="font-bold text-red-600">¥${paymentData.amount || '10.00'}</span></div>
+    `;
+    
+    // 二维码区域
+    const qrCodeContainer = document.createElement('div');
+    qrCodeContainer.className = 'flex justify-center mb-4';
+    const qrCodeWrapper = document.createElement('div');
+    qrCodeWrapper.className = `bg-white p-2 rounded-lg shadow-md border ${paymentType === 'alipay' ? 'border-blue-200' : 'border-green-200'}`;
+    
+    // 创建二维码
+    const qrCode = document.createElement('img');
+    if (paymentType === 'alipay' && paymentData.qr_code) {
+        qrCode.src = paymentData.qr_code;
+    } else if (paymentType === 'wechat' && paymentData.code_url) {
+        // 微信支付需要将code_url转换为二维码
+        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentData.code_url)}`;
+    }
+    qrCode.className = 'w-48 h-48 object-contain rounded-md';
+    qrCodeWrapper.appendChild(qrCode);
+    qrCodeContainer.appendChild(qrCodeWrapper);
+    
+    // 支付提示
+    const paymentHint = document.createElement('div');
+    paymentHint.className = `text-xs text-gray-500 mb-4 p-2 rounded-lg ${paymentType === 'alipay' ? 'bg-blue-50 border border-blue-100' : 'bg-green-50 border border-green-100'}`;
+    paymentHint.innerHTML = `
+        <p class="text-center">请使用${paymentType === 'alipay' ? '支付宝' : '微信'}扫描二维码支付</p>
+    `;
+    
+    // 关闭按钮
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'w-full px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm';
+    closeBtn.textContent = '关闭';
+    
+    // 组合弹窗内容
+    content.appendChild(orderInfo);
+    content.appendChild(qrCodeContainer);
+    content.appendChild(paymentHint);
+    content.appendChild(closeBtn);
+    
+    // 组合弹窗
+    popup.appendChild(title);
+    popup.appendChild(content);
+    overlay.appendChild(popup);
+    
+    // 添加到页面
+    document.body.appendChild(overlay);
+    
+    // 禁止页面滚动
+    document.body.style.overflow = 'hidden';
+    
+    // 关闭按钮点击事件
+    closeBtn.addEventListener('click', () => {
+        document.body.style.overflow = 'auto';
+        document.body.removeChild(overlay);
+    });
+    
+    // 点击遮罩层关闭
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.style.overflow = 'auto';
+            document.body.removeChild(overlay);
+        }
+    });
+    
+    // 轮询支付状态
+    startPaymentPolling(paymentData.order_no);
+}
+
+// 新：轮询支付状态
+function startPaymentPolling(orderNo) {
+    let pollingCount = 0;
+    const maxPolling = 60; // 最多轮询60次，每次5秒，共5分钟
+    
+    const pollingInterval = setInterval(async () => {
+        pollingCount++;
+        
+        if (pollingCount > maxPolling) {
+            clearInterval(pollingInterval);
+            showFeedback('支付超时，请检查支付状态', 'warning');
+            return;
+        }
+        
+        try {
+            // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
+            const response = await fetch(`/api/pay/query?order_no=${orderNo}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.code === 200 && result.data.status === 'success') {
+                // 支付成功
+                clearInterval(pollingInterval);
+                // 激活会员
+                activateVip();
+                showFeedback('支付成功！会员已激活', 'success');
+                // 关闭所有弹窗
+                const overlays = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-80');
+                overlays.forEach(overlay => overlay.remove());
+                document.body.style.overflow = 'auto';
+            }
+        } catch (error) {
+            console.error('查询支付状态失败:', error);
+        }
+    }, 5000); // 每5秒查询一次
 }
 
 // 生成随机订单号
@@ -508,13 +736,25 @@ function createEnergyDisplay() {
                         购买
                     </button>
                 </div>
-                <!-- 支付宝和微信购买按钮 -->
-                <div class="mt-2 flex space-x-2">
+                <!-- 原有的静态支付按钮 -->
+                <div class="mt-2 text-xs text-gray-500 font-medium">静态支付（需手动备注）</div>
+                <div class="mt-1 flex space-x-2">
                     <button id="alipay-btn" class="flex-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap flex items-center justify-center">
                         <i class="fab fa-alipay mr-1"></i>支付宝
                     </button>
                     <button id="wechat-btn" class="flex-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors whitespace-nowrap flex items-center justify-center">
                         <i class="fab fa-weixin mr-1"></i>微信
+                    </button>
+                </div>
+                
+                <!-- 新的在线支付按钮 -->
+                <div class="mt-2 text-xs text-gray-500 font-medium">在线支付（自动回调）</div>
+                <div class="mt-1 flex space-x-2">
+                    <button id="alipay-vip-btn" class="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors whitespace-nowrap flex items-center justify-center">
+                        <i class="fab fa-alipay mr-1"></i>支付宝在线
+                    </button>
+                    <button id="wechat-vip-btn" class="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors whitespace-nowrap flex items-center justify-center">
+                        <i class="fab fa-weixin mr-1"></i>微信在线
                     </button>
                 </div>
                 <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
