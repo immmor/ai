@@ -134,7 +134,7 @@ export default {
           };
           
           // 调用新的第三方支付API
-          const paymentResponse = await fetch('http://vip.pay.wexin.oiqipay.vip/pay', {
+          const paymentResponse = await fetch('https://epayapi.wxda.net/api/pay/submit', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -175,7 +175,7 @@ export default {
           };
           
           // 调用新的第三方支付查询API
-          const queryResponse = await fetch('http://vip.pay.wexin.oiqipay.vip/query', {
+          const queryResponse = await fetch('https://epayapi.wxda.net/query', {
             method: 'POST', // 注意：查询接口可能也需要POST请求
             headers: {
               'Content-Type': 'application/json'

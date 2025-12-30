@@ -345,7 +345,7 @@ function showDynamicPaymentPopup(paymentType, paymentData) {
     title.className = `px-5 py-4 border-b ${paymentType === 'alipay' ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'}`;
     title.innerHTML = `<h3 class="text-lg font-bold text-gray-800 flex items-center">
         <i class="${paymentType === 'alipay' ? 'fab fa-alipay text-blue-500' : 'fab fa-weixin text-green-500'} mr-2"></i>
-        ${paymentType === 'alipay' ? '支付宝在线支付' : '微信在线支付'}
+        ${paymentType === 'alipay' ? '支付宝' : '微信'}
     </h3>`;
     
     // 弹窗内容
@@ -509,7 +509,7 @@ function showPaymentPopup(paymentType) {
     title.className = `px-5 py-4 border-b ${paymentType === 'alipay' ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'}`;
     title.innerHTML = `<h3 class="text-lg font-bold text-gray-800 flex items-center">
         <i class="${paymentType === 'alipay' ? 'fab fa-alipay text-blue-500' : 'fab fa-weixin text-green-500'} mr-2"></i>
-        ${paymentType === 'alipay' ? '支付宝支付' : '微信支付'}
+        ${paymentType === 'alipay' ? '支付宝' : '微信'}
     </h3>`;
     
     // 弹窗内容
@@ -771,10 +771,10 @@ function createEnergyDisplay() {
                 <div class="mt-2 text-xs text-gray-500 font-medium">在线支付（自动回调）</div>
                 <div class="mt-1 flex space-x-2">
                     <button id="alipay-vip-btn" class="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors whitespace-nowrap flex items-center justify-center">
-                        <i class="fab fa-alipay mr-1"></i>支付宝在线
+                        <i class="fab fa-alipay mr-1"></i>支付宝
                     </button>
                     <button id="wechat-vip-btn" class="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors whitespace-nowrap flex items-center justify-center">
-                        <i class="fab fa-weixin mr-1"></i>微信在线
+                        <i class="fab fa-weixin mr-1"></i>微信
                     </button>
                 </div>
                 <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
