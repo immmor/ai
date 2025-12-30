@@ -601,7 +601,7 @@ class AIChatInterface {
         if (this.useLocalIp) {
             // 使用本地IP接口 (http://124.222.130.100:8081/chat)
             try {
-                const response = await fetch('http://124.222.130.100:8081/chat', {
+                const response = await fetch('124.222.130.100:8081/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

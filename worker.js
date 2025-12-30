@@ -218,7 +218,7 @@ export default {
           
           try {
             // 调用远程AI服务
-            const aiResponse = await fetch('http://124.222.130.100:8081/chat', {
+            const aiResponse = await fetch('124.222.130.100:8081/chat', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
