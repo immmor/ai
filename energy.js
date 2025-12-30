@@ -1738,6 +1738,12 @@ setInterval(updateVipStatus, 60000); // 每分钟检查一次
 
 // 空闲时自动下载广告视频
 function autoDownloadAdVideos() {
+    // 检查是否在本地文件系统中运行（file://协议）
+    if (window.location.protocol === 'file:') {
+        console.log('本地文件系统环境，跳过自动视频下载（避免CORS错误）');
+        return;
+    }
+    
     // 检查浏览器是否支持requestIdleCallback
     if ('requestIdleCallback' in window) {
         // 当页面空闲时执行下载
@@ -1841,6 +1847,12 @@ function initVideoCache() {
 
 // 缓存视频
 function cacheVideo(url) {
+    // 检查是否在本地文件系统中运行（file://协议）
+    if (window.location.protocol === 'file:') {
+        console.log('本地文件系统环境，跳过视频缓存（避免CORS错误）');
+        return;
+    }
+    
     if (!navigator.onLine) {
         console.log('离线状态，无法缓存视频');
         return;
