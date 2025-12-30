@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI 专业级蹲起计数器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0"></script>
+  <style>
+    /* 镜像处理：让用户像照镜子一样运动 */
+    .mirror { transform: scaleX(-1); }
+    canvas { pointer-events: none; }
+  </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center p-8">
+
+  <div class="mb-6 text-center">
+    <h1 class="text-3xl font-bold text-indigo-400">AI 蹲起监测助手</h1>
+    <p class="text-slate-400">实时画面 + 骨架叠加 + 智能计数</p>
+  </div>
+
+  <div class="relative rounded-2xl border-4 border-slate-700 overflow-hidden shadow-2xl bg-black">
+    <video id="webcam" class="mirror w-[640px] h-[480px] object-cover" autoplay playsinline></video>
+    <canvas id="output_canvas" class="mirror absolute top-0 left-0 w-[640px] h-[480px]"></canvas>
+    
+    <div class="absolute top-4 left-4 flex gap-4">
+      <div class="bg-black/70 backdrop-blur-md p-4 rounded-xl border border-white/10">
+        <p class="text-xs text-indigo-300 uppercase font-bold">次数</p>
+        <p id="counter" class="text-5xl font-black">0</p>
+      </div>
+      <div class="bg-black/70 backdrop-blur-md p-4 rounded-xl border border-white/10">
+        <p class="text-xs text-indigo-300 uppercase font-bold">当前角度</p>
+        <p id="angle_val" class="text-5xl font-black">--</p>
+      </div>
+    </div>
+
+    <div id="status_bar" class="absolute bottom-0 w-full p-3 bg-indigo-600 text-center font-bold text-xl tracking-widest transition-colors">
+      请准备...
+    </div>
+
+    <div id="loader" class="absolute inset-0 flex items-center justify-center bg-slate-900 z-50">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+        <p>正在启动高性能识别模型...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { PoseLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+
+    const video = document.getElementById("webcam");
+    const canvasElement = document.getElementById("output_canvas");
+    const canvasCtx = canvasElement.getContext("2d");
+    const counterDisplay = document.getElementById("counter");
+    const angleDisplay = document.getElementById("angle_val");
+    const statusBar = document.getElementById("status_bar");
+    const loader = document.getElementById("loader");
+
+    let poseLandmarker;
+    let count = 0;
+    let stage = "up"; 
+
+    const init = async () => {
+      const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+      poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          // 使用 heavy 版本模型提高准确度 (虽然稍慢但识别更稳)
+          modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task`,
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numPoses: 1,
+        minPoseDetectionConfidence: 0.7, // 提高检测门槛
+        minPosePresenceConfidence: 0.7,
+        minTrackingConfidence: 0.7
+      });
+      loader.classList.add("hidden");
+      startWebcam();
+    };
+
+    function startWebcam() {
+      navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then((stream) => {
+        video.srcObject = stream;
+        video.addEventListener("loadeddata", predictWebcam);
+      });
+    }
+
+    function calculateAngle(a, b, c) {
+      const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360 - angle;
+      return Math.round(angle);
+    }
+
+    async function predictWebcam() {
+      if (video.currentTime !== -1) {
+        poseLandmarker.detectForVideo(video, performance.now(), (result) => {
+          canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+          const drawingUtils = new DrawingUtils(canvasCtx);
+
+          if (result.landmarks && result.landmarks[0]) {
+            const landmarks = result.landmarks[0];
+
+            // 同时检查左右两侧，取可见度更高的一侧
+            const leftKneeScore = landmarks[13].visibility || 0;
+            const rightKneeScore = landmarks[14].visibility || 0;
+            
+            let hip, knee, ankle;
+            if (leftKneeScore > rightKneeScore) {
+              hip = landmarks[11]; knee = landmarks[13]; ankle = landmarks[15];
+            } else {
+              hip = landmarks[12]; knee = landmarks[14]; ankle = landmarks[16];
+            }
+
+            const angle = calculateAngle(hip, knee, ankle);
+            angleDisplay.innerText = angle + "°";
+
+            // 逻辑判定：下蹲小于 100 度判定为下蹲开始，大于 160 度判定为完成一次
+            if (angle < 100) {
+              if (stage === "up") {
+                stage = "down";
+                statusBar.innerText = "保持住，向上起！";
+                statusBar.classList.replace("bg-indigo-600", "bg-yellow-500");
+              }
+            }
+            if (angle > 160 && stage === "down") {
+              stage = "up";
+              count++;
+              counterDisplay.innerText = count;
+              statusBar.innerText = "太棒了！继续！";
+              statusBar.classList.replace("bg-yellow-500", "bg-green-600");
+              window.speechSynthesis.speak(new SpeechSynthesisUtterance(count)); // 语音报数
+            }
+
+            // 绘制关键点
+            drawingUtils.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, { color: 'white', lineWidth: 2 });
+            drawingUtils.drawLandmarks(landmarks, { color: '#6366f1', radius: 3 });
+          }
+        });
+      }
+      requestAnimationFrame(predictWebcam);
+    }
+
+    init();
+  </script>
+</body>
+</html>

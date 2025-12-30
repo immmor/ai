@@ -119,12 +119,13 @@ export default {
           const params = await request.json();
           
           // 转换参数格式以匹配新的API要求
+          const origin = request.url.split('/').slice(0, 3).join('/'); // 从请求URL中获取origin
           const paymentParams = {
             p_id: '1001', // 平台商户号（根据实际情况填写）
             type: params.type === 'alipay' ? 'alipay' : 'wechat',
             out_trade_no: params.order_no,
-            notify_url: window.location.origin + '/api/pay/notify', // 异步通知地址
-            return_url: window.location.origin, // 页面跳转地址
+            notify_url: origin + '/api/pay/notify', // 异步通知地址
+            return_url: origin, // 页面跳转地址
             name: params.body,
             money: params.amount.toFixed(2),
             param: '', // 订单备注
@@ -194,6 +195,100 @@ export default {
         }
       }
 
+      // ========== AI聊天接口（支持流式响应） ==========
+      if (path === '/chat' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { prompt, stream = false } = params;
+          
+          if (!prompt) {
+            return resJson({ success: false, message: '请输入prompt参数' }, 400);
+          }
+          
+          // 检查是否在Cloudflare Worker环境中
+          // Cloudflare Worker限制：
+          // 1. 不允许直接访问IP地址的HTTP请求
+          // 2. 只支持HTTPS请求
+          // 3. 某些端口可能被限制
+          
+          // 生产环境解决方案：
+          // 1. 将k.py部署到支持HTTPS的服务器
+          // 2. 使用域名而不是IP地址访问
+          // 3. 确保域名不在Cloudflare的保护范围内（避免回源问题）
+          
+          try {
+            // 调用远程AI服务
+            const aiResponse = await fetch('http://124.222.130.100:8081/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ prompt, stream }),
+              redirect: 'follow'
+            });
+            
+            // 检查响应状态
+            if (!aiResponse.ok) {
+              return resJson({
+                code: aiResponse.status,
+                msg: 'AI服务请求失败',
+                error: `HTTP ${aiResponse.status} ${aiResponse.statusText}`
+              }, aiResponse.status);
+            }
+            
+            // 获取响应内容
+            const textResult = await aiResponse.text();
+            
+            // 尝试解析JSON（如果是JSON格式）
+            try {
+              const aiResult = JSON.parse(textResult);
+              return resJson(aiResult, aiResponse.status);
+            } catch (jsonErr) {
+              // 非JSON响应，直接返回
+              return new Response(textResult, {
+                status: aiResponse.status,
+                headers: {
+                  'Access-Control-Allow-Origin': '*',
+                  'Content-Type': aiResponse.headers.get('content-type') || 'text/plain; charset=utf-8'
+                }
+              });
+            }
+          } catch (fetchErr) {
+            // 网络请求错误处理
+            console.error('Fetch error:', fetchErr);
+            
+            // 检测Cloudflare 1003错误
+            if (fetchErr.message && fetchErr.message.includes('1003')) {
+              return resJson({
+                code: 500,
+                msg: 'Cloudflare Worker 1003错误',
+                error: '不允许直接IP访问或HTTP请求',
+                solution: [
+                  '1. 将k.py部署到支持HTTPS的服务器',
+                  '2. 使用域名而不是IP地址（如：https://ai.example.com/chat）',
+                  '3. 确保域名不在Cloudflare保护范围内',
+                  '4. 或在本地环境测试（不使用Cloudflare Worker）'
+                ]
+              }, 500);
+            }
+            
+            return resJson({
+              code: 500,
+              msg: '网络请求失败',
+              error: fetchErr.message
+            }, 500);
+          }
+        } catch (err) {
+          // 其他错误处理
+          console.error('AI API Error:', err);
+          return resJson({
+            code: 500,
+            msg: 'AI接口调用失败',
+            error: err.message
+          }, 500);
+        }
+      }
+
       // ========== 默认接口提示 ==========
       return resJson({
         code: 200,
@@ -203,7 +298,8 @@ export default {
           'POST /login → 登录（传{username,password}）',
           'POST /register → 注册（传{username,password}）',
           'GET /get-users → 查看所有用户',
-          'POST /api/pay/submit → 调用支付接口'
+          'POST /api/pay/submit → 调用支付接口',
+          'POST /chat → AI聊天接口（传{prompt,stream}）'
         ]
       });
 

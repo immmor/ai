@@ -5,6 +5,7 @@ class AIChatInterface {
         this.messages = [];
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
         this.apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://mrok.dpdns.org/v1';
+        this.useLocalIp = localStorage.getItem('useLocalIp') !== 'false'; // 默认使用本地IP接口
         this.init();
     }
 
@@ -317,10 +318,42 @@ class AIChatInterface {
                 <h3>AI助手</h3>
                 <button id="ai-api-toggle" class="api-toggle-btn" title="API设置"><i class="fas fa-cog"></i></button>
             </div>
-            <div id="ai-api-settings" style="display: none;">
+            <div id="ai-api-settings" style="display: none; padding: 15px; background: rgba(255, 255, 255, 0.9); border-radius: 0 0 20px 20px;">
                 <div id="ai-api-fields" style="display: block;">
-                    <input type="text" id="ai-api-key" placeholder="请输入Gemini API Key" />
-                    <input type="text" id="ai-api-base-url" placeholder="API Base URL (可选)" />
+                    <!-- 接口选择 -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="margin-bottom: 10px; font-weight: 600; color: #333; font-size: 14px;">AI接口选择</div>
+                        
+                        <!-- 本地IP接口选项 -->
+                        <div style="margin-bottom: 8px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); display: flex; align-items: center;">
+                            <input type="radio" id="use-local-ip" name="ai-api-type" checked 
+                                   style="accent-color: #667eea; margin-right: 12px; width: auto; min-width: 16px; height: 16px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center;">
+                                    <label for="use-local-ip" style="font-size: 14px; color: #333; cursor: pointer;">
+                                        本地接口
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gemini API选项 -->
+                        <div style="padding: 10px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); display: flex; align-items: center;">
+                            <input type="radio" id="use-gemini-api" name="ai-api-type" 
+                                   style="accent-color: #667eea; margin-right: 12px; width: auto; min-width: 16px; height: 16px;">
+                            <label for="use-gemini-api" style="font-size: 14px; color: #333; cursor: pointer; flex: 1;">
+                                Gemini API
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- API设置输入框 -->
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="ai-api-key" placeholder="请输入Gemini API Key" />
+                    </div>
+                    <div>
+                        <input type="text" id="ai-api-base-url" placeholder="API Base URL (可选)" />
+                    </div>
                 </div>
             </div>
             <div id="ai-chat-messages"></div>
@@ -351,6 +384,21 @@ class AIChatInterface {
             localStorage.setItem('geminiApiBaseUrl', this.apiBaseUrl);
         });
 
+        // 接口选择保存
+        this.chatWindow.querySelector('#use-local-ip').addEventListener('change', (e) => {
+            this.useLocalIp = e.target.checked;
+            localStorage.setItem('useLocalIp', this.useLocalIp);
+            // 切换API输入字段的显示状态
+            this.toggleApiFields();
+        });
+
+        this.chatWindow.querySelector('#use-gemini-api').addEventListener('change', (e) => {
+            this.useLocalIp = !e.target.checked;
+            localStorage.setItem('useLocalIp', this.useLocalIp);
+            // 切换API输入字段的显示状态
+            this.toggleApiFields();
+        });
+
         // API设置切换
         const apiToggle = this.chatWindow.querySelector('#ai-api-toggle');
         const apiSettings = this.chatWindow.querySelector('#ai-api-settings');
@@ -375,6 +423,26 @@ class AIChatInterface {
     loadApiKey() {
         this.chatWindow.querySelector('#ai-api-key').value = this.apiKey;
         this.chatWindow.querySelector('#ai-api-base-url').value = this.apiBaseUrl;
+        // 设置接口选择状态
+        this.chatWindow.querySelector('#use-local-ip').checked = this.useLocalIp;
+        this.chatWindow.querySelector('#use-gemini-api').checked = !this.useLocalIp;
+        // 切换API输入字段的显示状态
+        this.toggleApiFields();
+    }
+
+    // 切换API输入字段的显示状态
+    toggleApiFields() {
+        const apiKeyField = this.chatWindow.querySelector('#ai-api-key');
+        const apiBaseUrlField = this.chatWindow.querySelector('#ai-api-base-url');
+        if (this.useLocalIp) {
+            // 使用本地IP接口时，隐藏API Key和Base URL输入
+            apiKeyField.style.display = 'none';
+            apiBaseUrlField.style.display = 'none';
+        } else {
+            // 使用Gemini API时，显示API Key和Base URL输入
+            apiKeyField.style.display = 'block';
+            apiBaseUrlField.style.display = 'block';
+        }
     }
 
     toggleChat() {
@@ -394,7 +462,9 @@ class AIChatInterface {
         const input = this.chatWindow.querySelector('#ai-chat-input');
         const message = input.value.trim();
         if (!message) return;
-        if (!this.apiKey) {
+        
+        // 如果不使用本地IP接口，则需要API Key
+        if (!this.useLocalIp && !this.apiKey) {
             this.showError('请先输入Gemini API Key');
             return;
         }
@@ -469,7 +539,8 @@ class AIChatInterface {
             return;
         }
         
-        if (!this.apiKey) {
+        // 如果不使用本地IP接口，则需要API Key
+        if (!this.useLocalIp && !this.apiKey) {
             this.showError('请先输入Gemini API Key');
             return;
         }
@@ -526,65 +597,99 @@ class AIChatInterface {
     }
     
     async callGeminiAPI(message) {
-        // 确保API基础URL格式正确
-        let apiBaseUrl = this.apiBaseUrl;
-        if (!apiBaseUrl.startsWith('http://') && !apiBaseUrl.startsWith('https://')) {
-            apiBaseUrl = `https://${apiBaseUrl}`;
-        }
-        
-        // 构造简单的消息格式，避免复杂的消息历史可能导致的格式问题
-        const messages = [
-            { role: 'system', content: 'You are a helpful AI assistant. When explaining questions, please provide detailed explanations including the concept, reasoning process, and why each option is correct or incorrect.' },
-            { role: 'user', content: message }
-        ];
-        
-        try {
-            const response = await fetch(`${apiBaseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: 'gemini-flash-latest',
-                    messages: messages,
-                    max_tokens: 1000,
-                    temperature: 0.7
-                })
-            });
+        // 根据用户选择的接口调用不同的API
+        if (this.useLocalIp) {
+            // 使用本地IP接口 (http://124.222.130.100:8081/chat)
+            try {
+                const response = await fetch('http://124.222.130.100:8081/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: message,
+                        stream: false
+                    })
+                });
 
-            if (!response.ok) {
-                // 尝试获取详细错误信息
-                const errorText = await response.text().catch(() => '');
-                let errorMessage = `API错误: ${response.status}`;
+                if (!response.ok) {
+                    const errorText = await response.text().catch(() => '');
+                    throw new Error(`本地API错误: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
                 
-                try {
-                    // 尝试解析JSON错误响应
-                    const errorData = JSON.parse(errorText);
-                    if (errorData.error?.message) {
-                        errorMessage = errorData.error.message;
-                    }
-                } catch (e) {
-                    // 如果不是JSON格式，使用原始错误文本
-                    if (errorText) {
-                        errorMessage += ` - ${errorText}`;
-                    }
+                // 检查响应结构
+                if (!data.response) {
+                    throw new Error('本地API响应格式不正确');
                 }
                 
-                throw new Error(errorMessage);
+                return data.response;
+            } catch (error) {
+                throw new Error(error.message || '本地API请求失败');
             }
+        } else {
+            // 使用Gemini API
+            // 确保API基础URL格式正确
+            let apiBaseUrl = this.apiBaseUrl;
+            if (!apiBaseUrl.startsWith('http://') && !apiBaseUrl.startsWith('https://')) {
+                apiBaseUrl = `https://${apiBaseUrl}`;
+            }
+            
+            // 构造简单的消息格式，避免复杂的消息历史可能导致的格式问题
+            const messages = [
+                { role: 'system', content: 'You are a helpful AI assistant. When explaining questions, please provide detailed explanations including the concept, reasoning process, and why each option is correct or incorrect.' },
+                { role: 'user', content: message }
+            ];
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gemini-flash-latest',
+                        messages: messages,
+                        max_tokens: 1000,
+                        temperature: 0.7
+                    })
+                });
 
-            const data = await response.json();
-            
-            // 检查响应结构
-            if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-                throw new Error('API响应格式不正确');
+                if (!response.ok) {
+                    // 尝试获取详细错误信息
+                    const errorText = await response.text().catch(() => '');
+                    let errorMessage = `API错误: ${response.status}`;
+                    
+                    try {
+                        // 尝试解析JSON错误响应
+                        const errorData = JSON.parse(errorText);
+                        if (errorData.error?.message) {
+                            errorMessage = errorData.error.message;
+                        }
+                    } catch (e) {
+                        // 如果不是JSON格式，使用原始错误文本
+                        if (errorText) {
+                            errorMessage += ` - ${errorText}`;
+                        }
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                
+                // 检查响应结构
+                if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+                    throw new Error('API响应格式不正确');
+                }
+                
+                return data.choices[0].message.content;
+            } catch (error) {
+                // 网络错误或其他异常
+                throw new Error(error.message || '网络请求失败');
             }
-            
-            return data.choices[0].message.content;
-        } catch (error) {
-            // 网络错误或其他异常
-            throw new Error(error.message || '网络请求失败');
         }
     }
 }
