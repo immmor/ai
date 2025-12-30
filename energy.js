@@ -952,6 +952,13 @@ function hasEnoughEnergy() {
     return energy > 0;
 }
 
+// 广告视频URL数组，包含多个广告视频
+const adVideos = [
+    '1218.mp4',
+    'jianying.mp4',
+    'sp.mp4'
+];
+
 // 看广告获取能量
 function watchAdForEnergy() {
     // 创建广告视频播放器
@@ -960,13 +967,6 @@ function watchAdForEnergy() {
 
 // 创建广告视频播放器
 function createAdVideoPlayer() {
-    // 视频URL数组，包含多个广告视频
-    const adVideos = [
-        '1218.mp4',
-        'jianying.mp4',
-        'sp.mp4'
-    ];
-    
     // 随机选择一个视频URL
     const randomVideoUrl = adVideos[Math.floor(Math.random() * adVideos.length)];
     
@@ -1735,6 +1735,67 @@ function updateVipStatus() {
 
 // 定期检查会员状态
 setInterval(updateVipStatus, 60000); // 每分钟检查一次
+
+// 空闲时自动下载广告视频
+function autoDownloadAdVideos() {
+    // 检查浏览器是否支持requestIdleCallback
+    if ('requestIdleCallback' in window) {
+        // 当页面空闲时执行下载
+        requestIdleCallback(() => {
+            console.log('开始空闲下载广告视频...');
+            
+            // 遍历所有广告视频URL
+            adVideos.forEach(videoUrl => {
+                // 检查视频是否已缓存
+                getCachedVideo(videoUrl).then(cachedUrl => {
+                    if (!cachedUrl) {
+                        // 如果未缓存，则下载并缓存
+                        console.log(`正在缓存视频: ${videoUrl}`);
+                        cacheVideo(videoUrl);
+                    } else {
+                        console.log(`视频已缓存: ${videoUrl}`);
+                    }
+                }).catch(error => {
+                    console.error(`检查视频缓存失败: ${videoUrl}`, error);
+                    // 即使检查失败，也尝试下载
+                    cacheVideo(videoUrl);
+                });
+            });
+        }, { timeout: 30000 }); // 30秒后超时
+    } else {
+        // 浏览器不支持requestIdleCallback时，使用setTimeout延迟执行
+        setTimeout(() => {
+            console.log('开始延迟下载广告视频...');
+            
+            adVideos.forEach(videoUrl => {
+                getCachedVideo(videoUrl).then(cachedUrl => {
+                    if (!cachedUrl) {
+                        console.log(`正在缓存视频: ${videoUrl}`);
+                        cacheVideo(videoUrl);
+                    }
+                });
+            });
+        }, 5000); // 页面加载5秒后执行
+    }
+}
+
+// 页面加载完成后初始化视频缓存并自动下载
+window.addEventListener('load', () => {
+    // 初始化视频缓存数据库
+    initVideoCache().then(() => {
+        console.log('视频缓存数据库初始化成功');
+        // 开始自动下载广告视频
+        autoDownloadAdVideos();
+    }).catch(error => {
+        console.error('视频缓存数据库初始化失败', error);
+    });
+});
+
+// 监听网络状态变化，当网络恢复时自动下载
+window.addEventListener('online', () => {
+    console.log('网络已恢复，开始下载广告视频...');
+    autoDownloadAdVideos();
+});
 
 // 视频缓存功能实现
 // 初始化视频缓存数据库
