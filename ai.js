@@ -599,9 +599,9 @@ class AIChatInterface {
     async callGeminiAPI(message) {
         // 根据用户选择的接口调用不同的API
         if (this.useLocalIp) {
-            // 使用本地IP接口 (https://ip.immmor.com:8081/chat)
+            // 使用本地IP接口 (http://ip.immmor.com:8081/chat)
             try {
-                const response = await fetch('https://ip.immmor.com:8081/chat', {
+                const response = await fetch('http://ip.immmor.com:8081/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
