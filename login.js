@@ -19,7 +19,7 @@ function createLoginButton() {
     // 创建登录按钮
     const loginBtn = document.createElement('button');
     loginBtn.id = 'login-btn';
-    loginBtn.className = 'text-xs text-gray-500 hover:text-blue-500 flex items-center rounded transition-colors';
+    loginBtn.className = 'text-sm text-gray-500 hover:text-blue-500 flex items-center rounded transition-colors px-1 py-0.5';
     loginBtn.title = '登录';
     loginBtn.innerHTML = '<i class="fas fa-user"></i>';
     buttonsContainer.appendChild(loginBtn);
@@ -252,7 +252,7 @@ function updateLoginButton() {
         btn.innerHTML = '<i class="fas fa-user"></i>';
         btn.title = isLoggedIn ? '用户信息' : '登录';
         // 根据登录状态设置不同颜色
-        btn.className = 'text-xs flex items-center rounded transition-colors';
+        btn.className = 'text-sm px-1 py-0.5 flex items-center rounded transition-colors';
         if (isLoggedIn) {
             btn.classList.add('text-green-500', 'hover:text-green-600');
         } else {
