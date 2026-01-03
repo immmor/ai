@@ -26,29 +26,29 @@ let questionStartTime = Date.now();
 const popupQueue = [];
 let isPopupShowing = false;
 
-// DOM元素
-const questionContainer = document.getElementById('question-container');
-const answerContainer = document.getElementById('answer-container');
-const feedbackEl = document.getElementById('feedback');
-const hintBtn = document.getElementById('hint-btn');
-const prevBtn = document.getElementById('prev-btn');
-const nextBtn = document.getElementById('next-btn');
-const progressEl = document.getElementById('progress');
-const hintModal = document.getElementById('hint-modal');
-const hintTextEl = document.getElementById('hint-text');
-const closeHintBtn = document.getElementById('close-hint');
-const answerModal = document.getElementById('answer-modal');
-const answerTextEl = document.getElementById('answer-text');
-const closeAnswerBtn = document.getElementById('close-answer');
-const answerBtn = document.getElementById('answer-btn');
-const cheerBtn = document.getElementById('cheer-btn');
-const speechBtn = document.getElementById('speech-btn');
-const particlesContainer = document.getElementById('particles-container');
-const cheerAnimation = document.getElementById('cheer-animation');
-const badgeContainer = document.getElementById('badge-container');
-const levelEl = document.getElementById('level');
-const xpEl = document.getElementById('xp');
-const xpBar = document.getElementById('xp-bar');
+// DOM元素（先声明变量，在init中初始化）
+let questionContainer;
+let answerContainer;
+let feedbackEl;
+let hintBtn;
+let prevBtn;
+let nextBtn;
+let progressEl;
+let hintModal;
+let hintTextEl;
+let closeHintBtn;
+let answerModal;
+let answerTextEl;
+let closeAnswerBtn;
+let answerBtn;
+let cheerBtn;
+let speechBtn;
+let particlesContainer;
+let cheerAnimation;
+let badgeContainer;
+let levelEl;
+let xpEl;
+let xpBar;
 
 // 全局变量跟踪当前语音播报状态
 let currentUtterance = null;
@@ -57,6 +57,48 @@ let isPaused = false;
 
 // 初始化
 function init() {
+    // 等待DOM完全加载
+    if (document.readyState === 'loading') {
+        // 初始化
+// 改为DOMContentLoaded事件触发，确保DOM完全加载后再执行
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+        return;
+    }
+    
+    // 重新获取DOM元素（防止DOM未加载完成）
+    questionContainer = document.getElementById('question-container');
+    answerContainer = document.getElementById('answer-container');
+    feedbackEl = document.getElementById('feedback');
+    hintBtn = document.getElementById('hint-btn');
+    prevBtn = document.getElementById('prev-btn');
+    nextBtn = document.getElementById('next-btn');
+    progressEl = document.getElementById('progress');
+    hintModal = document.getElementById('hint-modal');
+    hintTextEl = document.getElementById('hint-text');
+    closeHintBtn = document.getElementById('close-hint');
+    answerModal = document.getElementById('answer-modal');
+    answerTextEl = document.getElementById('answer-text');
+    closeAnswerBtn = document.getElementById('close-answer');
+    answerBtn = document.getElementById('answer-btn');
+    cheerBtn = document.getElementById('cheer-btn');
+    speechBtn = document.getElementById('speech-btn');
+    particlesContainer = document.getElementById('particles-container');
+    cheerAnimation = document.getElementById('cheer-animation');
+    badgeContainer = document.getElementById('badge-container');
+    levelEl = document.getElementById('level');
+    xpEl = document.getElementById('xp');
+    xpBar = document.getElementById('xp-bar');
+    
+    // 检查关键DOM元素是否存在
+    if (!questionContainer) {
+        console.error('Critical DOM element not found: question-container');
+        return;
+    }
+    
     initRandomQuestions();
     initEnergy();
     loadQuestion(currentRandomIndex);
