@@ -2,9 +2,8 @@
 window.addEventListener('DOMContentLoaded', function() {
   // 音乐列表
   const musicList = [
-    { title: '轻松音乐', url: 'music/mojave.mp3' },
-    // { title: '专注音乐', url: 'music/music2.mp3' },
-    { title: '放松音乐', url: 'music/ThroughThisLifeAndBeyondIt.mp3' }
+    { title: '轻松音乐', url: 'static/music/mojave.mp3' },
+    { title: '放松音乐', url: 'static/music/ThroughThisLifeAndBeyondIt.mp3' }
   ];
   
   // 随机选择初始歌曲
