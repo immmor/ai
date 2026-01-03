@@ -522,7 +522,7 @@ function showPaymentPopup(paymentType) {
     const qrCodeWrapper = document.createElement('div');
     qrCodeWrapper.className = `bg-white p-2 rounded-lg shadow-md border ${paymentType === 'alipay' ? 'border-blue-200' : 'border-green-200'}`;
     const qrCode = document.createElement('img');
-    qrCode.src = paymentType === 'alipay' ? 'zfb.jpg' : 'weixin.jpg';
+    qrCode.src = paymentType === 'alipay' ? 'static/pay/zfb.jpg' : 'static/pay/weixin.jpg';
     qrCode.className = 'w-48 h-48 object-contain rounded-md';
     qrCodeWrapper.appendChild(qrCode);
     qrCodeContainer.appendChild(qrCodeWrapper);
@@ -954,9 +954,9 @@ function hasEnoughEnergy() {
 
 // 广告视频URL数组，包含多个广告视频
 const adVideos = [
-    '1218.mp4',
-    'jianying.mp4',
-    'sp.mp4'
+    'static/ads/1218.mp4',
+    'static/ads/jianying.mp4',
+    'static/ads/sp.mp4'
 ];
 
 // 看广告获取能量

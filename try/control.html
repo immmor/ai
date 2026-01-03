@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>炫酷方向键控制小人</title>
+    <style>
+        body { 
+            margin: 0; 
+            touch-action: none; 
+            background: #1a1a2e;
+            overflow: hidden;
+        }
+        #gameArea {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+        }
+        #character {
+            width: 30px;
+            height: 30px;
+            background: #e94560;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.8);
+            transition: box-shadow 0.2s;
+        }
+        #character:hover {
+            box-shadow: 0 0 20px rgba(233, 69, 96, 1);
+        }
+
+        /* 控制区容器 - 调整布局使切换按钮在最底部 */
+        .controls-container {
+            position: fixed;
+            bottom: 0; /* 固定在最底部 */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0; /* 增加底部内边距 */
+            gap: 15px;
+        }
+
+        /* 显示/隐藏按钮 - 现在位于方向键下方，最底部位置 */
+        #toggleControls {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+            margin-top: 10px; /* 与方向键保持距离 */
+        }
+        #toggleControls:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* 方向键区域 */
+        .d-pad {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* 方向键样式 */
+        .d-pad button {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            touch-action: manipulation;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .d-pad button:active {
+            background: rgba(233, 69, 96, 0.5);
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+        }
+        .d-pad button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 方向键位置 */
+        .up { 
+            top: 0; 
+            left: 60px;
+        }
+        .down { 
+            bottom: 0; 
+            left: 60px;
+        }
+        .left { 
+            top: 60px; 
+            left: 0;
+        }
+        .right { 
+            top: 60px; 
+            right: 0;
+        }
+
+        /* 隐藏状态 */
+        .controls-hidden .d-pad {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="character"></div>
+    </div>
+
+    <!-- 控制区 - 切换按钮现在在方向键下方 -->
+    <div class="controls-container" id="controlsContainer">
+        <div class="d-pad">
+            <button class="up">↑</button>
+            <button class="down">↓</button>
+            <button class="left">←</button>
+            <button class="right">→</button>
+        </div>
+        <button id="toggleControls">隐藏键盘</button> <!-- 移动到方向键下方 -->
+    </div>
+
+    <script>
+        const character = document.getElementById('character');
+        const gameArea = document.getElementById('gameArea');
+        const controlsContainer = document.getElementById('controlsContainer');
+        const toggleButton = document.getElementById('toggleControls');
+        
+        let x = window.innerWidth / 2 - 15;
+        let y = window.innerHeight / 2 - 15;
+        const speed = 5;
+        const keys = { up: false, down: false, left: false, right: false };
+        let controlsVisible = true;
+        
+        // 动画帧更新
+        function update() {
+            if (keys.up && y > 0) y -= speed;
+            if (keys.down && y < gameArea.clientHeight - 30) y += speed;
+            if (keys.left && x > 0) x -= speed;
+            if (keys.right && x < gameArea.clientWidth - 30) x += speed;
+            
+            character.style.left = `${x}px`;
+            character.style.top = `${y}px`;
+            requestAnimationFrame(update);
+        }
+        
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if ([37,38,39,40].includes(e.keyCode)) e.preventDefault();
+            switch(e.keyCode) {
+                case 38: keys.up = true; break;
+                case 40: keys.down = true; break;
+                case 37: keys.left = true; break;
+                case 39: keys.right = true; break;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            switch(e.keyCode) {
+                case 38: keys.up = false; break;
+                case 40: keys.down = false; break;
+                case 37: keys.left = false; break;
+                case 39: keys.right = false; break;
+            }
+        });
+        
+        // 触摸控制
+        const buttons = {
+            up: document.querySelector('.up'),
+            down: document.querySelector('.down'),
+            left: document.querySelector('.left'),
+            right: document.querySelector('.right')
+        };
+        
+        Object.keys(buttons).forEach(key => {
+            buttons[key].addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[key] = true;
+            });
+            
+            buttons[key].addEventListener('touchend', () => {
+                keys[key] = false;
+            });
+            
+            // 鼠标支持
+            buttons[key].addEventListener('mousedown', () => {
+                keys[key] = true;
+            });
+            buttons[key].addEventListener('mouseup', () => {
+                keys[key] = false;
+            });
+            buttons[key].addEventListener('mouseleave', () => {
+                keys[key] = false;
+            });
+        });
+        
+        // 显示/隐藏控制按钮
+        toggleButton.addEventListener('click', () => {
+            controlsVisible = !controlsVisible;
+            if (controlsVisible) {
+                controlsContainer.classList.remove('controls-hidden');
+                toggleButton.textContent = '隐藏';
+            } else {
+                controlsContainer.classList.add('controls-hidden');
+                toggleButton.textContent = '显示';
+            }
+        });
+        
+        // 启动动画
+        update();
+    </script>
+</body>
+</html>

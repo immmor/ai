@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 登录页面样式 */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #4a5568;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #5a67d8;
+        }
+
+        /* 主页面样式 */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 250px;
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            background-color: #2a4365;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background-color: #4a5568;
+        }
+
+        .menu-item.active {
+            background-color: #667eea;
+        }
+
+        /* 主内容区域 */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-nav h1 {
+            font-size: 1.5rem;
+            color: #4a5568;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info span {
+            margin-right: 1rem;
+            color: #4a5568;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #c53030;
+        }
+
+        /* 页面内容 */
+        .page-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-info p {
+            color: #718096;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        /* 表格样式 */
+        .data-table {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            background-color: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            color: #4a5568;
+        }
+
+        .add-btn {
+            padding: 0.5rem 1rem;
+            background-color: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background-color: #38a169;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .action-btn {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn {
+            background-color: #ed8936;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #dd6b20;
+        }
+
+        .delete-btn {
+            background-color: #e53e3e;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c53030;
+        }
+
+        /* 表单模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            color: #4a5568;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #718096;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .close-btn:hover {
+            color: #4a5568;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .menu-item {
+                white-space: nowrap;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-form">
+            <h2>后台管理系统登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主页面 -->
+    <div id="mainPage" class="main-container" style="display: none;">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>后台管理</h2>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
+                <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
+                <a href="#products" class="menu-item" onclick="showPage('products')">产品管理</a>
+                <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
+                <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
+            </nav>
+        </aside>
+
+        <!-- 主内容 -->
+        <div class="content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-nav">
+                <h1 id="pageTitle">仪表盘</h1>
+                <div class="user-info">
+                    <span id="currentUser">管理员</span>
+                    <button class="logout-btn" onclick="logout()">退出登录</button>
+                </div>
+            </nav>
+
+            <!-- 页面内容 -->
+            <main class="page-content">
+                <!-- 仪表盘页面 -->
+                <div id="dashboardPage" class="page-section">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="totalUsers">1250</h3>
+                                <p>总用户数</p>
+                            </div>
+                            <div class="stat-icon">👥</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="totalProducts">320</h3>
+                                <p>总产品数</p>
+                            </div>
+                            <div class="stat-icon">📦</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="totalOrders">896</h3>
+                                <p>总订单数</p>
+                            </div>
+                            <div class="stat-icon">🛒</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="totalRevenue">¥256,890</h3>
+                                <p>总收入</p>
+                            </div>
+                            <div class="stat-icon">💰</div>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>最近订单</h3>
+                            <button class="add-btn" onclick="showOrders()">查看全部</button>
+                        </div>
+                        <table id="recentOrdersTable">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>客户</th>
+                                    <th>金额</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ORD-2026-0001</td>
+                                    <td>张三</td>
+                                    <td>¥299.00</td>
+                                    <td>已完成</td>
+                                    <td>
+                                        <button class="action-btn edit-btn">查看</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>ORD-2026-0002</td>
+                                    <td>李四</td>
+                                    <td>¥199.00</td>
+                                    <td>处理中</td>
+                                    <td>
+                                        <button class="action-btn edit-btn">查看</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>ORD-2026-0003</td>
+                                    <td>王五</td>
+                                    <td>¥499.00</td>
+                                    <td>已发货</td>
+                                    <td>
+                                        <button class="action-btn edit-btn">查看</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 用户管理页面 -->
+                <div id="usersPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>用户列表</h3>
+                            <button class="add-btn" onclick="openUserModal()">添加用户</button>
+                        </div>
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>角色</th>
+                                    <th>注册时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- 用户数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 产品管理页面 -->
+                <div id="productsPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>产品列表</h3>
+                            <button class="add-btn" onclick="openProductModal()">添加产品</button>
+                        </div>
+                        <table id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>产品名称</th>
+                                    <th>价格</th>
+                                    <th>库存</th>
+                                    <th>分类</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- 产品数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 订单管理页面 -->
+                <div id="ordersPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>订单列表</h3>
+                            <button class="add-btn">导出订单</button>
+                        </div>
+                        <table id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>客户</th>
+                                    <th>金额</th>
+                                    <th>日期</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- 订单数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 系统设置页面 -->
+                <div id="settingsPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>系统设置</h3>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <h4>网站配置</h4>
+                            <form id="settingsForm">
+                                <div class="form-group">
+                                    <label for="siteName">网站名称</label>
+                                    <input type="text" id="siteName" name="siteName" value="后台管理系统">
+                                </div>
+                                <div class="form-group">
+                                    <label for="siteDescription">网站描述</label>
+                                    <input type="text" id="siteDescription" name="siteDescription" value="企业级后台管理系统">
+                                </div>
+                                <div class="form-group">
+                                    <label for="adminEmail">管理员邮箱</label>
+                                    <input type="email" id="adminEmail" name="adminEmail" value="admin@example.com">
+                                </div>
+                                <button type="submit" class="btn" style="width: auto;">保存设置</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 用户编辑模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">添加用户</h3>
+                <button class="close-btn" onclick="closeUserModal()">&times;</button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="userId" name="userId">
+                <div class="form-group">
+                    <label for="userName">用户名</label>
+                    <input type="text" id="userName" name="userName" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">邮箱</label>
+                    <input type="email" id="userEmail" name="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">密码</label>
+                    <input type="password" id="userPassword" name="userPassword">
+                </div>
+                <div class="form-group">
+                    <label for="userRole">角色</label>
+                    <select id="userRole" name="userRole" required>
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 产品编辑模态框 -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="productModalTitle">添加产品</h3>
+                <button class="close-btn" onclick="closeProductModal()">&times;</button>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId" name="productId">
+                <div class="form-group">
+                    <label for="productName">产品名称</label>
+                    <input type="text" id="productName" name="productName" required>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">价格</label>
+                    <input type="number" id="productPrice" name="productPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="productStock">库存</label>
+                    <input type="number" id="productStock" name="productStock" required>
+                </div>
+                <div class="form-group">
+                    <label for="productCategory">分类</label>
+                    <input type="text" id="productCategory" name="productCategory" required>
+                </div>
+                <button type="submit" class="btn">保存</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        let users = [
+            { id: 1, name: '张三', email: 'zhangsan@example.com', role: 'admin', registerDate: '2026-01-01' },
+            { id: 2, name: '李四', email: 'lisi@example.com', role: 'user', registerDate: '2026-01-02' },
+            { id: 3, name: '王五', email: 'wangwu@example.com', role: 'user', registerDate: '2026-01-03' }
+        ];
+
+        let products = [
+            { id: 1, name: '产品1', price: 199.00, stock: 100, category: '电子产品' },
+            { id: 2, name: '产品2', price: 299.00, stock: 50, category: '家居用品' },
+            { id: 3, name: '产品3', price: 399.00, stock: 200, category: '服装' }
+        ];
+
+        let orders = [
+            { id: 'ORD-2026-0001', customer: '张三', amount: 299.00, date: '2026-01-01', status: '已完成' },
+            { id: 'ORD-2026-0002', customer: '李四', amount: 199.00, date: '2026-01-02', status: '处理中' },
+            { id: 'ORD-2026-0003', customer: '王五', amount: 499.00, date: '2026-01-03', status: '已发货' }
+        ];
+
+        // 登录功能
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 简单的登录验证（实际项目中应使用后端验证）
+            if (username === 'admin' && password === 'admin123') {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'flex';
+                document.getElementById('currentUser').textContent = username;
+            } else {
+                alert('用户名或密码错误');
+            }
+        });
+
+        // 退出登录
+        function logout() {
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+        }
+
+        // 页面切换
+        function showPage(pageName) {
+            // 隐藏所有页面
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(page => {
+                page.style.display = 'none';
+            });
+
+            // 移除所有菜单活跃状态
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // 显示选中页面
+            const selectedPage = document.getElementById(pageName + 'Page');
+            if (selectedPage) {
+                selectedPage.style.display = 'block';
+            }
+
+            // 设置菜单活跃状态
+            const activeMenuItem = document.querySelector(`[onclick="showPage('${pageName}')"]`);
+            if (activeMenuItem) {
+                activeMenuItem.classList.add('active');
+            }
+
+            // 更新页面标题
+            const pageTitles = {
+                'dashboard': '仪表盘',
+                'users': '用户管理',
+                'products': '产品管理',
+                'orders': '订单管理',
+                'settings': '系统设置'
+            };
+            document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
+        }
+
+        // 显示订单页面
+        function showOrders() {
+            showPage('orders');
+        }
+
+        // 渲染用户列表
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.registerDate}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editUser(${user.id})">编辑</button>
+                        <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染产品列表
+        function renderProducts() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>¥${product.price.toFixed(2)}</td>
+                    <td>${product.stock}</td>
+                    <td>${product.category}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editProduct(${product.id})">编辑</button>
+                        <button class="action-btn delete-btn" onclick="deleteProduct(${product.id})">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染订单列表
+        function renderOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>¥${order.amount.toFixed(2)}</td>
+                    <td>${order.date}</td>
+                    <td>${order.status}</td>
+                    <td>
+                        <button class="action-btn edit-btn">查看</button>
+                        <button class="action-btn delete-btn">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 打开用户模态框
+        function openUserModal() {
+            document.getElementById('userModalTitle').textContent = '添加用户';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        // 关闭用户模态框
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // 编辑用户
+        function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('userModalTitle').textContent = '编辑用户';
+                document.getElementById('userId').value = user.id;
+                document.getElementById('userName').value = user.name;
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userModal').style.display = 'block';
+            }
+        }
+
+        // 删除用户
+        function deleteUser(id) {
+            if (confirm('确定要删除这个用户吗？')) {
+                users = users.filter(u => u.id !== id);
+                renderUsers();
+            }
+        }
+
+        // 用户表单提交
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('userId').value);
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            if (id) {
+                // 编辑用户
+                const userIndex = users.findIndex(u => u.id === id);
+                if (userIndex !== -1) {
+                    users[userIndex] = {
+                        ...users[userIndex],
+                        name,
+                        email,
+                        role
+                    };
+                }
+            } else {
+                // 添加用户
+                const newId = Math.max(...users.map(u => u.id), 0) + 1;
+                users.push({
+                    id: newId,
+                    name,
+                    email,
+                    role,
+                    registerDate: new Date().toISOString().split('T')[0]
+                });
+            }
+
+            renderUsers();
+            closeUserModal();
+        });
+
+        // 打开产品模态框
+        function openProductModal() {
+            document.getElementById('productModalTitle').textContent = '添加产品';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productModal').style.display = 'block';
+        }
+
+        // 关闭产品模态框
+        function closeProductModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        // 编辑产品
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                document.getElementById('productModalTitle').textContent = '编辑产品';
+                document.getElementById('productId').value = product.id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productStock').value = product.stock;
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productModal').style.display = 'block';
+            }
+        }
+
+        // 删除产品
+        function deleteProduct(id) {
+            if (confirm('确定要删除这个产品吗？')) {
+                products = products.filter(p => p.id !== id);
+                renderProducts();
+            }
+        }
+
+        // 产品表单提交
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('productId').value);
+            const name = document.getElementById('productName').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const category = document.getElementById('productCategory').value;
+
+            if (id) {
+                // 编辑产品
+                const productIndex = products.findIndex(p => p.id === id);
+                if (productIndex !== -1) {
+                    products[productIndex] = {
+                        ...products[productIndex],
+                        name,
+                        price,
+                        stock,
+                        category
+                    };
+                }
+            } else {
+                // 添加产品
+                const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                products.push({
+                    id: newId,
+                    name,
+                    price,
+                    stock,
+                    category
+                });
+            }
+
+            renderProducts();
+            closeProductModal();
+        });
+
+        // 系统设置表单提交
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const siteName = document.getElementById('siteName').value;
+            const siteDescription = document.getElementById('siteDescription').value;
+            const adminEmail = document.getElementById('adminEmail').value;
+
+            // 保存设置（实际项目中应保存到后端）
+            alert('设置已保存！');
+        });
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const userModal = document.getElementById('userModal');
+            const productModal = document.getElementById('productModal');
+            if (event.target === userModal) {
+                closeUserModal();
+            } else if (event.target === productModal) {
+                closeProductModal();
+            }
+        }
+
+        // 初始化页面
+        window.onload = function() {
+            renderUsers();
+            renderProducts();
+            renderOrders();
+        }
+    </script>
+</body>
+</html>

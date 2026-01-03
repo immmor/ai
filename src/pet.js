@@ -1,6 +1,6 @@
 window.addEventListener('DOMContentLoaded', function() {
   const cat = document.createElement('img');
-  cat.src = 'cat1.gif';
+  cat.src = 'static/pet/cat.gif';
   cat.style.position = 'fixed';
   cat.style.bottom = '16px'; // 距离底部20px，沿着footer边
   cat.style.width = '80px'; // 稍微调整大小，更适合底部显示
@@ -69,7 +69,7 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // 播放猫叫声 - 添加移动设备支持
     try {
-      const audio = new Audio('meow.mp3');
+      const audio = new Audio('static/pet/meow.mp3');
       audio.volume = 0.3;
       
       // 尝试播放音频
