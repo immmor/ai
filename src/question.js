@@ -75,6 +75,8 @@ function getCurrentQuestions() {
         return questionsaiagent;
     } else if (currentQuestionBank === 'questionspython') {
         return questionspython;
+    } else if (currentQuestionBank === 'questionsrust') {
+        return questionsrust;
     } else if (currentQuestionBank === 'questionsreactts') {
         return questionsreactts;
     } else if (currentQuestionBank === 'questionsgomicro') {
@@ -167,6 +169,8 @@ function getBankDisplayName(bankName) {
         bankDisplayName = 'AI Agent';
     } else if (bankName === 'questionspython') {
         bankDisplayName = 'Python编程';
+    } else if (bankName === 'questionsrust') {
+        bankDisplayName = 'Rust编程';
     } else if (bankName === 'questionsreactts') {
         bankDisplayName = 'React';
     } else if (bankName === 'questionsgomicro') {
