@@ -4,24 +4,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // ========== API 路径白名单 ==========
-    const apiPaths = [
-      '/register',
-      '/login',
-      '/get-user',
-      '/get-users',
-      '/api/pay/build-url',
-      '/api/recharge',
-      '/api/pay/notify',
-      '/api/balance',
-      '/chat'
-    ];
-
-    // 如果不是 API 路径，返回 404 让 Cloudflare Pages 返回静态文件
-    if (!apiPaths.some(apiPath => path.startsWith(apiPath))) {
-      return new Response(null, { status: 404 });
-    }
-
     // ========== 1. 全局CORS跨域处理（前端无报错） ==========
     if (request.method === 'OPTIONS') {
       return new Response(null, {

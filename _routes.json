@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/register",
+    "/login",
+    "/get-user",
+    "/get-users",
+    "/api/pay/build-url",
+    "/api/recharge",
+    "/api/pay/notify",
+    "/api/balance",
+    "/chat"
+  ]
+}
