@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>登录注册 Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -251,25 +252,46 @@
             const description = document.getElementById('pay-description').value;
             const order_no = Date.now().toString();
             
-            try {
-                const response = await fetch('/api/pay/build-url', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, type, order_no, amount, description })
-                });
-                
-                const data = await response.json();
-                
-                if (data.code === 200) {
-                    resultDiv.innerHTML = `<div class="success">${data.msg}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
-                } else {
-                    resultDiv.innerHTML = `<div class="error">${data.msg}</div>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
-            }
+            const epayType = type === 'alipay' ? 'alipay' : 'wxpay';
+            
+            const paymentParams = {
+                pid: '1001',
+                type: epayType,
+                out_trade_no: username ? `${username}_${order_no}` : order_no,
+                notify_url: 'https://immmor.com/api/pay/notify',
+                return_url: 'https://immmor.com',
+                name: description,
+                money: amount.toFixed(2),
+                sitename: '我的网站'
+            };
+            
+            const sortedParams = Object.entries(paymentParams)
+                .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
+                .sort(([a], [b]) => a.localeCompare(b));
+            
+            const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
+            const key = 'your_pay_key_here';
+            const signStr = queryString + key;
+            const sign = CryptoJS.MD5(signStr).toString();
+            
+            paymentParams['sign'] = sign;
+            paymentParams['sign_type'] = 'MD5';
+            
+            const finalQueryString = Object.entries(paymentParams)
+                .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+                .join('&');
+            
+            const payUrl = `https://pay.example.com/submit.php?${finalQueryString}`;
+            
+            resultDiv.innerHTML = `<div class="success">支付链接生成成功！</div>
+                                <pre>${JSON.stringify({
+                pay_url: payUrl,
+                order_no: order_no,
+                amount: amount,
+                debug_sign_str: signStr,
+                debug_sign: sign
+            }, null, 2)}</pre>
+                                <p><a href="${payUrl}" target="_blank" style="color: #007bff;">点击跳转支付页面</a></p>`;
         });
 
         document.querySelector('#rechargeForm form').addEventListener('submit', async function(e) {
