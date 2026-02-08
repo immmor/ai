@@ -381,16 +381,16 @@ export default {
         }
       }
 
-      // ========== 根路径重定向到 index.html ==========
-      if (path === '/') {
-        return Response.redirect(new URL('/index.html', url), 302);
-      }
-
-      // ========== 默认接口提示 ==========
-      
+      // ========== 非 API 路径返回 404，让 Cloudflare Pages 返回静态文件 ==========
+      return new Response(null, { status: 404 });
 
     } catch (err) {
-      
+      return resJson({
+        code: 500,
+        msg: '服务器错误',
+        error: err.message,
+        tip: '优先检查D1绑定的Variable name是否为 DB'
+      }, 500);
     }
   },
 };
