@@ -161,7 +161,7 @@ export default {
             type: epayType,
             out_trade_no: finalOrderNo,
             notify_url: 'https://immmor.com/api/pay/notify',
-            return_url: 'https://immmor.com',
+            return_url: 'https://immmor.com/try/demo',
             name: description,
             money: amount.toFixed(2),
             sitename: '我的网站'
@@ -224,7 +224,7 @@ export default {
           const order_no = formData.get('out_trade_no');
           const trade_no = formData.get('trade_no');
           const trade_status = formData.get('trade_status');
-          const money = formData.get('money');
+          const money = parseFloat(formData.get('money'));
           const sign = formData.get('sign');
           
           console.log('支付通知:', { order_no, trade_status, money });
