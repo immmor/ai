@@ -262,10 +262,10 @@
                 
                 const data = await response.json();
                 
-                if (data.code === 200) {
-                    resultDiv.innerHTML = `<div class="success">${data.msg}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                if (data.code === 200 && data.data && data.data.pay_url) {
+                    window.location.href = data.data.pay_url;
                 } else {
-                    resultDiv.innerHTML = `<div class="error">${data.msg}</div>`;
+                    resultDiv.innerHTML = `<div class="error">${data.msg || '获取支付链接失败'}</div>`;
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
