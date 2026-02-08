@@ -93,23 +93,6 @@ class EpayClient {
 let energyDisplay = null;
 let energyIcon = null;
 
-// 初始化能量系统
-function initEnergy() {
-    // 从localStorage加载能量值
-    loadEnergy();
-    
-    // 创建能量显示元素
-    createEnergyDisplay();
-    
-    // 更新能量显示
-    updateEnergyDisplay();
-    
-    // 设置能量自动恢复定时器
-    setupEnergyRecovery();
-    
-    // console.log('能量系统初始化完成，当前能量：', energy);
-}
-
 // 从localStorage加载能量
 function loadEnergy() {
     const savedEnergy = localStorage.getItem('goBlockchainEnergy');
@@ -142,6 +125,11 @@ function activateVip() {
     isVip = true;
     saveVipStatus();
     console.log('会员已激活，到期时间：', new Date(vipExpiryTime));
+    
+    // 立即更新UI显示
+    updateEnergyDisplay();
+    updateVipStatusDisplay();
+    
     showFeedback('会员购买成功！已获得无限能量', 'success');
 }
 
@@ -1846,6 +1834,9 @@ function autoDownloadAdVideos() {
 
 // 页面加载完成后初始化视频缓存并自动下载
 window.addEventListener('load', () => {
+    // 检查支付回调
+    checkPaymentCallback();
+    
     // 初始化视频缓存数据库
     initVideoCache().then(() => {
         console.log('视频缓存数据库初始化成功');
@@ -1855,6 +1846,28 @@ window.addEventListener('load', () => {
         console.error('视频缓存数据库初始化失败', error);
     });
 });
+
+// 检查支付回调参数
+function checkPaymentCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tradeStatus = urlParams.get('trade_status');
+    const outTradeNo = urlParams.get('out_trade_no');
+    
+    // 检查是否是支付成功的回调
+    if (tradeStatus === 'TRADE_SUCCESS' && outTradeNo) {
+        console.log('检测到支付成功回调，订单号：', outTradeNo);
+        
+        // 激活会员
+        activateVip();
+        
+        // 清除URL中的回调参数，避免重复处理
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        
+        // 显示成功提示
+        showFeedback('支付成功！会员已激活', 'success');
+    }
+}
 
 // 监听网络状态变化，当网络恢复时自动下载
 window.addEventListener('online', () => {
