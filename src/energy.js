@@ -253,7 +253,7 @@ async function submitPayment(paymentType, amount, description) {
         const orderNumber = generateOrderNumber();
         
         // 调用后端API构建支付URL
-        const response = await fetch('https://immmor.com/api/pay/build-url', {
+        const response = await fetch('https://api.immmor.com/api/pay/build-url', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
