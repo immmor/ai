@@ -79,6 +79,9 @@
     <div class="tabs">
         <div class="tab active" data-tab="login">登录</div>
         <div class="tab" data-tab="register">注册</div>
+        <div class="tab" data-tab="pay">支付</div>
+        <div class="tab" data-tab="recharge">充值</div>
+        <div class="tab" data-tab="balance">余额</div>
     </div>
 
     <div class="form-container active" id="loginForm">
@@ -110,6 +113,55 @@
                 <input type="password" id="register-confirm" name="confirm" required>
             </div>
             <button type="submit">注册</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="payForm">
+        <form>
+            <div class="form-group">
+                <label for="pay-username">用户名：</label>
+                <input type="text" id="pay-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="pay-type">支付方式：</label>
+                <select id="pay-type" name="type" required>
+                    <option value="alipay">支付宝</option>
+                    <option value="wxpay">微信支付</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pay-amount">金额：</label>
+                <input type="number" id="pay-amount" name="amount" step="0.01" min="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="pay-description">描述：</label>
+                <input type="text" id="pay-description" name="description" required>
+            </div>
+            <button type="submit">生成支付链接</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="rechargeForm">
+        <form>
+            <div class="form-group">
+                <label for="recharge-username">用户名：</label>
+                <input type="text" id="recharge-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="recharge-amount">充值金额：</label>
+                <input type="number" id="recharge-amount" name="amount" step="0.01" min="0.01" required>
+            </div>
+            <button type="submit">充值</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="balanceForm">
+        <form>
+            <div class="form-group">
+                <label for="balance-username">用户名：</label>
+                <input type="text" id="balance-username" name="username" required>
+            </div>
+            <button type="submit">查询余额</button>
         </form>
     </div>
 
@@ -184,6 +236,83 @@
                     resultDiv.innerHTML = `<div class="success">${data.message}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
                 } else {
                     resultDiv.innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
+            }
+        });
+
+        document.querySelector('#payForm form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('pay-username').value;
+            const type = document.getElementById('pay-type').value;
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const description = document.getElementById('pay-description').value;
+            const order_no = Date.now().toString();
+            
+            try {
+                const response = await fetch('/api/pay/build-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, type, order_no, amount, description })
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `<div class="success">${data.msg}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.msg}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
+            }
+        });
+
+        document.querySelector('#rechargeForm form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('recharge-username').value;
+            const amount = parseFloat(document.getElementById('recharge-amount').value);
+            
+            try {
+                const response = await fetch('/api/recharge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, amount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `<div class="success">${data.msg}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.msg}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
+            }
+        });
+
+        document.querySelector('#balanceForm form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('balance-username').value;
+            
+            try {
+                const response = await fetch(`/api/balance?username=${encodeURIComponent(username)}`);
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.innerHTML = `<div class="success">${data.msg}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.msg}</div>`;
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;

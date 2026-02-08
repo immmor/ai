@@ -132,6 +132,169 @@ export default {
         }
       }
 
+      // 路由匹配：/api/pay/build-url 构建支付URL
+      if (url.pathname === '/api/pay/build-url' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { type, order_no, amount, description } = params;
+          
+          if (!type || !order_no || !amount || !description) {
+            return new Response(JSON.stringify({
+              code: 400,
+              msg: '缺少必要参数'
+            }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          const apiUrl = env.PAY_API_URL;
+          const pid = env.PAY_MID;
+          const key = env.PAY_KEY;
+          
+          const epayType = type === 'alipay' ? 'alipay' : 'wxpay';
+          
+          const paymentParams = {
+            pid: pid,
+            type: epayType,
+            out_trade_no: order_no,
+            notify_url: 'https://immmor.com/api/pay/notify',
+            return_url: 'https://immmor.com',
+            name: description,
+            money: amount.toFixed(2),
+            sitename: '我的网站'
+          };
+          
+          if (params.username) {
+            paymentParams.out_trade_no = `${params.username}_${order_no}`;
+          }
+          
+          const sortedParams = Object.entries(paymentParams)
+            .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
+            .sort(([a], [b]) => a.localeCompare(b));
+          
+          const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
+          const signStr = queryString + key;
+          
+          const sign = await md5Hash(signStr);
+          
+          paymentParams['sign'] = sign;
+          paymentParams['sign_type'] = 'MD5';
+          
+          const finalQueryString = Object.entries(paymentParams)
+            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+            .join('&');
+          
+          const payUrl = `${apiUrl}?${finalQueryString}`;
+          
+          return new Response(JSON.stringify({
+            code: 200,
+            msg: '支付URL构建成功',
+            data: {
+              pay_url: payUrl,
+              order_no: order_no,
+              amount: amount
+            }
+          }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({
+            code: 500,
+            msg: '支付URL构建失败',
+            error: err.message
+          }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+      
+      async function md5Hash(str) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+        const hashBuffer = await crypto.subtle.digest('MD5', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+      }
+
+      // 路由匹配：/api/recharge 充值接口
+      if (url.pathname === '/api/recharge' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, amount } = params;
+          
+          if (!username || !amount || amount <= 0) {
+            return new Response(JSON.stringify({ code: 400, msg: '参数错误' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          const result = await env.DB
+            .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+            .bind(amount, username)
+            .run();
+          
+          if (result.success && result.meta.changes > 0) {
+            const user = await env.DB
+              .prepare('SELECT balance FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            
+            return new Response(JSON.stringify({ code: 200, msg: '充值成功', balance: user.balance }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } else {
+            return new Response(JSON.stringify({ code: 404, msg: '用户不存在' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '充值失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // 路由匹配：/api/balance 查询余额接口
+      if (url.pathname === '/api/balance' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          
+          if (!username) {
+            return new Response(JSON.stringify({ code: 400, msg: '缺少username参数' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          const user = await env.DB
+            .prepare('SELECT balance FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          if (user) {
+            return new Response(JSON.stringify({ code: 200, msg: '查询成功', balance: user.balance }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } else {
+            return new Response(JSON.stringify({ code: 404, msg: '用户不存在' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '查询失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       return new Response(JSON.stringify({ code: 404, message: 'API not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
