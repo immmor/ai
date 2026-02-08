@@ -39,7 +39,7 @@ export default {
       }
 
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
-      if (path === '/register' && request.method === 'POST') {
+      if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
         const { username, password } = params;
         
@@ -71,7 +71,7 @@ export default {
       }
 
       // ========== 登录接口（核心）→ 用户名密码登录 ==========
-      if (path === '/login' && request.method === 'POST') {
+      if (path === '/api/login' && request.method === 'POST') {
         const params = await request.json();
         const { username, password } = params;
         
@@ -93,7 +93,7 @@ export default {
       }
 
       // ========== 按用户名查询（测试kkk专用） ==========
-      if (path === '/get-user' && request.method === 'GET') {
+      if (path === '/api/get-user' && request.method === 'GET') {
         const name = url.searchParams.get('name');
         if (!name) return resJson({ code: 400, msg: '请传入name参数，例：?name=kkk' }, 400);
         
@@ -108,7 +108,7 @@ export default {
       }
 
       // ========== 查询所有用户（验证数据库数据） ==========
-      if (path === '/get-users' && request.method === 'GET') {
+      if (path === '/api/get-users' && request.method === 'GET') {
         const result = await DB.prepare('SELECT id, username, password FROM user').all();
         return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
       }
@@ -140,7 +140,7 @@ export default {
             type: epayType,
             out_trade_no: order_no,
             notify_url: 'https://immmor.com/api/pay/notify',
-            return_url: 'https://immmor.com',
+            return_url: 'https://immmor.com/',
             name: description,
             money: amount.toFixed(2),
             sitename: '我的网站'
@@ -201,7 +201,7 @@ export default {
       }
       
       // ========== AI聊天接口（支持流式响应） ==========
-      if (path === '/chat' && request.method === 'POST') {
+      if (path === '/api/chat' && request.method === 'POST') {
         try {
           const params = await request.json();
           const { prompt, stream = false } = params;
