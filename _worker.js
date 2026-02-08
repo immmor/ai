@@ -154,20 +154,18 @@ export default {
           
           const epayType = type === 'alipay' ? 'alipay' : 'wxpay';
           
+          const finalOrderNo = params.username ? `${params.username}_${order_no}` : order_no;
+          
           const paymentParams = {
             pid: pid,
             type: epayType,
-            out_trade_no: order_no,
+            out_trade_no: finalOrderNo,
             notify_url: 'https://immmor.com/api/pay/notify',
             return_url: 'https://immmor.com',
             name: description,
             money: amount.toFixed(2),
             sitename: '我的网站'
           };
-          
-          if (params.username) {
-            paymentParams.out_trade_no = `${params.username}_${order_no}`;
-          }
           
           const sortedParams = Object.entries(paymentParams)
             .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
