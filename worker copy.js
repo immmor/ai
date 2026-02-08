@@ -113,88 +113,88 @@ export default {
         return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
       }
 
-      // ========== 支付接口（调用第三方支付API） ==========
-      if (path === '/api/pay/submit' && request.method === 'POST') {
+      // ========== 支付URL构建接口 ==========
+      if (path === '/api/pay/build-url' && request.method === 'POST') {
         try {
           const params = await request.json();
+          const { type, order_no, amount, description } = params;
           
-          // 转换参数格式以匹配新的API要求
-          const origin = request.url.split('/').slice(0, 3).join('/'); // 从请求URL中获取origin
+          if (!type || !order_no || !amount || !description) {
+            return resJson({
+              code: 400,
+              msg: '缺少必要参数'
+            }, 400);
+          }
+          
+          // 易支付API配置（从环境变量读取）
+          const apiUrl = env.PAY_API_URL;
+          const pid = env.PAY_MID;
+          const key = env.PAY_KEY;
+          
+          // 映射支付类型
+          const epayType = type === 'alipay' ? 'alipay' : 'wxpay';
+          
+          // 构建支付参数
           const paymentParams = {
-            p_id: '1001', // 平台商户号（根据实际情况填写）
-            type: params.type === 'alipay' ? 'alipay' : 'wechat',
-            out_trade_no: params.order_no,
-            notify_url: origin + '/api/pay/notify', // 异步通知地址
-            return_url: origin, // 页面跳转地址
-            name: params.body,
-            money: params.amount.toFixed(2),
-            param: '', // 订单备注
-            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
-            sign: '', // 签名（需要根据API提供的签名规则生成）
-            sign_type: 'RSA' // 签名类型
+            pid: pid,
+            type: epayType,
+            out_trade_no: order_no,
+            notify_url: 'https://immmor.com/api/pay/notify',
+            return_url: 'https://immmor.com',
+            name: description,
+            money: amount.toFixed(2),
+            sitename: '我的网站'
           };
           
-          // 调用新的第三方支付API
-          const paymentResponse = await fetch('https://epayapi.wxda.net/api/pay/submit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(paymentParams)
-          });
+          // 生成签名（MD5）
+          const sortedParams = Object.entries(paymentParams)
+            .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
+            .sort(([a], [b]) => a.localeCompare(b));
           
-          const paymentResult = await paymentResponse.json();
-          return resJson(paymentResult, paymentResponse.status);
+          const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
+          const signStr = queryString + key;
+          
+          // 计算MD5签名
+          const sign = await md5Hash(signStr);
+          
+          paymentParams['sign'] = sign;
+          paymentParams['sign_type'] = 'MD5';
+          
+          // 构造最终请求URL
+          const finalQueryString = Object.entries(paymentParams)
+            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+            .join('&');
+          
+          const payUrl = `${apiUrl}?${finalQueryString}`;
+          
+          return resJson({
+            code: 200,
+            msg: '支付URL构建成功',
+            data: {
+              pay_url: payUrl,
+              order_no: order_no,
+              amount: amount
+            }
+          });
         } catch (err) {
           return resJson({
             code: 500,
-            msg: '支付请求失败',
+            msg: '支付URL构建失败',
             error: err.message
           }, 500);
         }
       }
       
-      // ========== 支付查询接口 ==========
-      if (path === '/api/pay/query' && request.method === 'GET') {
-        try {
-          const orderNo = url.searchParams.get('order_no');
-          
-          if (!orderNo) {
-            return resJson({
-              code: 400,
-              msg: '缺少订单号参数'
-            }, 400);
-          }
-          
-          // 构建查询参数（根据新API文档的要求）
-          const queryParams = {
-            p_id: '1001', // 平台商户号（根据实际情况填写）
-            out_trade_no: orderNo,
-            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
-            sign: '', // 签名（需要根据API提供的签名规则生成）
-            sign_type: 'RSA' // 签名类型
-          };
-          
-          // 调用新的第三方支付查询API
-          const queryResponse = await fetch('https://epayapi.wxda.net/query', {
-            method: 'POST', // 注意：查询接口可能也需要POST请求
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(queryParams)
-          });
-          
-          const queryResult = await queryResponse.json();
-          return resJson(queryResult, queryResponse.status);
-        } catch (err) {
-          return resJson({
-            code: 500,
-            msg: '支付查询失败',
-            error: err.message
-          }, 500);
-        }
+      // MD5哈希函数
+      async function md5Hash(str) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+        const hashBuffer = await crypto.subtle.digest('MD5', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
       }
-
+      
       // ========== AI聊天接口（支持流式响应） ==========
       if (path === '/chat' && request.method === 'POST') {
         try {
@@ -204,17 +204,6 @@ export default {
           if (!prompt) {
             return resJson({ success: false, message: '请输入prompt参数' }, 400);
           }
-          
-          // 检查是否在Cloudflare Worker环境中
-          // Cloudflare Worker限制：
-          // 1. 不允许直接访问IP地址的HTTP请求
-          // 2. 只支持HTTPS请求
-          // 3. 某些端口可能被限制
-          
-          // 生产环境解决方案：
-          // 1. 将k.py部署到支持HTTPS的服务器
-          // 2. 使用域名而不是IP地址访问
-          // 3. 确保域名不在Cloudflare的保护范围内（避免回源问题）
           
           try {
             // 调用远程AI服务
@@ -298,7 +287,7 @@ export default {
           'POST /login → 登录（传{username,password}）',
           'POST /register → 注册（传{username,password}）',
           'GET /get-users → 查看所有用户',
-          'POST /api/pay/submit → 调用支付接口',
+          'POST /api/pay/build-url → 构建支付URL',
           'POST /chat → AI聊天接口（传{prompt,stream}）'
         ]
       });
