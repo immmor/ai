@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>调用 Worker API Demo</title>
+    <!-- 仅保留必要的元标签，无多余样式 -->
+</head>
+<body>
+    <h1>Worker API 调用结果</h1>
+    <!-- 用于显示接口返回的内容 -->
+    <div id="api-result"></div>
+
+    <script>
+        // 页面加载完成后执行
+        window.onload = async function() {
+            try {
+                // 1. 调用 _worker.js 中的 /api/hello 接口
+                const response = await fetch('/api/hello');
+                
+                // 2. 检查请求是否成功
+                if (!response.ok) {
+                    throw new Error(`请求失败：${response.status}`);
+                }
+                
+                // 3. 解析 JSON 响应数据
+                const data = await response.json();
+                
+                // 4. 将结果显示在页面上
+                const resultElement = document.getElementById('api-result');
+                // 格式化显示，方便查看
+                resultElement.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                // 5. 捕获并显示错误信息
+                document.getElementById('api-result').textContent = `出错了：${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>

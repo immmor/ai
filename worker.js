@@ -146,6 +146,11 @@ export default {
             sitename: '我的网站'
           };
           
+          // 在订单号中添加用户名标识（格式：username_timestamp）
+          if (params.username) {
+            paymentParams.out_trade_no = `${params.username}_${order_no}`;
+          }
+          
           // 生成签名（MD5）
           const sortedParams = Object.entries(paymentParams)
             .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
@@ -310,6 +315,72 @@ export default {
         }
       }
 
+      // ========== 支付通知接口 ==========
+      if (path === '/api/pay/notify' && request.method === 'POST') {
+        try {
+          // 解析易支付回调参数
+          const formData = await request.formData();
+          const order_no = formData.get('out_trade_no');
+          const trade_no = formData.get('trade_no');
+          const trade_status = formData.get('trade_status');
+          const money = formData.get('money');
+          const sign = formData.get('sign');
+          
+          console.log('支付通知:', { order_no, trade_status, money });
+          
+          // 验证签名（需要实现签名验证逻辑）
+          // const isValid = verifySign(formData, env.PAY_KEY);
+          
+          if (trade_status === 'TRADE_SUCCESS') {
+            // 从订单号中提取用户名（格式：username_timestamp）
+            const username = order_no.split('_')[0];
+            console.log('从订单号提取的用户名:', username);
+            
+            // 更新用户余额
+            const result = await DB
+              .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+              .bind(money, username)
+              .run();
+            
+            console.log('余额更新结果:', result);
+            
+            return new Response('success', { status: 200 });
+          } else {
+            return new Response('fail', { status: 200 });
+          }
+        } catch (err) {
+          console.error('Notify error:', err);
+          return new Response('fail', { status: 500 });
+        }
+      }
+
+      // ========== 查询余额接口 ==========
+      if (path === '/api/balance' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          
+          if (!username) {
+            return resJson({ code: 400, msg: '缺少username参数' }, 400);
+          }
+          
+          const user = await DB
+            .prepare('SELECT balance FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          console.log('余额查询:', { username, balance: user?.balance });
+          
+          if (user) {
+            return resJson({ code: 200, msg: '查询成功', balance: user.balance });
+          } else {
+            return resJson({ code: 404, msg: '用户不存在' }, 404);
+          }
+        } catch (err) {
+          console.error('Balance query error:', err);
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 默认接口提示 ==========
       return resJson({
         code: 200,
@@ -321,6 +392,7 @@ export default {
           'GET /get-users → 查看所有用户',
           'POST /api/pay/build-url → 构建支付URL',
           'POST /api/recharge → 充值（传{username,amount}）',
+          'GET /api/balance?username=xxx → 查询余额',
           'POST /chat → AI聊天接口（传{prompt,stream}）'
         ]
       });
