@@ -17,78 +17,6 @@ const VIP_DURATION = 30 * 24 * 60 * 60 * 1000; // 会员有效期（毫秒）
 let isVip = false; // 当前是否为会员
 let vipExpiryTime = 0; // 会员过期时间
 
-// API配置
-const API_CONFIG = {
-    // 支付API配置
-    PAYMENT: {
-        API_URL: 'https://epay.wxda.net/',
-        MERCHANT_ID: '1235', // 平台商户号
-        MERCHANT_KEY: 'YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y' // 商户密钥
-    }
-};
-
-// 易支付客户端类
-class EpayClient {
-    constructor(apiUrl, pid, key) {
-        // JavaScript中没有rstrip()，使用replace()去除末尾斜杠
-        this.apiUrl = apiUrl.replace(/\/$/, '') + '/submit.php'; // 页面跳转支付接口
-        this.pid = pid.toString();
-        this.key = key;
-    }
-
-    // 易支付签名算法
-    getSignature(params) {
-        // 1. 筛选：所有发送参数（不包括sign、sign_type）
-        // 2. 排序：按参数名ASCII码从小到大排序
-        // 3. 拼接：key1=value1&key2=value2...（不包含空值）
-        // 4. 签名：拼接好的字符串末尾加上商户密钥，进行MD5加密
-        const sortedParams = Object.entries(params)
-            .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
-            .sort(([a], [b]) => a.localeCompare(b));
-        
-        const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
-        const signStr = queryString + this.key;
-        
-        // 计算MD5
-        return this.md5(signStr);
-    }
-
-    // MD5加密函数
-    md5(str) {
-        // 检查CryptoJS是否可用
-        if (typeof CryptoJS === 'undefined' || typeof CryptoJS.MD5 === 'undefined') {
-            throw new Error('CryptoJS库未加载，请在HTML中引入CryptoJS');
-        }
-        const hash = CryptoJS.MD5(str);
-        return hash.toString();
-    }
-
-    // 构造支付URL
-    buildPayUrl(outTradeNo, type, name, money, notifyUrl, returnUrl) {
-        const params = {
-            "pid": this.pid,
-            "type": type,             // 支付方式：alipay, wxpay, qqpay 等
-            "out_trade_no": outTradeNo,
-            "notify_url": notifyUrl, // 异步通知地址
-            "return_url": returnUrl, // 跳转通知地址
-            "name": name,             // 商品名称
-            "money": money.toString(), // 金额，单位元
-            "sitename": "我的网站"     // 网站名称
-        };
-        
-        // 生成签名
-        params['sign'] = this.getSignature(params);
-        params['sign_type'] = 'MD5';
-        
-        // 构造最终请求URL
-        const queryString = Object.entries(params)
-            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-            .join('&');
-        
-        return `${this.apiUrl}?${queryString}`;
-    }
-}
-
 // 获取能量元素
 let energyDisplay = null;
 let energyIcon = null;
@@ -324,194 +252,33 @@ async function submitPayment(paymentType, amount, description) {
         // 生成订单号
         const orderNumber = generateOrderNumber();
         
-        // 创建易支付客户端
-        const client = new EpayClient(
-            API_CONFIG.PAYMENT.API_URL,
-            API_CONFIG.PAYMENT.MERCHANT_ID,
-            API_CONFIG.PAYMENT.MERCHANT_KEY
-        );
+        // 调用后端API构建支付URL
+        const response = await fetch('https://api.immmor.com/api/pay/build-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: paymentType,
+                order_no: orderNumber,
+                amount: amount,
+                description: description
+            })
+        });
         
-        // 映射支付类型到易支付类型
-        const epayType = paymentType === 'alipay' ? 'alipay' : 'wxpay';
+        const result = await response.json();
         
-        // 构建支付URL
-        const payUrl = client.buildPayUrl(
-            orderNumber,
-            epayType,
-            description,
-            amount,
-            'https://immmor.com/api/pay/notify', // notify_url保持不变
-            window.location.origin // return_url保持不变
-        );
-        
-        // 直接跳转到支付页面
-        window.location.href = payUrl;
+        if (result.code === 200 && result.data && result.data.pay_url) {
+            // 直接跳转到支付页面
+            window.location.href = result.data.pay_url;
+        } else {
+            throw new Error(result.msg || '获取支付URL失败');
+        }
         
     } catch (error) {
         console.error('支付请求错误:', error);
         showFeedback('支付请求失败: ' + error.message, 'error');
     }
-}
-
-// 新：处理支付响应
-function handlePaymentResponse(paymentType, paymentData) {
-    // 根据支付类型和响应数据处理
-    if (paymentType === 'alipay') {
-        // 支付宝支付处理
-        if (paymentData.pay_url) {
-            // 如果有支付URL，直接跳转到支付页面
-            window.location.href = paymentData.pay_url;
-        } else if (paymentData.qr_code) {
-            // 如果有二维码，显示二维码支付页面
-            showDynamicPaymentPopup(paymentType, paymentData);
-        }
-    } else if (paymentType === 'wechat') {
-        // 微信支付处理
-        if (paymentData.code_url) {
-            // 微信支付通常返回code_url用于生成二维码
-            showDynamicPaymentPopup(paymentType, paymentData);
-        } else if (paymentData.pay_url) {
-            window.location.href = paymentData.pay_url;
-        }
-    }
-}
-
-// 新：显示动态支付弹窗
-function showDynamicPaymentPopup(paymentType, paymentData) {
-    // 创建遮罩层
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center';
-    overlay.style.backdropFilter = 'blur(2px)';
-    
-    // 创建弹窗容器
-    const popup = document.createElement('div');
-    popup.className = 'bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md transform transition-all duration-300 hover:shadow-3xl';
-    
-    // 弹窗标题
-    const title = document.createElement('div');
-    title.className = `px-5 py-4 border-b ${paymentType === 'alipay' ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'}`;
-    title.innerHTML = `<h3 class="text-lg font-bold text-gray-800 flex items-center">
-        <i class="${paymentType === 'alipay' ? 'fab fa-alipay text-blue-500' : 'fab fa-weixin text-green-500'} mr-2"></i>
-        ${paymentType === 'alipay' ? '支付宝' : '微信'}
-    </h3>`;
-    
-    // 弹窗内容
-    const content = document.createElement('div');
-    content.className = 'px-4 py-4';
-    
-    // 订单信息
-    const orderInfo = document.createElement('div');
-    orderInfo.className = 'mb-4 p-3 bg-gray-50 rounded-lg';
-    orderInfo.innerHTML = `
-        <div class="text-xs text-gray-600 mb-1">订单号：<span class="font-mono text-blue-600">${paymentData.order_no || generateOrderNumber()}</span></div>
-        <div class="text-xs text-gray-600">金额：<span class="font-bold text-red-600">¥${paymentData.amount || '10.00'}</span></div>
-    `;
-    
-    // 二维码区域
-    const qrCodeContainer = document.createElement('div');
-    qrCodeContainer.className = 'flex justify-center mb-4';
-    const qrCodeWrapper = document.createElement('div');
-    qrCodeWrapper.className = `bg-white p-2 rounded-lg shadow-md border ${paymentType === 'alipay' ? 'border-blue-200' : 'border-green-200'}`;
-    
-    // 创建二维码
-    const qrCode = document.createElement('img');
-    if (paymentType === 'alipay' && paymentData.qr_code) {
-        qrCode.src = paymentData.qr_code;
-    } else if (paymentType === 'wechat' && paymentData.code_url) {
-        // 微信支付需要将code_url转换为二维码
-        qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentData.code_url)}`;
-    }
-    qrCode.className = 'w-48 h-48 object-contain rounded-md';
-    qrCodeWrapper.appendChild(qrCode);
-    qrCodeContainer.appendChild(qrCodeWrapper);
-    
-    // 支付提示
-    const paymentHint = document.createElement('div');
-    paymentHint.className = `text-xs text-gray-500 mb-4 p-2 rounded-lg ${paymentType === 'alipay' ? 'bg-blue-50 border border-blue-100' : 'bg-green-50 border border-green-100'}`;
-    paymentHint.innerHTML = `
-        <p class="text-center">请使用${paymentType === 'alipay' ? '支付宝' : '微信'}扫描二维码支付</p>
-    `;
-    
-    // 关闭按钮
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'w-full px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm';
-    closeBtn.textContent = '关闭';
-    
-    // 组合弹窗内容
-    content.appendChild(orderInfo);
-    content.appendChild(qrCodeContainer);
-    content.appendChild(paymentHint);
-    content.appendChild(closeBtn);
-    
-    // 组合弹窗
-    popup.appendChild(title);
-    popup.appendChild(content);
-    overlay.appendChild(popup);
-    
-    // 添加到页面
-    document.body.appendChild(overlay);
-    
-    // 禁止页面滚动
-    document.body.style.overflow = 'hidden';
-    
-    // 关闭按钮点击事件
-    closeBtn.addEventListener('click', () => {
-        document.body.style.overflow = 'auto';
-        document.body.removeChild(overlay);
-    });
-    
-    // 点击遮罩层关闭
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            document.body.style.overflow = 'auto';
-            document.body.removeChild(overlay);
-        }
-    });
-    
-    // 轮询支付状态
-    startPaymentPolling(paymentData.order_no);
-}
-
-// 新：轮询支付状态
-function startPaymentPolling(orderNo) {
-    let pollingCount = 0;
-    const maxPolling = 60; // 最多轮询60次，每次5秒，共5分钟
-    
-    const pollingInterval = setInterval(async () => {
-        pollingCount++;
-        
-        if (pollingCount > maxPolling) {
-            clearInterval(pollingInterval);
-            showFeedback('支付超时，请检查支付状态', 'warning');
-            return;
-        }
-        
-        try {
-            // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
-            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/query?order_no=${orderNo}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const result = await response.json();
-            
-            if (result.code === 200 && result.data.status === 'success') {
-                // 支付成功
-                clearInterval(pollingInterval);
-                // 激活会员
-                activateVip();
-                showFeedback('支付成功！会员已激活', 'success');
-                // 关闭所有弹窗
-                const overlays = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-80');
-                overlays.forEach(overlay => overlay.remove());
-                document.body.style.overflow = 'auto';
-            }
-        } catch (error) {
-            console.error('查询支付状态失败:', error);
-        }
-    }, 5000); // 每5秒查询一次
 }
 
 // 生成随机订单号
