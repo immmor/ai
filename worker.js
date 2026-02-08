@@ -184,8 +184,8 @@ export default {
             params.type,
             params.body,
             params.amount,
-            origin + '/api/pay/notify',
-            origin
+            'https://immmor.com/api/pay/notify',
+            'https://immmor.com'
           );
 
           return resJson({

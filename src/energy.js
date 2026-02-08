@@ -279,7 +279,7 @@ async function submitPayment(paymentType, amount, description) {
             amount: amount,    // 金额
             order_no: orderNumber, // 订单号
             body: description, // 商品描述
-            notify_url: window.location.origin + '/api/pay/notify', // 回调地址
+            notify_url: 'https://immmor.com/api/pay/notify', // 回调地址
             return_url: window.location.origin // 返回地址
         };
         

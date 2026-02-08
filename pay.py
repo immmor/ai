@@ -71,8 +71,8 @@ if __name__ == "__main__":
         type="alipay",               # 支付方式
         name="测试商品",
         money="0.01",
-        notify_url="https://immmor.com/notify",
-        return_url="https://immmor.com/return"
+        notify_url="https://api.immmor.com/notify",
+        return_url="https://api.immmor.com/return"
     )
 
     print("请在浏览器中打开以下链接进行支付：")
