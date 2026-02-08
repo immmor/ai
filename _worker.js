@@ -17,7 +17,7 @@ export default {
         });
       }
 
-      // 路由匹配：/api/login 登录接口
+      // 路由匹配：/api/login 登录接口（使用 D1 数据库）
       if (url.pathname === '/api/login' && request.method === 'POST') {
         const params = await request.json();
         const { username, password } = params;
@@ -32,27 +32,36 @@ export default {
           });
         }
 
-        const mockUsers = [
-          { id: 1, username: 'kkk', password: 'pwd', balance: 100 },
-          { id: 2, username: 'admin', password: 'admin123', balance: 500 }
-        ];
+        try {
+          const user = await env.DB
+            .prepare('SELECT id, username, balance FROM user WHERE username = ? AND password = ?')
+            .bind(username, password)
+            .first();
 
-        const user = mockUsers.find(u => u.username === username && u.password === password);
-
-        if (user) {
-          return new Response(JSON.stringify({ 
-            success: true, 
-            message: '登录成功！', 
-            userInfo: { id: user.id, username: user.username, balance: user.balance } 
-          }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        } else {
+          if (user) {
+            return new Response(JSON.stringify({ 
+              success: true, 
+              message: '登录成功！', 
+              userInfo: { id: user.id, username: user.username, balance: user.balance } 
+            }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } else {
+            return new Response(JSON.stringify({ 
+              success: false, 
+              message: '用户名或密码错误' 
+            }), {
+              status: 401,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        } catch (err) {
           return new Response(JSON.stringify({ 
             success: false, 
-            message: '用户名或密码错误' 
+            message: '数据库查询失败',
+            error: err.message 
           }), {
-            status: 401,
+            status: 500,
             headers: { 'Content-Type': 'application/json' }
           });
         }
