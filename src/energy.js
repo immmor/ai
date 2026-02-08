@@ -21,9 +21,9 @@ let vipExpiryTime = 0; // 会员过期时间
 const API_CONFIG = {
     // 支付API配置
     PAYMENT: {
-        API_URL: 'https://epayapi.wxda.net',
-        MERCHANT_ID: '1001', // 平台商户号
-        SIGN_TYPE: 'RSA' // 签名类型
+        API_URL: '/api',
+        MERCHANT_ID: '1235', // 平台商户号
+        SIGN_TYPE: 'MD5' // 签名类型
     }
 };
 
@@ -284,7 +284,7 @@ async function submitPayment(paymentType, amount, description) {
         };
         
         // 调用后端支付接口
-        const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/submit`, {
+        const response = await fetch('/api/pay/submit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -441,7 +441,7 @@ function startPaymentPolling(orderNo) {
         
         try {
             // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
-            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/query?order_no=${orderNo}`, {
+            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/pay/query?order_no=${orderNo}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

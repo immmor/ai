@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>全球作战指挥系统 - 指哪打哪</title>
+    <style>
+        body { margin: 0; background-color: #000; overflow: hidden; }
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #00ff41;
+        }
+        .status-bar { border: 1px solid #00ff41; padding: 10px; background: rgba(0, 20, 0, 0.5); }
+        .coords-info { margin-top: 10px; }
+        .target-marker {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: rgba(255, 0, 0, 0.7);
+            border: 2px solid #00ff41;
+            border-radius: 50%;
+            pointer-events: none; /* 确保它不影响鼠标事件 */
+            transform: translate(-50%, -50%); /* 居中显示 */
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(0, 255, 65, 0.5);
+            display: none; /* 初始隐藏 */
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-layer">
+    <div class="status-bar">
+        <h2>全球战略指挥部 (GSC)</h2>
+        <p>状态: 战备部署中...</p>
+        <div class="coords-info">
+            <p>点击坐标: <span id="clicked-coords">N/A</span></p>
+            <p>点击经纬度: <span id="clicked-latlng">N/A</span></p>
+        </div>
+    </div>
+</div>
+<div id="target-marker" class="target-marker"></div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- 场景初始化 ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- 地球半径常量 ---
+    const EARTH_RADIUS = 5; // 与 SphereGeometry 的半径保持一致
+
+    // --- 创建地球 ---
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load('https://unpkg.com/threejs-earth-map@1.0.2/dist/earth.jpg');
+    const bumpMap = textureLoader.load('https://unpkg.com/threejs-earth-map@1.0.2/dist/bump.jpg');
+    
+    const material = new THREE.MeshPhongMaterial({
+        map: earthTexture,
+        bumpMap: bumpMap,
+        bumpScale: 0.05,
+        specular: new THREE.Color('#222'),
+        shininess: 5
+    });
+    
+    const earth = new THREE.Mesh(geometry, material);
+    scene.add(earth);
+
+    // --- 添加大气层效果 (简单发光) ---
+    const atmosphereGeom = new THREE.SphereGeometry(EARTH_RADIUS * 1.02, 64, 64); // 略大一点
+    const atmosphereMat = new THREE.MeshBasicMaterial({
+        color: 0x0044ff,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.BackSide
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeom, atmosphereMat);
+    scene.add(atmosphere);
+
+    // --- 灯光设置 ---
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+    
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    sunLight.position.set(5, 3, 5);
+    scene.add(sunLight);
+
+    // --- 背景星空 ---
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 }); // 稍微小一点的星星
+    const starVertices = [];
+    for (let i = 0; i < 5000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = -Math.random() * 2000; // 让星星主要在地球后面
+        starVertices.push(x, y, z);
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // --- 控制器 ---
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.minDistance = EARTH_RADIUS * 1.1; // 防止摄像机穿透地球
+    controls.maxDistance = EARTH_RADIUS * 4;
+    camera.position.z = EARTH_RADIUS * 2.5;
+
+    // --- Raycaster 用于拾取点击 ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const clickedCoordsDisplay = document.getElementById('clicked-coords');
+    const clickedLatLngDisplay = document.getElementById('clicked-latlng');
+    const targetMarkerUI = document.getElementById('target-marker');
+
+    // 将 3D 坐标转换为经纬度
+    function toLatLng(vector) {
+        // 将地球坐标转换为球坐标
+        const phi = Math.acos(vector.y / EARTH_RADIUS); // 极角 (0 到 PI)
+        let theta = Math.atan2(vector.z, vector.x); // 方位角 (-PI 到 PI)
+
+        // 转换为经纬度
+        const lat = 90 - (phi * 180 / Math.PI); // 纬度 (-90 到 90)
+        let lon = theta * 180 / Math.PI; // 经度 (-180 到 180)
+
+        // 调整经度范围到 [0, 360) 或 [-180, 180] 如果需要
+        if (lon < 0) {
+            lon += 360; // 或者保持负数，取决于你需要的显示方式
+        }
+        return { lat: lat.toFixed(2), lon: lon.toFixed(2) };
+    }
+
+    // 将 3D 坐标投影到屏幕 2D 坐标
+    function toScreenPosition(vector, camera) {
+        const vector3D = vector.clone();
+        vector3D.project(camera); // 将 3D 向量投影到屏幕空间 (-1 到 1)
+
+        const widthHalf = window.innerWidth / 2;
+        const heightHalf = window.innerHeight / 2;
+
+        vector3D.x = ( vector3D.x * widthHalf ) + widthHalf;
+        vector3D.y = - ( vector3D.y * heightHalf ) + heightHalf;
+
+        return { x: vector3D.x, y: vector3D.y };
+    }
+
+    // --- 鼠标点击事件 ---
+    function onDocumentMouseDown(event) {
+        // 将鼠标坐标归一化到设备坐标 (-1 到 +1)
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        // 计算物体和射线的交点
+        const intersects = raycaster.intersectObjects([earth]);
+
+        if (intersects.length > 0) {
+            const intersect = intersects[0];
+            const point = intersect.point; // 获取点击的 3D 坐标
+
+            // 更新 UI 显示
+            clickedCoordsDisplay.textContent = `${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)}`;
+            const { lat, lon } = toLatLng(point);
+            clickedLatLngDisplay.textContent = `${lat}°N, ${lon}°E`;
+
+            // 在点击位置显示 2D 标记
+            const screenPos = toScreenPosition(point, camera);
+            targetMarkerUI.style.left = `${screenPos.x}px`;
+            targetMarkerUI.style.top = `${screenPos.y}px`;
+            targetMarkerUI.style.display = 'block'; // 显示标记
+
+            console.log('点击了地球！3D 坐标:', point);
+            console.log('经纬度:', lat, lon);
+
+            // --- 在这里可以添加发射导弹的逻辑 ---
+            // 例如：launchMissileFromBase(point);
+            alert(`目标锁定！经度: ${lon}°, 纬度: ${lat}°`);
+        } else {
+            // 如果点击到地球外面，隐藏标记
+            targetMarkerUI.style.display = 'none';
+        }
+    }
+
+    window.addEventListener('mousedown', onDocumentMouseDown, false);
+
+    // --- 动画循环 ---
+    function animate() {
+        requestAnimationFrame(animate);
+        earth.rotation.y += 0.001; // 地球自转
+        controls.update(); // 每次渲染更新控制器
+        renderer.render(scene, camera);
+    }
+
+    // 窗口自适应
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+</script>
+</body>
+</html>
