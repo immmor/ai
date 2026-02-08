@@ -19,10 +19,10 @@ let vipExpiryTime = 0; // 会员过期时间
 
 // API配置
 const API_CONFIG = {
-    // 支付API配置
+    // 支付API配置 - 使用本地Worker服务
     PAYMENT: {
-        API_URL: '/api',
-        MERCHANT_ID: '1235', // 平台商户号
+        API_URL: window.location.origin, // 使用当前域名
+        MERCHANT_ID: '1235', // 商户ID（与pay.py一致）
         SIGN_TYPE: 'MD5' // 签名类型
     }
 };
@@ -257,7 +257,7 @@ function wechatVip() {
     submitPayment('wechat', 10.00, '会员购买');
 }
 
-// 新：提交支付请求到后端
+// 新：提交支付请求到后端（使用Python支付逻辑）
 async function submitPayment(paymentType, amount, description) {
     try {
         // 参数检查
@@ -270,21 +270,20 @@ async function submitPayment(paymentType, amount, description) {
         if (!description) {
             throw new Error('支付描述不能为空');
         }
+        
         // 生成订单号
         const orderNumber = generateOrderNumber();
         
-        // 准备支付参数
+        // 准备支付参数（保持notify_url和return_url不变）
         const paymentParams = {
-            type: paymentType, // alipay 或 wechat
-            amount: amount,    // 金额
-            order_no: orderNumber, // 订单号
-            body: description, // 商品描述
-            notify_url: 'https://immmor.com/api/pay/notify', // 回调地址
-            return_url: window.location.origin // 返回地址
+            type: paymentType === 'alipay' ? 'alipay' : 'wxpay', // 注意：微信支付类型为wxpay
+            amount: amount,
+            order_no: orderNumber,
+            body: description
         };
         
-        // 调用后端支付接口
-        const response = await fetch('/api/pay/submit', {
+        // 调用本地Worker支付接口
+        const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/submit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -309,23 +308,12 @@ async function submitPayment(paymentType, amount, description) {
 // 新：处理支付响应
 function handlePaymentResponse(paymentType, paymentData) {
     // 根据支付类型和响应数据处理
-    if (paymentType === 'alipay') {
-        // 支付宝支付处理
-        if (paymentData.pay_url) {
-            // 如果有支付URL，直接跳转到支付页面
-            window.location.href = paymentData.pay_url;
-        } else if (paymentData.qr_code) {
-            // 如果有二维码，显示二维码支付页面
-            showDynamicPaymentPopup(paymentType, paymentData);
-        }
-    } else if (paymentType === 'wechat') {
-        // 微信支付处理
-        if (paymentData.code_url) {
-            // 微信支付通常返回code_url用于生成二维码
-            showDynamicPaymentPopup(paymentType, paymentData);
-        } else if (paymentData.pay_url) {
-            window.location.href = paymentData.pay_url;
-        }
+    if (paymentData.pay_url) {
+        // 如果有支付URL，直接跳转到支付页面
+        window.location.href = paymentData.pay_url;
+    } else {
+        // 如果没有支付URL，显示错误信息
+        showFeedback('支付链接生成失败，请重试', 'error');
     }
 }
 
@@ -425,46 +413,11 @@ function showDynamicPaymentPopup(paymentType, paymentData) {
     startPaymentPolling(paymentData.order_no);
 }
 
-// 新：轮询支付状态
+// 新：轮询支付状态（简化版，直接跳转支付页面）
 function startPaymentPolling(orderNo) {
-    let pollingCount = 0;
-    const maxPolling = 60; // 最多轮询60次，每次5秒，共5分钟
-    
-    const pollingInterval = setInterval(async () => {
-        pollingCount++;
-        
-        if (pollingCount > maxPolling) {
-            clearInterval(pollingInterval);
-            showFeedback('支付超时，请检查支付状态', 'warning');
-            return;
-        }
-        
-        try {
-            // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
-            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/pay/query?order_no=${orderNo}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const result = await response.json();
-            
-            if (result.code === 200 && result.data.status === 'success') {
-                // 支付成功
-                clearInterval(pollingInterval);
-                // 激活会员
-                activateVip();
-                showFeedback('支付成功！会员已激活', 'success');
-                // 关闭所有弹窗
-                const overlays = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-80');
-                overlays.forEach(overlay => overlay.remove());
-                document.body.style.overflow = 'auto';
-            }
-        } catch (error) {
-            console.error('查询支付状态失败:', error);
-        }
-    }, 5000); // 每5秒查询一次
+    // 由于使用页面跳转支付，不需要轮询状态
+    // 支付结果将通过return_url返回页面
+    console.log('订单号:', orderNo, '已提交支付');
 }
 
 // 生成随机订单号

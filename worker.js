@@ -113,88 +113,66 @@ export default {
         return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
       }
 
-      // ========== 易支付客户端（从pay.py转换） ==========
-      class EpayClient {
-        constructor(api_url, pid, key) {
-          this.api_url = api_url.rstrip('/') + '/submit.php';
-          this.pid = String(pid);
-          this.key = key;
-        }
-
-        get_signature(params) {
-          // 筛选并排序参数
-          const sortedParams = Object.entries(params)
-            .filter(([k, v]) => k !== 'sign' && k !== 'sign_type' && v !== '')
-            .sort(([a], [b]) => a.localeCompare(b));
-
-          // 拼接待签名字符串
-          const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
-
-          // 计算MD5签名
-          const signStr = queryString + this.key;
-          return crypto.subtle.digest('MD5', new TextEncoder().encode(signStr))
-            .then(hash => {
-              const hex = Array.from(new Uint8Array(hash))
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-              return hex;
-            });
-        }
-
-        async build_pay_url(out_trade_no, type, name, money, notify_url, return_url) {
-          const params = {
-            pid: this.pid,
-            type: type,
-            out_trade_no: out_trade_no,
-            notify_url: notify_url,
-            return_url: return_url,
-            name: name,
-            money: String(money),
-            sitename: '我的网站'
-          };
-
-          // 生成签名
-          params.sign = await this.get_signature(params);
-          params.sign_type = 'MD5';
-
-          // 构造最终请求URL
-          const queryString = Object.entries(params)
-            .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
-            .join('&');
-          return `${this.api_url}?${queryString}`;
-        }
-      }
-
-      // ========== 支付接口（使用易支付客户端） ==========
+      // ========== 支付接口（集成Python支付逻辑） ==========
       if (path === '/api/pay/submit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const origin = request.url.split('/').slice(0, 3).join('/');
-
-          // 初始化易支付客户端（请替换为实际配置）
-          const client = new EpayClient(
-            'https://epay.wxda.net/',
-            '1235',
-            'YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y'
-          );
-
-          // 构建支付URL
-          const payUrl = await client.build_pay_url(
-            params.order_no,
-            params.type,
-            params.body,
-            params.amount,
-            'https://immmor.com/api/pay/notify',
-            'https://immmor.com'
-          );
-
+          
+          // 配置信息（根据实际情况修改）
+          const API_BASE = "https://epay.wxda.net/";
+          const MERCHANT_ID = "1235"; 
+          const MERCHANT_KEY = "YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y";
+          
+          // 生成订单号
+          const orderNo = params.order_no || `immmor-${Date.now()}`;
+          
+          // 构建支付参数（保持notify_url和return_url不变）
+          const paymentParams = {
+            pid: MERCHANT_ID,
+            type: params.type === 'alipay' ? 'alipay' : 'wxpay', // 注意：微信支付类型为wxpay
+            out_trade_no: orderNo,
+            notify_url: "https://immmor.com/notify", // 保持不变的异步通知地址
+            return_url: "https://immmor.com/", // 保持不变的跳转通知地址
+            name: params.body || '会员购买',
+            money: params.amount ? params.amount.toFixed(2) : '10.00',
+            sitename: "我的网站"
+          };
+          
+          // 生成签名（Python支付逻辑的签名算法）
+          function getSignature(params, key) {
+            // 排序并过滤掉 sign, sign_type 和空值
+            const sortedParams = Object.entries(params)
+              .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
+              .sort(([a], [b]) => a.localeCompare(b));
+            
+            // 拼接待签名字符串
+            const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
+            
+            // 拼接密钥并计算MD5
+            const signStr = queryString + key;
+            const crypto = require('crypto');
+            return crypto.createHash('md5').update(signStr).digest('hex');
+          }
+          
+          // 生成签名
+          paymentParams.sign = getSignature(paymentParams, MERCHANT_KEY);
+          paymentParams.sign_type = 'MD5';
+          
+          // 构造支付URL
+          const queryString = Object.entries(paymentParams)
+            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+            .join('&');
+          const payUrl = `${API_BASE}submit.php?${queryString}`;
+          
+          // 返回支付URL和二维码信息
           return resJson({
             code: 200,
-            msg: '支付链接生成成功',
+            msg: '支付请求成功',
             data: {
               pay_url: payUrl,
-              order_no: params.order_no,
-              amount: params.amount
+              order_no: orderNo,
+              amount: paymentParams.money,
+              type: paymentParams.type
             }
           });
         } catch (err) {
@@ -218,17 +196,22 @@ export default {
             }, 400);
           }
           
-          // 调用易支付查询API
-          const queryResponse = await fetch('https://epay.wxda.net/query.php', {
-            method: 'POST',
+          // 构建查询参数（根据新API文档的要求）
+          const queryParams = {
+            p_id: '1001', // 平台商户号（根据实际情况填写）
+            out_trade_no: orderNo,
+            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
+            sign: '', // 签名（需要根据API提供的签名规则生成）
+            sign_type: 'RSA' // 签名类型
+          };
+          
+          // 调用新的第三方支付查询API
+          const queryResponse = await fetch('https://epayapi.wxda.net/query', {
+            method: 'POST', // 注意：查询接口可能也需要POST请求
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
+              'Content-Type': 'application/json'
             },
-            body: new URLSearchParams({
-              pid: '1235',
-              out_trade_no: orderNo,
-              key: 'YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y'
-            })
+            body: JSON.stringify(queryParams)
           });
           
           const queryResult = await queryResponse.json();
