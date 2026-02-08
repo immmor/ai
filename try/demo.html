@@ -2,38 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>调用 Worker API Demo</title>
-    <!-- 仅保留必要的元标签，无多余样式 -->
+    <title>登录 Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <h1>Worker API 调用结果</h1>
-    <!-- 用于显示接口返回的内容 -->
-    <div id="api-result"></div>
+    <h1>用户登录</h1>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">用户名：</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">密码：</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">登录</button>
+    </form>
+
+    <div id="result"></div>
 
     <script>
-        // 页面加载完成后执行
-        window.onload = async function() {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
             try {
-                // 1. 调用 _worker.js 中的 /api/hello 接口
-                const response = await fetch('/api/hello');
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
                 
-                // 2. 检查请求是否成功
-                if (!response.ok) {
-                    throw new Error(`请求失败：${response.status}`);
-                }
-                
-                // 3. 解析 JSON 响应数据
                 const data = await response.json();
                 
-                // 4. 将结果显示在页面上
-                const resultElement = document.getElementById('api-result');
-                // 格式化显示，方便查看
-                resultElement.textContent = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">${data.message}</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.message}</div>`;
+                }
             } catch (error) {
-                // 5. 捕获并显示错误信息
-                document.getElementById('api-result').textContent = `出错了：${error.message}`;
+                resultDiv.innerHTML = `<div class="error">出错了：${error.message}</div>`;
             }
-        };
+        });
     </script>
 </body>
 </html>

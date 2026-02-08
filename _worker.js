@@ -8,7 +8,6 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       // 路由匹配：/api/hello
       if (url.pathname === '/api/hello') {
-        // 返回 JSON 响应，模拟后台接口
         return new Response(JSON.stringify({
           code: 200,
           message: 'Hello from Pages Worker!',
@@ -18,9 +17,49 @@ export default {
         });
       }
 
+      // 路由匹配：/api/login 登录接口
+      if (url.pathname === '/api/login' && request.method === 'POST') {
+        const params = await request.json();
+        const { username, password } = params;
+        
+        if (!username || !password) {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: '用户名和密码不能为空！' 
+          }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const mockUsers = [
+          { id: 1, username: 'kkk', password: 'pwd', balance: 100 },
+          { id: 2, username: 'admin', password: 'admin123', balance: 500 }
+        ];
+
+        const user = mockUsers.find(u => u.username === username && u.password === password);
+
+        if (user) {
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: '登录成功！', 
+            userInfo: { id: user.id, username: user.username, balance: user.balance } 
+          }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } else {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: '用户名或密码错误' 
+          }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       // 路由匹配：/api/user
       if (url.pathname === '/api/user') {
-        // 模拟获取用户数据（可对接数据库、KV 等）
         return new Response(JSON.stringify({
           code: 200,
           data: { id: 1, name: 'Cloudflare User' }
@@ -29,7 +68,6 @@ export default {
         });
       }
 
-      // 404 接口
       return new Response(JSON.stringify({ code: 404, message: 'API not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
