@@ -387,28 +387,10 @@ export default {
       }
 
       // ========== 默认接口提示 ==========
-      return resJson({
-        code: 200,
-        msg: 'Worker+D1 服务正常 ✅',
-        testTips: [
-          'GET /get-user?name=kkk → 测试你的账号',
-          'POST /login → 登录（传{username,password}）',
-          'POST /register → 注册（传{username,password}）',
-          'GET /get-users → 查看所有用户',
-          'POST /api/pay/build-url → 构建支付URL',
-          'POST /api/recharge → 充值（传{username,amount}）',
-          'GET /api/balance?username=xxx → 查询余额',
-          'POST /chat → AI聊天接口（传{prompt,stream}）'
-        ]
-      });
+      
 
     } catch (err) {
-      return resJson({
-        code: 500,
-        msg: '服务器错误',
-        error: err.message,
-        tip: '优先检查D1绑定的Variable name是否为 DB'
-      }, 500);
+      
     }
   },
 };
