@@ -19,13 +19,75 @@ let vipExpiryTime = 0; // 会员过期时间
 
 // API配置
 const API_CONFIG = {
-    // 支付API配置 - 使用本地Worker服务
+    // 支付API配置
     PAYMENT: {
-        API_URL: window.location.origin, // 使用当前域名
-        MERCHANT_ID: '1235', // 商户ID（与pay.py一致）
-        SIGN_TYPE: 'MD5' // 签名类型
+        API_URL: 'https://epay.wxda.net/',
+        MERCHANT_ID: '1235', // 平台商户号
+        MERCHANT_KEY: 'YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y' // 商户密钥
     }
 };
+
+// 易支付客户端类
+class EpayClient {
+    constructor(apiUrl, pid, key) {
+        // JavaScript中没有rstrip()，使用replace()去除末尾斜杠
+        this.apiUrl = apiUrl.replace(/\/$/, '') + '/submit.php'; // 页面跳转支付接口
+        this.pid = pid.toString();
+        this.key = key;
+    }
+
+    // 易支付签名算法
+    getSignature(params) {
+        // 1. 筛选：所有发送参数（不包括sign、sign_type）
+        // 2. 排序：按参数名ASCII码从小到大排序
+        // 3. 拼接：key1=value1&key2=value2...（不包含空值）
+        // 4. 签名：拼接好的字符串末尾加上商户密钥，进行MD5加密
+        const sortedParams = Object.entries(params)
+            .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
+            .sort(([a], [b]) => a.localeCompare(b));
+        
+        const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
+        const signStr = queryString + this.key;
+        
+        // 计算MD5
+        return this.md5(signStr);
+    }
+
+    // MD5加密函数
+    md5(str) {
+        // 检查CryptoJS是否可用
+        if (typeof CryptoJS === 'undefined' || typeof CryptoJS.MD5 === 'undefined') {
+            throw new Error('CryptoJS库未加载，请在HTML中引入CryptoJS');
+        }
+        const hash = CryptoJS.MD5(str);
+        return hash.toString();
+    }
+
+    // 构造支付URL
+    buildPayUrl(outTradeNo, type, name, money, notifyUrl, returnUrl) {
+        const params = {
+            "pid": this.pid,
+            "type": type,             // 支付方式：alipay, wxpay, qqpay 等
+            "out_trade_no": outTradeNo,
+            "notify_url": notifyUrl, // 异步通知地址
+            "return_url": returnUrl, // 跳转通知地址
+            "name": name,             // 商品名称
+            "money": money.toString(), // 金额，单位元
+            "sitename": "我的网站"     // 网站名称
+        };
+        
+        // 生成签名
+        params['sign'] = this.getSignature(params);
+        params['sign_type'] = 'MD5';
+        
+        // 构造最终请求URL
+        const queryString = Object.entries(params)
+            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+            .join('&');
+        
+        return `${this.apiUrl}?${queryString}`;
+    }
+}
 
 // 获取能量元素
 let energyDisplay = null;
@@ -249,15 +311,15 @@ function buyVip() {
 
 // 新：支付宝支付
 function alipayVip() {
-    submitPayment('alipay', 10.00, '会员购买');
+    submitPayment('alipay', 0.01, '会员购买');
 }
 
 // 新：微信支付
 function wechatVip() {
-    submitPayment('wechat', 10.00, '会员购买');
+    submitPayment('wechat', 0.01, '会员购买');
 }
 
-// 新：提交支付请求到后端（使用Python支付逻辑）
+// 新：提交支付请求到后端
 async function submitPayment(paymentType, amount, description) {
     try {
         // 参数检查
@@ -274,46 +336,55 @@ async function submitPayment(paymentType, amount, description) {
         // 生成订单号
         const orderNumber = generateOrderNumber();
         
-        // 准备支付参数（保持notify_url和return_url不变）
-        const paymentParams = {
-            type: paymentType === 'alipay' ? 'alipay' : 'wxpay', // 注意：微信支付类型为wxpay
-            amount: amount,
-            order_no: orderNumber,
-            body: description
-        };
+        // 创建易支付客户端
+        const client = new EpayClient(
+            API_CONFIG.PAYMENT.API_URL,
+            API_CONFIG.PAYMENT.MERCHANT_ID,
+            API_CONFIG.PAYMENT.MERCHANT_KEY
+        );
         
-        // 调用本地Worker支付接口
-        const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/submit`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(paymentParams)
-        });
+        // 映射支付类型到易支付类型
+        const epayType = paymentType === 'alipay' ? 'alipay' : 'wxpay';
         
-        const result = await response.json();
+        // 构建支付URL
+        const payUrl = client.buildPayUrl(
+            orderNumber,
+            epayType,
+            description,
+            amount,
+            'https://immmor.com/api/pay/notify', // notify_url保持不变
+            window.location.origin // return_url保持不变
+        );
         
-        if (result.code === 200 && result.data) {
-            // 处理支付响应
-            handlePaymentResponse(paymentType, result.data);
-        } else {
-            showFeedback('支付请求失败: ' + (result.msg || '未知错误'), 'error');
-        }
+        // 直接跳转到支付页面
+        window.location.href = payUrl;
+        
     } catch (error) {
         console.error('支付请求错误:', error);
-        showFeedback('网络错误，请稍后重试', 'error');
+        showFeedback('支付请求失败: ' + error.message, 'error');
     }
 }
 
 // 新：处理支付响应
 function handlePaymentResponse(paymentType, paymentData) {
     // 根据支付类型和响应数据处理
-    if (paymentData.pay_url) {
-        // 如果有支付URL，直接跳转到支付页面
-        window.location.href = paymentData.pay_url;
-    } else {
-        // 如果没有支付URL，显示错误信息
-        showFeedback('支付链接生成失败，请重试', 'error');
+    if (paymentType === 'alipay') {
+        // 支付宝支付处理
+        if (paymentData.pay_url) {
+            // 如果有支付URL，直接跳转到支付页面
+            window.location.href = paymentData.pay_url;
+        } else if (paymentData.qr_code) {
+            // 如果有二维码，显示二维码支付页面
+            showDynamicPaymentPopup(paymentType, paymentData);
+        }
+    } else if (paymentType === 'wechat') {
+        // 微信支付处理
+        if (paymentData.code_url) {
+            // 微信支付通常返回code_url用于生成二维码
+            showDynamicPaymentPopup(paymentType, paymentData);
+        } else if (paymentData.pay_url) {
+            window.location.href = paymentData.pay_url;
+        }
     }
 }
 
@@ -413,11 +484,46 @@ function showDynamicPaymentPopup(paymentType, paymentData) {
     startPaymentPolling(paymentData.order_no);
 }
 
-// 新：轮询支付状态（简化版，直接跳转支付页面）
+// 新：轮询支付状态
 function startPaymentPolling(orderNo) {
-    // 由于使用页面跳转支付，不需要轮询状态
-    // 支付结果将通过return_url返回页面
-    console.log('订单号:', orderNo, '已提交支付');
+    let pollingCount = 0;
+    const maxPolling = 60; // 最多轮询60次，每次5秒，共5分钟
+    
+    const pollingInterval = setInterval(async () => {
+        pollingCount++;
+        
+        if (pollingCount > maxPolling) {
+            clearInterval(pollingInterval);
+            showFeedback('支付超时，请检查支付状态', 'warning');
+            return;
+        }
+        
+        try {
+            // 调用查询支付状态的接口（这里需要后端实现对应的查询接口）
+            const response = await fetch(`${API_CONFIG.PAYMENT.API_URL}/api/pay/query?order_no=${orderNo}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.code === 200 && result.data.status === 'success') {
+                // 支付成功
+                clearInterval(pollingInterval);
+                // 激活会员
+                activateVip();
+                showFeedback('支付成功！会员已激活', 'success');
+                // 关闭所有弹窗
+                const overlays = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-80');
+                overlays.forEach(overlay => overlay.remove());
+                document.body.style.overflow = 'auto';
+            }
+        } catch (error) {
+            console.error('查询支付状态失败:', error);
+        }
+    }, 5000); // 每5秒查询一次
 }
 
 // 生成随机订单号

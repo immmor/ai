@@ -113,68 +113,38 @@ export default {
         return resJson({ code: 200, msg: '查询成功', total: result.results.length, data: result.results });
       }
 
-      // ========== 支付接口（集成Python支付逻辑） ==========
+      // ========== 支付接口（调用第三方支付API） ==========
       if (path === '/api/pay/submit' && request.method === 'POST') {
         try {
           const params = await request.json();
           
-          // 配置信息（根据实际情况修改）
-          const API_BASE = "https://epay.wxda.net/";
-          const MERCHANT_ID = "1235"; 
-          const MERCHANT_KEY = "YHEPe1KO1Kg4o7gEOqgKmXkpGnPNNE2Y";
-          
-          // 生成订单号
-          const orderNo = params.order_no || `immmor-${Date.now()}`;
-          
-          // 构建支付参数（保持notify_url和return_url不变）
+          // 转换参数格式以匹配新的API要求
+          const origin = request.url.split('/').slice(0, 3).join('/'); // 从请求URL中获取origin
           const paymentParams = {
-            pid: MERCHANT_ID,
-            type: params.type === 'alipay' ? 'alipay' : 'wxpay', // 注意：微信支付类型为wxpay
-            out_trade_no: orderNo,
-            notify_url: "https://immmor.com/notify", // 保持不变的异步通知地址
-            return_url: "https://immmor.com/", // 保持不变的跳转通知地址
-            name: params.body || '会员购买',
-            money: params.amount ? params.amount.toFixed(2) : '10.00',
-            sitename: "我的网站"
+            p_id: '1001', // 平台商户号（根据实际情况填写）
+            type: params.type === 'alipay' ? 'alipay' : 'wechat',
+            out_trade_no: params.order_no,
+            notify_url: origin + '/api/pay/notify', // 异步通知地址
+            return_url: origin, // 页面跳转地址
+            name: params.body,
+            money: params.amount.toFixed(2),
+            param: '', // 订单备注
+            timestamp: Math.floor(Date.now() / 1000).toString(), // 当前时间戳
+            sign: '', // 签名（需要根据API提供的签名规则生成）
+            sign_type: 'RSA' // 签名类型
           };
           
-          // 生成签名（Python支付逻辑的签名算法）
-          function getSignature(params, key) {
-            // 排序并过滤掉 sign, sign_type 和空值
-            const sortedParams = Object.entries(params)
-              .filter(([k, v]) => !['sign', 'sign_type'].includes(k) && v !== '')
-              .sort(([a], [b]) => a.localeCompare(b));
-            
-            // 拼接待签名字符串
-            const queryString = sortedParams.map(([k, v]) => `${k}=${v}`).join('&');
-            
-            // 拼接密钥并计算MD5
-            const signStr = queryString + key;
-            const crypto = require('crypto');
-            return crypto.createHash('md5').update(signStr).digest('hex');
-          }
-          
-          // 生成签名
-          paymentParams.sign = getSignature(paymentParams, MERCHANT_KEY);
-          paymentParams.sign_type = 'MD5';
-          
-          // 构造支付URL
-          const queryString = Object.entries(paymentParams)
-            .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-            .join('&');
-          const payUrl = `${API_BASE}submit.php?${queryString}`;
-          
-          // 返回支付URL和二维码信息
-          return resJson({
-            code: 200,
-            msg: '支付请求成功',
-            data: {
-              pay_url: payUrl,
-              order_no: orderNo,
-              amount: paymentParams.money,
-              type: paymentParams.type
-            }
+          // 调用新的第三方支付API
+          const paymentResponse = await fetch('https://epayapi.wxda.net/api/pay/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentParams)
           });
+          
+          const paymentResult = await paymentResponse.json();
+          return resJson(paymentResult, paymentResponse.status);
         } catch (err) {
           return resJson({
             code: 500,
