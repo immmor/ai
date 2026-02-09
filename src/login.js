@@ -1,8 +1,10 @@
 // 登录状态管理
 let isLoggedIn = false;
+let cachedBalance = '0.00'; // 缓存的余额值
 // ✅ 固定Worker接口地址（已写死你的域名，无需修改）
 const WORKER_LOGIN_URL = "https://api.immmor.com/login";
 const WORKER_REGISTER_URL = "https://api.immmor.com/register";
+const WORKER_BALANCE_URL = "https://api.immmor.com/api/balance";
 
 // 创建登录按钮
 function createLoginButton() {
@@ -75,6 +77,8 @@ function initLogin() {
     if (storedLogin === 'true') {
         isLoggedIn = true;
         updateLoginButton();
+        // 页面加载时获取一次余额
+        fetchUserBalance();
     }
     
     // 登录按钮点击事件
@@ -180,6 +184,8 @@ function handleLogin() {
             localStorage.setItem('username', username);
             updateLoginButton();
             hideLoginModal();
+            // 登录成功后获取一次余额
+            fetchUserBalance();
             errorMsg.textContent = '登录成功！';
             errorMsg.className = 'mb-4 text-sm text-green-500';
             setTimeout(() => errorMsg.classList.add('hidden'), 2000);
@@ -261,19 +267,64 @@ function updateLoginButton() {
     }
 }
 
+// 获取用户余额（调用API接口）- 只在页面加载时调用
+async function fetchUserBalance() {
+    try {
+        const username = localStorage.getItem('username');
+        if (!username) return '0.00';
+        
+        const response = await fetch(`${WORKER_BALANCE_URL}?username=${encodeURIComponent(username)}`, {
+            method: 'GET',
+            mode: 'cors'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.code === 200) {
+                cachedBalance = data.balance || '0.00';
+                return cachedBalance;
+            }
+        }
+        return '0.00';
+    } catch (error) {
+        console.error('获取余额失败:', error);
+        return '0.00';
+    }
+}
+
+// 获取缓存的余额（用于用户菜单显示）
+function getCachedBalance() {
+    return cachedBalance;
+}
+
 // 显示用户菜单 & 退出登录
 function showUserMenu() {
     let menu = document.getElementById('user-menu');
     if (menu) return menu.classList.toggle('hidden');
     menu = document.createElement('div');
     menu.id = 'user-menu';
-    menu.className = 'absolute top-full -right-1 mt-2.5 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-50';
+    menu.className = 'absolute top-full -right-1 mt-2.5 w-auto min-w-[75px] bg-white rounded-md shadow-lg border border-gray-200 z-50';
     
     // 添加用户名显示
     const usernameDiv = document.createElement('div');
     usernameDiv.className = 'w-full text-left px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border-b border-gray-100';
     usernameDiv.textContent = localStorage.getItem('username') || '用户';
     menu.appendChild(usernameDiv);
+    
+    // 添加余额显示（使用缓存值）
+    const balanceDiv = document.createElement('div');
+    balanceDiv.className = 'w-full text-left px-3 py-2 text-xs text-gray-600 border-b border-gray-100';
+    balanceDiv.innerHTML = `<span>${getCachedBalance()}</span>`;
+    menu.appendChild(balanceDiv);
+    
+    // 添加充值按钮
+    const rechargeBtn = document.createElement('button');
+    rechargeBtn.className = 'w-full text-left px-3 py-2 text-xs hover:bg-gray-100 border-b border-gray-100';
+    rechargeBtn.innerHTML = '账户充值';
+    rechargeBtn.addEventListener('click', () => {
+        window.location.href = 'pay.html';
+    });
+    menu.appendChild(rechargeBtn);
     
     const logoutBtn = document.createElement('button');
     logoutBtn.className = 'w-full text-left px-3 py-2 text-xs hover:bg-gray-100';
