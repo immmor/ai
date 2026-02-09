@@ -57,7 +57,7 @@ export default {
             return new Response(JSON.stringify({ 
               success: true, 
               message: '注册成功！', 
-              userInfo: { id: result.meta.last_row_id, username: username } 
+              userInfo: { sername: username } 
             }), {
               headers: { 'Content-Type': 'application/json' }
             });
@@ -99,7 +99,7 @@ export default {
 
         try {
           const user = await env.DB
-            .prepare('SELECT id, username, balance FROM user WHERE username = ? AND password = ?')
+            .prepare('SELECT rowid, username, balance FROM user WHERE username = ? AND password = ?')
             .bind(username, password)
             .first();
 
