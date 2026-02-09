@@ -23,18 +23,24 @@
             min-height: 100vh;
             color: #fff;
             overflow: hidden;
+            touch-action: none;
+            overscroll-behavior: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         /* 背景流光线条 */
         body::before {
             content: "";
-            position: absolute;
+            position: fixed;
             width: 200%;
             height: 200%;
             background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.05) 1px, rgba(0, 242, 255, 0.05) 2px);
             background-size: 100% 4px;
             animation: move-bg 20s linear infinite;
             z-index: -1;
+            pointer-events: none;
         }
 
         @keyframes move-bg {
@@ -46,12 +52,16 @@
         .neon-card {
             position: relative;
             width: 380px;
+            max-width: 90vw;
+            max-height: 90vh;
             padding: 40px;
             background: rgba(10, 10, 10, 0.9);
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 15px var(--neon-blue), inset 0 0 10px var(--neon-blue);
             border-radius: 5px;
             clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
+            overflow: hidden;
+            touch-action: pan-y;
         }
 
         .header {
@@ -218,6 +228,17 @@
     </div>
 
 <script>
+        // 阻止页面滚动
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // 阻止双击缩放
+        document.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+        });
         let mode = 'wechat';
         
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
