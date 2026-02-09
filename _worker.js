@@ -218,34 +218,27 @@ export default {
       }
 
       // 路由匹配：/api/pay/notify 支付通知接口
-      if (url.pathname === '/api/pay/notify' && request.method === 'POST') {
+      if (url.pathname === '/api/pay/notify' && request.method === 'GET') {
         try {
-          const formData = await request.formData();
-          const order_no = formData.get('out_trade_no');
-          const trade_no = formData.get('trade_no');
-          const trade_status = formData.get('trade_status');
-          const money = parseFloat(formData.get('money'));
-          const sign = formData.get('sign');
-          
-          console.log('支付通知:', { order_no, trade_status, money });
+          const order_no = url.searchParams.get('out_trade_no');
+          const trade_no = url.searchParams.get('trade_no');
+          const trade_status = url.searchParams.get('trade_status');
+          const money = url.searchParams.get('money');
+          const sign = url.searchParams.get('sign');
           
           if (trade_status === 'TRADE_SUCCESS') {
             const username = order_no.split('_')[0];
-            console.log('从订单号提取的用户名:', username);
             
             const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-              .bind(money, username)
+              .bind(parseFloat(money), username)
               .run();
-            
-            console.log('余额更新结果:', result);
             
             return new Response('success', { status: 200 });
           } else {
             return new Response('fail', { status: 200 });
           }
         } catch (err) {
-          console.error('Notify error:', err);
           return new Response('fail', { status: 500 });
         }
       }
