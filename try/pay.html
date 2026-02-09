@@ -295,8 +295,7 @@
                 })).json();
                 
                 if (payData.code === 200) {
-                    window.open(payData.data.pay_url, '_blank');
-                    alert('已打开支付页面，支付成功后余额将自动更新');
+                    window.location.href = payData.data.pay_url;
                 } else {
                     alert('支付URL构建失败：' + payData.msg);
                 }
