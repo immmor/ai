@@ -107,7 +107,7 @@ export default {
             return new Response(JSON.stringify({ 
               success: true, 
               message: '登录成功！', 
-              userInfo: { id: user.id, username: user.username, balance: user.balance } 
+              userInfo: { id: user.rowid, username: user.username, balance: user.balance } 
             }), {
               headers: { 'Content-Type': 'application/json' }
             });
