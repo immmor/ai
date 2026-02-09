@@ -226,7 +226,25 @@
         if (currentUser) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('pay-interface').style.display = 'block';
-            document.querySelector('.balance-val').textContent = currentUser.balance.toFixed(2);
+            // 实时查询余额，避免缓存旧值
+            updateBalance();
+        }
+        
+        // 实时查询余额函数
+        async function updateBalance() {
+            if (!currentUser) return;
+            
+            try {
+                const balanceData = await (await fetch(`https://immmor.com/api/balance?username=${currentUser.username}`)).json();
+                if (balanceData.code === 200) {
+                    document.querySelector('.balance-val').textContent = balanceData.balance.toFixed(2);
+                    // 更新本地缓存
+                    currentUser.balance = balanceData.balance;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+            } catch (error) {
+                console.error('查询余额失败:', error);
+            }
         }
         
         async function login() {
@@ -236,7 +254,7 @@
             if (!username || !password) return alert('用户名和密码不能为空');
             
             try {
-                const data = await (await fetch('https://immmor.com/login', {
+                const data = await (await fetch('https://immmor.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
