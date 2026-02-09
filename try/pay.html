@@ -236,7 +236,7 @@
             if (!username || !password) return alert('用户名和密码不能为空');
             
             try {
-                const data = await (await fetch('https://api.immmor.com/login', {
+                const data = await (await fetch('https://immmor.com/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -261,11 +261,10 @@
 
         async function pay() {
             const amount = document.getElementById('amt').value;
-            if (!amount || amount <= 0) return alert('访问被拒绝：未输入有效金额');
+            if (!amount || amount <= 0) return alert('请输入有效金额');
             
             try {
-                // 构建支付URL
-                const payData = await (await fetch('https://api.immmor.com/api/pay/build-url', {
+                const payData = await (await fetch('https://immmor.com/api/pay/build-url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -278,41 +277,13 @@
                 })).json();
                 
                 if (payData.code === 200) {
-                    // 跳转到支付页面
                     window.open(payData.data.pay_url, '_blank');
-                    
-                    // 轮询查询余额更新
-                    const originalBalance = currentUser.balance;
-                    console.log('开始轮询余额，原始余额:', originalBalance);
-                    
-                    const interval = setInterval(async () => {
-                        try {
-                            const balanceData = await (await fetch(`https://api.immmor.com/api/balance?username=${currentUser.username}`)).json();
-                            
-                            console.log('余额查询结果:', balanceData);
-                            
-                            if (balanceData.code === 200 && balanceData.balance > originalBalance) {
-                                clearInterval(interval);
-                                alert(`[协议建立] 正在通过 ${mode === 'wechat' ? '微信' : '支付宝'} 注入资金: ${amount} 单位`);
-                                document.querySelector('.balance-val').textContent = balanceData.balance.toFixed(2);
-                                document.getElementById('amt').value = '';
-                                // 更新本地存储
-                                currentUser.balance = balanceData.balance;
-                                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                            }
-                        } catch (error) {
-                            console.error('查询余额失败:', error);
-                        }
-                    }, 3000);
-                    
-                    // 5分钟后停止轮询
-                    setTimeout(() => clearInterval(interval), 5 * 60 * 1000);
+                    alert('已打开支付页面，支付成功后余额将自动更新');
                 } else {
                     alert('支付URL构建失败：' + payData.msg);
                 }
             } catch (error) {
                 alert('网络错误，请稍后重试');
-                console.error('支付流程错误:', error);
             }
         }
     </script>

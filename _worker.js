@@ -161,7 +161,7 @@ export default {
             type: epayType,
             out_trade_no: finalOrderNo,
             notify_url: 'https://immmor.com/api/pay/notify',
-            return_url: 'https://immmor.com/try/demo',
+            return_url: 'https://immmor.com/try/pay',
             name: description,
             money: amount.toFixed(2),
             sitename: '我的网站'
