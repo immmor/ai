@@ -4,16 +4,50 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
+    // 工具函数：创建Supabase请求配置
+    function createSupabaseConfig(method = 'GET', body = null) {
+      const config = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': env.SUPABASE_KEY,
+          'Authorization': `Bearer ${env.SUPABASE_KEY}`
+        }
+      };
+      if (body) config.body = JSON.stringify(body);
+      return config;
+    }
+    
+    // 工具函数：处理Supabase API调用
+    async function supabaseFetch(endpoint, config) {
+      try {
+        if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
+          throw new Error('Supabase environment variables not configured');
+        }
+        const response = await fetch(`${env.SUPABASE_URL}/rest/v1/${endpoint}`, config);
+        return await response.json();
+      } catch (error) {
+        console.error('Supabase API error:', error);
+        throw error;
+      }
+    }
+    
+    // 工具函数：返回JSON响应
+    function jsonResponse(data, status = 200) {
+      return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     // 1. 处理自定义 API 接口（后台逻辑）
     if (url.pathname.startsWith('/api/')) {
       // 路由匹配：/api/hello
       if (url.pathname === '/api/hello') {
-        return new Response(JSON.stringify({
+        return jsonResponse({
           code: 200,
           message: 'Hello from Pages Worker!',
           data: { time: new Date().toISOString() }
-        }), {
-          headers: { 'Content-Type': 'application/json' }
         });
       }
 
@@ -139,13 +173,7 @@ export default {
           const { type, order_no, amount, description } = params;
           
           if (!type || !order_no || !amount || !description) {
-            return new Response(JSON.stringify({
-              code: 400,
-              msg: '缺少必要参数'
-            }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
           }
           
           const apiUrl = env.PAY_API_URL;
@@ -185,32 +213,24 @@ export default {
           
           const payUrl = `${apiUrl}?${finalQueryString}`;
           
-          // 记录订单到Supabase（添加错误处理）
+          // 记录订单到Supabase
           try {
             if (env.SUPABASE_URL && env.SUPABASE_KEY) {
-              await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'apikey': env.SUPABASE_KEY,
-                  'Authorization': `Bearer ${env.SUPABASE_KEY}`
-                },
-                body: JSON.stringify({
-                  order_no: finalOrderNo,
-                  username: params.username,
-                  amount: amount,
-                  payment_type: epayType,
-                  status: 'pending',
-                  description: description
-                })
-              });
+              await supabaseFetch('orders', createSupabaseConfig('POST', {
+                order_no: finalOrderNo,
+                username: params.username,
+                amount: amount,
+                payment_type: epayType,
+                status: 'pending',
+                description: description
+              }));
             }
           } catch (error) {
             console.error('Supabase订单记录失败:', error);
             // 忽略错误，继续流程
           }
           
-          return new Response(JSON.stringify({
+          return jsonResponse({
             code: 200,
             msg: '支付URL构建成功',
             data: {
@@ -218,18 +238,9 @@ export default {
               order_no: order_no,
               amount: amount
             }
-          }), {
-            headers: { 'Content-Type': 'application/json' }
           });
         } catch (err) {
-          return new Response(JSON.stringify({
-            code: 500,
-            msg: '支付URL构建失败',
-            error: err.message
-          }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return jsonResponse({ code: 500, msg: '支付URL构建失败', error: err.message }, 500);
         }
       }
       
@@ -261,34 +272,30 @@ export default {
               .run();
             
             // 更新订单状态到Supabase
-            await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${order_no}`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': env.SUPABASE_KEY,
-                'Authorization': `Bearer ${env.SUPABASE_KEY}`
-              },
-              body: JSON.stringify({
-                status: 'paid',
-                trade_no: trade_no,
-                paid_at: new Date().toISOString()
-              })
-            });
+            try {
+              if (env.SUPABASE_URL && env.SUPABASE_KEY) {
+                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                  status: 'paid',
+                  trade_no: trade_no,
+                  paid_at: new Date().toISOString()
+                }));
+              }
+            } catch (error) {
+              console.error('Supabase订单更新失败:', error);
+            }
             
             return new Response('success', { status: 200 });
           } else {
             // 支付失败，更新订单状态到Supabase
-            await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${order_no}`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': env.SUPABASE_KEY,
-                'Authorization': `Bearer ${env.SUPABASE_KEY}`
-              },
-              body: JSON.stringify({
-                status: 'failed'
-              })
-            });
+            try {
+              if (env.SUPABASE_URL && env.SUPABASE_KEY) {
+                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                  status: 'failed'
+                }));
+              }
+            } catch (error) {
+              console.error('Supabase订单更新失败:', error);
+            }
             
             return new Response('fail', { status: 200 });
           }
@@ -389,27 +396,15 @@ export default {
           }
           
           // 查询订单总数
-          const totalResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?username=eq.${username}&select=id`, {
-            headers: {
-              'apikey': env.SUPABASE_KEY,
-              'Authorization': `Bearer ${env.SUPABASE_KEY}`
-            }
-          });
-          const totalData = await totalResponse.json();
+          const totalData = await supabaseFetch(`orders?username=eq.${username}&select=id`, createSupabaseConfig());
           const total = totalData.length;
           
           // 查询订单列表
-          const ordersResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?username=eq.${username}&order=created_at.desc&limit=${limit}&offset=${offset}`, {
-            headers: {
-              'apikey': env.SUPABASE_KEY,
-              'Authorization': `Bearer ${env.SUPABASE_KEY}`
-            }
-          });
-          const orders = await ordersResponse.json();
+          const orders = await supabaseFetch(`orders?username=eq.${username}&order=created_at.desc&limit=${limit}&offset=${offset}`, createSupabaseConfig());
           
-          return new Response(JSON.stringify({ 
-            code: 200, 
-            msg: '查询成功', 
+          return jsonResponse({
+            code: 200,
+            msg: '查询成功',
             data: {
               orders: orders || [],
               pagination: {
@@ -419,8 +414,6 @@ export default {
                 pages: Math.ceil(total / limit)
               }
             }
-          }), {
-            headers: { 'Content-Type': 'application/json' }
           });
         } catch (err) {
           return new Response(JSON.stringify({ code: 500, msg: '查询失败', error: err.message }), {
@@ -443,23 +436,12 @@ export default {
           }
           
           // 查询订单详情
-          const response = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${orderNo}`, {
-            headers: {
-              'apikey': env.SUPABASE_KEY,
-              'Authorization': `Bearer ${env.SUPABASE_KEY}`
-            }
-          });
-          const orders = await response.json();
+          const orders = await supabaseFetch(`orders?order_no=eq.${orderNo}`, createSupabaseConfig());
           
           if (orders.length > 0) {
-            return new Response(JSON.stringify({ code: 200, msg: '查询成功', data: orders[0] }), {
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return jsonResponse({ code: 200, msg: '查询成功', data: orders[0] });
           } else {
-            return new Response(JSON.stringify({ code: 404, msg: '订单不存在' }), {
-              status: 404,
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return jsonResponse({ code: 404, msg: '订单不存在' }, 404);
           }
         } catch (err) {
           return new Response(JSON.stringify({ code: 500, msg: '查询失败', error: err.message }), {
@@ -469,10 +451,7 @@ export default {
         }
       }
 
-      return new Response(JSON.stringify({ code: 404, message: 'API not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return jsonResponse({ code: 404, message: 'API not found' }, 404);
     }
 
     // 2. 放行静态资源（HTML/CSS/JS/图片等）
