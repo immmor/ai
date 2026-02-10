@@ -23,7 +23,7 @@
             min-height: 100vh;
             color: #fff;
             overflow: hidden;
-            touch-action: none;
+            touch-action: pan-y;
             overscroll-behavior: none;
             position: fixed;
             width: 100%;
@@ -221,7 +221,7 @@
             flex: 1;
         }
         
-        /* 订单项样式 */
+        /* 订单项样式 - 优化移动端触摸 */
         .order-item {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid #333;
@@ -229,6 +229,8 @@
             padding: 15px;
             margin-bottom: 10px;
             transition: all 0.3s;
+            cursor: pointer;
+            user-select: none; /* 禁止文本选择 */
         }
         
         .order-item:hover {
@@ -275,6 +277,14 @@
         .status-paid { background: #07c160; color: #fff; }
         .status-failed { background: #ff4757; color: #fff; }
         
+        /* 订单列表容器 - 优化移动端滑动 */
+        .orders-container {
+            max-height: 300px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* 启用iOS弹性滚动 */
+            scroll-behavior: smooth; /* 平滑滚动 */
+        }
+
         /* 分页按钮 */
         .page-btn {
             background: var(--neon-blue);
