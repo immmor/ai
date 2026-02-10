@@ -23,7 +23,7 @@
             min-height: 100vh;
             color: #fff;
             overflow: hidden;
-            touch-action: pan-y;
+            touch-action: auto; /* 允许所有触摸操作 */
             overscroll-behavior: none;
             position: fixed;
             width: 100%;
@@ -283,6 +283,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch; /* 启用iOS弹性滚动 */
             scroll-behavior: smooth; /* 平滑滚动 */
+            touch-action: pan-y; /* 仅允许垂直滑动 */
         }
 
         /* 分页按钮 */
@@ -393,6 +394,11 @@
 
 <script>
         document.addEventListener('touchmove', function(e) {
+            // 允许订单列表滑动
+            if (e.target.closest('.orders-container')) {
+                return;
+            }
+            // 其他区域阻止默认行为
             if (e.target.tagName !== 'INPUT') {
                 e.preventDefault();
             }
