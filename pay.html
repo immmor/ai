@@ -312,6 +312,7 @@
         <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
+            <button id="logout-tab" class="nav-tab" onclick="logout()" style="margin-left: auto; color: #ff4757;">退出登录</button>
         </div>
         
         <!-- 登录表单 -->
@@ -594,6 +595,11 @@
         function showOrderDetail(orderNo) {
             alert(`订单详情：${orderNo}\n点击确定查看完整信息`);
             // 这里可以扩展为显示详细订单信息的模态框
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            location.reload();
         }
         
         // 自动刷新订单列表（每30秒）
