@@ -185,14 +185,23 @@ export default {
           
           const payUrl = `${apiUrl}?${finalQueryString}`;
           
-          // 记录订单到数据库
-          await env.DB
-            .prepare(`
-              INSERT INTO orders (order_no, username, amount, payment_type, status, description, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, datetime("now"))
-            `)
-            .bind(finalOrderNo, params.username, amount, epayType, 'pending', description)
-            .run();
+          // 记录订单到Supabase
+          await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': env.SUPABASE_KEY,
+              'Authorization': `Bearer ${env.SUPABASE_KEY}`
+            },
+            body: JSON.stringify({
+              order_no: finalOrderNo,
+              username: params.username,
+              amount: amount,
+              payment_type: epayType,
+              status: 'pending',
+              description: description
+            })
+          });
           
           return new Response(JSON.stringify({
             code: 200,
@@ -244,19 +253,35 @@ export default {
               .bind(parseFloat(money), username)
               .run();
             
-            // 更新订单状态
-            await env.DB
-              .prepare('UPDATE orders SET status = ?, trade_no = ?, paid_at = datetime("now") WHERE order_no = ?')
-              .bind('paid', trade_no, order_no)
-              .run();
+            // 更新订单状态到Supabase
+            await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${order_no}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': env.SUPABASE_KEY,
+                'Authorization': `Bearer ${env.SUPABASE_KEY}`
+              },
+              body: JSON.stringify({
+                status: 'paid',
+                trade_no: trade_no,
+                paid_at: new Date().toISOString()
+              })
+            });
             
             return new Response('success', { status: 200 });
           } else {
-            // 支付失败，更新订单状态
-            await env.DB
-              .prepare('UPDATE orders SET status = ? WHERE order_no = ?')
-              .bind('failed', order_no)
-              .run();
+            // 支付失败，更新订单状态到Supabase
+            await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${order_no}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': env.SUPABASE_KEY,
+                'Authorization': `Bearer ${env.SUPABASE_KEY}`
+              },
+              body: JSON.stringify({
+                status: 'failed'
+              })
+            });
             
             return new Response('fail', { status: 200 });
           }
@@ -357,27 +382,34 @@ export default {
           }
           
           // 查询订单总数
-          const totalResult = await env.DB
-            .prepare('SELECT COUNT(*) as total FROM orders WHERE username = ?')
-            .bind(username)
-            .first();
+          const totalResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?username=eq.${username}&select=id`, {
+            headers: {
+              'apikey': env.SUPABASE_KEY,
+              'Authorization': `Bearer ${env.SUPABASE_KEY}`
+            }
+          });
+          const totalData = await totalResponse.json();
+          const total = totalData.length;
           
           // 查询订单列表
-          const orders = await env.DB
-            .prepare('SELECT * FROM orders WHERE username = ? ORDER BY created_at DESC LIMIT ? OFFSET ?')
-            .bind(username, limit, offset)
-            .all();
+          const ordersResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?username=eq.${username}&order=created_at.desc&limit=${limit}&offset=${offset}`, {
+            headers: {
+              'apikey': env.SUPABASE_KEY,
+              'Authorization': `Bearer ${env.SUPABASE_KEY}`
+            }
+          });
+          const orders = await ordersResponse.json();
           
           return new Response(JSON.stringify({ 
             code: 200, 
             msg: '查询成功', 
             data: {
-              orders: orders.results || [],
+              orders: orders || [],
               pagination: {
                 page,
                 limit,
-                total: totalResult.total,
-                pages: Math.ceil(totalResult.total / limit)
+                total,
+                pages: Math.ceil(total / limit)
               }
             }
           }), {
@@ -403,13 +435,17 @@ export default {
             });
           }
           
-          const order = await env.DB
-            .prepare('SELECT * FROM orders WHERE order_no = ?')
-            .bind(orderNo)
-            .first();
+          // 查询订单详情
+          const response = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${orderNo}`, {
+            headers: {
+              'apikey': env.SUPABASE_KEY,
+              'Authorization': `Bearer ${env.SUPABASE_KEY}`
+            }
+          });
+          const orders = await response.json();
           
-          if (order) {
-            return new Response(JSON.stringify({ code: 200, msg: '查询成功', data: order }), {
+          if (orders.length > 0) {
+            return new Response(JSON.stringify({ code: 200, msg: '查询成功', data: orders[0] }), {
               headers: { 'Content-Type': 'application/json' }
             });
           } else {
