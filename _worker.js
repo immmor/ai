@@ -185,23 +185,30 @@ export default {
           
           const payUrl = `${apiUrl}?${finalQueryString}`;
           
-          // 记录订单到Supabase
-          await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': env.SUPABASE_KEY,
-              'Authorization': `Bearer ${env.SUPABASE_KEY}`
-            },
-            body: JSON.stringify({
-              order_no: finalOrderNo,
-              username: params.username,
-              amount: amount,
-              payment_type: epayType,
-              status: 'pending',
-              description: description
-            })
-          });
+          // 记录订单到Supabase（添加错误处理）
+          try {
+            if (env.SUPABASE_URL && env.SUPABASE_KEY) {
+              await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': env.SUPABASE_KEY,
+                  'Authorization': `Bearer ${env.SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                  order_no: finalOrderNo,
+                  username: params.username,
+                  amount: amount,
+                  payment_type: epayType,
+                  status: 'pending',
+                  description: description
+                })
+              });
+            }
+          } catch (error) {
+            console.error('Supabase订单记录失败:', error);
+            // 忽略错误，继续流程
+          }
           
           return new Response(JSON.stringify({
             code: 200,
