@@ -384,7 +384,7 @@
             <!-- 分页 -->
             <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                 <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled>上一页</button>
-                <span id="page-info" style="font-size: 12px;">第 1 页</span>
+                <span id="page-info" style="font-size: 12px;">第 1/1 页</span>
                 <button id="next-page" class="page-btn" onclick="changePage(1)" disabled>下一页</button>
             </div>
             
@@ -572,7 +572,7 @@
         }
         
         function updatePagination() {
-            document.getElementById('page-info').textContent = `第 ${currentPage} 页`;
+            document.getElementById('page-info').textContent = `第 ${currentPage}/${totalPages} 页`;
             document.getElementById('prev-page').disabled = currentPage <= 1;
             document.getElementById('next-page').disabled = currentPage >= totalPages;
         }
