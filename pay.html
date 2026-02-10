@@ -309,7 +309,7 @@
         <div class="header">以墨钱包</div>
         
         <!-- 导航菜单 -->
-        <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
+        <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
             <button id="logout-tab" class="nav-tab" onclick="logout()" style="margin-left: auto; color: #ff4757;">退出登录</button>
@@ -415,8 +415,14 @@
         
         if (currentUser) {
             document.getElementById('login-form').style.display = 'none';
+            document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
             updateBalance();
+        } else {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('nav-tabs-container').style.display = 'none';
+            document.getElementById('pay-interface').style.display = 'none';
+            document.getElementById('orders-interface').style.display = 'none';
         }
         
         async function updateBalance() {
