@@ -181,12 +181,127 @@
             color: var(--neon-blue);
             opacity: 0.5;
         }
+        
+        /* 导航标签样式 */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--neon-blue);
+        }
+        
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: #666;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .nav-tab.active {
+            color: var(--neon-blue);
+            border-bottom-color: var(--neon-blue);
+        }
+        
+        /* 筛选器样式 */
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-select {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 5px 10px;
+            border-radius: 3px;
+            flex: 1;
+        }
+        
+        /* 订单项样式 */
+        .order-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .order-item:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .order-no {
+            font-size: 12px;
+            color: var(--neon-blue);
+            font-family: monospace;
+        }
+        
+        .order-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .order-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .status-pending { background: #ffa500; color: #000; }
+        .status-paid { background: #07c160; color: #fff; }
+        .status-failed { background: #ff4757; color: #fff; }
+        
+        /* 分页按钮 */
+        .page-btn {
+            background: var(--neon-blue);
+            border: none;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .page-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
 
 <div class="neon-card">
         <div class="header">以墨钱包</div>
+        
+        <!-- 导航菜单 -->
+        <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
+            <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
+            <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
+        </div>
         
         <!-- 登录表单 -->
         <div id="login-form">
@@ -200,7 +315,7 @@
         </div>
         
         <!-- 支付界面 -->
-        <div id="pay-interface" style="display: none;">
+        <div id="pay-interface">
             <div class="balance-display">
                 <div class="balance-label">可用余额</div>
                 <div class="balance-val">0.00</div>
@@ -225,6 +340,45 @@
             
             <div class="corner-tag">安全连接已激活</div>
         </div>
+        
+        <!-- 订单记录界面 -->
+        <div id="orders-interface" style="display: none;">
+            <div class="balance-display">
+                <div class="balance-label">订单总数</div>
+                <div class="balance-val" id="total-orders">0</div>
+            </div>
+            
+            <!-- 订单筛选 -->
+            <div class="filter-section" style="margin-bottom: 20px;">
+                <select id="status-filter" class="filter-select" onchange="loadOrders()">
+                    <option value="">全部状态</option>
+                    <option value="pending">待支付</option>
+                    <option value="paid">已支付</option>
+                    <option value="failed">支付失败</option>
+                </select>
+                <select id="type-filter" class="filter-select" onchange="loadOrders()">
+                    <option value="">全部类型</option>
+                    <option value="alipay">支付宝</option>
+                    <option value="wxpay">微信支付</option>
+                </select>
+            </div>
+            
+            <!-- 订单列表 -->
+            <div id="orders-list" class="orders-container" style="max-height: 300px; overflow-y: auto;">
+                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">
+                    加载中...
+                </div>
+            </div>
+            
+            <!-- 分页 -->
+            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled>上一页</button>
+                <span id="page-info" style="font-size: 12px;">第 1 页</span>
+                <button id="next-page" class="page-btn" onclick="changePage(1)" disabled>下一页</button>
+            </div>
+            
+            <div class="corner-tag">订单监控中</div>
+        </div>
     </div>
 
 <script>
@@ -238,8 +392,9 @@
             e.preventDefault();
         });
         let mode = 'wechat';
-        
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        let currentPage = 1;
+        let totalPages = 1;
         
         if (currentUser) {
             document.getElementById('login-form').style.display = 'none';
@@ -316,6 +471,121 @@
                 alert('网络错误，请稍后重试');
             }
         }
+        
+        // 订单簿功能
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('pay-interface').style.display = 'none';
+            document.getElementById('orders-interface').style.display = 'none';
+            
+            if (tab === 'pay') {
+                document.getElementById('pay-tab').classList.add('active');
+                document.getElementById('pay-interface').style.display = 'block';
+            } else {
+                document.getElementById('orders-tab').classList.add('active');
+                document.getElementById('orders-interface').style.display = 'block';
+                loadOrders();
+            }
+        }
+        
+        async function loadOrders() {
+            if (!currentUser) return;
+            
+            const statusFilter = document.getElementById('status-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            
+            try {
+                const ordersData = await (await fetch(`https://immmor.com/api/orders?username=${currentUser.username}&page=${currentPage}&limit=5`)).json();
+                
+                if (ordersData.code === 200) {
+                    displayOrders(ordersData.data.orders, ordersData.data.pagination);
+                } else {
+                    alert('加载订单失败：' + ordersData.msg);
+                }
+            } catch (error) {
+                console.error('加载订单失败:', error);
+                document.getElementById('orders-list').innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4757;">加载失败，请重试</div>';
+            }
+        }
+        
+        function displayOrders(orders, pagination) {
+            const ordersList = document.getElementById('orders-list');
+            const totalOrders = document.getElementById('total-orders');
+            
+            totalOrders.textContent = pagination.total;
+            totalPages = pagination.pages;
+            
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单记录</div>';
+                updatePagination();
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                const statusClass = `status-${order.status}`;
+                const statusText = {
+                    'pending': '待支付',
+                    'paid': '已支付',
+                    'failed': '支付失败'
+                }[order.status] || order.status;
+                
+                const typeText = {
+                    'alipay': '支付宝',
+                    'wxpay': '微信支付'
+                }[order.payment_type] || order.payment_type;
+                
+                html += `
+                    <div class="order-item" onclick="showOrderDetail('${order.order_no}')">
+                        <div class="order-header">
+                            <div class="order-no">${order.order_no}</div>
+                            <div class="order-amount">¥${parseFloat(order.amount).toFixed(2)}</div>
+                        </div>
+                        <div class="order-details">
+                            <div><strong>支付方式:</strong> ${typeText}</div>
+                            <div><strong>状态:</strong> <span class="order-status ${statusClass}">${statusText}</span></div>
+                            <div><strong>创建时间:</strong> ${formatDate(order.created_at)}</div>
+                            <div><strong>支付时间:</strong> ${order.paid_at ? formatDate(order.paid_at) : '-'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ordersList.innerHTML = html;
+            updatePagination();
+        }
+        
+        function updatePagination() {
+            document.getElementById('page-info').textContent = `第 ${currentPage} 页`;
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+        }
+        
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                loadOrders();
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN');
+        }
+        
+        function showOrderDetail(orderNo) {
+            alert(`订单详情：${orderNo}\n点击确定查看完整信息`);
+            // 这里可以扩展为显示详细订单信息的模态框
+        }
+        
+        // 自动刷新订单列表（每30秒）
+        setInterval(() => {
+            if (document.getElementById('orders-interface').style.display !== 'none') {
+                loadOrders();
+            }
+        }, 30000);
     </script>
 
 </body>

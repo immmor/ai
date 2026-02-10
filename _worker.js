@@ -185,6 +185,15 @@ export default {
           
           const payUrl = `${apiUrl}?${finalQueryString}`;
           
+          // 记录订单到数据库
+          await env.DB
+            .prepare(`
+              INSERT INTO orders (order_no, username, amount, payment_type, status, description, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, datetime("now"))
+            `)
+            .bind(finalOrderNo, params.username, amount, epayType, 'pending', description)
+            .run();
+          
           return new Response(JSON.stringify({
             code: 200,
             msg: '支付URL构建成功',
@@ -229,13 +238,26 @@ export default {
           if (trade_status === 'TRADE_SUCCESS') {
             const username = order_no.split('_')[0];
             
+            // 更新用户余额
             const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
               .bind(parseFloat(money), username)
               .run();
             
+            // 更新订单状态
+            await env.DB
+              .prepare('UPDATE orders SET status = ?, trade_no = ?, paid_at = datetime("now") WHERE order_no = ?')
+              .bind('paid', trade_no, order_no)
+              .run();
+            
             return new Response('success', { status: 200 });
           } else {
+            // 支付失败，更新订单状态
+            await env.DB
+              .prepare('UPDATE orders SET status = ? WHERE order_no = ?')
+              .bind('failed', order_no)
+              .run();
+            
             return new Response('fail', { status: 200 });
           }
         } catch (err) {
@@ -307,6 +329,91 @@ export default {
             });
           } else {
             return new Response(JSON.stringify({ code: 404, msg: '用户不存在' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '查询失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // 路由匹配：/api/orders 查询订单列表接口
+      if (url.pathname === '/api/orders' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          const page = parseInt(url.searchParams.get('page')) || 1;
+          const limit = parseInt(url.searchParams.get('limit')) || 10;
+          const offset = (page - 1) * limit;
+          
+          if (!username) {
+            return new Response(JSON.stringify({ code: 400, msg: '缺少username参数' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          // 查询订单总数
+          const totalResult = await env.DB
+            .prepare('SELECT COUNT(*) as total FROM orders WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          // 查询订单列表
+          const orders = await env.DB
+            .prepare('SELECT * FROM orders WHERE username = ? ORDER BY created_at DESC LIMIT ? OFFSET ?')
+            .bind(username, limit, offset)
+            .all();
+          
+          return new Response(JSON.stringify({ 
+            code: 200, 
+            msg: '查询成功', 
+            data: {
+              orders: orders.results || [],
+              pagination: {
+                page,
+                limit,
+                total: totalResult.total,
+                pages: Math.ceil(totalResult.total / limit)
+              }
+            }
+          }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '查询失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // 路由匹配：/api/order/detail 查询订单详情接口
+      if (url.pathname === '/api/order/detail' && request.method === 'GET') {
+        try {
+          const orderNo = url.searchParams.get('order_no');
+          
+          if (!orderNo) {
+            return new Response(JSON.stringify({ code: 400, msg: '缺少order_no参数' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          const order = await env.DB
+            .prepare('SELECT * FROM orders WHERE order_no = ?')
+            .bind(orderNo)
+            .first();
+          
+          if (order) {
+            return new Response(JSON.stringify({ code: 200, msg: '查询成功', data: order }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } else {
+            return new Response(JSON.stringify({ code: 404, msg: '订单不存在' }), {
               status: 404,
               headers: { 'Content-Type': 'application/json' }
             });
