@@ -139,6 +139,54 @@
         .pay-item i { font-size: 40px; }
         .pay-item:nth-child(1) i { color: #07c160; }
         .pay-item:nth-child(2) i { color: #1677ff; }
+        
+        /* 金额选择器 */
+        .amount-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .amount-btn {
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .amount-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .amount-btn.active {
+            background: var(--neon-pink);
+            border-color: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .custom-btn {
+            grid-column: span 3;
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+        }
+
+        .custom-btn:hover {
+            background: var(--neon-pink);
+            color: #fff;
+        }
+
+        .custom-input {
+            margin-top: 15px;
+        }
 
         /* 按钮 */
         .glitch-btn {
@@ -333,8 +381,15 @@
                 <div class="balance-val">0.00</div>
             </div>
 
-            <div class="input-box">
-                <input type="number" placeholder="输入金额" id="amt">
+            <div class="amount-grid">
+                <button class="amount-btn" onclick="selectAmount(10)">¥10</button>
+                <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
+                <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
+                <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
+                <button class="amount-btn custom-btn" onclick="showCustomAmount()">自定义金额</button>
+            </div>
+            <div class="input-box custom-input" style="display: none;">
+                <input type="number" placeholder="输入金额" id="amt" min="0.01" step="0.01">
             </div>
 
             <div class="pay-grid">
@@ -412,6 +467,7 @@
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
+        let selectedAmount = null;
         
         if (currentUser) {
             document.getElementById('login-form').style.display = 'none';
@@ -468,8 +524,25 @@
             mode = m;
         }
 
+        function selectAmount(amount) {
+            selectedAmount = amount;
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelector('.custom-input').style.display = 'none';
+        }
+
+        function showCustomAmount() {
+            selectedAmount = null;
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.custom-input').style.display = 'block';
+            document.getElementById('amt').focus();
+        }
+
         async function pay() {
-            const amount = document.getElementById('amt').value;
+            let amount = selectedAmount;
+            if (!amount) {
+                amount = document.getElementById('amt').value;
+            }
             if (!amount || amount <= 0) return alert('请输入有效金额');
             
             try {
