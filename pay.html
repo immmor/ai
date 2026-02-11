@@ -404,7 +404,7 @@
                 <button class="amount-btn" onclick="selectAmount(50)">¥30</button>
                 <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
                 <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
-                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义金额</button>
+                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
             </div>
 
             <div class="pay-grid">
@@ -548,7 +548,7 @@
             const customBtn = document.getElementById('custom-amount-btn');
             if (customBtn) {
                 customBtn.style.display = 'block';
-                customBtn.textContent = '自定义金额';
+                customBtn.textContent = '自定义';
                 customBtn.onclick = showCustomAmount;
             }
         }
@@ -560,7 +560,7 @@
             // 将按钮变为输入框
             const customBtn = document.getElementById('custom-amount-btn');
             if (customBtn) {
-                customBtn.outerHTML = '<input type="number" class="custom-input" id="amt" placeholder="输入金额" min="0.01" step="0.01">';
+                customBtn.outerHTML = '<input type="number" class="custom-input" id="amt" placeholder="请输入" min="0.01" step="0.01">';
                 
                 // 自动聚焦
                 document.getElementById('amt').focus();
@@ -584,7 +584,7 @@
         function restoreCustomButton() {
             const amtInput = document.getElementById('amt');
             if (amtInput) {
-                amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义金额</button>';
+                amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
             }
         }
 
