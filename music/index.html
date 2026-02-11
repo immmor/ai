@@ -171,12 +171,12 @@ const player = document.getElementById('player');
 const bar = document.getElementById('progress-bar');
 const container = document.getElementById('progress-container');
 
-// 获取 UI 文本元素
+// UI 文本元素
 const titleTag = document.getElementById('title');
 const artistTag = document.getElementById('artist');
 const coverImg = document.getElementById('cover');
 
-// 1. 音乐资源库 (SoundHelix 提供稳定音频，Unsplash 提供高清封面)
+// 1. 音乐资源库
 const playlist = [
     {
         title: "Prism Echo",
@@ -201,30 +201,34 @@ const playlist = [
         artist: "Synth Wave",
         cover: "https://images.unsplash.com/photo-1514525253361-bee8718a300c?w=800",
         url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
-    },
-    {
-        title: "Deep Mesh",
-        artist: "Glitch Mob",
-        cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"
     }
 ];
 
 let currentTrackIndex = 0;
 
-// 2. 加载歌曲函数
+// 2. 加载歌曲并同步到系统媒体中心
 function loadTrack(index) {
     const track = playlist[index];
     titleTag.innerText = track.title;
     artistTag.innerText = track.artist;
     coverImg.src = track.cover;
     audio.src = track.url;
+
+    // 更新手机锁屏和耳机控制中心的信息
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: track.title,
+            artist: track.artist,
+            artwork: [
+                { src: track.cover, sizes: '512x512', type: 'image/png' }
+            ]
+        });
+    }
 }
 
 // 3. 随机切歌逻辑
 function playRandom() {
     let newIndex;
-    // 确保随机到的下一首不是当前这一首
     do {
         newIndex = Math.floor(Math.random() * playlist.length);
     } while (newIndex === currentTrackIndex);
@@ -232,16 +236,13 @@ function playRandom() {
     currentTrackIndex = newIndex;
     loadTrack(currentTrackIndex);
     
-    // 如果播放器处于“播放状态”，载入后立即播放
     if (player.classList.contains('playing')) {
-        audio.play().catch(e => console.log("等待用户交互后播放"));
+        audio.play().catch(() => { /* 捕获自动播放限制 */ });
     }
 }
 
-// --- 事件监听 ---
-
-// 播放/暂停
-playBtn.addEventListener('click', () => {
+// 4. 播放/暂停切换
+function togglePlay() {
     if (audio.paused) {
         audio.play();
         player.classList.add('playing');
@@ -251,18 +252,27 @@ playBtn.addEventListener('click', () => {
         player.classList.remove('playing');
         icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
     }
-});
+}
 
-// 上一首 (也设为随机)
+// --- 硬件与系统控制 (核心修改) ---
+if ('mediaSession' in navigator) {
+    // 监听耳机或系统的播放/暂停键
+    navigator.mediaSession.setActionHandler('play', togglePlay);
+    navigator.mediaSession.setActionHandler('pause', togglePlay);
+    // 监听耳机或系统的切歌键
+    navigator.mediaSession.setActionHandler('previoustrack', playRandom);
+    navigator.mediaSession.setActionHandler('nexttrack', playRandom);
+}
+
+// --- 页面事件监听 ---
+playBtn.addEventListener('click', togglePlay);
+
+// 上一首和下一首按钮均执行随机切歌
 document.querySelectorAll('.btn')[0].addEventListener('click', playRandom);
-
-// 下一首 (随机)
 document.querySelectorAll('.btn')[2].addEventListener('click', playRandom);
 
-// 播放结束自动下一首
 audio.addEventListener('ended', playRandom);
 
-// 进度条更新
 audio.addEventListener('timeupdate', () => {
     if (audio.duration) {
         const pct = (audio.currentTime / audio.duration) * 100;
@@ -270,7 +280,6 @@ audio.addEventListener('timeupdate', () => {
     }
 });
 
-// 点击进度条跳转
 container.addEventListener('click', (e) => {
     const width = container.clientWidth;
     const clickX = e.offsetX;
@@ -288,10 +297,8 @@ if (window.DeviceOrientationEvent) {
     });
 }
 
-// 初始化加载第一首
-window.onload = () => {
-    loadTrack(currentTrackIndex);
-};
+// 初始化
+window.onload = () => loadTrack(currentTrackIndex);
     </script>
 </body>
 </html>
