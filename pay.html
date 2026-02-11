@@ -158,6 +158,7 @@
             transition: all 0.3s;
             font-size: 16px;
             font-weight: bold;
+            text-align: center;
         }
 
         .amount-btn:hover {
@@ -174,7 +175,6 @@
         }
 
         .custom-btn {
-            grid-column: span 3;
             border-color: var(--neon-pink);
             color: var(--neon-pink);
         }
@@ -185,7 +185,24 @@
         }
 
         .custom-input {
-            margin-top: 15px;
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            background: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-pink);
         }
 
         /* 按钮 */
@@ -386,10 +403,9 @@
                 <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
                 <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
                 <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
-                <button class="amount-btn custom-btn" onclick="showCustomAmount()">自定义金额</button>
-            </div>
-            <div class="input-box custom-input" style="display: none;">
-                <input type="number" placeholder="输入金额" id="amt" min="0.01" step="0.01">
+                <div class="amount-btn custom-btn" id="custom-amount-container">
+                    <button onclick="showCustomAmount()">自定义金额</button>
+                </div>
             </div>
 
             <div class="pay-grid">
@@ -528,13 +544,21 @@
             selectedAmount = amount;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            document.querySelector('.custom-input').style.display = 'none';
+            
+            // 恢复自定义金额按钮
+            const customContainer = document.getElementById('custom-amount-container');
+            customContainer.innerHTML = '<button onclick="showCustomAmount()">自定义金额</button>';
         }
 
         function showCustomAmount() {
             selectedAmount = null;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.custom-input').style.display = 'block';
+            
+            // 将按钮替换为输入框
+            const customContainer = document.getElementById('custom-amount-container');
+            customContainer.innerHTML = '<input type="number" class="custom-input" id="amt" placeholder="输入金额" min="0.01" step="0.01">';
+            
+            // 自动聚焦
             document.getElementById('amt').focus();
         }
 
