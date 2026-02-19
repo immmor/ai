@@ -2,8 +2,8 @@
 let isLoggedIn = false;
 let cachedBalance = '0.00'; // 缓存的余额值
 // ✅ 固定Worker接口地址（已写死你的域名，无需修改）
-const WORKER_LOGIN_URL = "https://api.immmor.com/login";
-const WORKER_REGISTER_URL = "https://api.immmor.com/register";
+const WORKER_LOGIN_URL = "https://api.immmor.com/api/login";
+const WORKER_REGISTER_URL = "https://api.immmor.com/api/register";
 const WORKER_BALANCE_URL = "https://api.immmor.com/api/balance";
 
 // 创建登录按钮
@@ -295,6 +295,16 @@ async function fetchUserBalance() {
 // 获取缓存的余额（用于用户菜单显示）
 function getCachedBalance() {
     return cachedBalance;
+}
+
+// 更新缓存的余额（供其他模块调用）
+function updateCachedBalance(newBalance) {
+    cachedBalance = newBalance.toFixed(2);
+    // 更新用户菜单中的余额显示
+    const balanceDiv = document.querySelector('#user-menu div:nth-child(2)');
+    if (balanceDiv) {
+        balanceDiv.innerHTML = `<span>${cachedBalance}</span>`;
+    }
 }
 
 // 显示用户菜单 & 退出登录

@@ -42,15 +42,6 @@ export default {
     
     // 1. 处理自定义 API 接口（后台逻辑）
     if (url.pathname.startsWith('/api/')) {
-      // 路由匹配：/api/hello
-      if (url.pathname === '/api/hello') {
-        return jsonResponse({
-          code: 200,
-          message: 'Hello from Pages Worker!',
-          data: { time: new Date().toISOString() }
-        });
-      }
-
       // 路由匹配：/api/register 注册接口（使用 D1 数据库）
       if (url.pathname === '/api/register' && request.method === 'POST') {
         const params = await request.json();
