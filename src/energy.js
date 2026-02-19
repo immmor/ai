@@ -225,39 +225,40 @@ async function buyVipWithBalance() {
             return;
         }
         
-        // 获取当前余额
-        const currentBalance = parseFloat(getCachedBalance());
-        if (currentBalance < VIP_MONTHLY_PRICE) {
-            showFeedback(`余额不足，当前余额：${currentBalance.toFixed(2)}元，需要：${VIP_MONTHLY_PRICE}元`, 'error');
+        // 获取用户名
+        const username = localStorage.getItem('username');
+        if (!username) {
+            showFeedback('用户信息获取失败，请重新登录', 'error');
             return;
         }
         
-        // 调用后端API扣款
-        const response = await fetch('https://api.immmor.com/api/pay/balance', {
+        // 调用后端VIP购买接口
+        const response = await fetch('https://immmor.com/api/learn/vip', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                username: username,
                 amount: VIP_MONTHLY_PRICE,
-                description: '会员购买'
+                duration: 30
             })
         });
         
         const result = await response.json();
         
         if (result.code === 200) {
-            // 扣款成功，激活会员
+            // 购买成功，激活会员
             activateVip();
             
             // 更新本地缓存的余额
             if (typeof updateCachedBalance === 'function') {
-                updateCachedBalance(currentBalance - VIP_MONTHLY_PRICE);
+                updateCachedBalance(parseFloat(result.data.balance));
             }
             
-            showFeedback('会员购买成功！已从余额中扣除费用', 'success');
+            showFeedback(`会员购买成功！VIP有效期至${new Date(result.data.vip_expire_date).toLocaleDateString()}，剩余${result.data.remaining_days}天`, 'success');
         } else {
-            throw new Error(result.msg || '扣款失败');
+            throw new Error(result.msg || '购买失败');
         }
         
     } catch (error) {

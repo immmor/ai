@@ -442,6 +442,127 @@ export default {
         }
       }
 
+      // 路由匹配：/api/learn/vip VIP购买接口
+      if (url.pathname === '/api/learn/vip' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, amount = 0.01, duration = 30 } = params;
+          
+          if (!username || !amount || amount <= 0) {
+            return jsonResponse({ code: 400, msg: '参数错误' }, 400);
+          }
+          
+          // 查询用户当前余额和VIP状态
+          const user = await env.DB
+            .prepare('SELECT balance, learn_vip_expire_date FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          if (!user) {
+            return jsonResponse({ code: 404, msg: '用户不存在' }, 404);
+          }
+          
+          // 检查余额是否足够
+          if (parseFloat(user.balance) < amount) {
+            return jsonResponse({ code: 400, msg: '余额不足' }, 400);
+          }
+          
+          // 计算新的VIP过期时间
+          const now = new Date();
+          let newExpireDate;
+          
+          // 如果用户已有VIP且未过期，则在原基础上续期
+          if (user.learn_vip_expire_date) {
+            const currentExpireDate = new Date(user.learn_vip_expire_date);
+            if (currentExpireDate > now) {
+              // VIP未过期，在原基础上续期
+              newExpireDate = new Date(currentExpireDate.getTime() + duration * 24 * 60 * 60 * 1000);
+            } else {
+              // VIP已过期，从现在开始计算
+              newExpireDate = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
+            }
+          } else {
+            // 没有VIP，从现在开始计算
+            newExpireDate = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
+          }
+          
+          // 扣除余额并更新VIP过期时间
+          const result = await env.DB
+            .prepare('UPDATE user SET balance = balance - ?, learn_vip_expire_date = ? WHERE username = ?')
+            .bind(amount, newExpireDate.toISOString(), username)
+            .run();
+          
+          if (result.success && result.meta.changes > 0) {
+            // 获取更新后的用户信息
+            const updatedUser = await env.DB
+              .prepare('SELECT balance, learn_vip_expire_date FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            
+            // 计算剩余天数
+            const remainingDays = Math.ceil((new Date(updatedUser.learn_vip_expire_date) - now) / (24 * 60 * 60 * 1000));
+            
+            return jsonResponse({
+              code: 200, 
+              msg: 'VIP购买成功', 
+              data: {
+                balance: updatedUser.balance,
+                vip_expire_date: updatedUser.learn_vip_expire_date,
+                remaining_days: remainingDays
+              }
+            });
+          } else {
+            return jsonResponse({ code: 500, msg: '购买失败' }, 500);
+          }
+        } catch (err) {
+          return jsonResponse({ code: 500, msg: 'VIP购买失败', error: err.message }, 500);
+        }
+      }
+
+      // 路由匹配：/api/learn/vip/status 查询VIP状态接口
+      if (url.pathname === '/api/learn/vip/status' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          
+          if (!username) {
+            return jsonResponse({ code: 400, msg: '缺少username参数' }, 400);
+          }
+          
+          const user = await env.DB
+            .prepare('SELECT learn_vip_expire_date FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          if (!user) {
+            return jsonResponse({ code: 404, msg: '用户不存在' }, 404);
+          }
+          
+          const now = new Date();
+          let isVip = false;
+          let remainingDays = 0;
+          
+          if (user.learn_vip_expire_date) {
+            const expireDate = new Date(user.learn_vip_expire_date);
+            if (expireDate > now) {
+              isVip = true;
+              remainingDays = Math.ceil((expireDate - now) / (24 * 60 * 60 * 1000));
+            }
+          }
+          
+          return jsonResponse({
+            code: 200,
+            msg: '查询成功',
+            data: {
+              is_vip: isVip,
+              vip_expire_date: user.learn_vip_expire_date,
+              remaining_days: remainingDays
+            }
+          });
+        } catch (err) {
+          return jsonResponse({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
       return jsonResponse({ code: 404, message: 'API not found' }, 404);
     }
 
