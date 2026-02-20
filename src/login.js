@@ -306,16 +306,32 @@ function showUserMenu() {
     menu.id = 'user-menu';
     menu.className = 'absolute top-full -right-1 mt-2.5 w-auto min-w-[75px] bg-white rounded-md shadow-lg border border-gray-200 z-50';
     
-    // 添加用户名显示
+    // 添加用户名显示（带省略号效果）
     const usernameDiv = document.createElement('div');
-    usernameDiv.className = 'w-full text-left px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border-b border-gray-100';
-    usernameDiv.textContent = localStorage.getItem('username') || '用户';
+    usernameDiv.className = 'w-full text-left px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border-b border-gray-100 cursor-pointer';
+    const username = localStorage.getItem('username') || '用户';
+    usernameDiv.innerHTML = `
+        <span class="truncate max-w-[120px] inline-block align-middle" title="点击显示完整信息">${username}</span>
+        <span class="hidden whitespace-nowrap" title="${username}">${username}</span>
+    `;
+    usernameDiv.addEventListener('click', function() {
+        this.querySelector('.truncate').classList.toggle('hidden');
+        this.querySelector('.whitespace-nowrap').classList.toggle('hidden');
+    });
     menu.appendChild(usernameDiv);
     
-    // 添加余额显示（使用缓存值）
+    // 添加余额显示（带省略号效果）
     const balanceDiv = document.createElement('div');
-    balanceDiv.className = 'w-full text-left px-3 py-2 text-xs text-gray-600 border-b border-gray-100';
-    balanceDiv.innerHTML = `<span>${getCachedBalance()}</span>`;
+    balanceDiv.className = 'w-full text-left px-3 py-2 text-xs text-gray-600 border-b border-gray-100 cursor-pointer';
+    const balance = getCachedBalance();
+    balanceDiv.innerHTML = `
+        <span class="truncate max-w-[80px] inline-block align-middle" title="点击显示完整信息">${balance}</span>
+        <span class="hidden whitespace-nowrap" title="${balance}">${balance}</span>
+    `;
+    balanceDiv.addEventListener('click', function() {
+        this.querySelector('.truncate').classList.toggle('hidden');
+        this.querySelector('.whitespace-nowrap').classList.toggle('hidden');
+    });
     menu.appendChild(balanceDiv);
     
     // 添加充值按钮

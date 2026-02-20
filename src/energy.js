@@ -33,13 +33,21 @@ function loadEnergy() {
 
 // 加载会员状态
 async function loadVipStatus() {
-    // 如果用户已登录，从后端获取真实的VIP状态
-    if (typeof isLoggedIn !== 'undefined' && isLoggedIn) {
+    console.log('开始加载VIP状态...');
+    
+    // 检查登录状态
+    const loggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    console.log('用户登录状态:', loggedIn);
+    
+    if (loggedIn) {
         const username = localStorage.getItem('username');
+        console.log('用户名:', username);
+        
         if (username) {
             try {
                 const response = await fetch(`https://api.immmor.com/api/learn/vip/status?username=${encodeURIComponent(username)}`);
                 const result = await response.json();
+                console.log('VIP状态API返回:', result);
                 
                 if (result.code === 200 && result.data) {
                     // 更新VIP状态
@@ -49,26 +57,22 @@ async function loadVipStatus() {
                     if (result.data.vip_expire_date) {
                         const expireDate = new Date(result.data.vip_expire_date.replace(' ', 'T'));
                         vipExpiryTime = expireDate.getTime();
+                        console.log('VIP过期时间:', result.data.vip_expire_date, '转换为时间戳:', vipExpiryTime);
                     }
                     
-                    console.log('从后端获取VIP状态:', result.data);
+                    console.log('VIP状态加载完成:', isVip);
+                    return;
                 }
             } catch (error) {
                 console.error('获取VIP状态失败:', error);
-                // 失败时设置为非VIP状态
-                isVip = false;
-                vipExpiryTime = 0;
             }
-        } else {
-            // 没有用户名，设置为非VIP状态
-            isVip = false;
-            vipExpiryTime = 0;
         }
-    } else {
-        // 用户未登录，设置为非VIP状态
-        isVip = false;
-        vipExpiryTime = 0;
     }
+    
+    // 默认设置为非VIP状态
+    isVip = false;
+    vipExpiryTime = 0;
+    console.log('设置为非VIP状态');
 }
 
 // 保存会员状态函数已废弃，VIP状态完全由后端管理
@@ -1293,12 +1297,12 @@ function collectSun(sunId, clickX, clickY) {
 }
 
 // 在initEnergy函数末尾调用初始化太阳掉落系统
-function initEnergy() {
+async function initEnergy() {
     // 从localStorage加载能量值
     loadEnergy();
     
-    // 加载会员状态
-    loadVipStatus();
+    // 异步加载会员状态，等待完成
+    await loadVipStatus();
     
     // 创建能量显示元素
     createEnergyDisplay();
@@ -1312,8 +1316,8 @@ function initEnergy() {
     // 初始化太阳掉落系统
     initSunDropSystem();
     
-    // console.log('能量系统初始化完成，当前能量：', energy);
-    // console.log('会员状态：', isVip ? '是' : '否');
+    console.log('能量系统初始化完成，当前能量：', energy);
+    console.log('会员状态：', isVip ? '是' : '否');
 }
 
 // 更新会员状态
