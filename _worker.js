@@ -499,15 +499,19 @@ export default {
               .bind(username)
               .first();
             
+            // 格式化VIP过期时间
+            const expireDate = new Date(updatedUser.learn_vip_expire_date);
+            const formattedExpireDate = `${expireDate.getFullYear()}-${String(expireDate.getMonth() + 1).padStart(2, '0')}-${String(expireDate.getDate()).padStart(2, '0')} ${String(expireDate.getHours()).padStart(2, '0')}:${String(expireDate.getMinutes()).padStart(2, '0')}:${String(expireDate.getSeconds()).padStart(2, '0')}`;
+            
             // 计算剩余天数
-            const remainingDays = Math.ceil((new Date(updatedUser.learn_vip_expire_date) - now) / (24 * 60 * 60 * 1000));
+            const remainingDays = Math.ceil((expireDate - now) / (24 * 60 * 60 * 1000));
             
             return jsonResponse({
               code: 200, 
               msg: 'VIP购买成功', 
               data: {
                 balance: updatedUser.balance,
-                vip_expire_date: updatedUser.learn_vip_expire_date,
+                vip_expire_date: formattedExpireDate,
                 remaining_days: remainingDays
               }
             });
@@ -549,12 +553,19 @@ export default {
             }
           }
           
+          // 格式化VIP过期时间
+          let formattedExpireDate = null;
+          if (user.learn_vip_expire_date) {
+            const expireDate = new Date(user.learn_vip_expire_date);
+            formattedExpireDate = `${expireDate.getFullYear()}-${String(expireDate.getMonth() + 1).padStart(2, '0')}-${String(expireDate.getDate()).padStart(2, '0')} ${String(expireDate.getHours()).padStart(2, '0')}:${String(expireDate.getMinutes()).padStart(2, '0')}:${String(expireDate.getSeconds()).padStart(2, '0')}`;
+          }
+          
           return jsonResponse({
             code: 200,
             msg: '查询成功',
             data: {
               is_vip: isVip,
-              vip_expire_date: user.learn_vip_expire_date,
+              vip_expire_date: formattedExpireDate,
               remaining_days: remainingDays
             }
           });

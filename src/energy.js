@@ -33,26 +33,54 @@ function loadEnergy() {
 }
 
 // 加载会员状态
-function loadVipStatus() {
-    const savedVipExpiryTime = localStorage.getItem('goBlockchainVipExpiry');
-    if (savedVipExpiryTime) {
-        vipExpiryTime = parseInt(savedVipExpiryTime);
-        // 检查会员是否过期
-        isVip = Date.now() < vipExpiryTime;
+async function loadVipStatus() {
+    // 如果用户已登录，从后端获取真实的VIP状态
+    if (typeof isLoggedIn !== 'undefined' && isLoggedIn) {
+        const username = localStorage.getItem('username');
+        if (username) {
+            try {
+                const response = await fetch(`https://api.immmor.com/api/learn/vip/status?username=${encodeURIComponent(username)}`);
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data) {
+                    // 更新VIP状态
+                    isVip = result.data.is_vip;
+                    
+                    // 如果有VIP过期时间，转换为时间戳
+                    if (result.data.vip_expire_date) {
+                        const expireDate = new Date(result.data.vip_expire_date.replace(' ', 'T'));
+                        vipExpiryTime = expireDate.getTime();
+                    }
+                    
+                    console.log('从后端获取VIP状态:', result.data);
+                }
+            } catch (error) {
+                console.error('获取VIP状态失败:', error);
+                // 失败时设置为非VIP状态
+                isVip = false;
+                vipExpiryTime = 0;
+            }
+        } else {
+            // 没有用户名，设置为非VIP状态
+            isVip = false;
+            vipExpiryTime = 0;
+        }
+    } else {
+        // 用户未登录，设置为非VIP状态
+        isVip = false;
+        vipExpiryTime = 0;
     }
 }
 
-// 保存会员状态
-function saveVipStatus() {
-    localStorage.setItem('goBlockchainVipExpiry', vipExpiryTime.toString());
-}
+// 保存会员状态函数已废弃，VIP状态完全由后端管理
 
 // 激活会员
-function activateVip() {
-    vipExpiryTime = Date.now() + VIP_DURATION;
+function activateVip(vipData) {
+    // 使用后端返回的VIP数据
     isVip = true;
-    saveVipStatus();
-    console.log('会员已激活，到期时间：', new Date(vipExpiryTime));
+    const expireDate = new Date(vipData.vip_expire_date.replace(' ', 'T'));
+    vipExpiryTime = expireDate.getTime();
+    console.log('会员已激活，到期时间：', vipData.vip_expire_date, '剩余天数：', vipData.remaining_days);
     
     // 立即更新UI显示
     updateEnergyDisplay();
@@ -244,14 +272,14 @@ async function buyVipWithBalance() {
         
         if (result.code === 200) {
             // 购买成功，激活会员
-            activateVip();
+            activateVip(result.data);
             
             // 更新本地缓存的余额
             if (typeof updateCachedBalance === 'function') {
                 updateCachedBalance(parseFloat(result.data.balance));
             }
             
-            showFeedback(`会员购买成功！VIP有效期至${new Date(result.data.vip_expire_date).toLocaleDateString()}，剩余${result.data.remaining_days}天`, 'success');
+            showFeedback(`会员购买成功！VIP有效期至${result.data.vip_expire_date}，剩余${result.data.remaining_days}天`, 'success');
         } else {
             throw new Error(result.msg || '购买失败');
         }
@@ -751,9 +779,6 @@ function createAdVideoPlayer() {
         
         closeAdPlayer(overlay);
     });
-    
-    // 移除点击遮罩层关闭功能，用户只能通过按钮关闭广告
-    // 移除ESC键关闭功能，用户只能通过按钮关闭广告
 }
 
 // 关闭广告播放器
