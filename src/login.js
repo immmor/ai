@@ -308,11 +308,11 @@ function showUserMenu() {
     
     // 添加用户名显示（带省略号效果）
     const usernameDiv = document.createElement('div');
-    usernameDiv.className = 'w-full text-left px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border-b border-gray-100 cursor-pointer';
+    usernameDiv.className = 'w-full text-left px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border-b border-gray-100 cursor-pointer min-h-[32px] flex items-center';
     const username = localStorage.getItem('username') || '用户';
     usernameDiv.innerHTML = `
-        <span class="truncate max-w-[120px] inline-block align-middle" title="点击显示完整信息">${username}</span>
-        <span class="hidden whitespace-nowrap" title="${username}">${username}</span>
+        <span class="truncate max-w-[120px] inline-block align-middle leading-normal" title="点击显示完整信息">${username}</span>
+        <span class="hidden whitespace-nowrap inline-block align-middle leading-normal" title="${username}">${username}</span>
     `;
     usernameDiv.addEventListener('click', function() {
         this.querySelector('.truncate').classList.toggle('hidden');
@@ -322,11 +322,11 @@ function showUserMenu() {
     
     // 添加余额显示（带省略号效果）
     const balanceDiv = document.createElement('div');
-    balanceDiv.className = 'w-full text-left px-3 py-2 text-xs text-gray-600 border-b border-gray-100 cursor-pointer';
+    balanceDiv.className = 'w-full text-left px-3 py-2 text-xs text-gray-600 border-b border-gray-100 cursor-pointer min-h-[32px] flex items-center';
     const balance = getCachedBalance();
     balanceDiv.innerHTML = `
-        <span class="truncate max-w-[80px] inline-block align-middle" title="点击显示完整信息">${balance}</span>
-        <span class="hidden whitespace-nowrap" title="${balance}">${balance}</span>
+        <span class="truncate max-w-[80px] inline-block align-middle leading-normal" title="点击显示完整信息">${balance}</span>
+        <span class="hidden whitespace-nowrap inline-block align-middle leading-normal" title="${balance}">${balance}</span>
     `;
     balanceDiv.addEventListener('click', function() {
         this.querySelector('.truncate').classList.toggle('hidden');

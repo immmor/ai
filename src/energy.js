@@ -31,9 +31,36 @@ function loadEnergy() {
     energy = Math.max(0, Math.min(energy, MAX_ENERGY));
 }
 
-// 加载会员状态
-async function loadVipStatus() {
-    console.log('开始加载VIP状态...');
+// 同步加载会员状态（立即设置默认值）
+function loadVipStatusSync() {
+    console.log('同步加载VIP状态...');
+    
+    // 检查登录状态
+    const loggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    console.log('用户登录状态:', loggedIn);
+    
+    if (loggedIn) {
+        const username = localStorage.getItem('username');
+        console.log('用户名:', username);
+        
+        if (username) {
+            // 暂时设置为非VIP状态，等待异步更新
+            isVip = false;
+            vipExpiryTime = 0;
+            console.log('等待异步更新VIP状态');
+            return;
+        }
+    }
+    
+    // 默认设置为非VIP状态
+    isVip = false;
+    vipExpiryTime = 0;
+    console.log('设置为非VIP状态');
+}
+
+// 异步更新VIP状态
+async function updateVipStatusAsync() {
+    console.log('开始异步更新VIP状态...');
     
     // 检查登录状态
     const loggedIn = localStorage.getItem('userLoggedIn') === 'true';
@@ -60,7 +87,11 @@ async function loadVipStatus() {
                         console.log('VIP过期时间:', result.data.vip_expire_date, '转换为时间戳:', vipExpiryTime);
                     }
                     
-                    console.log('VIP状态加载完成:', isVip);
+                    // 更新UI显示
+                    updateEnergyDisplay();
+                    updateVipStatusDisplay();
+                    
+                    console.log('VIP状态异步更新完成:', isVip);
                     return;
                 }
             } catch (error) {
@@ -72,7 +103,7 @@ async function loadVipStatus() {
     // 默认设置为非VIP状态
     isVip = false;
     vipExpiryTime = 0;
-    console.log('设置为非VIP状态');
+    console.log('异步更新设置为非VIP状态');
 }
 
 // 保存会员状态函数已废弃，VIP状态完全由后端管理
@@ -1297,12 +1328,12 @@ function collectSun(sunId, clickX, clickY) {
 }
 
 // 在initEnergy函数末尾调用初始化太阳掉落系统
-async function initEnergy() {
+function initEnergy() {
     // 从localStorage加载能量值
     loadEnergy();
     
-    // 异步加载会员状态，等待完成
-    await loadVipStatus();
+    // 同步加载会员状态（立即设置默认值）
+    loadVipStatusSync();
     
     // 创建能量显示元素
     createEnergyDisplay();
@@ -1315,6 +1346,9 @@ async function initEnergy() {
     
     // 初始化太阳掉落系统
     initSunDropSystem();
+    
+    // 异步更新VIP状态（不影响初始化流程）
+    updateVipStatusAsync();
     
     console.log('能量系统初始化完成，当前能量：', energy);
     console.log('会员状态：', isVip ? '是' : '否');
