@@ -12,8 +12,7 @@ const MAX_ENERGY = 20; // 最大能量值
 const ENERGY_RECOVERY_INTERVAL = 7200000; // 能量恢复间隔（毫秒）- 1分钟
 
 // 会员相关常量
-const VIP_MONTHLY_PRICE = 0.01; // 会员月费（改为从余额扣款，价格调整为0.01元）
-const VIP_DURATION = 30 * 24 * 60 * 60 * 1000; // 会员有效期（毫秒）
+const VIP_MONTHLY_PRICE = 10; // 会员月费10元
 let isVip = false; // 当前是否为会员
 let vipExpiryTime = 0; // 会员过期时间
 
@@ -194,7 +193,7 @@ function setupEnergyEventListeners() {
     if (balanceVipBtn) {
         balanceVipBtn.addEventListener('click', function(e) {
             e.stopPropagation(); // 防止关闭提示框
-            buyVipWithBalance();
+            showVipConfirmPopup();
         });
     }
     
@@ -239,23 +238,53 @@ function buyVip() {
     pay('TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV', VIP_MONTHLY_PRICE, 'usdt');
 }
 
-// 新：从用户余额购买会员
+// 显示购买确认弹窗
+function showVipConfirmPopup() {
+    // 检查用户是否已登录
+    if (typeof isLoggedIn === 'undefined' || !isLoggedIn) {
+        showFeedback('请先登录后再购买会员', 'error');
+        return;
+    }
+    
+    // 创建确认弹窗
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    
+    const popup = document.createElement('div');
+    popup.className = 'bg-white rounded-lg p-6 w-80';
+    popup.innerHTML = `
+        <h3 class="text-lg font-bold mb-4">确认购买会员</h3>
+        <p class="text-gray-600 mb-4">是否确认花费10元购买30天会员？</p>
+        <div class="flex space-x-2">
+            <button id="confirm-vip-btn" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600">确认购买</button>
+            <button id="cancel-vip-btn" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">取消</button>
+        </div>
+    `;
+    
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+    
+    // 确认按钮点击事件
+    document.getElementById('confirm-vip-btn').onclick = () => {
+        document.body.removeChild(overlay);
+        buyVipWithBalance();
+    };
+    
+    // 取消按钮点击事件
+    document.getElementById('cancel-vip-btn').onclick = () => {
+        document.body.removeChild(overlay);
+    };
+}
+
+// 从用户余额购买会员
 async function buyVipWithBalance() {
     try {
-        // 检查用户是否已登录
-        if (typeof isLoggedIn === 'undefined' || !isLoggedIn) {
-            showFeedback('请先登录后再购买会员', 'error');
-            return;
-        }
-        
-        // 获取用户名
         const username = localStorage.getItem('username');
         if (!username) {
-            showFeedback('用户信息获取失败，请重新登录', 'error');
+            showFeedback('用户信息获取失败', 'error');
             return;
         }
         
-        // 调用后端VIP购买接口
         const response = await fetch('https://immmor.com/api/learn/vip', {
             method: 'POST',
             headers: {
