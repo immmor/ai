@@ -135,11 +135,6 @@ function setupEnergyEventListeners() {
                     tooltipProgressBar.style.width = (energy / MAX_ENERGY) * 100 + '%';
                 }
                 
-                // 更新提示框中的能量值
-                const energyText = energyTooltip.querySelector('.font-medium.text-gray-800.flex.items-center');
-                if (energyText) {
-                    energyText.innerHTML = '<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：' + energy + '/' + MAX_ENERGY;
-                }
                 saveEnergy();
                 showFeedback('充能成功！获得10点能量', 'success');
             } else {
@@ -262,7 +257,7 @@ async function buyVipWithBalance() {
         }
         
     } catch (error) {
-        console.error('余额购买失败:', error);
+        console.error('购买失败:', error);
         showFeedback('购买失败: ' + error.message, 'error');
     }
 }
@@ -323,36 +318,12 @@ function createEnergyDisplay() {
                     <i class="fas fa-play-circle mr-1"></i>看广告得5点能量
                 </button>
             </div>
-            <!-- 购买会员区域 -->
-            <div class="mt-2 pt-2 border-t border-gray-100">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-200 shadow-sm">
-                        ${VIP_MONTHLY_PRICE} USDT/月
-                    </span>
-                    <button id="buy-vip-btn" class="px-3 py-1.5 bg-purple-500 text-white text-sm rounded hover:bg-purple-600 transition-colors whitespace-nowrap">
-                        购买
-                    </button>
-                </div>
-                <!-- 余额购买按钮 -->
-                <div class="mt-2 text-xs text-gray-500 font-medium">余额支付（推荐）</div>
-                <div class="mt-1 flex space-x-2">
-                    <button id="balance-vip-btn" class="flex-1 px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors whitespace-nowrap flex items-center justify-center">
-                        <i class="fas fa-wallet mr-1"></i>余额购买
-                    </button>
-                </div>
-                
-                <!-- 备选支付方式 -->
-                <div class="mt-2 text-xs text-gray-500 font-medium">备选支付方式</div>
-                <div class="mt-1 flex space-x-2">
-                    <button id="alipay-btn" class="flex-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors whitespace-nowrap flex items-center justify-center">
-                        <i class="fab fa-alipay mr-1"></i>支付宝
-                    </button>
-                    <button id="wechat-btn" class="flex-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors whitespace-nowrap flex items-center justify-center">
-                        <i class="fab fa-weixin mr-1"></i>微信
-                    </button>
-                </div>
-                <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
+            <div class="mt-1 flex space-x-2">
+                <button id="balance-vip-btn" class="flex-1 px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors whitespace-nowrap flex items-center justify-center">
+                    <i class="fas fa-wallet mr-1"></i>VIP购买
+                </button>
             </div>
+            <div id="vip-status" class="text-xs text-center mt-1 text-gray-500"></div>
         </div>
     `;
     
@@ -398,13 +369,6 @@ function updateEnergyDisplay() {
         if (tooltip) {
             // 更新标题
             const titleElement = tooltip.querySelector('.font-medium');
-            if (titleElement) {
-                if (isVip) {
-                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：VIP`;
-                } else {
-                    titleElement.innerHTML = `<i class="fas fa-sun text-yellow-500 mr-2"></i>能量值：${energy}/${MAX_ENERGY}`;
-                }
-            }
             
             // 更新提示框中的进度条
             const progressBar = tooltip.querySelector('.h-full.bg-gradient-to-r.from-amber-400.to-red-500.rounded-full');
