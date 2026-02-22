@@ -31,7 +31,7 @@ function loadEnergy() {
     energy = Math.max(0, Math.min(energy, MAX_ENERGY));
 }
 
-// 同步加载会员状态（立即设置默认值）
+// 同步加载会员状态（从本地缓存加载）
 function loadVipStatusSync() {
     console.log('同步加载VIP状态...');
     
@@ -44,35 +44,36 @@ function loadVipStatusSync() {
         console.log('用户名:', username);
         
         if (username) {
-            // 从本地存储加载缓存的VIP状态
-            const cachedVip = localStorage.getItem('cachedVipStatus');
-            const cachedVipExpiry = localStorage.getItem('cachedVipExpiry');
+            // 尝试从本地缓存加载VIP状态
+            const cachedVipStatus = localStorage.getItem(`vipStatus_${username}`);
+            const cachedVipExpiry = localStorage.getItem(`vipExpiry_${username}`);
             
-            if (cachedVip && cachedVipExpiry) {
-                // 检查缓存是否过期（缓存5分钟）
-                const cacheTime = parseInt(cachedVipExpiry);
-                if (Date.now() - cacheTime < 5 * 60 * 1000) {
-                    isVip = cachedVip === 'true';
-                    vipExpiryTime = parseInt(localStorage.getItem('cachedVipExpiryTime') || '0');
-                    console.log('使用缓存的VIP状态:', isVip);
-                    return;
+            if (cachedVipStatus && cachedVipExpiry) {
+                // 使用缓存的VIP状态
+                isVip = cachedVipStatus === 'true';
+                vipExpiryTime = parseInt(cachedVipExpiry);
+                
+                // 检查缓存是否过期（超过1小时）
+                const cacheTimestamp = localStorage.getItem(`vipCacheTime_${username}`);
+                const cacheAge = cacheTimestamp ? Date.now() - parseInt(cacheTimestamp) : Infinity;
+                
+                if (cacheAge > 3600000) { // 1小时过期
+                    console.log('VIP缓存已过期，等待异步更新');
+                    // 缓存过期，暂时使用缓存值，等待异步更新
                 } else {
-                    console.log('VIP状态缓存已过期，等待异步更新');
+                    console.log('使用缓存的VIP状态:', isVip);
+                    return; // 使用缓存，不等待异步更新
                 }
+            } else {
+                console.log('无VIP缓存，等待异步更新');
             }
-            
-            // 如果没有缓存或缓存过期，暂时设置为非VIP状态，等待异步更新
-            isVip = false;
-            vipExpiryTime = 0;
-            console.log('等待异步更新VIP状态');
-            return;
         }
     }
     
     // 默认设置为非VIP状态
     isVip = false;
     vipExpiryTime = 0;
-    console.log('设置为非VIP状态');
+    console.log('设置为默认非VIP状态');
 }
 
 // 异步更新VIP状态
@@ -104,27 +105,39 @@ async function updateVipStatusAsync() {
                         console.log('VIP过期时间:', result.data.vip_expire_date, '转换为时间戳:', vipExpiryTime);
                     }
                     
-                    // 缓存VIP状态到本地存储（缓存5分钟）
-                    localStorage.setItem('cachedVipStatus', isVip.toString());
-                    localStorage.setItem('cachedVipExpiry', Date.now().toString());
-                    localStorage.setItem('cachedVipExpiryTime', vipExpiryTime.toString());
+                    // 缓存VIP状态到本地存储
+                    localStorage.setItem(`vipStatus_${username}`, isVip.toString());
+                    localStorage.setItem(`vipExpiry_${username}`, vipExpiryTime.toString());
+                    localStorage.setItem(`vipCacheTime_${username}`, Date.now().toString());
                     
                     // 更新UI显示
                     updateEnergyDisplay();
                     updateVipStatusDisplay();
                     
-                    console.log('VIP状态异步更新完成:', isVip);
+                    console.log('VIP状态异步更新完成并缓存:', isVip);
                     return;
                 }
             } catch (error) {
                 console.error('获取VIP状态失败:', error);
+                // 网络错误时保持当前状态不变
+                console.log('网络错误，保持当前VIP状态:', isVip);
+                return;
             }
         }
     }
     
-    // 默认设置为非VIP状态
+    // 未登录或用户名无效时设置为非VIP状态
     isVip = false;
     vipExpiryTime = 0;
+    
+    // 清除可能存在的缓存
+    const username = localStorage.getItem('username');
+    if (username) {
+        localStorage.removeItem(`vipStatus_${username}`);
+        localStorage.removeItem(`vipExpiry_${username}`);
+        localStorage.removeItem(`vipCacheTime_${username}`);
+    }
+    
     console.log('异步更新设置为非VIP状态');
 }
 
@@ -139,9 +152,12 @@ function activateVip(vipData) {
     console.log('会员已激活，到期时间：', vipData.vip_expire_date, '剩余天数：', vipData.remaining_days);
     
     // 缓存VIP状态到本地存储
-    localStorage.setItem('cachedVipStatus', 'true');
-    localStorage.setItem('cachedVipExpiry', Date.now().toString());
-    localStorage.setItem('cachedVipExpiryTime', vipExpiryTime.toString());
+    const username = localStorage.getItem('username');
+    if (username) {
+        localStorage.setItem(`vipStatus_${username}`, isVip.toString());
+        localStorage.setItem(`vipExpiry_${username}`, vipExpiryTime.toString());
+        localStorage.setItem(`vipCacheTime_${username}`, Date.now().toString());
+    }
     
     // 立即更新UI显示
     updateEnergyDisplay();
