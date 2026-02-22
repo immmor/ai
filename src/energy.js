@@ -44,7 +44,24 @@ function loadVipStatusSync() {
         console.log('用户名:', username);
         
         if (username) {
-            // 暂时设置为非VIP状态，等待异步更新
+            // 从本地存储加载缓存的VIP状态
+            const cachedVip = localStorage.getItem('cachedVipStatus');
+            const cachedVipExpiry = localStorage.getItem('cachedVipExpiry');
+            
+            if (cachedVip && cachedVipExpiry) {
+                // 检查缓存是否过期（缓存5分钟）
+                const cacheTime = parseInt(cachedVipExpiry);
+                if (Date.now() - cacheTime < 5 * 60 * 1000) {
+                    isVip = cachedVip === 'true';
+                    vipExpiryTime = parseInt(localStorage.getItem('cachedVipExpiryTime') || '0');
+                    console.log('使用缓存的VIP状态:', isVip);
+                    return;
+                } else {
+                    console.log('VIP状态缓存已过期，等待异步更新');
+                }
+            }
+            
+            // 如果没有缓存或缓存过期，暂时设置为非VIP状态，等待异步更新
             isVip = false;
             vipExpiryTime = 0;
             console.log('等待异步更新VIP状态');
@@ -87,6 +104,11 @@ async function updateVipStatusAsync() {
                         console.log('VIP过期时间:', result.data.vip_expire_date, '转换为时间戳:', vipExpiryTime);
                     }
                     
+                    // 缓存VIP状态到本地存储（缓存5分钟）
+                    localStorage.setItem('cachedVipStatus', isVip.toString());
+                    localStorage.setItem('cachedVipExpiry', Date.now().toString());
+                    localStorage.setItem('cachedVipExpiryTime', vipExpiryTime.toString());
+                    
                     // 更新UI显示
                     updateEnergyDisplay();
                     updateVipStatusDisplay();
@@ -115,6 +137,11 @@ function activateVip(vipData) {
     const expireDate = new Date(vipData.vip_expire_date.replace(' ', 'T'));
     vipExpiryTime = expireDate.getTime();
     console.log('会员已激活，到期时间：', vipData.vip_expire_date, '剩余天数：', vipData.remaining_days);
+    
+    // 缓存VIP状态到本地存储
+    localStorage.setItem('cachedVipStatus', 'true');
+    localStorage.setItem('cachedVipExpiry', Date.now().toString());
+    localStorage.setItem('cachedVipExpiryTime', vipExpiryTime.toString());
     
     // 立即更新UI显示
     updateEnergyDisplay();
