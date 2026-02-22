@@ -226,6 +226,19 @@
             box-shadow: 0 0 20px var(--neon-pink);
             color: #fff;
         }
+        
+        .glitch-btn.login-btn:hover {
+            background: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            color: #000;
+        }
+        
+        .glitch-btn.confirm-register-btn:hover,
+        .glitch-btn.cancel-btn:hover {
+            background: inherit;
+            box-shadow: none;
+            color: inherit;
+        }
 
         .glitch-btn::before {
             content: "确认交易";
@@ -235,6 +248,15 @@
         }
         .glitch-btn.login-btn::before {
             content: "登录";
+        }
+        .glitch-btn.register-btn::before {
+            content: "注册";
+        }
+        .glitch-btn.confirm-register-btn::before {
+            content: "确认注册";
+        }
+        .glitch-btn.cancel-btn::before {
+            content: "返回";
         }
 
         /* 装饰点缀 */
@@ -380,7 +402,7 @@
             <button id="logout-tab" class="nav-tab" onclick="logout()" style="margin-left: auto; color: #ff4757;">退出登录</button>
         </div>
         
-        <!-- 登录表单 -->
+        <!-- 登录/注册表单 -->
         <div id="login-form">
             <div class="input-box">
                 <input type="text" placeholder="用户名" id="username">
@@ -388,7 +410,27 @@
             <div class="input-box">
                 <input type="password" placeholder="密码" id="password">
             </div>
-            <button class="glitch-btn login-btn" onclick="login()"></button>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
+                <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
+            </div>
+        </div>
+        
+        <!-- 注册表单 -->
+        <div id="register-form" style="display: none;">
+            <div class="input-box">
+                <input type="text" placeholder="用户名" id="reg-username">
+            </div>
+            <div class="input-box">
+                <input type="password" placeholder="密码" id="reg-password">
+            </div>
+            <div class="input-box">
+                <input type="password" placeholder="确认密码" id="reg-confirm-password">
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
+                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+            </div>
         </div>
         
         <!-- 支付界面 -->
@@ -509,6 +551,16 @@
             }
         }
         
+        function showRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+        
+        function showLogin() {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+        
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -527,6 +579,36 @@
                     location.reload();
                 } else {
                     alert('登录失败：' + data.message);
+                }
+            } catch (error) {
+                alert('网络错误，请稍后重试');
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            
+            if (!username || !password) return alert('用户名和密码不能为空');
+            if (password !== confirmPassword) return alert('两次输入的密码不一致');
+            
+            try {
+                const data = await (await fetch('https://immmor.com/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })).json();
+                
+                if (data.success) {
+                    alert('注册成功！请登录');
+                    showLogin();
+                    // 清空注册表单
+                    document.getElementById('reg-username').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('reg-confirm-password').value = '';
+                } else {
+                    alert('注册失败：' + data.message);
                 }
             } catch (error) {
                 alert('网络错误，请稍后重试');
