@@ -31,7 +31,7 @@ function loadEnergy() {
     energy = Math.max(0, Math.min(energy, MAX_ENERGY));
 }
 
-// 同步加载会员状态（从本地缓存加载）
+// 同步加载会员状态（立即设置默认值）
 function loadVipStatusSync() {
     console.log('同步加载VIP状态...');
     
@@ -44,36 +44,18 @@ function loadVipStatusSync() {
         console.log('用户名:', username);
         
         if (username) {
-            // 尝试从本地缓存加载VIP状态
-            const cachedVipStatus = localStorage.getItem(`vipStatus_${username}`);
-            const cachedVipExpiry = localStorage.getItem(`vipExpiry_${username}`);
-            
-            if (cachedVipStatus && cachedVipExpiry) {
-                // 使用缓存的VIP状态
-                isVip = cachedVipStatus === 'true';
-                vipExpiryTime = parseInt(cachedVipExpiry);
-                
-                // 检查缓存是否过期（超过1小时）
-                const cacheTimestamp = localStorage.getItem(`vipCacheTime_${username}`);
-                const cacheAge = cacheTimestamp ? Date.now() - parseInt(cacheTimestamp) : Infinity;
-                
-                if (cacheAge > 3600000) { // 1小时过期
-                    console.log('VIP缓存已过期，等待异步更新');
-                    // 缓存过期，暂时使用缓存值，等待异步更新
-                } else {
-                    console.log('使用缓存的VIP状态:', isVip);
-                    return; // 使用缓存，不等待异步更新
-                }
-            } else {
-                console.log('无VIP缓存，等待异步更新');
-            }
+            // 暂时设置为非VIP状态，等待异步更新
+            isVip = false;
+            vipExpiryTime = 0;
+            console.log('等待异步更新VIP状态');
+            return;
         }
     }
     
     // 默认设置为非VIP状态
     isVip = false;
     vipExpiryTime = 0;
-    console.log('设置为默认非VIP状态');
+    console.log('设置为非VIP状态');
 }
 
 // 异步更新VIP状态
@@ -105,39 +87,22 @@ async function updateVipStatusAsync() {
                         console.log('VIP过期时间:', result.data.vip_expire_date, '转换为时间戳:', vipExpiryTime);
                     }
                     
-                    // 缓存VIP状态到本地存储
-                    localStorage.setItem(`vipStatus_${username}`, isVip.toString());
-                    localStorage.setItem(`vipExpiry_${username}`, vipExpiryTime.toString());
-                    localStorage.setItem(`vipCacheTime_${username}`, Date.now().toString());
-                    
                     // 更新UI显示
                     updateEnergyDisplay();
                     updateVipStatusDisplay();
                     
-                    console.log('VIP状态异步更新完成并缓存:', isVip);
+                    console.log('VIP状态异步更新完成:', isVip);
                     return;
                 }
             } catch (error) {
                 console.error('获取VIP状态失败:', error);
-                // 网络错误时保持当前状态不变
-                console.log('网络错误，保持当前VIP状态:', isVip);
-                return;
             }
         }
     }
     
-    // 未登录或用户名无效时设置为非VIP状态
+    // 默认设置为非VIP状态
     isVip = false;
     vipExpiryTime = 0;
-    
-    // 清除可能存在的缓存
-    const username = localStorage.getItem('username');
-    if (username) {
-        localStorage.removeItem(`vipStatus_${username}`);
-        localStorage.removeItem(`vipExpiry_${username}`);
-        localStorage.removeItem(`vipCacheTime_${username}`);
-    }
-    
     console.log('异步更新设置为非VIP状态');
 }
 
@@ -150,14 +115,6 @@ function activateVip(vipData) {
     const expireDate = new Date(vipData.vip_expire_date.replace(' ', 'T'));
     vipExpiryTime = expireDate.getTime();
     console.log('会员已激活，到期时间：', vipData.vip_expire_date, '剩余天数：', vipData.remaining_days);
-    
-    // 缓存VIP状态到本地存储
-    const username = localStorage.getItem('username');
-    if (username) {
-        localStorage.setItem(`vipStatus_${username}`, isVip.toString());
-        localStorage.setItem(`vipExpiry_${username}`, vipExpiryTime.toString());
-        localStorage.setItem(`vipCacheTime_${username}`, Date.now().toString());
-    }
     
     // 立即更新UI显示
     updateEnergyDisplay();
@@ -1371,7 +1328,7 @@ function collectSun(sunId, clickX, clickY) {
 }
 
 // 在initEnergy函数末尾调用初始化太阳掉落系统
-function initEnergy() {
+async function initEnergy() {
     // 从localStorage加载能量值
     loadEnergy();
     
@@ -1381,8 +1338,11 @@ function initEnergy() {
     // 创建能量显示元素
     createEnergyDisplay();
     
-    // 更新能量显示
+    // 立即更新能量显示（使用同步状态）
     updateEnergyDisplay();
+    
+    // 异步更新VIP状态（从API获取真实状态）
+    await updateVipStatusAsync();
     
     // 设置能量自动恢复定时器
     setupEnergyRecovery();
