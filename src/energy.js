@@ -104,6 +104,10 @@ async function updateVipStatusAsync() {
     isVip = false;
     vipExpiryTime = 0;
     console.log('异步更新设置为非VIP状态');
+    
+    // 更新UI显示
+    updateEnergyDisplay();
+    updateVipStatusDisplay();
 }
 
 // 保存会员状态函数已废弃，VIP状态完全由后端管理
