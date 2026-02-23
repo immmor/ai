@@ -104,10 +104,6 @@ async function updateVipStatusAsync() {
     isVip = false;
     vipExpiryTime = 0;
     console.log('异步更新设置为非VIP状态');
-    
-    // 更新UI显示
-    updateEnergyDisplay();
-    updateVipStatusDisplay();
 }
 
 // 保存会员状态函数已废弃，VIP状态完全由后端管理
@@ -1332,7 +1328,7 @@ function collectSun(sunId, clickX, clickY) {
 }
 
 // 在initEnergy函数末尾调用初始化太阳掉落系统
-async function initEnergy() {
+function initEnergy() {
     // 从localStorage加载能量值
     loadEnergy();
     
@@ -1342,11 +1338,8 @@ async function initEnergy() {
     // 创建能量显示元素
     createEnergyDisplay();
     
-    // 立即更新能量显示（使用同步状态）
+    // 更新能量显示
     updateEnergyDisplay();
-    
-    // 异步更新VIP状态（从API获取真实状态）
-    await updateVipStatusAsync();
     
     // 设置能量自动恢复定时器
     setupEnergyRecovery();

@@ -100,20 +100,11 @@ if (document.readyState === 'loading') {
     }
     
     initRandomQuestions();
-    // 使用Promise确保initEnergy异步操作完成
-    initEnergy().then(() => {
-        loadQuestion(currentRandomIndex);
-        setupEvents();
-        loadBadges();
-        loadGameStats();
-    }).catch(error => {
-        console.error('初始化能量系统失败:', error);
-        // 即使失败也继续执行其他初始化
-        loadQuestion(currentRandomIndex);
-        setupEvents();
-        loadBadges();
-        loadGameStats();
-    });
+    initEnergy();
+    loadQuestion(currentRandomIndex);
+    setupEvents();
+    loadBadges();
+    loadGameStats();
     
     // 初始化等级样式系统
     if (window.LevelStyles) {
