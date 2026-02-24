@@ -866,7 +866,10 @@
                 });
                 
                 if (!response.ok) {
-                    console.warn('静态订单保存到Supabase失败，但本地订单已创建');
+                    const errorText = await response.text();
+                    console.warn('静态订单保存到Supabase失败:', response.status, errorText);
+                } else {
+                    console.log('静态订单已成功保存到Supabase');
                 }
             } catch (error) {
                 console.warn('网络错误，静态订单仅保存到本地:', error);
@@ -891,7 +894,7 @@
             // 否则启动30秒倒计时
             let countdown = 30;
             const countdownInterval = setInterval(() => {
-                confirmBtn.textContent = `已充值${countdown}s`;
+                confirmBtn.textContent = `请稍等${countdown}s`;
                 countdown--;
                 
                 if (countdown < 0) {
@@ -948,6 +951,10 @@
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const result = await response.json();
                 
                 if (result.success) {
@@ -974,9 +981,11 @@
                     startCooldownTimer(confirmBtn, 3600000, '下次充值');
                 } else {
                     alert('充值失败：' + result.message);
+                    console.error('充值失败详情:', result);
                 }
             } catch (error) {
-                alert('网络错误，请稍后重试');
+                alert('网络错误：' + error.message);
+                console.error('充值错误详情:', error);
             }
         }
         
