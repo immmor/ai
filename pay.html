@@ -706,8 +706,8 @@
             const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（使用用户名开头） currentUser.username + 
-            const orderNo = '_' + Date.now();
+            // 生成订单号（使用用户名开头） 
+            const orderNo = currentUser.username + '_' + Date.now();
             
             // 创建遮罩层
             const overlay = document.createElement('div');
