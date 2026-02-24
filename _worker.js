@@ -392,6 +392,25 @@ export default {
         }
       }
 
+      // 路由匹配：/api/order/create-static 创建静态订单接口
+      if (url.pathname === '/api/order/create-static' && request.method === 'POST') {
+        try {
+          const orderData = await request.json();
+          
+          if (!orderData.order_no || !orderData.username || !orderData.amount) {
+            return jsonResponse({ success: false, message: '订单数据不完整' }, 400);
+          }
+          
+          // 保存订单到Supabase
+          await supabaseFetch('orders', createSupabaseConfig('POST', orderData));
+          
+          return jsonResponse({ success: true, message: '静态订单创建成功' });
+        } catch (err) {
+          console.error('创建静态订单失败:', err);
+          return jsonResponse({ success: false, message: '创建静态订单失败' }, 500);
+        }
+      }
+
       // 路由匹配：/api/balance 查询余额接口
       if (url.pathname === '/api/balance' && request.method === 'GET') {
         try {
@@ -405,7 +424,7 @@ export default {
           }
           
           const user = await env.DB
-            .prepare('SELECT balance FROM user WHERE user WHERE username = ?')
+            .prepare('SELECT balance FROM user WHERE username = ?')
             .bind(username)
             .first();
           

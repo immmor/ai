@@ -103,73 +103,38 @@
             box-sizing: border-box;
         }
 
-        /* 支付选择器 */
-        .pay-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        /* 支付方式标签 */
-        .pay-tag {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--neon-pink);
-            color: #000;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
+        /* 支付方式下拉框 */
+        .pay-select {
+            width: 100%;
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
             font-weight: bold;
-        }
-
-        .pay-item {
-            border: 1px solid #444;
-            padding: 15px;
-            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
-            transition: 0.3s;
-            filter: grayscale(1);
-            position: relative;
-            overflow: hidden;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
         }
 
-        .pay-item.active {
-            filter: grayscale(0);
-        }
-        .pay-item:nth-child(1).active {
-            border-color: #07c160;
-            box-shadow: 0 0 15px #07c160;
-            background: rgba(7, 193, 96, 0.1);
-        }
-        .pay-item:nth-child(2).active {
-            border-color: #1677ff;
-            box-shadow: 0 0 15px #1677ff;
-            background: rgba(22, 119, 255, 0.1);
-        }
-        .pay-item:nth-child(3).active {
-            border-color: #ff6b35;
-            box-shadow: 0 0 15px #ff6b35;
-            background: rgba(255, 107, 53, 0.1);
-        }
-        .pay-item:nth-child(4).active {
-            border-color: #07c160;
-            box-shadow: 0 0 15px #07c160;
-            background: rgba(7, 193, 96, 0.1);
-        }
-        .pay-item:nth-child(5).active {
-            border-color: #1677ff;
-            box-shadow: 0 0 15px #1677ff;
-            background: rgba(22, 119, 255, 0.1);
+        .pay-select:focus {
+            outline: none;
+            box-shadow: 0 0 15px var(--neon-blue);
+            background-color: var(--neon-blue);
+            color: #000;
         }
 
-        .pay-item i { font-size: 40px; }
-        .pay-item:nth-child(1) i { color: #07c160; }
-        .pay-item:nth-child(2) i { color: #1677ff; }
-        .pay-item:nth-child(3) i { color: #ff6b35; }
-        .pay-item:nth-child(4) i { color: #07c160; }
-        .pay-item:nth-child(5) i { color: #1677ff; }
+        .pay-select option {
+            background: #1a1a1a;
+            color: var(--neon-blue);
+            padding: 10px;
+        }
         
         /* 金额选择器 */
         .amount-grid {
@@ -480,32 +445,13 @@
                 <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
             </div>
 
-            <div class="pay-grid">
-                <div class="pay-item active" onclick="sel(this, 'wechat')">
-                    <i class="fab fa-weixin"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">微信</div>
-                    <div class="pay-tag">回调</div>
-                </div>
-                <div class="pay-item" onclick="sel(this, 'alipay')">
-                    <i class="fab fa-alipay"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">支付宝</div>
-                    <div class="pay-tag">回调</div>
-                </div>
-                <div class="pay-item" onclick="sel(this, 'usdt')">
-                    <i class="fab fa-ethereum"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">USDT</div>
-                </div>
-                <div class="pay-item" onclick="sel(this, 'wechat_static')">
-                    <i class="fab fa-weixin"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">微信</div>
-                    <div class="pay-tag" style="background: var(--neon-blue);">人工</div>
-                </div>
-                <div class="pay-item" onclick="sel(this, 'alipay_static')">
-                    <i class="fab fa-alipay"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">支付宝</div>
-                    <div class="pay-tag" style="background: var(--neon-blue);">人工</div>
-                </div>
-            </div>
+            <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
+                <option value="wechat">微信支付 (回调)</option>
+                <option value="alipay">支付宝 (回调)</option>
+                <option value="usdt">USDT</option>
+                <option value="wechat_static">微信支付 (人工审核)</option>
+                <option value="alipay_static">支付宝 (人工审核)</option>
+            </select>
 
             <button class="glitch-btn" onclick="pay()"></button>
             
@@ -565,7 +511,7 @@
         document.addEventListener('dblclick', function(e) {
             e.preventDefault();
         });
-        let mode = 'wechat';
+        let mode = 'wechat'; // 默认选择微信支付
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
@@ -577,10 +523,10 @@
             document.getElementById('pay-interface').style.display = 'block';
             updateBalance();
         } else {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('nav-tabs-container').style.display = 'none';
-            document.getElementById('pay-interface').style.display = 'none';
-            document.getElementById('orders-interface').style.display = 'none';
+            // document.getElementById('login-form').style.display = 'block';
+            // document.getElementById('nav-tabs-container').style.display = 'none';
+            // document.getElementById('pay-interface').style.display = 'none';
+            // document.getElementById('orders-interface').style.display = 'none';
         }
         
         async function updateBalance() {
@@ -660,9 +606,7 @@
             }
         }
 
-        function sel(el, m) {
-            document.querySelectorAll('.pay-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
+        function selectPayMethod(m) {
             mode = m;
         }
 
@@ -762,8 +706,8 @@
             const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（使用用户名开头） 
-            const orderNo = currentUser.username + '_' + Date.now();
+            // 生成订单号（使用用户名开头） currentUser.username + 
+            const orderNo = '_' + Date.now();
             
             // 创建遮罩层
             const overlay = document.createElement('div');
@@ -896,7 +840,7 @@
         }
         
         // 创建静态支付订单记录
-        function createStaticOrderRecord(paymentType, amount, orderNo) {
+        async function createStaticOrderRecord(paymentType, amount, orderNo) {
             const orderData = {
                 order_no: orderNo,
                 payment_type: paymentType,
@@ -911,6 +855,21 @@
             let staticOrders = JSON.parse(localStorage.getItem('staticOrders') || '[]');
             staticOrders.push(orderData);
             localStorage.setItem('staticOrders', JSON.stringify(staticOrders));
+            
+            // 同时保存到Supabase
+            try {
+                const response = await fetch('/api/order/create-static', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (!response.ok) {
+                    console.warn('静态订单保存到Supabase失败，但本地订单已创建');
+                }
+            } catch (error) {
+                console.warn('网络错误，静态订单仅保存到本地:', error);
+            }
             
             console.log('静态支付订单已创建:', orderData);
         }
