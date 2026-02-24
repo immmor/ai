@@ -523,10 +523,10 @@
             document.getElementById('pay-interface').style.display = 'block';
             updateBalance();
         } else {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('nav-tabs-container').style.display = 'none';
-            document.getElementById('pay-interface').style.display = 'none';
-            document.getElementById('orders-interface').style.display = 'none';
+            // document.getElementById('login-form').style.display = 'block';
+            // document.getElementById('nav-tabs-container').style.display = 'none';
+            // document.getElementById('pay-interface').style.display = 'none';
+            // document.getElementById('orders-interface').style.display = 'none';
         }
         
         async function updateBalance() {
@@ -706,8 +706,8 @@
             const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（使用用户名开头） 
-            const orderNo = currentUser.username + '_' + Date.now();
+            // 生成订单号（使用用户名开头） currentUser.username + 
+            const orderNo = '_' + Date.now();
             
             // 创建遮罩层
             const overlay = document.createElement('div');
@@ -767,11 +767,11 @@
             // 说明文字
             const instruction = document.createElement('div');
             instruction.innerHTML = `
-                <div style="color: #999; font-size: 12px; line-height: 1.5; margin: 0px 20px 20px 20px; text-align: left;">
+                <div style="color: #999; font-size: 12px; line-height: 1.5; margin: 0px 20px 50px 50px; text-align: left;">
                     <strong>支付说明：</strong><br>
                     1. 请使用${paymentName}扫描上方二维码<br>
                     2. 支付金额：<strong>¥${amount}</strong><br>
-                    3. <strong style="color: var(--neon-pink);">支付时请务必备注订单号：${orderNo}</strong><br>
+                    3. 支付时请务必备注订单号<br>
                     4. 支付完成后请截图保存凭证<br>
                     5. 联系客服人工审核到账
                 </div>

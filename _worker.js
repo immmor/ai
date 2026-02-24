@@ -407,7 +407,7 @@ export default {
           return jsonResponse({ success: true, message: '静态订单创建成功' });
         } catch (err) {
           console.error('创建静态订单失败:', err);
-          return jsonResponse({ success: false, message: '创建静态订单失败' }, 500);
+          return jsonResponse({ success: false, message: '创建静态订单失败: ' + err.message }, 500);
         }
       }
 
