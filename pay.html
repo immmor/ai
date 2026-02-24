@@ -936,7 +936,7 @@
         // 确认充值
         async function confirmRecharge(orderNo, amount, paymentType, confirmBtn) {
             try {
-                const response = await fetch('/api/recharge/confirm', {
+                const response = await fetch('https://immmor.com/api/recharge/confirm', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
