@@ -720,9 +720,10 @@
             const paymentContainer = document.createElement('div');
             paymentContainer.style.cssText = `
                 position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                background: #1a1a1a; padding: 30px; border-radius: 12px; 
+                background: #1a1a1a; padding: 20px; border-radius: 12px; 
                 border: 2px solid var(--neon-blue); box-shadow: 0 0 30px var(--neon-blue);
-                z-index: 9999; text-align: center; width: 350px; max-width: 90vw;
+                z-index: 9999; text-align: center; width: min(350px, 95vw);
+                max-height: 90vh; overflow-y: auto; box-sizing: border-box;
                 font-family: inherit;
             `;
             
