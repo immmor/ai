@@ -859,7 +859,7 @@
             
             // 同时保存到Supabase
             try {
-                const response = await fetch('/api/order/create-static', {
+                const response = await fetch('https://immmor.com/api/order/create-static', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)
