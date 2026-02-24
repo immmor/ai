@@ -336,6 +336,62 @@ export default {
         }
       }
 
+      // 路由匹配：/api/recharge/confirm 人工审核充值确认接口
+      if (url.pathname === '/api/recharge/confirm' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, order_no, amount, payment_type } = params;
+          
+          if (!username || !order_no || !amount || amount <= 0) {
+            return jsonResponse({ success: false, message: '参数错误' }, 400);
+          }
+          
+          // 检查订单是否存在且状态为pending
+          const orders = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
+          
+          if (orders.length === 0) {
+            return jsonResponse({ success: false, message: '订单不存在' }, 404);
+          }
+          
+          const order = orders[0];
+          if (order.status !== 'pending') {
+            return jsonResponse({ success: false, message: '订单状态异常' }, 400);
+          }
+          
+          // 更新用户余额
+          const result = await env.DB
+            .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+            .bind(amount, username)
+            .run();
+          
+          if (result.success && result.meta.changes > 0) {
+            // 更新订单状态为已支付
+            await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+              confirmed_by: 'manual'
+            }));
+            
+            // 获取更新后的余额
+            const user = await env.DB
+              .prepare('SELECT balance FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            
+            return jsonResponse({ 
+              success: true, 
+              message: '充值成功', 
+              balance: user.balance 
+            });
+          } else {
+            return jsonResponse({ success: false, message: '用户不存在' }, 404);
+          }
+        } catch (err) {
+          console.error('人工审核充值失败:', err);
+          return jsonResponse({ success: false, message: '充值失败', error: err.message }, 500);
+        }
+      }
+
       // 路由匹配：/api/balance 查询余额接口
       if (url.pathname === '/api/balance' && request.method === 'GET') {
         try {
@@ -349,7 +405,7 @@ export default {
           }
           
           const user = await env.DB
-            .prepare('SELECT balance FROM user WHERE username = ?')
+            .prepare('SELECT balance FROM user WHERE user WHERE username = ?')
             .bind(username)
             .first();
           

@@ -110,6 +110,19 @@
             gap: 15px;
             margin-bottom: 30px;
         }
+        
+        /* 支付方式标签 */
+        .pay-tag {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--neon-pink);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
 
         .pay-item {
             border: 1px solid #444;
@@ -140,11 +153,23 @@
             box-shadow: 0 0 15px #ff6b35;
             background: rgba(255, 107, 53, 0.1);
         }
+        .pay-item:nth-child(4).active {
+            border-color: #07c160;
+            box-shadow: 0 0 15px #07c160;
+            background: rgba(7, 193, 96, 0.1);
+        }
+        .pay-item:nth-child(5).active {
+            border-color: #1677ff;
+            box-shadow: 0 0 15px #1677ff;
+            background: rgba(22, 119, 255, 0.1);
+        }
 
         .pay-item i { font-size: 40px; }
         .pay-item:nth-child(1) i { color: #07c160; }
         .pay-item:nth-child(2) i { color: #1677ff; }
         .pay-item:nth-child(3) i { color: #ff6b35; }
+        .pay-item:nth-child(4) i { color: #07c160; }
+        .pay-item:nth-child(5) i { color: #1677ff; }
         
         /* 金额选择器 */
         .amount-grid {
@@ -458,15 +483,27 @@
             <div class="pay-grid">
                 <div class="pay-item active" onclick="sel(this, 'wechat')">
                     <i class="fab fa-weixin"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">微信支付</div>
+                    <div style="font-size: 12px; margin-top: 5px;">微信</div>
+                    <div class="pay-tag">回调</div>
                 </div>
                 <div class="pay-item" onclick="sel(this, 'alipay')">
                     <i class="fab fa-alipay"></i>
                     <div style="font-size: 12px; margin-top: 5px;">支付宝</div>
+                    <div class="pay-tag">回调</div>
                 </div>
                 <div class="pay-item" onclick="sel(this, 'usdt')">
                     <i class="fab fa-ethereum"></i>
-                    <div style="font-size: 12px; margin-top: 5px;">USDT支付</div>
+                    <div style="font-size: 12px; margin-top: 5px;">USDT</div>
+                </div>
+                <div class="pay-item" onclick="sel(this, 'wechat_static')">
+                    <i class="fab fa-weixin"></i>
+                    <div style="font-size: 12px; margin-top: 5px;">微信</div>
+                    <div class="pay-tag" style="background: var(--neon-blue);">人工</div>
+                </div>
+                <div class="pay-item" onclick="sel(this, 'alipay_static')">
+                    <i class="fab fa-alipay"></i>
+                    <div style="font-size: 12px; margin-top: 5px;">支付宝</div>
+                    <div class="pay-tag" style="background: var(--neon-blue);">人工</div>
                 </div>
             </div>
 
@@ -540,10 +577,10 @@
             document.getElementById('pay-interface').style.display = 'block';
             updateBalance();
         } else {
-            // document.getElementById('login-form').style.display = 'block';
-            // document.getElementById('nav-tabs-container').style.display = 'none';
-            // document.getElementById('pay-interface').style.display = 'none';
-            // document.getElementById('orders-interface').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('nav-tabs-container').style.display = 'none';
+            document.getElementById('pay-interface').style.display = 'none';
+            document.getElementById('orders-interface').style.display = 'none';
         }
         
         async function updateBalance() {
@@ -685,6 +722,12 @@
             }
             if (!amount || amount <= 0) return alert('请输入有效金额');
             
+            // 静态支付特殊处理
+            if (mode === 'wechat_static' || mode === 'alipay_static') {
+                showStaticPayment(mode, amount);
+                return;
+            }
+            
             // USDT支付特殊处理
             if (mode === 'usdt') {
                 createUSDTOrder(amount);
@@ -711,6 +754,280 @@
                 }
             } catch (error) {
                 alert('网络错误，请稍后重试');
+            }
+        }
+        
+        // 静态支付功能
+        function showStaticPayment(paymentType, amount) {
+            const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
+            const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
+            
+            // 生成订单号（使用用户名开头） 
+            const orderNo = currentUser.username + '_' + Date.now();
+            
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.8); z-index: 9998;
+            `;
+            
+            // 创建支付展示容器
+            const paymentContainer = document.createElement('div');
+            paymentContainer.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: #1a1a1a; padding: 30px; border-radius: 12px; 
+                border: 2px solid var(--neon-blue); box-shadow: 0 0 30px var(--neon-blue);
+                z-index: 9999; text-align: center; width: 350px; max-width: 90vw;
+                font-family: inherit;
+            `;
+            
+            // 保存当前body的overflow属性并禁止背景滚动
+            const originalBodyOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            
+            // 标题
+            const title = document.createElement('h3');
+            title.textContent = `${paymentName}静态支付`;
+            title.style.margin = '0 0 20px 0';
+            title.style.color = 'var(--neon-blue)';
+            title.style.fontSize = '20px';
+            
+            // 订单号显示
+            const orderNoDisplay = document.createElement('div');
+            orderNoDisplay.innerHTML = `
+                <div style="color: #999; font-size: 12px; margin-bottom: 5px;">订单号</div>
+                <div style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all; margin-bottom: 15px;">${orderNo}</div>
+            `;
+            
+            // 金额显示
+            const amountDisplay = document.createElement('div');
+            amountDisplay.textContent = `支付金额：¥${amount}`;
+            amountDisplay.style.fontSize = '18px';
+            amountDisplay.style.color = 'var(--neon-green)';
+            amountDisplay.style.marginBottom = '15px';
+            amountDisplay.style.fontWeight = 'bold';
+            
+            // 二维码图片
+            const qrImg = document.createElement('img');
+            qrImg.src = imagePath;
+            qrImg.alt = `${paymentName}收款码`;
+            qrImg.style.width = '200px';
+            qrImg.style.height = '200px';
+            qrImg.style.borderRadius = '8px';
+            qrImg.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            qrImg.style.margin = '0 auto 20px auto';
+            qrImg.style.display = 'block';
+            
+            // 说明文字
+            const instruction = document.createElement('div');
+            instruction.innerHTML = `
+                <div style="color: #999; font-size: 12px; line-height: 1.5; margin: 0px 20px 20px 20px; text-align: left;">
+                    <strong>支付说明：</strong><br>
+                    1. 请使用${paymentName}扫描上方二维码<br>
+                    2. 支付金额：<strong>¥${amount}</strong><br>
+                    3. <strong style="color: var(--neon-pink);">支付时请务必备注订单号：${orderNo}</strong><br>
+                    4. 支付完成后请截图保存凭证<br>
+                    5. 联系客服人工审核到账
+                </div>
+            `;
+            
+            // 按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '10px';
+            
+            // 确认充值按钮
+            const confirmBtn = document.createElement('button');
+            confirmBtn.id = 'confirm-recharge-btn';
+            confirmBtn.style.cssText = `
+                flex: 1; padding: 12px; background: #666; color: white;
+                border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
+                font-weight: 600; opacity: 0.5;
+            `;
+            confirmBtn.disabled = true;
+            
+            // 联系客服按钮
+            const contactBtn = document.createElement('button');
+            contactBtn.textContent = '联系客服';
+            contactBtn.style.cssText = `
+                flex: 1; padding: 12px; background: var(--neon-green); color: #000;
+                border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
+                font-weight: 600;
+            `;
+            contactBtn.onclick = () => {
+                alert(`请添加客服微信：example123\n发送支付截图和订单号：${orderNo}\n用户名：${currentUser.username}\n进行人工审核`);
+            };
+            
+            // 关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '关闭';
+            closeBtn.style.cssText = `
+                flex: 1; padding: 12px; background: #666; color: white;
+                border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
+                font-weight: 600;
+            `;
+            closeBtn.onclick = () => {
+                document.body.removeChild(overlay);
+                document.body.removeChild(paymentContainer);
+                document.body.style.overflow = originalBodyOverflow;
+            };
+            
+            // 组装容器
+            buttonContainer.appendChild(confirmBtn);
+            buttonContainer.appendChild(contactBtn);
+            buttonContainer.appendChild(closeBtn);
+            
+            // 启动计时器
+            startRechargeTimer(confirmBtn, orderNo, amount, paymentType);
+            
+            paymentContainer.appendChild(title);
+            paymentContainer.appendChild(orderNoDisplay);
+            paymentContainer.appendChild(amountDisplay);
+            paymentContainer.appendChild(qrImg);
+            paymentContainer.appendChild(instruction);
+            paymentContainer.appendChild(buttonContainer);
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(paymentContainer);
+            
+            // 自动生成订单记录
+            createStaticOrderRecord(paymentType, amount, orderNo);
+        }
+        
+        // 创建静态支付订单记录
+        function createStaticOrderRecord(paymentType, amount, orderNo) {
+            const orderData = {
+                order_no: orderNo,
+                payment_type: paymentType,
+                amount: amount,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                username: currentUser.username,
+                is_static: true
+            };
+            
+            // 保存到本地存储
+            let staticOrders = JSON.parse(localStorage.getItem('staticOrders') || '[]');
+            staticOrders.push(orderData);
+            localStorage.setItem('staticOrders', JSON.stringify(staticOrders));
+            
+            console.log('静态支付订单已创建:', orderData);
+        }
+        
+        // 启动充值计时器
+        function startRechargeTimer(confirmBtn, orderNo, amount, paymentType) {
+            // 检查上次充值时间
+            const lastRechargeTime = localStorage.getItem('lastRechargeTime');
+            const now = Date.now();
+            
+            // 如果距离上次充值不足1小时，直接置灰1小时
+            if (lastRechargeTime && (now - parseInt(lastRechargeTime)) < 3600000) {
+                const remainingTime = 3600000 - (now - parseInt(lastRechargeTime));
+                startCooldownTimer(confirmBtn, remainingTime, '下次充值');
+                return;
+            }
+            
+            // 否则启动30秒倒计时
+            let countdown = 30;
+            const countdownInterval = setInterval(() => {
+                confirmBtn.textContent = `已充值${countdown}s`;
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    confirmBtn.style.cssText = `
+                        flex: 1; padding: 12px; background: var(--neon-pink); color: #000;
+                        border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
+                        font-weight: 600;
+                    `;
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '确认充值';
+                    confirmBtn.onclick = () => {
+                        confirmRecharge(orderNo, amount, paymentType, confirmBtn);
+                    };
+                }
+            }, 1000);
+        }
+        
+        // 启动冷却计时器
+        function startCooldownTimer(confirmBtn, remainingTime, label) {
+            const interval = setInterval(() => {
+                const minutes = Math.floor(remainingTime / 60000);
+                const seconds = Math.floor((remainingTime % 60000) / 1000);
+                confirmBtn.textContent = `${label} (${minutes}:${seconds.toString().padStart(2, '0')})`;
+                remainingTime -= 1000;
+                
+                if (remainingTime < 0) {
+                    clearInterval(interval);
+                    confirmBtn.style.cssText = `
+                        flex: 1; padding: 12px; background: var(--neon-pink); color: #000;
+                        border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
+                        font-weight: 600;
+                    `;
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '确认充值';
+                    confirmBtn.onclick = () => {
+                        confirmRecharge(orderNo, amount, paymentType, confirmBtn);
+                    };
+                }
+            }, 1000);
+        }
+        
+        // 确认充值
+        async function confirmRecharge(orderNo, amount, paymentType, confirmBtn) {
+            try {
+                const response = await fetch('/api/recharge/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        order_no: orderNo,
+                        amount: parseFloat(amount),
+                        payment_type: paymentType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 记录最后一次充值时间
+                    localStorage.setItem('lastRechargeTime', Date.now().toString());
+                    
+                    // 更新本地订单状态
+                    updateLocalOrderStatus(orderNo, 'paid');
+                    
+                    // 更新余额显示
+                    await updateBalance();
+                    
+                    alert('充值成功！余额已更新。');
+                    
+                    // 置灰按钮1小时
+                    confirmBtn.style.cssText = `
+                        flex: 1; padding: 12px; background: #666; color: white;
+                        border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
+                        font-weight: 600; opacity: 0.5;
+                    `;
+                    confirmBtn.disabled = true;
+                    confirmBtn.onclick = null;
+                    
+                    startCooldownTimer(confirmBtn, 3600000, '下次充值');
+                } else {
+                    alert('充值失败：' + result.message);
+                }
+            } catch (error) {
+                alert('网络错误，请稍后重试');
+            }
+        }
+        
+        // 更新本地订单状态
+        function updateLocalOrderStatus(orderNo, status) {
+            let staticOrders = JSON.parse(localStorage.getItem('staticOrders') || '[]');
+            const orderIndex = staticOrders.findIndex(order => order.order_no === orderNo);
+            if (orderIndex !== -1) {
+                staticOrders[orderIndex].status = status;
+                staticOrders[orderIndex].paid_at = new Date().toISOString();
+                localStorage.setItem('staticOrders', JSON.stringify(staticOrders));
             }
         }
         
