@@ -356,16 +356,11 @@ export default {
           if (result.success && result.meta.changes > 0) {
             // 更新订单状态为已支付
             try {
-              const patchConfig = createSupabaseConfig('PATCH', {
+              const updateResult = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
                 status: 'paid',
                 paid_at: new Date().toISOString(),
                 confirmed_by: 'manual'
-              });
-              // 添加 Prefer 头部用于 PATCH 请求
-              patchConfig.headers['Prefer'] = 'return=representation';
-              
-              const updateResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_no=eq.${order_no}`, patchConfig);
-              const updateResult = await updateResponse.json();
+              }));
               console.log('订单状态更新结果:', updateResult);
             } catch (error) {
               console.error('订单状态更新失败:', error);
