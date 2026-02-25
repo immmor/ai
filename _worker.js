@@ -346,18 +346,6 @@ export default {
             return jsonResponse({ success: false, message: '参数错误' }, 400);
           }
           
-          // 检查订单是否存在且状态为pending
-          const orders = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
-          
-          if (orders.length === 0) {
-            return jsonResponse({ success: false, message: '订单不存在' }, 404);
-          }
-          
-          const order = orders[0];
-          if (order.status !== 'pending') {
-            return jsonResponse({ success: false, message: '订单状态异常' }, 400);
-          }
-          
           // 更新用户余额
           const result = await env.DB
             .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
@@ -366,11 +354,15 @@ export default {
           
           if (result.success && result.meta.changes > 0) {
             // 更新订单状态为已支付
-            await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-              status: 'paid',
-              paid_at: new Date().toISOString(),
-              confirmed_by: 'manual'
-            }));
+            try {
+              await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                status: 'paid',
+                paid_at: new Date().toISOString(),
+                confirmed_by: 'manual'
+              }));
+            } catch (error) {
+              console.error('订单状态更新失败:', error);
+            }
             
             // 获取更新后的余额
             const user = await env.DB
