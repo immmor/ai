@@ -356,12 +356,20 @@ export default {
           if (result.success && result.meta.changes > 0) {
             // 更新订单状态为已支付
             try {
-              const updateResult = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                status: 'paid',
-                paid_at: new Date().toISOString(),
-                confirmed_by: 'manual'
-              }));
-              console.log('订单状态更新结果:', updateResult);
+              // 先查询订单是否存在
+              const existingOrders = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
+              
+              if (existingOrders && existingOrders.length > 0) {
+                // 更新订单状态
+                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  confirmed_by: 'manual'
+                }));
+                console.log('订单状态已更新为paid');
+              } else {
+                console.log('订单不存在，无法更新状态');
+              }
             } catch (error) {
               console.error('订单状态更新失败:', error);
             }
