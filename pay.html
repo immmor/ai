@@ -851,12 +851,7 @@
                 description: '钱包充值(人工审核)'
             };
             
-            // 保存到本地存储
-            let staticOrders = JSON.parse(localStorage.getItem('staticOrders') || '[]');
-            staticOrders.push(orderData);
-            localStorage.setItem('staticOrders', JSON.stringify(staticOrders));
-            
-            // 同时保存到Supabase
+            // 保存到Supabase
             try {
                 const response = await fetch('https://immmor.com/api/order/create-static', {
                     method: 'POST',
@@ -871,7 +866,7 @@
                     console.log('静态订单已成功保存到Supabase');
                 }
             } catch (error) {
-                console.warn('网络错误，静态订单仅保存到本地:', error);
+                console.warn('网络错误，静态订单保存失败:', error);
             }
             
             console.log('静态支付订单已创建:', orderData);
