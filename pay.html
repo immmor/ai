@@ -844,12 +844,11 @@
         async function createStaticOrderRecord(paymentType, amount, orderNo) {
             const orderData = {
                 order_no: orderNo,
-                payment_type: paymentType,
-                amount: amount,
-                status: 'pending',
-                created_at: new Date().toISOString(),
                 username: currentUser.username,
-                is_static: true
+                amount: amount,
+                payment_type: paymentType,
+                status: 'pending',
+                description: '钱包充值(人工审核)'
             };
             
             // 保存到本地存储
@@ -1240,7 +1239,9 @@
                 
                 const typeText = {
                     'alipay': '支付宝',
-                    'wxpay': '微信支付'
+                    'wxpay': '微信支付',
+                    'wechat_static': '微信支付(人工)',
+                    'alipay_static': '支付宝(人工)'
                 }[order.payment_type] || order.payment_type;
                 
                 html += `
