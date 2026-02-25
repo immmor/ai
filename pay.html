@@ -940,15 +940,19 @@
         // 确认充值
         async function confirmRecharge(orderNo, amount, paymentType, confirmBtn) {
             try {
+                const requestBody = {
+                    username: currentUser.username,
+                    order_no: orderNo,
+                    amount: parseFloat(amount),
+                    payment_type: paymentType
+                };
+                
+                console.log('确认充值请求参数:', requestBody);
+                
                 const response = await fetch('https://immmor.com/api/recharge/confirm', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: currentUser.username,
-                        order_no: orderNo,
-                        amount: parseFloat(amount),
-                        payment_type: paymentType
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!response.ok) {
