@@ -745,7 +745,7 @@
                 document.getElementById('currentUser').textContent = username;
                 
                 // 加载仪表盘数据
-                loadDashboardData();
+                await loadDashboardData();
             } else {
                 alert(result.message || '用户名或密码错误');
             }
@@ -761,8 +761,17 @@
         
         // 加载仪表盘数据
         async function loadDashboardData() {
-            // 这里可以调用统计接口，目前使用静态数据
-            // 后续可以添加 /api/stats 接口来获取实时数据
+            const result = await apiRequest('/api/stats', 'GET');
+            
+            if (result.code === 200) {
+                const data = result.data;
+                document.getElementById('totalUsers').textContent = data.totalUsers || 0;
+                document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+                document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
+                document.getElementById('totalRevenue').textContent = '¥' + (data.totalRevenue || 0);
+            } else {
+                console.error('加载统计数据失败:', result.msg);
+            }
         }
 
         // 页面切换
@@ -801,7 +810,9 @@
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
             // 根据页面加载对应数据
-            if (pageName === 'users') {
+            if (pageName === 'dashboard') {
+                await loadDashboardData();
+            } else if (pageName === 'users') {
                 await loadUsers();
             } else if (pageName === 'orders') {
                 await loadOrders();

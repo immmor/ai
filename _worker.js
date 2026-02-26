@@ -680,6 +680,45 @@ export default {
         }
       }
 
+      // 路由匹配：/api/stats 获取统计数据接口
+      if (url.pathname === '/api/stats' && request.method === 'GET') {
+        try {
+          // 获取用户总数
+          const userCountResult = await env.DB
+            .prepare('SELECT COUNT(*) as total FROM user')
+            .first();
+          const totalUsers = userCountResult ? userCountResult.total : 0;
+          
+          // 获取订单总数
+          const ordersCountResult = await supabaseFetch('orders?select=id', createSupabaseConfig());
+          const totalOrders = Array.isArray(ordersCountResult) ? ordersCountResult.length : 0;
+          
+          // 获取待处理订单数
+          const pendingOrdersResult = await supabaseFetch('orders?status=eq.pending&select=id', createSupabaseConfig());
+          const pendingOrders = Array.isArray(pendingOrdersResult) ? pendingOrdersResult.length : 0;
+          
+          // 获取总收入（已支付的订单）
+          const paidOrdersResult = await supabaseFetch('orders?status=eq.paid&select=amount', createSupabaseConfig());
+          let totalRevenue = 0;
+          if (Array.isArray(paidOrdersResult)) {
+            totalRevenue = paidOrdersResult.reduce((sum, order) => sum + parseFloat(order.amount || 0), 0);
+          }
+          
+          return jsonResponse({
+            code: 200,
+            msg: '查询成功',
+            data: {
+              totalUsers,
+              totalOrders,
+              pendingOrders,
+              totalRevenue: totalRevenue.toFixed(2)
+            }
+          });
+        } catch (err) {
+          return jsonResponse({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
       return jsonResponse({ code: 404, message: 'API not found' }, 404);
     }
 
