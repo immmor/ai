@@ -543,9 +543,9 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>用户名</th>
-                                    <th>邮箱</th>
-                                    <th>角色</th>
-                                    <th>注册时间</th>
+                                    <th>余额</th>
+                                    <th>用户类型</th>
+                                    <th>VIP过期时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -817,39 +817,64 @@
         let usersData = [];
         let ordersData = [];
         
-        // 渲染用户列表
+        // 加载用户列表
         async function loadUsers() {
-            // 从D1数据库获取所有用户 - 需要通过后端接口
-            // 目前使用模拟数据，后续可以添加 /api/users 接口
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
             
-            // 模拟从API获取数据
-            setTimeout(() => {
+            const result = await apiRequest('/api/users?page=1&limit=50', 'GET');
+            
+            if (result.code === 200) {
+                usersData = result.data.users || [];
                 renderUsers();
-            }, 500);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
+            }
         }
         
+        // 渲染用户列表
         function renderUsers() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
+
+            if (usersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无用户数据</td></tr>';
+                return;
+            }
 
             usersData.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
                     <td>${user.username}</td>
-                    <td>${user.email || '-'}</td>
-                    <td>${user.role || 'user'}</td>
-                    <td>${user.registerDate || '-'}</td>
+                    <td>¥${user.balance || 0}</td>
+                    <td>${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
+                    <td>${user.learn_vip_expire_date ? new Date(user.learn_vip_expire_date).toLocaleDateString() : '-'}</td>
                     <td>
-                        <button class="action-btn edit-btn" onclick="editUser(${user.id})">编辑</button>
-                        <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">删除</button>
                         <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
+                        <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+        }
+        
+        // 检查用户VIP状态
+        async function checkUserVIP(username) {
+            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            
+            if (result.code === 200) {
+                const vipInfo = result.data;
+                let message = `用户 ${username} 的VIP状态：\n`;
+                message += `是否VIP: ${vipInfo.is_vip ? '是' : '否'}\n`;
+                if (vipInfo.is_vip && vipInfo.vip_expire_date) {
+                    message += `过期时间: ${vipInfo.vip_expire_date}\n`;
+                    message += `剩余天数: ${vipInfo.remaining_days} 天`;
+                }
+                alert(message);
+            } else {
+                alert(result.msg || '查询失败');
+            }
         }
 
         // 渲染产品列表 - 产品管理已移除
@@ -930,16 +955,11 @@
             document.getElementById('userModal').style.display = 'none';
         }
 
-        // 编辑用户
+        // 编辑用户 - 目前仅支持查看
         function editUser(id) {
             const user = usersData.find(u => u.id === id);
             if (user) {
-                document.getElementById('userModalTitle').textContent = '编辑用户';
-                document.getElementById('userId').value = user.id;
-                document.getElementById('userName').value = user.username;
-                document.getElementById('userEmail').value = user.email || '';
-                document.getElementById('userRole').value = user.role || 'user';
-                document.getElementById('userModal').style.display = 'block';
+                alert(`用户信息：\nID: ${user.id}\n用户名: ${user.username}\n余额: ¥${user.balance || 0}\nVIP过期: ${user.learn_vip_expire_date || '无'}`);
             }
         }
 

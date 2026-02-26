@@ -643,6 +643,43 @@ export default {
         }
       }
 
+      // 路由匹配：/api/users 获取所有用户列表接口
+      if (url.pathname === '/api/users' && request.method === 'GET') {
+        try {
+          const page = parseInt(url.searchParams.get('page')) || 1;
+          const limit = parseInt(url.searchParams.get('limit')) || 50;
+          const offset = (page - 1) * limit;
+          
+          // 获取用户总数
+          const countResult = await env.DB
+            .prepare('SELECT COUNT(*) as total FROM user')
+            .first();
+          const total = countResult ? countResult.total : 0;
+          
+          // 获取用户列表
+          const users = await env.DB
+            .prepare('SELECT rowid as id, username, balance, learn_vip_expire_date FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
+            .bind(limit, offset)
+            .all();
+          
+          return jsonResponse({
+            code: 200,
+            msg: '查询成功',
+            data: {
+              users: users.results || [],
+              pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+              }
+            }
+          });
+        } catch (err) {
+          return jsonResponse({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
       return jsonResponse({ code: 404, message: 'API not found' }, 404);
     }
 
