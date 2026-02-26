@@ -514,17 +514,6 @@
                             <div class="stat-icon">💰</div>
                         </div>
                     </div>
-                    <div class="data-table">
-                        <div class="table-header">
-                            <h3>快捷操作</h3>
-                        </div>
-                        <div style="padding: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <button class="btn" onclick="showPage('users')" style="background-color: #48bb78;">用户管理</button>
-                            <button class="btn" onclick="showPage('orders')" style="background-color: #667eea;">订单管理</button>
-                            <button class="btn" onclick="quickRecharge()" style="background-color: #ed8936;">快速充值</button>
-                            <button class="btn" onclick="quickVIP()" style="background-color: #9f7aea;">VIP管理</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 用户管理页面 -->
@@ -730,6 +719,36 @@
             }
         }
 
+        // 检查本地存储的登录状态
+        function checkLoginStatus() {
+            const savedUser = localStorage.getItem('bms_user');
+            if (savedUser) {
+                try {
+                    const userInfo = JSON.parse(savedUser);
+                    currentUserInfo = userInfo;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'flex';
+                    document.getElementById('currentUser').textContent = userInfo.username;
+                    loadDashboardData();
+                    return true;
+                } catch (e) {
+                    localStorage.removeItem('bms_user');
+                }
+            }
+            return false;
+        }
+
+        // 保存登录信息到本地存储
+        function saveLoginStatus(userInfo) {
+            localStorage.setItem('bms_user', JSON.stringify(userInfo));
+        }
+
+        // 清除登录信息
+        function clearLoginStatus() {
+            localStorage.removeItem('bms_user');
+            currentUserInfo = null;
+        }
+
         // 登录功能
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -740,6 +759,9 @@
             
             if (result.success) {
                 currentUserInfo = result.userInfo;
+                // 保存登录状态
+                saveLoginStatus(result.userInfo);
+                
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('mainPage').style.display = 'flex';
                 document.getElementById('currentUser').textContent = username;
@@ -753,7 +775,7 @@
 
         // 退出登录
         function logout() {
-            currentUserInfo = null;
+            clearLoginStatus();
             document.getElementById('mainPage').style.display = 'none';
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('loginForm').reset();
@@ -1231,7 +1253,8 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
 
         // 初始化页面
         window.onload = function() {
-            // 页面初始化时不加载数据，等待登录后加载
+            // 检查是否已登录
+            checkLoginStatus();
         }
     </script>
 </body>
