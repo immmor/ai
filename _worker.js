@@ -448,19 +448,19 @@ export default {
           const limit = parseInt(url.searchParams.get('limit')) || 10;
           const offset = (page - 1) * limit;
           
-          let totalData, orders;
-          
-          if (username) {
-            // 查询特定用户的订单
-            totalData = await supabaseFetch(`orders?username=eq.${username}&select=id`, createSupabaseConfig());
-            orders = await supabaseFetch(`orders?username=eq.${username}&order=created_at.desc&limit=${limit}&offset=${offset}`, createSupabaseConfig());
-          } else {
-            // 查询所有订单
-            totalData = await supabaseFetch('orders?select=id', createSupabaseConfig());
-            orders = await supabaseFetch(`orders?order=created_at.desc&limit=${limit}&offset=${offset}`, createSupabaseConfig());
+          if (!username) {
+            return new Response(JSON.stringify({ code: 400, msg: '缺少username参数' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
           }
           
-          const total = Array.isArray(totalData) ? totalData.length : 0;
+          // 查询订单总数
+          const totalData = await supabaseFetch(`orders?username=eq.${username}&select=id`, createSupabaseConfig());
+          const total = totalData.length;
+          
+          // 查询订单列表
+          const orders = await supabaseFetch(`orders?username=eq.${username}&order=created_at.desc&limit=${limit}&offset=${offset}`, createSupabaseConfig());
           
           return jsonResponse({
             code: 200,
