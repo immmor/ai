@@ -464,7 +464,6 @@
             <nav class="sidebar-menu">
                 <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
-                <a href="#products" class="menu-item" onclick="showPage('products')">产品管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
             </nav>
@@ -488,28 +487,28 @@
                     <div class="dashboard-grid">
                         <div class="stat-card">
                             <div class="stat-info">
-                                <h3 id="totalUsers">1250</h3>
+                                <h3 id="totalUsers">-</h3>
                                 <p>总用户数</p>
                             </div>
                             <div class="stat-icon">👥</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-info">
-                                <h3 id="totalProducts">320</h3>
-                                <p>总产品数</p>
-                            </div>
-                            <div class="stat-icon">📦</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <h3 id="totalOrders">896</h3>
+                                <h3 id="totalOrders">-</h3>
                                 <p>总订单数</p>
                             </div>
                             <div class="stat-icon">🛒</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-info">
-                                <h3 id="totalRevenue">¥256,890</h3>
+                                <h3 id="pendingOrders">-</h3>
+                                <p>待处理订单</p>
+                            </div>
+                            <div class="stat-icon">⏳</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="totalRevenue">-</h3>
                                 <p>总收入</p>
                             </div>
                             <div class="stat-icon">💰</div>
@@ -517,49 +516,14 @@
                     </div>
                     <div class="data-table">
                         <div class="table-header">
-                            <h3>最近订单</h3>
-                            <button class="add-btn" onclick="showOrders()">查看全部</button>
+                            <h3>快捷操作</h3>
                         </div>
-                        <table id="recentOrdersTable">
-                            <thead>
-                                <tr>
-                                    <th>订单号</th>
-                                    <th>客户</th>
-                                    <th>金额</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>ORD-2026-0001</td>
-                                    <td>张三</td>
-                                    <td>¥299.00</td>
-                                    <td>已完成</td>
-                                    <td>
-                                        <button class="action-btn edit-btn">查看</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>ORD-2026-0002</td>
-                                    <td>李四</td>
-                                    <td>¥199.00</td>
-                                    <td>处理中</td>
-                                    <td>
-                                        <button class="action-btn edit-btn">查看</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>ORD-2026-0003</td>
-                                    <td>王五</td>
-                                    <td>¥499.00</td>
-                                    <td>已发货</td>
-                                    <td>
-                                        <button class="action-btn edit-btn">查看</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div style="padding: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <button class="btn" onclick="showPage('users')" style="background-color: #48bb78;">用户管理</button>
+                            <button class="btn" onclick="showPage('orders')" style="background-color: #667eea;">订单管理</button>
+                            <button class="btn" onclick="quickRecharge()" style="background-color: #ed8936;">快速充值</button>
+                            <button class="btn" onclick="quickVIP()" style="background-color: #9f7aea;">VIP管理</button>
+                        </div>
                     </div>
                 </div>
 
@@ -568,7 +532,11 @@
                     <div class="data-table">
                         <div class="table-header">
                             <h3>用户列表</h3>
-                            <button class="add-btn" onclick="openUserModal()">添加用户</button>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="userSearchInput" placeholder="输入用户名查询余额" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="queryUserBalance(document.getElementById('userSearchInput').value)" style="background-color: #667eea;">查询余额</button>
+                                <button class="add-btn" onclick="openUserModal()">添加用户</button>
+                            </div>
                         </div>
                         <table id="usersTable">
                             <thead>
@@ -588,37 +556,16 @@
                     </div>
                 </div>
 
-                <!-- 产品管理页面 -->
-                <div id="productsPage" class="page-section" style="display: none;">
-                    <div class="data-table">
-                        <div class="table-header">
-                            <h3>产品列表</h3>
-                            <button class="add-btn" onclick="openProductModal()">添加产品</button>
-                        </div>
-                        <table id="productsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>产品名称</th>
-                                    <th>价格</th>
-                                    <th>库存</th>
-                                    <th>分类</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsTableBody">
-                                <!-- 产品数据将通过JavaScript动态生成 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <!-- 订单管理页面 -->
                 <div id="ordersPage" class="page-section" style="display: none;">
                     <div class="data-table">
                         <div class="table-header">
                             <h3>订单列表</h3>
-                            <button class="add-btn">导出订单</button>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="orderSearchInput" placeholder="输入用户名查询订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="searchUserOrders(document.getElementById('orderSearchInput').value)">搜索</button>
+                                <button class="add-btn" onclick="exportOrders()" style="background-color: #667eea;">导出订单</button>
+                            </div>
                         </div>
                         <table id="ordersTable">
                             <thead>
@@ -640,12 +587,11 @@
 
                 <!-- 系统设置页面 -->
                 <div id="settingsPage" class="page-section" style="display: none;">
-                    <div class="data-table">
+                    <div class="data-table" style="margin-bottom: 2rem;">
                         <div class="table-header">
-                            <h3>系统设置</h3>
+                            <h3>网站配置</h3>
                         </div>
                         <div style="padding: 2rem;">
-                            <h4>网站配置</h4>
                             <form id="settingsForm">
                                 <div class="form-group">
                                     <label for="siteName">网站名称</label>
@@ -661,6 +607,60 @@
                                 </div>
                                 <button type="submit" class="btn" style="width: auto;">保存设置</button>
                             </form>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table" style="margin-bottom: 2rem;">
+                        <div class="table-header">
+                            <h3>支付配置</h3>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <p style="color: #718096; margin-bottom: 1rem;">支付配置需要在后端 _worker.js 的环境变量中设置</p>
+                            <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.875rem;">
+                                <p><strong>环境变量配置：</strong></p>
+                                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                                    <li>PAY_API_URL - 支付网关地址</li>
+                                    <li>PAY_MID - 商户ID</li>
+                                    <li>PAY_KEY - 支付密钥</li>
+                                    <li>SUPABASE_URL - Supabase数据库地址</li>
+                                    <li>SUPABASE_KEY - Supabase API密钥</li>
+                                    <li>DB - D1数据库绑定</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>API 接口文档</h3>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
+                                <p style="margin-bottom: 1rem;"><strong>可用接口列表：</strong></p>
+                                <table style="width: 100%; font-size: 0.8rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0.5rem;">接口</th>
+                                            <th style="text-align: left; padding: 0.5rem;">方法</th>
+                                            <th style="text-align: left; padding: 0.5rem;">说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>/api/register</td><td>POST</td><td>用户注册</td></tr>
+                                        <tr><td>/api/login</td><td>POST</td><td>用户登录</td></tr>
+                                        <tr><td>/api/balance</td><td>GET</td><td>查询余额</td></tr>
+                                        <tr><td>/api/recharge</td><td>POST</td><td>直接充值</td></tr>
+                                        <tr><td>/api/recharge/confirm</td><td>POST</td><td>确认收款（人工审核）</td></tr>
+                                        <tr><td>/api/orders</td><td>GET</td><td>查询订单列表</td></tr>
+                                        <tr><td>/api/order/detail</td><td>GET</td><td>查询订单详情</td></tr>
+                                        <tr><td>/api/order/create-static</td><td>POST</td><td>创建静态订单</td></tr>
+                                        <tr><td>/api/pay/build-url</td><td>POST</td><td>构建支付URL</td></tr>
+                                        <tr><td>/api/pay/notify</td><td>GET</td><td>支付回调通知</td></tr>
+                                        <tr><td>/api/learn/vip</td><td>POST</td><td>购买/续期VIP</td></tr>
+                                        <tr><td>/api/learn/vip/status</td><td>GET</td><td>查询VIP状态</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -701,81 +701,72 @@
         </div>
     </div>
 
-    <!-- 产品编辑模态框 -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="productModalTitle">添加产品</h3>
-                <button class="close-btn" onclick="closeProductModal()">&times;</button>
-            </div>
-            <form id="productForm">
-                <input type="hidden" id="productId" name="productId">
-                <div class="form-group">
-                    <label for="productName">产品名称</label>
-                    <input type="text" id="productName" name="productName" required>
-                </div>
-                <div class="form-group">
-                    <label for="productPrice">价格</label>
-                    <input type="number" id="productPrice" name="productPrice" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="productStock">库存</label>
-                    <input type="number" id="productStock" name="productStock" required>
-                </div>
-                <div class="form-group">
-                    <label for="productCategory">分类</label>
-                    <input type="text" id="productCategory" name="productCategory" required>
-                </div>
-                <button type="submit" class="btn">保存</button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // 模拟数据
-        let users = [
-            { id: 1, name: '张三', email: 'zhangsan@example.com', role: 'admin', registerDate: '2026-01-01' },
-            { id: 2, name: '李四', email: 'lisi@example.com', role: 'user', registerDate: '2026-01-02' },
-            { id: 3, name: '王五', email: 'wangwu@example.com', role: 'user', registerDate: '2026-01-03' }
-        ];
-
-        let products = [
-            { id: 1, name: '产品1', price: 199.00, stock: 100, category: '电子产品' },
-            { id: 2, name: '产品2', price: 299.00, stock: 50, category: '家居用品' },
-            { id: 3, name: '产品3', price: 399.00, stock: 200, category: '服装' }
-        ];
-
-        let orders = [
-            { id: 'ORD-2026-0001', customer: '张三', amount: 299.00, date: '2026-01-01', status: '已完成' },
-            { id: 'ORD-2026-0002', customer: '李四', amount: 199.00, date: '2026-01-02', status: '处理中' },
-            { id: 'ORD-2026-0003', customer: '王五', amount: 499.00, date: '2026-01-03', status: '已发货' }
-        ];
+        // API 基础地址
+        const API_BASE = '';
+        
+        // 当前登录用户信息
+        let currentUserInfo = null;
+        
+        // API 请求工具函数
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { success: false, code: 500, msg: '网络请求失败', error: error.message };
+            }
+        }
 
         // 登录功能
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            // 简单的登录验证（实际项目中应使用后端验证）
-            if (username === 'admin' && password === 'admin123') {
+            const result = await apiRequest('/api/login', 'POST', { username, password });
+            
+            if (result.success) {
+                currentUserInfo = result.userInfo;
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('mainPage').style.display = 'flex';
                 document.getElementById('currentUser').textContent = username;
+                
+                // 加载仪表盘数据
+                loadDashboardData();
             } else {
-                alert('用户名或密码错误');
+                alert(result.message || '用户名或密码错误');
             }
         });
 
         // 退出登录
         function logout() {
+            currentUserInfo = null;
             document.getElementById('mainPage').style.display = 'none';
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('loginForm').reset();
         }
+        
+        // 加载仪表盘数据
+        async function loadDashboardData() {
+            // 这里可以调用统计接口，目前使用静态数据
+            // 后续可以添加 /api/stats 接口来获取实时数据
+        }
 
         // 页面切换
-        function showPage(pageName) {
+        async function showPage(pageName) {
             // 隐藏所有页面
             const pages = document.querySelectorAll('.page-section');
             pages.forEach(page => {
@@ -804,11 +795,17 @@
             const pageTitles = {
                 'dashboard': '仪表盘',
                 'users': '用户管理',
-                'products': '产品管理',
                 'orders': '订单管理',
                 'settings': '系统设置'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
+            
+            // 根据页面加载对应数据
+            if (pageName === 'users') {
+                await loadUsers();
+            } else if (pageName === 'orders') {
+                await loadOrders();
+            }
         }
 
         // 显示订单页面
@@ -816,66 +813,104 @@
             showPage('orders');
         }
 
+        // 用户数据存储
+        let usersData = [];
+        let ordersData = [];
+        
         // 渲染用户列表
+        async function loadUsers() {
+            // 从D1数据库获取所有用户 - 需要通过后端接口
+            // 目前使用模拟数据，后续可以添加 /api/users 接口
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
+            
+            // 模拟从API获取数据
+            setTimeout(() => {
+                renderUsers();
+            }, 500);
+        }
+        
         function renderUsers() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
 
-            users.forEach(user => {
+            usersData.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
-                    <td>${user.name}</td>
-                    <td>${user.email}</td>
-                    <td>${user.role}</td>
-                    <td>${user.registerDate}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email || '-'}</td>
+                    <td>${user.role || 'user'}</td>
+                    <td>${user.registerDate || '-'}</td>
                     <td>
                         <button class="action-btn edit-btn" onclick="editUser(${user.id})">编辑</button>
                         <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">删除</button>
+                        <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // 渲染产品列表
+        // 渲染产品列表 - 产品管理已移除
         function renderProducts() {
-            const tbody = document.getElementById('productsTableBody');
-            tbody.innerHTML = '';
-
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.id}</td>
-                    <td>${product.name}</td>
-                    <td>¥${product.price.toFixed(2)}</td>
-                    <td>${product.stock}</td>
-                    <td>${product.category}</td>
-                    <td>
-                        <button class="action-btn edit-btn" onclick="editProduct(${product.id})">编辑</button>
-                        <button class="action-btn delete-btn" onclick="deleteProduct(${product.id})">删除</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            // 产品管理功能已移除
         }
 
+        // 加载订单列表
+        async function loadOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
+            
+            // 获取所有订单（需要管理员权限的接口）
+            // 暂时显示提示
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">请使用搜索功能查询特定用户订单</td></tr>';
+        }
+        
+        // 搜索用户订单
+        async function searchUserOrders(username) {
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            const result = await apiRequest(`/api/orders?username=${encodeURIComponent(username)}&page=1&limit=50`, 'GET');
+            
+            if (result.code === 200) {
+                ordersData = result.data.orders || [];
+                renderOrders();
+            } else {
+                alert(result.msg || '查询失败');
+            }
+        }
+        
         // 渲染订单列表
         function renderOrders() {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
 
-            orders.forEach(order => {
+            if (ordersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无订单数据</td></tr>';
+                return;
+            }
+
+            ordersData.forEach(order => {
                 const row = document.createElement('tr');
+                const statusMap = {
+                    'pending': '待支付',
+                    'paid': '已支付',
+                    'failed': '支付失败',
+                    'completed': '已完成'
+                };
                 row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.customer}</td>
-                    <td>¥${order.amount.toFixed(2)}</td>
-                    <td>${order.date}</td>
-                    <td>${order.status}</td>
+                    <td>${order.order_no}</td>
+                    <td>${order.username}</td>
+                    <td>¥${parseFloat(order.amount).toFixed(2)}</td>
+                    <td>${new Date(order.created_at).toLocaleString()}</td>
+                    <td>${statusMap[order.status] || order.status}</td>
                     <td>
-                        <button class="action-btn edit-btn">查看</button>
-                        <button class="action-btn delete-btn">删除</button>
+                        <button class="action-btn edit-btn" onclick="viewOrderDetail('${order.order_no}')">查看</button>
+                        ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -897,132 +932,252 @@
 
         // 编辑用户
         function editUser(id) {
-            const user = users.find(u => u.id === id);
+            const user = usersData.find(u => u.id === id);
             if (user) {
                 document.getElementById('userModalTitle').textContent = '编辑用户';
                 document.getElementById('userId').value = user.id;
-                document.getElementById('userName').value = user.name;
-                document.getElementById('userEmail').value = user.email;
-                document.getElementById('userRole').value = user.role;
+                document.getElementById('userName').value = user.username;
+                document.getElementById('userEmail').value = user.email || '';
+                document.getElementById('userRole').value = user.role || 'user';
                 document.getElementById('userModal').style.display = 'block';
             }
         }
 
         // 删除用户
-        function deleteUser(id) {
+        async function deleteUser(id) {
             if (confirm('确定要删除这个用户吗？')) {
-                users = users.filter(u => u.id !== id);
+                usersData = usersData.filter(u => u.id !== id);
                 renderUsers();
+                alert('用户已删除（前端演示，需要后端接口支持）');
             }
         }
 
-        // 用户表单提交
-        document.getElementById('userForm').addEventListener('submit', function(e) {
+        // 用户表单提交 - 对接注册接口
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const id = parseInt(document.getElementById('userId').value);
-            const name = document.getElementById('userName').value;
+            const username = document.getElementById('userName').value;
             const email = document.getElementById('userEmail').value;
             const password = document.getElementById('userPassword').value;
             const role = document.getElementById('userRole').value;
 
             if (id) {
-                // 编辑用户
-                const userIndex = users.findIndex(u => u.id === id);
+                // 编辑用户 - 前端模拟
+                const userIndex = usersData.findIndex(u => u.id === id);
                 if (userIndex !== -1) {
-                    users[userIndex] = {
-                        ...users[userIndex],
-                        name,
+                    usersData[userIndex] = {
+                        ...usersData[userIndex],
+                        username,
                         email,
                         role
                     };
                 }
+                renderUsers();
+                closeUserModal();
             } else {
-                // 添加用户
-                const newId = Math.max(...users.map(u => u.id), 0) + 1;
-                users.push({
-                    id: newId,
-                    name,
-                    email,
-                    role,
-                    registerDate: new Date().toISOString().split('T')[0]
+                // 添加用户 - 调用注册接口
+                if (!password) {
+                    alert('请设置密码');
+                    return;
+                }
+                
+                const result = await apiRequest('/api/register', 'POST', { 
+                    username, 
+                    password 
                 });
+                
+                if (result.success) {
+                    alert('用户添加成功！');
+                    // 添加到本地数据
+                    usersData.push({
+                        id: usersData.length + 1,
+                        username,
+                        email,
+                        role,
+                        registerDate: new Date().toISOString().split('T')[0]
+                    });
+                    renderUsers();
+                    closeUserModal();
+                } else {
+                    alert(result.message || '添加失败');
+                }
             }
-
-            renderUsers();
-            closeUserModal();
         });
-
-        // 打开产品模态框
-        function openProductModal() {
-            document.getElementById('productModalTitle').textContent = '添加产品';
-            document.getElementById('productForm').reset();
-            document.getElementById('productId').value = '';
-            document.getElementById('productModal').style.display = 'block';
+        
+        // 给用户充值
+        async function rechargeUser(username) {
+            const amount = prompt(`请输入为 ${username} 充值的金额：`, '100');
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                alert('请输入有效的金额');
+                return;
+            }
+            
+            const result = await apiRequest('/api/recharge', 'POST', { 
+                username, 
+                amount: parseFloat(amount) 
+            });
+            
+            if (result.code === 200) {
+                alert(`充值成功！当前余额: ¥${result.balance}`);
+            } else {
+                alert(result.msg || '充值失败');
+            }
         }
-
-        // 关闭产品模态框
-        function closeProductModal() {
-            document.getElementById('productModal').style.display = 'none';
+        
+        // 查询用户余额
+        async function queryUserBalance(username) {
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            const result = await apiRequest(`/api/balance?username=${encodeURIComponent(username)}`, 'GET');
+            
+            if (result.code === 200) {
+                alert(`用户 ${username} 的当前余额: ¥${result.balance}`);
+            } else {
+                alert(result.msg || '查询失败');
+            }
         }
-
-        // 编辑产品
-        function editProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (product) {
-                document.getElementById('productModalTitle').textContent = '编辑产品';
-                document.getElementById('productId').value = product.id;
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productStock').value = product.stock;
-                document.getElementById('productCategory').value = product.category;
-                document.getElementById('productModal').style.display = 'block';
+        
+        // 查看订单详情
+        async function viewOrderDetail(orderNo) {
+            const result = await apiRequest(`/api/order/detail?order_no=${encodeURIComponent(orderNo)}`, 'GET');
+            
+            if (result.code === 200) {
+                const order = result.data;
+                alert(`订单详情：
+订单号: ${order.order_no}
+用户: ${order.username}
+金额: ¥${order.amount}
+状态: ${order.status}
+支付方式: ${order.payment_type || '-'}
+创建时间: ${new Date(order.created_at).toLocaleString()}
+${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : ''}`);
+            } else {
+                alert(result.msg || '查询失败');
+            }
+        }
+        
+        // 确认订单收款（人工审核）
+        async function confirmOrder(orderNo, username, amount, paymentType) {
+            if (!confirm(`确认已收到 ${username} 的订单 ${orderNo} 的款项 ¥${amount} 吗？`)) {
+                return;
+            }
+            
+            const result = await apiRequest('/api/recharge/confirm', 'POST', {
+                username,
+                order_no: orderNo,
+                amount: parseFloat(amount),
+                payment_type: paymentType || 'manual'
+            });
+            
+            if (result.success) {
+                alert('收款确认成功！用户余额已更新');
+                // 刷新订单列表
+                searchUserOrders(username);
+            } else {
+                alert(result.message || '确认失败');
             }
         }
 
-        // 删除产品
-        function deleteProduct(id) {
-            if (confirm('确定要删除这个产品吗？')) {
-                products = products.filter(p => p.id !== id);
-                renderProducts();
+        // 导出订单
+        function exportOrders() {
+            if (ordersData.length === 0) {
+                alert('没有可导出的订单数据，请先搜索用户订单');
+                return;
+            }
+            
+            // 构建CSV内容
+            let csv = '\uFEFF订单号,客户,金额,日期,状态\n';
+            ordersData.forEach(order => {
+                const statusMap = {
+                    'pending': '待支付',
+                    'paid': '已支付',
+                    'failed': '支付失败',
+                    'completed': '已完成'
+                };
+                csv += `${order.order_no},${order.username},${order.amount},${new Date(order.created_at).toLocaleString()},${statusMap[order.status] || order.status}\n`;
+            });
+            
+            // 下载CSV文件
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+        
+        // 快速充值
+        async function quickRecharge() {
+            const username = prompt('请输入要充值的用户名：');
+            if (!username) return;
+            
+            const amount = prompt('请输入充值金额：', '100');
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                alert('请输入有效的金额');
+                return;
+            }
+            
+            const result = await apiRequest('/api/recharge', 'POST', { 
+                username, 
+                amount: parseFloat(amount) 
+            });
+            
+            if (result.code === 200) {
+                alert(`充值成功！用户 ${username} 当前余额: ¥${result.balance}`);
+            } else {
+                alert(result.msg || '充值失败');
             }
         }
-
-        // 产品表单提交
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('productId').value);
-            const name = document.getElementById('productName').value;
-            const price = parseFloat(document.getElementById('productPrice').value);
-            const stock = parseInt(document.getElementById('productStock').value);
-            const category = document.getElementById('productCategory').value;
-
-            if (id) {
-                // 编辑产品
-                const productIndex = products.findIndex(p => p.id === id);
-                if (productIndex !== -1) {
-                    products[productIndex] = {
-                        ...products[productIndex],
-                        name,
-                        price,
-                        stock,
-                        category
-                    };
+        
+        // VIP管理
+        async function quickVIP() {
+            const username = prompt('请输入要查询/开通VIP的用户名：');
+            if (!username) return;
+            
+            // 查询VIP状态
+            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            
+            if (result.code === 200) {
+                const vipInfo = result.data;
+                let message = `用户 ${username} 的VIP状态：\n`;
+                message += `是否VIP: ${vipInfo.is_vip ? '是' : '否'}\n`;
+                if (vipInfo.is_vip && vipInfo.expire_date) {
+                    message += `过期时间: ${new Date(vipInfo.expire_date).toLocaleString()}\n`;
+                    message += `剩余天数: ${vipInfo.days_left} 天`;
+                }
+                
+                const action = confirm(message + '\n\n点击"确定"开通/续期VIP，点击"取消"关闭');
+                if (action) {
+                    const duration = prompt('请输入VIP时长（天）：', '30');
+                    if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
+                        alert('请输入有效的天数');
+                        return;
+                    }
+                    
+                    const amount = prompt('请输入VIP价格（元）：', '0.01');
+                    if (!amount || isNaN(amount) || parseFloat(amount) < 0) {
+                        alert('请输入有效的金额');
+                        return;
+                    }
+                    
+                    const buyResult = await apiRequest('/api/learn/vip', 'POST', {
+                        username,
+                        amount: parseFloat(amount),
+                        duration: parseInt(duration)
+                    });
+                    
+                    if (buyResult.code === 200) {
+                        alert(`VIP开通成功！\n过期时间: ${new Date(buyResult.data.vip_expire_date).toLocaleString()}`);
+                    } else {
+                        alert(buyResult.msg || '开通失败');
+                    }
                 }
             } else {
-                // 添加产品
-                const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                products.push({
-                    id: newId,
-                    name,
-                    price,
-                    stock,
-                    category
-                });
+                alert(result.msg || '查询失败');
             }
-
-            renderProducts();
-            closeProductModal();
-        });
+        }
 
         // 系统设置表单提交
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
@@ -1038,19 +1193,14 @@
         // 点击模态框外部关闭
         window.onclick = function(event) {
             const userModal = document.getElementById('userModal');
-            const productModal = document.getElementById('productModal');
             if (event.target === userModal) {
                 closeUserModal();
-            } else if (event.target === productModal) {
-                closeProductModal();
             }
         }
 
         // 初始化页面
         window.onload = function() {
-            renderUsers();
-            renderProducts();
-            renderOrders();
+            // 页面初始化时不加载数据，等待登录后加载
         }
     </script>
 </body>
