@@ -1017,6 +1017,12 @@
                     'failed': '支付失败',
                     'completed': '已完成'
                 };
+                const statusClassMap = {
+                    'pending': 'color: #ed8936;',
+                    'paid': 'color: #48bb78;',
+                    'failed': 'color: #e53e3e;',
+                    'completed': 'color: #667eea;'
+                };
                 const paymentTypeMap = {
                     'alipay': '支付宝',
                     'wxpay': '微信支付',
@@ -1028,11 +1034,11 @@
                     <td>${order.username}</td>
                     <td>¥${parseFloat(order.amount).toFixed(2)}</td>
                     <td>${paymentTypeMap[order.payment_type] || order.payment_type || '-'}</td>
-                    <td>${statusMap[order.status] || order.status}</td>
+                    <td><span style="${statusClassMap[order.status] || ''} font-weight: 500;">${statusMap[order.status] || order.status}</span></td>
                     <td>${new Date(order.created_at).toLocaleString()}</td>
                     <td>
                         <button class="action-btn edit-btn" onclick="viewOrderDetail('${order.order_no}')">查看</button>
-                        ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
+                        ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认</button>` : ''}
                     </td>
                 `;
                 tbody.appendChild(row);
