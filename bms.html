@@ -574,19 +574,22 @@
                         <div class="table-header">
                             <h3>订单列表</h3>
                             <div style="display: flex; gap: 10px;">
-                                <input type="text" id="orderSearchInput" placeholder="输入用户名查询订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <button class="add-btn" onclick="searchUserOrders(document.getElementById('orderSearchInput').value)">搜索</button>
+                                <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="filterOrders()">筛选</button>
+                                <button class="add-btn" onclick="loadAllOrders()">显示全部</button>
                                 <button class="add-btn" onclick="exportOrders()" style="background-color: #667eea;">导出订单</button>
                             </div>
                         </div>
                         <table id="ordersTable">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>订单号</th>
                                     <th>客户</th>
                                     <th>金额</th>
-                                    <th>日期</th>
+                                    <th>支付方式</th>
                                     <th>状态</th>
+                                    <th>日期</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -938,17 +941,43 @@
             // 产品管理功能已移除
         }
 
-        // 加载订单列表
-        async function loadOrders() {
+        // 加载所有订单
+        async function loadAllOrders() {
             const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">加载中...</td></tr>';
+            document.getElementById('orderSearchInput').value = '';
             
-            // 获取所有订单（需要管理员权限的接口）
-            // 暂时显示提示
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">请使用搜索功能查询特定用户订单</td></tr>';
+            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET');
+            
+            if (result.code === 200) {
+                ordersData = result.data.orders || [];
+                renderOrders();
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
+            }
         }
         
-        // 搜索用户订单
+        // 加载订单列表（默认加载所有订单）
+        async function loadOrders() {
+            await loadAllOrders();
+        }
+        
+        // 筛选订单（前端筛选）
+        function filterOrders() {
+            const keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
+            if (!keyword) {
+                renderOrders();
+                return;
+            }
+            
+            const filtered = ordersData.filter(order => 
+                order.username.toLowerCase().includes(keyword) ||
+                order.order_no.toLowerCase().includes(keyword)
+            );
+            renderFilteredOrders(filtered);
+        }
+        
+        // 搜索特定用户订单（从后端查询）
         async function searchUserOrders(username) {
             if (!username) {
                 alert('请输入用户名');
@@ -967,15 +996,20 @@
         
         // 渲染订单列表
         function renderOrders() {
+            renderFilteredOrders(ordersData);
+        }
+        
+        // 渲染筛选后的订单
+        function renderFilteredOrders(orders) {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
 
-            if (ordersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无订单数据</td></tr>';
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">暂无订单数据</td></tr>';
                 return;
             }
 
-            ordersData.forEach(order => {
+            orders.forEach((order, index) => {
                 const row = document.createElement('tr');
                 const statusMap = {
                     'pending': '待支付',
@@ -983,12 +1017,19 @@
                     'failed': '支付失败',
                     'completed': '已完成'
                 };
+                const paymentTypeMap = {
+                    'alipay': '支付宝',
+                    'wxpay': '微信支付',
+                    'manual': '人工审核'
+                };
                 row.innerHTML = `
+                    <td>${index + 1}</td>
                     <td>${order.order_no}</td>
                     <td>${order.username}</td>
                     <td>¥${parseFloat(order.amount).toFixed(2)}</td>
-                    <td>${new Date(order.created_at).toLocaleString()}</td>
+                    <td>${paymentTypeMap[order.payment_type] || order.payment_type || '-'}</td>
                     <td>${statusMap[order.status] || order.status}</td>
+                    <td>${new Date(order.created_at).toLocaleString()}</td>
                     <td>
                         <button class="action-btn edit-btn" onclick="viewOrderDetail('${order.order_no}')">查看</button>
                         ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
@@ -1160,20 +1201,26 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
         // 导出订单
         function exportOrders() {
             if (ordersData.length === 0) {
-                alert('没有可导出的订单数据，请先搜索用户订单');
+                alert('没有可导出的订单数据');
                 return;
             }
             
+            const statusMap = {
+                'pending': '待支付',
+                'paid': '已支付',
+                'failed': '支付失败',
+                'completed': '已完成'
+            };
+            const paymentTypeMap = {
+                'alipay': '支付宝',
+                'wxpay': '微信支付',
+                'manual': '人工审核'
+            };
+            
             // 构建CSV内容
-            let csv = '\uFEFF订单号,客户,金额,日期,状态\n';
+            let csv = '\uFEFF订单号,客户,金额,支付方式,状态,日期\n';
             ordersData.forEach(order => {
-                const statusMap = {
-                    'pending': '待支付',
-                    'paid': '已支付',
-                    'failed': '支付失败',
-                    'completed': '已完成'
-                };
-                csv += `${order.order_no},${order.username},${order.amount},${new Date(order.created_at).toLocaleString()},${statusMap[order.status] || order.status}\n`;
+                csv += `${order.order_no},${order.username},${order.amount},${paymentTypeMap[order.payment_type] || order.payment_type || '-'},${statusMap[order.status] || order.status},${new Date(order.created_at).toLocaleString()}\n`;
             });
             
             // 下载CSV文件
