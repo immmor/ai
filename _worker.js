@@ -26,15 +26,7 @@ export default {
           throw new Error('Supabase environment variables not configured');
         }
         const response = await fetch(`${env.SUPABASE_URL}/rest/v1/${endpoint}`, config);
-        const data = await response.json();
-        
-        // 检查响应状态
-        if (!response.ok) {
-          const errorMsg = data.message || data.error || JSON.stringify(data);
-          throw new Error(`Supabase API error ${response.status}: ${errorMsg}`);
-        }
-        
-        return data;
+        return await response.json();
       } catch (error) {
         console.error('Supabase API error:', error);
         throw error;
@@ -366,8 +358,8 @@ export default {
             try {
               const updateResult = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
                 status: 'paid',
+                trade_no: order_no,
                 paid_at: new Date().toISOString(),
-                confirmed_by: 'manual'
               }));
               console.log('订单状态更新结果:', updateResult);
             } catch (error) {
