@@ -394,17 +394,13 @@
         .user-btn {
             background: transparent;
             border: none;
-            color: var(--neon-blue);
+            color: var(--neon-pink);
             padding: 8px 16px;
             cursor: pointer;
             font-size: 14px;
             display: flex;
             align-items: center;
             gap: 5px;
-        }
-
-        .user-btn:hover {
-            color: var(--neon-pink);
         }
 
         .dropdown-menu {
@@ -414,7 +410,7 @@
             background: rgba(10, 10, 10, 0.95);
             border: 1px solid var(--neon-blue);
             border-radius: 5px;
-            min-width: 120px;
+            min-width: 80px;
             display: none;
             z-index: 100;
         }
@@ -429,10 +425,7 @@
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 71, 87, 0.1);
+            text-align: center;
         }
     </style>
 </head>
@@ -447,8 +440,7 @@
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
-                    <span id="username-display">用户</span>
-                    <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                    <span id="username-display"></span>
                 </button>
                 <div class="dropdown-menu" id="user-dropdown-menu">
                     <div class="dropdown-item" onclick="logout()">退出登录</div>
