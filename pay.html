@@ -398,6 +398,14 @@
             <button id="logout-tab" class="nav-tab" onclick="logout()" style="margin-left: auto; color: #ff4757;">退出登录</button>
         </div>
         
+        <!-- 用户名显示 -->
+        <div id="user-info" style="text-align: center; margin-bottom: 15px; display: none;">
+            <span style="color: var(--neon-green); font-size: 14px;">
+                <i class="fas fa-user" style="margin-right: 5px;"></i>
+                欢迎，<span id="current-username" style="font-weight: bold;"></span>
+            </span>
+        </div>
+        
         <!-- 登录/注册表单 -->
         <div id="login-form">
             <div class="input-box">
@@ -521,12 +529,15 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('current-username').textContent = currentUser.username;
             updateBalance();
         } else {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('nav-tabs-container').style.display = 'none';
             document.getElementById('pay-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
+            document.getElementById('user-info').style.display = 'none';
         }
         
         async function updateBalance() {
