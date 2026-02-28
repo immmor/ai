@@ -384,6 +384,56 @@
             background: #666;
             cursor: not-allowed;
         }
+
+        /* 用户下拉菜单 */
+        .user-dropdown {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .user-btn {
+            background: transparent;
+            border: none;
+            color: var(--neon-blue);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .user-btn:hover {
+            color: var(--neon-pink);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            min-width: 120px;
+            display: none;
+            z-index: 100;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            color: #ff4757;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 71, 87, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -395,15 +445,15 @@
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
-            <button id="logout-tab" class="nav-tab" onclick="logout()" style="margin-left: auto; color: #ff4757;">退出登录</button>
-        </div>
-        
-        <!-- 用户名显示 -->
-        <div id="user-info" style="text-align: center; margin-bottom: 15px; display: none;">
-            <span style="color: var(--neon-green); font-size: 14px;">
-                <i class="fas fa-user" style="margin-right: 5px;"></i>
-                欢迎，<span id="current-username" style="font-weight: bold;"></span>
-            </span>
+            <div class="user-dropdown">
+                <button class="user-btn" onclick="toggleDropdown()">
+                    <span id="username-display">用户</span>
+                    <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                </button>
+                <div class="dropdown-menu" id="user-dropdown-menu">
+                    <div class="dropdown-item" onclick="logout()">退出登录</div>
+                </div>
+            </div>
         </div>
         
         <!-- 登录/注册表单 -->
@@ -529,15 +579,13 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
-            document.getElementById('user-info').style.display = 'block';
-            document.getElementById('current-username').textContent = currentUser.username;
+            document.getElementById('username-display').textContent = currentUser.username;
             updateBalance();
         } else {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('nav-tabs-container').style.display = 'none';
             document.getElementById('pay-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
-            document.getElementById('user-info').style.display = 'none';
         }
         
         async function updateBalance() {
@@ -1295,6 +1343,16 @@
             // 这里可以扩展为显示详细订单信息的模态框
         }
         
+        function toggleDropdown() {
+            document.getElementById('user-dropdown-menu').classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-dropdown')) {
+                document.getElementById('user-dropdown-menu').classList.remove('show');
+            }
+        });
+
         function logout() {
             localStorage.removeItem('currentUser');
             location.reload();
