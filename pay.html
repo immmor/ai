@@ -1041,7 +1041,9 @@
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             
             try {
-                const response = await fetch("https://tronusdt.xyz/?way=pay&jump=-&product=buy_vip&name=" + currentUser.username + "&type=usdt&value=" + amount, {
+                // 使用TRON钱包地址作为name参数，与energy.js保持一致
+                const tronAddress = 'TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
+                const response = await fetch("https://tronusdt.xyz/?way=pay&jump=-&product=wallet_recharge&name=" + tronAddress + "&type=usdt&value=" + amount, {
                     method: 'GET',
                     signal: controller.signal
                 });
@@ -1055,6 +1057,8 @@
                 console.log('创建USDT订单结果:', data);
                 
                 if (data.oid) {
+                    // 保存用户名到本地存储，用于后续确认充值
+                    localStorage.setItem('usdtOrder_' + data.oid, currentUser.username);
                     showUSDTQRCode(data, amount);
                 } else {
                     alert("创建USDT订单失败：" + (data.msg || '未知错误'));
@@ -1190,24 +1194,83 @@
         }
         
         async function checkUSDTOrder(orderId) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
             try {
-                const response = await fetch(`https://tronusdt.xyz/?way=check&oid=${orderId}`);
-                const data = await response.json();
+                const response = await fetch(`https://tronusdt.xyz/?way=paycheck&oid=${orderId}`, {
+                    method: 'GET',
+                    signal: controller.signal
+                });
                 
-                if (data.status === 'paid') {
-                    alert('支付成功！余额已到账');
-                    updateBalance();
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                clearTimeout(timeoutId);
+                console.log('支付检查结果:', data);
+                
+                // 使用code字段判断支付状态，与energy.js保持一致
+                if (data.code === 1) {
+                    // 支付成功，调用后端充值接口
+                    const username = localStorage.getItem('usdtOrder_' + orderId);
+                    if (username) {
+                        await confirmUSDTRecharge(orderId, username);
+                    } else {
+                        alert('支付成功！但无法找到用户信息，请联系客服');
+                    }
+                    
                     // 关闭支付窗口
-                    document.querySelectorAll('.neon-card').forEach(card => {
-                        if (card.querySelector('[style*="z-index: 9999"]')) {
-                            card.remove();
-                        }
-                    });
+                    const qrContainer = document.querySelector('[style*="z-index: 9999"]');
+                    if (qrContainer) {
+                        document.body.removeChild(qrContainer.previousElementSibling); // 移除遮罩层
+                        document.body.removeChild(qrContainer);
+                        document.body.style.overflow = '';
+                    }
+                    
+                    // 清理本地存储
+                    localStorage.removeItem('usdtOrder_' + orderId);
                 } else {
-                    alert('支付尚未确认，请稍后重试');
+                    alert('支付未完成。刚转币请等待大约30秒即可！');
                 }
             } catch (error) {
-                alert('查询支付状态失败，请稍后重试');
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    alert('请求超时，请稍后重试。');
+                } else {
+                    alert('网络请求失败，请稍后重试。');
+                }
+            }
+        }
+        
+        // USDT支付成功后确认充值
+        async function confirmUSDTRecharge(orderId, username) {
+            try {
+                // 获取订单金额（这里简化处理，实际应该从订单信息中获取）
+                const amount = selectedAmount || document.getElementById('amt')?.value || 0;
+                
+                const response = await fetch('https://immmor.com/api/recharge/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        order_no: 'USDT_' + orderId,
+                        amount: parseFloat(amount),
+                        payment_type: 'usdt'
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('支付成功！余额已到账');
+                    await updateBalance();
+                } else {
+                    alert('充值确认失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('确认充值失败:', error);
+                alert('充值确认失败，请联系客服处理');
             }
         }
         

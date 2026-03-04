@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP 402 - 访问受限</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+        }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* 背景装饰 */
+        .orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, #4f46e5, #ec4899);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.4;
+            animation: move 10s infinite alternate;
+        }
+        @keyframes move { from { transform: translate(-20%, -20%); } to { transform: translate(20%, 20%); } }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        h1 { font-size: 5rem; margin: 0; background: linear-gradient(to bottom, #fff, #64748b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { margin-top: 0; font-weight: 400; color: #94a3b8; }
+        p { line-height: 1.6; color: #cbd5e1; margin: 1.5rem 0; }
+        
+        .pay-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+        .pay-btn:active { transform: scale(0.98); }
+        
+        #status-msg { font-size: 0.9rem; color: #ef4444; height: 1.2rem; }
+    </style>
+</head>
+<body>
+    <div class="orb"></div>
+    <div class="card">
+        <h1>402</h1>
+        <h2>内容锁定</h2>
+        <p>此页面包含深度技术分析。根据 HTTP 402 标准，您需要支付 <b>0.001 BTC</b> 或通过订阅会员来解锁访问权限。</p>
+        
+        <button class="pay-btn" onclick="simulatePayment()">使用数字钱包支付</button>
+        <div id="status-msg"></div>
+        
+        <div style="margin-top: 2rem; font-size: 0.8rem; color: #64748b;">
+            Request ID: <code id="rid"></code>
+        </div>
+    </div>
+
+    <script>
+        // 生成随机 Request ID 增加真实感
+        document.getElementById('rid').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
+
+        function simulatePayment() {
+            const btn = document.querySelector('.pay-btn');
+            const msg = document.getElementById('status-msg');
+            
+            btn.innerText = "正在连接钱包...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                msg.innerText = "余额不足：请检查您的 Lightning Network 余额。";
+                btn.innerText = "重试支付";
+                btn.disabled = false;
+                
+                // 震动提示
+                btn.style.animation = "shake 0.2s ease-in-out 0s 2";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
