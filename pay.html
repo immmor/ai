@@ -823,8 +823,6 @@
                     1. 请使用${paymentName}扫描上方二维码<br>
                     2. 支付金额：<strong>¥${amount}</strong><br>
                     3. 支付时请务必备注订单号<br>
-                    4. 支付完成后请截图保存凭证<br>
-                    5. 联系客服人工审核到账
                 </div>
             `;
             
@@ -842,18 +840,6 @@
                 font-weight: 600; opacity: 0.5;
             `;
             confirmBtn.disabled = true;
-            
-            // 联系客服按钮
-            const contactBtn = document.createElement('button');
-            contactBtn.textContent = '联系客服';
-            contactBtn.style.cssText = `
-                flex: 1; padding: 12px; background: var(--neon-green); color: #000;
-                border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
-                font-weight: 600;
-            `;
-            contactBtn.onclick = () => {
-                alert(`请添加客服微信：example123\n发送支付截图和订单号：${orderNo}\n用户名：${currentUser.username}\n进行人工审核`);
-            };
             
             // 关闭按钮
             const closeBtn = document.createElement('button');
