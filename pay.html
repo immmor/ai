@@ -1328,7 +1328,6 @@
             
             totalOrders.textContent = pagination.total;
             totalPages = pagination.pages;
-            
             if (orders.length === 0) {
                 ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单记录</div>';
                 updatePagination();
@@ -1347,6 +1346,7 @@
                 const typeText = {
                     'alipay': '支付宝',
                     'wxpay': '微信支付',
+                    'usdt': 'USDT',
                     'wechat_static': '微信支付(人工)',
                     'alipay_static': '支付宝(人工)'
                 }[order.payment_type] || order.payment_type;
