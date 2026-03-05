@@ -207,7 +207,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
@@ -876,10 +876,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'top'
-                        }
+                        legend: { display: false }
                     },
                     scales: {
                         y: { beginAtZero: true }
@@ -916,10 +913,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'top'
-                        }
+                        legend: { display: false }
                     },
                     scales: {
                         y: { beginAtZero: true }
