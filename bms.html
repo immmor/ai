@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -224,6 +225,11 @@
         .stat-icon {
             font-size: 2.5rem;
             color: #667eea;
+        }
+        
+        .dashboard-grid canvas {
+            width: 100% !important;
+            height: 250px !important;
         }
 
         /* 表格样式 */
@@ -537,6 +543,24 @@
                             <div class="stat-icon">💰</div>
                         </div>
                     </div>
+                    
+                    <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">订单趋势</h3>
+                            <canvas id="ordersChart"></canvas>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">用户类型</h3>
+                            <canvas id="usersChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">收入分布</h3>
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 用户管理页面 -->
@@ -817,9 +841,85 @@
                 document.getElementById('totalOrders').textContent = data.totalOrders || 0;
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
                 document.getElementById('totalRevenue').textContent = '¥' + (data.totalRevenue || 0);
+                
+                renderCharts(data);
             } else {
                 console.error('加载统计数据失败:', result.msg);
             }
+        }
+        
+        let charts = {};
+        
+        function renderCharts(data) {
+            const ctx1 = document.getElementById('ordersChart').getContext('2d');
+            const ctx2 = document.getElementById('usersChart').getContext('2d');
+            const ctx3 = document.getElementById('revenueChart').getContext('2d');
+            
+            if (charts.orders) charts.orders.destroy();
+            if (charts.users) charts.users.destroy();
+            if (charts.revenue) charts.revenue.destroy();
+            
+            charts.orders = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: data.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [{
+                        label: '订单数',
+                        data: data.orderData || [12, 19, 15, 25, 22, 30, 28],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            charts.users = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['普通用户', 'VIP用户'],
+                    datasets: [{
+                        data: [data.normalUsers || 100, data.vipUsers || 20],
+                        backgroundColor: ['#667eea', '#48bb78']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            charts.revenue = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: data.paymentLabels || ['支付宝', '微信支付', '手动充值'],
+                    datasets: [{
+                        label: '收入金额',
+                        data: data.paymentData || [15000, 25000, 5000],
+                        backgroundColor: ['#ed8936', '#48bb78', '#667eea']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
 
         // 页面切换
