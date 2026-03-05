@@ -557,14 +557,7 @@
                     
                     <div class="dashboard-grid" style="grid-template-columns: 1fr;">
                         <div class="stat-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3 style="color: #4a5568;">收入分布</h3>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="action-btn edit-btn" onclick="filterRevenue('all')" style="background-color: #667eea;">全部</button>
-                                    <button class="action-btn edit-btn" onclick="filterRevenue('paid')" style="background-color: #48bb78;">已支付</button>
-                                    <button class="action-btn edit-btn" onclick="filterRevenue('pending')" style="background-color: #ed8936;">待支付</button>
-                                </div>
-                            </div>
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">收入分布</h3>
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
@@ -844,7 +837,6 @@
             
             if (result.code === 200) {
                 const data = result.data;
-                window.dashboardData = data;
                 document.getElementById('totalUsers').textContent = data.totalUsers || 0;
                 document.getElementById('totalOrders').textContent = data.totalOrders || 0;
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
@@ -857,7 +849,6 @@
         }
         
         let charts = {};
-        let currentRevenueData = 'all';
         
         function renderCharts(data) {
             const ctx1 = document.getElementById('ordersChart').getContext('2d');
@@ -908,24 +899,14 @@
                 }
             });
             
-            updateRevenueChart(data);
-        }
-        
-        function updateRevenueChart(data) {
-            const ctx3 = document.getElementById('revenueChart').getContext('2d');
-            
-            if (charts.revenue) charts.revenue.destroy();
-            
-            const paymentData = currentRevenueData === 'paid' ? data.paymentDataPaid : data.paymentDataAll;
-            
             charts.revenue = new Chart(ctx3, {
                 type: 'bar',
                 data: {
-                    labels: data.paymentLabels || ['支付宝', '微信支付', '手动-支付宝', '手动-微信', 'USDT'],
+                    labels: data.paymentLabels || [],
                     datasets: [{
                         label: '收入金额',
-                        data: paymentData || [15000, 25000, 5000, 3000, 8000],
-                        backgroundColor: ['#ed8936', '#48bb78', '#f6ad55', '#68d391', '#4fd1c5']
+                        data: data.paymentData || [],
+                        backgroundColor: ['#ed8936', '#48bb78', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181']
                     }]
                 },
                 options: {
@@ -939,13 +920,6 @@
                     }
                 }
             });
-        }
-        
-        function filterRevenue(type) {
-            currentRevenueData = type;
-            if (charts.revenue) {
-                updateRevenueChart(window.dashboardData);
-            }
         }
 
         // 页面切换
