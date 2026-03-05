@@ -354,16 +354,32 @@ export default {
             .run();
           
           if (result.success && result.meta.changes > 0) {
-            // 更新订单状态为已支付
+            // 更新订单状态为已支付，如果订单不存在则创建新订单
             try {
-              const updateResult = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                status: 'paid',
-                trade_no: order_no,
-                paid_at: new Date().toISOString(),
-              }));
-              console.log('订单状态更新结果:', updateResult);
+              // 先尝试查询订单是否存在
+              const existingOrders = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
+              
+              if (existingOrders && existingOrders.length > 0) {
+                // 订单已存在，更新状态
+                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                  status: 'paid',
+                  trade_no: order_no,
+                  paid_at: new Date().toISOString(),
+                }));
+              } else {
+                // 订单不存在，创建新订单
+                await supabaseFetch('orders', createSupabaseConfig('POST', {
+                  order_no: order_no,
+                  username: username,
+                  amount: amount,
+                  payment_type: payment_type,
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  created_at: new Date().toISOString()
+                }));
+              }
             } catch (error) {
-              console.error('订单状态更新失败:', error);
+              console.error('订单状态更新或创建失败:', error);
             }
             
             // 获取更新后的余额
