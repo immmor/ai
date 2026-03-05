@@ -546,7 +546,14 @@
                     
                     <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
                         <div class="stat-card">
-                            <h3 style="margin-bottom: 1rem; color: #4a5568;">订单趋势</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="color: #4a5568;">订单趋势</h3>
+                                <select id="orderStatusFilter" style="padding: 0.375rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">
+                                    <option value="all">全部订单</option>
+                                    <option value="pending">待支付</option>
+                                    <option value="paid">已支付</option>
+                                </select>
+                            </div>
                             <canvas id="ordersChart"></canvas>
                         </div>
                         <div class="stat-card">
@@ -557,7 +564,13 @@
                     
                     <div class="dashboard-grid" style="grid-template-columns: 1fr;">
                         <div class="stat-card">
-                            <h3 style="margin-bottom: 1rem; color: #4a5568;">收入分布</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="color: #4a5568;">收入分布</h3>
+                                <select id="paymentFilter" style="padding: 0.375rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">
+                                    <option value="all">全部订单</option>
+                                    <option value="paid">已支付</option>
+                                </select>
+                            </div>
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
@@ -842,6 +855,7 @@
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
                 document.getElementById('totalRevenue').textContent = '¥' + (data.totalRevenue || 0);
                 
+                window.dashboardData = data;
                 renderCharts(data);
             } else {
                 console.error('加载统计数据失败:', result.msg);
@@ -851,6 +865,9 @@
         let charts = {};
         
         function renderCharts(data) {
+            const orderStatus = document.getElementById('orderStatusFilter').value;
+            const paymentFilter = document.getElementById('paymentFilter').value;
+            
             const ctx1 = document.getElementById('ordersChart').getContext('2d');
             const ctx2 = document.getElementById('usersChart').getContext('2d');
             const ctx3 = document.getElementById('revenueChart').getContext('2d');
@@ -859,13 +876,22 @@
             if (charts.users) charts.users.destroy();
             if (charts.revenue) charts.revenue.destroy();
             
+            let orderLabels = data.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            let orderData = data.orderData || [12, 19, 15, 25, 22, 30, 28];
+            
+            if (orderStatus === 'pending') {
+                orderData = orderData.map(v => 0);
+            } else if (orderStatus === 'paid') {
+                orderData = orderData.map(v => 0);
+            }
+            
             charts.orders = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: data.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    labels: orderLabels,
                     datasets: [{
                         label: '订单数',
-                        data: data.orderData || [12, 19, 15, 25, 22, 30, 28],
+                        data: orderData,
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         tension: 0.4,
@@ -921,6 +947,18 @@
                 }
             });
         }
+        
+        document.getElementById('orderStatusFilter').addEventListener('change', function() {
+            if (window.dashboardData) {
+                renderCharts(window.dashboardData);
+            }
+        });
+        
+        document.getElementById('paymentFilter').addEventListener('change', function() {
+            if (window.dashboardData) {
+                renderCharts(window.dashboardData);
+            }
+        });
 
         // 页面切换
         async function showPage(pageName) {
