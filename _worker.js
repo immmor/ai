@@ -751,9 +751,34 @@ export default {
             orderData.push(12, 19, 15, 25, 22, 30, 28);
           }
           
-          // 获取支付方式分布
-          const paymentLabels = ['支付宝', '微信支付', '手动充值'];
-          const paymentData = [150, 250, 50];
+          // 获取支付方式分布（从Supabase订单表）
+          const allOrdersResult = await supabaseFetch('orders?select=payment_type,amount,status', createSupabaseConfig());
+          const paymentLabels = ['支付宝', '微信支付', '手动充值-支付宝', '手动充值-微信', 'USDT'];
+          const paymentData = [0, 0, 0, 0, 0];
+          
+          if (Array.isArray(allOrdersResult)) {
+            allOrdersResult.forEach(order => {
+              const amount = parseFloat(order.amount || 0);
+              if (order.status === 'paid' || order.status === 'completed') {
+                if (order.payment_type === 'alipay') {
+                  paymentData[0] += amount;
+                } else if (order.payment_type === 'wxpay') {
+                  paymentData[1] += amount;
+                } else if (order.payment_type === 'manual_alipay') {
+                  paymentData[2] += amount;
+                } else if (order.payment_type === 'manual_wxpay') {
+                  paymentData[3] += amount;
+                } else if (order.payment_type === 'usdt' || order.payment_type === 'usdt_trc20') {
+                  paymentData[4] += amount;
+                }
+              }
+            });
+          }
+          
+          // 保留两位小数
+          paymentData.forEach((val, index) => {
+            paymentData[index] = parseFloat(val.toFixed(2));
+          });
           
           return jsonResponse({
             code: 200,

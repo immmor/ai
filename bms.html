@@ -902,11 +902,11 @@
             charts.revenue = new Chart(ctx3, {
                 type: 'bar',
                 data: {
-                    labels: data.paymentLabels || ['支付宝', '微信支付', '手动充值'],
+                    labels: data.paymentLabels || ['支付宝', '微信支付', '手动-支付宝', '手动-微信', 'USDT'],
                     datasets: [{
                         label: '收入金额',
-                        data: data.paymentData || [15000, 25000, 5000],
-                        backgroundColor: ['#ed8936', '#48bb78', '#667eea']
+                        data: data.paymentData || [15000, 25000, 5000, 3000, 8000],
+                        backgroundColor: ['#ed8936', '#48bb78', '#f6ad55', '#68d391', '#4fd1c5']
                     }]
                 },
                 options: {
