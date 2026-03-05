@@ -1075,7 +1075,7 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                order_no: 'USDT_' + data.oid,
+                                order_no: currentUser.username + '_' + Date.now(),
                                 username: currentUser.username,
                                 amount: parseFloat(rmbAmount),
                                 payment_type: 'usdt',
