@@ -1068,6 +1068,25 @@
                         rmbAmount: rmbAmount,
                         usdtAmount: usdtAmount
                     }));
+                    
+                    // 立即创建订单记录到后端
+                    try {
+                        await fetch('https://immmor.com/api/order/create-static', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                order_no: 'USDT_' + data.oid,
+                                username: currentUser.username,
+                                amount: parseFloat(rmbAmount),
+                                payment_type: 'usdt',
+                                status: 'pending',
+                                description: 'USDT充值 '
+                            })
+                        });
+                    } catch (e) {
+                        console.error('创建订单记录失败:', e);
+                    }
+                    
                     showUSDTQRCode(data, usdtAmount, rmbAmount);
                 } else {
                     alert("创建USDT订单失败：" + (data.msg || '未知错误'));
