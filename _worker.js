@@ -751,33 +751,53 @@ export default {
             orderData.push(12, 19, 15, 25, 22, 30, 28);
           }
           
-          // 获取支付方式分布（从Supabase订单表）
+          // 获取支付方式分布（从Supabase订单表）- 返回所有订单
           const allOrdersResult = await supabaseFetch('orders?select=payment_type,amount,status', createSupabaseConfig());
           const paymentLabels = ['支付宝', '微信支付', '手动充值-支付宝', '手动充值-微信', 'USDT'];
-          const paymentData = [0, 0, 0, 0, 0];
+          const paymentDataAll = [0, 0, 0, 0, 0];
+          const paymentDataPaid = [0, 0, 0, 0, 0];
           
           if (Array.isArray(allOrdersResult)) {
             allOrdersResult.forEach(order => {
               const amount = parseFloat(order.amount || 0);
+              const paymentType = (order.payment_type || '').toLowerCase();
+              
+              // 累加全部订单金额
+              if (paymentType === 'alipay' || paymentType === '支付宝') {
+                paymentDataAll[0] += amount;
+              } else if (paymentType === 'wxpay' || paymentType === '微信支付' || paymentType === 'weixin') {
+                paymentDataAll[1] += amount;
+              } else if (paymentType === 'manual_alipay' || paymentType === '手动支付宝' || paymentType === 'manual') {
+                paymentDataAll[2] += amount;
+              } else if (paymentType === 'manual_wxpay' || paymentType === '手动微信') {
+                paymentDataAll[3] += amount;
+              } else if (paymentType === 'usdt' || paymentType === 'usdt_trc20' || paymentType === 'usdt-erc20' || paymentType === 'usdt-solana') {
+                paymentDataAll[4] += amount;
+              }
+              
+              // 仅累加已支付订单金额
               if (order.status === 'paid' || order.status === 'completed') {
-                if (order.payment_type === 'alipay') {
-                  paymentData[0] += amount;
-                } else if (order.payment_type === 'wxpay') {
-                  paymentData[1] += amount;
-                } else if (order.payment_type === 'manual_alipay') {
-                  paymentData[2] += amount;
-                } else if (order.payment_type === 'manual_wxpay') {
-                  paymentData[3] += amount;
-                } else if (order.payment_type === 'usdt' || order.payment_type === 'usdt_trc20') {
-                  paymentData[4] += amount;
+                if (paymentType === 'alipay' || paymentType === '支付宝') {
+                  paymentDataPaid[0] += amount;
+                } else if (paymentType === 'wxpay' || paymentType === '微信支付' || paymentType === 'weixin') {
+                  paymentDataPaid[1] += amount;
+                } else if (paymentType === 'manual_alipay' || paymentType === '手动支付宝' || paymentType === 'manual') {
+                  paymentDataPaid[2] += amount;
+                } else if (paymentType === 'manual_wxpay' || paymentType === '手动微信') {
+                  paymentDataPaid[3] += amount;
+                } else if (paymentType === 'usdt' || paymentType === 'usdt_trc20' || paymentType === 'usdt-erc20' || paymentType === 'usdt-solana') {
+                  paymentDataPaid[4] += amount;
                 }
               }
             });
           }
           
           // 保留两位小数
-          paymentData.forEach((val, index) => {
-            paymentData[index] = parseFloat(val.toFixed(2));
+          paymentDataAll.forEach((val, index) => {
+            paymentDataAll[index] = parseFloat(val.toFixed(2));
+          });
+          paymentDataPaid.forEach((val, index) => {
+            paymentDataPaid[index] = parseFloat(val.toFixed(2));
           });
           
           return jsonResponse({
@@ -793,7 +813,8 @@ export default {
               orderLabels,
               orderData,
               paymentLabels,
-              paymentData
+              paymentDataAll,
+              paymentDataPaid
             }
           });
         } catch (err) {
