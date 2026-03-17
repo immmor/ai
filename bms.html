@@ -1101,10 +1101,7 @@
                     <td>¥${user.balance || 0}</td>
                     <td>${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
                     <td>${user.learn_vip_expire_date ? new Date(user.learn_vip_expire_date).toLocaleDateString() : '-'}</td>
-                    <td>
-                        <span style="font-family: monospace; color: #667eea;">${user.invite_code || '-'}</span>
-                        <button class="action-btn edit-btn" onclick="copyInviteCode('${user.invite_code || ''}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;">复制</button>
-                    </td>
+                    <td>${user.invite_code || '-'}</td>
                     <td>
                         <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
