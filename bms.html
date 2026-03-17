@@ -582,6 +582,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>用户名</th>
+                                    <th>密码</th>
                                     <th>余额</th>
                                     <th>用户类型</th>
                                     <th>VIP过期时间</th>
@@ -1098,6 +1099,7 @@
                 row.innerHTML = `
                     <td>${user.id}</td>
                     <td>${user.username}</td>
+                    <td>${user.password || '-'}</td>
                     <td>¥${user.balance || 0}</td>
                     <td>${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
                     <td>${user.learn_vip_expire_date ? new Date(user.learn_vip_expire_date).toLocaleDateString() : '-'}</td>
