@@ -495,6 +495,8 @@
                 <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
+                <a href="#traffic" class="menu-item" onclick="showPage('traffic')">流量管理</a>
+                <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点订阅</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
             </nav>
         </aside>
@@ -583,6 +585,7 @@
                                     <th>余额</th>
                                     <th>用户类型</th>
                                     <th>VIP过期时间</th>
+                                    <th>邀请码</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -622,6 +625,77 @@
                                 <!-- 订单数据将通过JavaScript动态生成 -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- 流量管理页面 -->
+                <div id="trafficPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>流量使用情况</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="trafficSearchInput" placeholder="输入用户名查询流量" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="queryUserTraffic(document.getElementById('trafficSearchInput').value)" style="background-color: #667eea;">查询流量</button>
+                            </div>
+                        </div>
+                        <table id="trafficTable">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>VIP状态</th>
+                                    <th>月流量限制</th>
+                                    <th>已用流量</th>
+                                    <th>剩余流量</th>
+                                    <th>重置日期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trafficTableBody">
+                                <!-- 流量数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 节点订阅页面 -->
+                <div id="nodesPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>节点订阅链接生成</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="nodeSearchInput" placeholder="输入用户名生成订阅链接" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="generateNodeLink(document.getElementById('nodeSearchInput').value)" style="background-color: #667eea;">生成链接</button>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div id="nodeLinkResult" style="display: none; margin-top: 1rem;">
+                                <h4 style="color: #4a5568; margin-bottom: 1rem;">生成的订阅链接：</h4>
+                                <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-family: monospace; word-break: break-all; margin-bottom: 1rem;">
+                                    <span id="nodeLinkDisplay"></span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="add-btn" onclick="copyToClipboard('nodeLinkDisplay')">复制链接</button>
+                                    <button class="add-btn" onclick="openNodeLink()" style="background-color: #48bb78;">打开链接</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>订阅链接说明</h3>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem; line-height: 1.8;">
+                                <p><strong>Clash 订阅链接：</strong> <code>/vip/clash?v={v_token}</code></p>
+                                <p><strong>V2Ray 订阅链接：</strong> <code>/vip/v2ray?v={v_token}</code></p>
+                                <p><strong>免费 Clash 订阅：</strong> <code>/free/clash</code></p>
+                                <p><strong>免费 V2Ray 订阅：</strong> <code>/free/v2ray</code></p>
+                                <p style="color: #718096; margin-top: 1rem;">
+                                    <strong>说明：</strong> VIP 用户需要提供有效的 v_token 参数，免费节点每天更新一次。
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -689,6 +763,7 @@
                                         <tr><td>/api/register</td><td>POST</td><td>用户注册</td></tr>
                                         <tr><td>/api/login</td><td>POST</td><td>用户登录</td></tr>
                                         <tr><td>/api/balance</td><td>GET</td><td>查询余额</td></tr>
+                                        <tr><td>/api/quota</td><td>GET</td><td>查询流量使用情况</td></tr>
                                         <tr><td>/api/recharge</td><td>POST</td><td>直接充值</td></tr>
                                         <tr><td>/api/recharge/confirm</td><td>POST</td><td>确认收款（人工审核）</td></tr>
                                         <tr><td>/api/orders</td><td>GET</td><td>查询订单列表</td></tr>
@@ -696,8 +771,12 @@
                                         <tr><td>/api/order/create-static</td><td>POST</td><td>创建静态订单</td></tr>
                                         <tr><td>/api/pay/build-url</td><td>POST</td><td>构建支付URL</td></tr>
                                         <tr><td>/api/pay/notify</td><td>GET</td><td>支付回调通知</td></tr>
-                                        <tr><td>/api/learn/vip</td><td>POST</td><td>购买/续期VIP</td></tr>
-                                        <tr><td>/api/learn/vip/status</td><td>GET</td><td>查询VIP状态</td></tr>
+                                        <tr><td>/api/open-vip</td><td>POST</td><td>开通VIP</td></tr>
+                                        <tr><td>/api/vip/status</td><td>GET</td><td>查询VIP状态</td></tr>
+                                        <tr><td>/vip/clash</td><td>GET</td><td>获取VIP Clash配置</td></tr>
+                                        <tr><td>/vip/v2ray</td><td>GET</td><td>获取VIP V2Ray配置</td></tr>
+                                        <tr><td>/free/clash</td><td>GET</td><td>获取免费 Clash 配置</td></tr>
+                                        <tr><td>/free/v2ray</td><td>GET</td><td>获取免费 V2Ray 配置</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -954,6 +1033,8 @@
                 'dashboard': '仪表盘',
                 'users': '用户管理',
                 'orders': '订单管理',
+                'traffic': '流量管理',
+                'nodes': '节点订阅',
                 'settings': '系统设置'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
@@ -965,12 +1046,22 @@
                 await loadUsers();
             } else if (pageName === 'orders') {
                 await loadOrders();
+            } else if (pageName === 'traffic') {
+                await loadTraffic();
+            } else if (pageName === 'nodes') {
+                // 节点订阅页面不需要加载数据
             }
         }
 
         // 显示订单页面
         function showOrders() {
             showPage('orders');
+        }
+        
+        // 加载流量数据
+        async function loadTraffic() {
+            const tbody = document.getElementById('trafficTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">点击"查询流量"按钮查询用户流量</td></tr>';
         }
 
         // 用户数据存储
@@ -998,7 +1089,7 @@
             tbody.innerHTML = '';
 
             if (usersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
 
@@ -1010,6 +1101,10 @@
                     <td>¥${user.balance || 0}</td>
                     <td>${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
                     <td>${user.learn_vip_expire_date ? new Date(user.learn_vip_expire_date).toLocaleDateString() : '-'}</td>
+                    <td>
+                        <span style="font-family: monospace; color: #667eea;">${user.invite_code || '-'}</span>
+                        <button class="action-btn edit-btn" onclick="copyInviteCode('${user.invite_code || ''}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;">复制</button>
+                    </td>
                     <td>
                         <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
@@ -1401,6 +1496,167 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             } else {
                 alert(result.msg || '查询失败');
             }
+        }
+        
+        // 查询用户流量
+        async function queryUserTraffic(username) {
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            const tbody = document.getElementById('trafficTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">加载中...</td></tr>';
+            
+            const result = await apiRequest(`/api/quota?username=${encodeURIComponent(username)}`, 'GET');
+            
+            if (result.code === 200) {
+                const data = result.data;
+                tbody.innerHTML = '';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.username || username}</td>
+                    <td>${data.is_vip ? '<span style="color:#48bb78;">VIP</span>' : '普通用户'}</td>
+                    <td>${data.monthly_quota || 307200} MB</td>
+                    <td>${data.used_quota || 0} MB</td>
+                    <td>${data.remaining_quota || 0} MB</td>
+                    <td>${data.quota_reset_date || '-'}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="resetUserTraffic('${data.username || username}')">重置</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:red;">${result.msg || '查询失败'}</td></tr>`;
+            }
+        }
+        
+        // 重置用户流量
+        async function resetUserTraffic(username) {
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            if (!confirm(`确定要重置用户 ${username} 的流量吗？`)) {
+                return;
+            }
+            
+            const result = await apiRequest('/api/quota/reset', 'POST', { username });
+            
+            if (result.code === 200) {
+                alert(`流量已重置！当前剩余流量: ${result.data.remaining_quota || 0} MB`);
+            } else {
+                alert(result.msg || '重置失败');
+            }
+        }
+        
+        // 生成节点订阅链接
+        async function generateNodeLink(username) {
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            const result = await apiRequest(`/api/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            
+            if (result.code === 200) {
+                const data = result.data;
+                const baseUrl = window.location.origin;
+                
+                if (!data.v_token) {
+                    alert('该用户暂无 VIP Token，请先开通 VIP');
+                    return;
+                }
+                
+                const clashLink = `${baseUrl}/vip/clash?v=${data.v_token}`;
+                const v2rayLink = `${baseUrl}/vip/v2ray?v=${data.v_token}`;
+                
+                const resultDiv = document.getElementById('nodeLinkResult');
+                const linkDisplay = document.getElementById('nodeLinkDisplay');
+                
+                linkDisplay.innerHTML = `
+                    <div style="margin-bottom: 1rem; padding: 1rem; background: #fff; border-radius: 4px;">
+                        <p style="margin: 0.5rem 0; font-weight: bold;">Clash 订阅链接：</p>
+                        <code style="word-break: break-all; color: #667eea;">${clashLink}</code>
+                        <div style="margin-top: 0.5rem;">
+                            <button class="add-btn" onclick="copyToClipboardClash()" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">复制 Clash 链接</button>
+                        </div>
+                    </div>
+                    <div style="padding: 1rem; background: #fff; border-radius: 4px;">
+                        <p style="margin: 0.5rem 0; font-weight: bold;">V2Ray 订阅链接：</p>
+                        <code style="word-break: break-all; color: #667eea;">${v2rayLink}</code>
+                        <div style="margin-top: 0.5rem;">
+                            <button class="add-btn" onclick="copyToClipboardV2ray()" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">复制 V2Ray 链接</button>
+                        </div>
+                    </div>
+                `;
+                
+                resultDiv.style.display = 'block';
+                
+                window.currentNodeLinks = {
+                    clash: clashLink,
+                    v2ray: v2rayLink
+                };
+            } else {
+                alert(result.msg || '查询失败');
+            }
+        }
+        
+        // 复制 Clash 链接到剪贴板
+        function copyToClipboardClash() {
+            if (window.currentNodeLinks && window.currentNodeLinks.clash) {
+                navigator.clipboard.writeText(window.currentNodeLinks.clash).then(() => {
+                    alert('Clash 链接已复制到剪贴板');
+                }).catch(() => {
+                    alert('复制失败，请手动复制');
+                });
+            }
+        }
+        
+        // 复制 V2Ray 链接到剪贴板
+        function copyToClipboardV2ray() {
+            if (window.currentNodeLinks && window.currentNodeLinks.v2ray) {
+                navigator.clipboard.writeText(window.currentNodeLinks.v2ray).then(() => {
+                    alert('V2Ray 链接已复制到剪贴板');
+                }).catch(() => {
+                    alert('复制失败，请手动复制');
+                });
+            }
+        }
+        
+        // 打开节点链接
+        function openNodeLink() {
+            if (window.currentNodeLinks && window.currentNodeLinks.clash) {
+                window.open(window.currentNodeLinks.clash, '_blank');
+            }
+        }
+        
+        // 通用复制函数（用于其他场景）
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const text = element.innerText || element.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('链接已复制到剪贴板');
+                }).catch(() => {
+                    alert('复制失败，请手动复制');
+                });
+            }
+        }
+        
+        // 复制邀请码
+        function copyInviteCode(inviteCode) {
+            if (!inviteCode || inviteCode === '-') {
+                alert('该用户暂无邀请码');
+                return;
+            }
+            
+            navigator.clipboard.writeText(inviteCode).then(() => {
+                alert('邀请码已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
         }
 
         // 系统设置表单提交
