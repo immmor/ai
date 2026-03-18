@@ -498,6 +498,7 @@
                 <a href="#traffic" class="menu-item" onclick="showPage('traffic')">流量管理</a>
                 <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点订阅</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
+                <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
             </nav>
         </aside>
 
@@ -784,6 +785,53 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 消息管理页面 -->
+                <div id="messagesPage" class="page-section" style="display: none;">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1.5rem; color: #4a5568;">发送消息</h3>
+                            <div style="background: #fff; padding: 1.5rem; border-radius: 8px;">
+                                <div class="form-group">
+                                    <label for="messageTitle">消息标题</label>
+                                    <input type="text" id="messageTitle" placeholder="请输入消息标题" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="messageContent">消息内容</label>
+                                    <textarea id="messageContent" rows="5" placeholder="请输入消息内容" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; resize: vertical;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="messageTarget">发送对象</label>
+                                    <select id="messageTarget" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <option value="all">所有用户</option>
+                                        <option value="single">单个用户</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="singleUserGroup" style="display: none;">
+                                    <label for="singleUsername">用户名</label>
+                                    <input type="text" id="singleUsername" placeholder="请输入用户名" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <button type="button" class="btn" onclick="sendMessage()">发送消息</button>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">使用说明</h3>
+                            <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem; color: #718096;">
+                                <p style="margin-bottom: 0.5rem;"><strong>发送对象：</strong></p>
+                                <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                                    <li>所有用户：向所有注册用户发送通知</li>
+                                    <li>单个用户：仅向指定用户发送通知</li>
+                                </ul>
+                                <p style="margin-top: 1rem; margin-bottom: 0.5rem;"><strong>注意事项：</strong></p>
+                                <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                                    <li>消息会显示在用户的个人中心通知栏</li>
+                                    <li>建议消息标题简明扼要（不超过20字）</li>
+                                    <li>消息内容可以详细描述（不超过500字）</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -1036,7 +1084,8 @@
                 'orders': '订单管理',
                 'traffic': '流量管理',
                 'nodes': '节点订阅',
-                'settings': '系统设置'
+                'settings': '系统设置',
+                'messages': '消息管理'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
@@ -1051,6 +1100,8 @@
                 await loadTraffic();
             } else if (pageName === 'nodes') {
                 // 节点订阅页面不需要加载数据
+            } else if (pageName === 'messages') {
+                // 消息管理页面不需要加载数据
             }
         }
 
@@ -1668,6 +1719,71 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             // 保存设置（实际项目中应保存到后端）
             alert('设置已保存！');
         });
+
+        // 切换发送对象
+        document.getElementById('messageTarget').addEventListener('change', function() {
+            const singleUserGroup = document.getElementById('singleUserGroup');
+            if (this.value === 'single') {
+                singleUserGroup.style.display = 'block';
+            } else {
+                singleUserGroup.style.display = 'none';
+            }
+        });
+
+        // 发送消息
+        async function sendMessage() {
+            const title = document.getElementById('messageTitle').value.trim();
+            const content = document.getElementById('messageContent').value.trim();
+            const target = document.getElementById('messageTarget').value;
+            
+            if (!title) {
+                alert('请输入消息标题');
+                return;
+            }
+            
+            if (!content) {
+                alert('请输入消息内容');
+                return;
+            }
+            
+            if (target === 'single') {
+                const username = document.getElementById('singleUsername').value.trim();
+                if (!username) {
+                    alert('请输入用户名');
+                    return;
+                }
+            }
+            
+            const loadingBtn = document.querySelector('#messagesPage button.btn');
+            const originalText = loadingBtn.innerText;
+            loadingBtn.innerText = '发送中...';
+            loadingBtn.disabled = true;
+            
+            try {
+                const result = await apiRequest('/api/send-message', 'POST', { 
+                    title, 
+                    content, 
+                    target,
+                    username: target === 'single' ? document.getElementById('singleUsername').value.trim() : null
+                });
+                
+                if (result.code === 200) {
+                    alert(`发送成功！${result.message || ''}`);
+                    document.getElementById('messageTitle').value = '';
+                    document.getElementById('messageContent').value = '';
+                    if (target === 'single') {
+                        document.getElementById('singleUsername').value = '';
+                    }
+                } else {
+                    alert(result.msg || '发送失败');
+                }
+            } catch (error) {
+                alert('发送失败：' + error.message);
+            } finally {
+                loadingBtn.innerText = originalText;
+                loadingBtn.disabled = false;
+            }
+        }
 
         // 点击模态框外部关闭
         window.onclick = function(event) {
