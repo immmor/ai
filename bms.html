@@ -871,10 +871,13 @@
 
     <script>
         // API 基础地址
-        const API_BASE = 'https://api.immmor.com';
+        const API_BASE = '';
         
         // 当前登录用户信息
         let currentUserInfo = null;
+        
+        // 消息API基础地址
+        const MESSAGE_API_BASE = 'https://api.immmor.com';
         
         // API 请求工具函数
         async function apiRequest(endpoint, method = 'GET', data = null) {
@@ -894,6 +897,28 @@
                 return result;
             } catch (error) {
                 console.error('API请求失败:', error);
+                return { success: false, code: 500, msg: '网络请求失败', error: error.message };
+            }
+        }
+        
+        // 消息API请求工具函数
+        async function messageApiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${MESSAGE_API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('消息API请求失败:', error);
                 return { success: false, code: 500, msg: '网络请求失败', error: error.message };
             }
         }
@@ -1760,7 +1785,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             loadingBtn.disabled = true;
             
             try {
-                const result = await apiRequest('/api/send-message', 'POST', { 
+                const result = await messageApiRequest('/api/send-message', 'POST', { 
                     title, 
                     content, 
                     target,
