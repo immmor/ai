@@ -590,8 +590,8 @@
                                     <th>用户名</th>
                                     <th>密码</th>
                                     <th>余额</th>
-                                    <th>用户类型</th>
-                                    <th>VIP过期时间</th>
+                                    <th style="min-width: 100px;">用户类型</th>
+                                    <th style="min-width: 120px;">VIP过期时间</th>
                                     <th>v_token</th>
                                     <th>邀请码</th>
                                     <th>Clash链接</th>
@@ -1227,8 +1227,8 @@
                     <td>${user.username}</td>
                     <td>${user.password || '-'}</td>
                     <td>¥${user.balance || 0}</td>
-                    <td>${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
-                    <td>${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
+                    <td style="min-width: 100px;">${user.learn_vip_expire_date ? 'VIP' : '普通用户'}</td>
+                    <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
                     <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
