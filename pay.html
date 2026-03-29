@@ -584,7 +584,7 @@
             if (!currentUser) return;
             
             try {
-                const balanceData = await (await fetch(`https://immmor.com/api/balance?username=${currentUser.username}`)).json();
+                const balanceData = await (await fetch(`https://api.immmor.com/api/balance?username=${currentUser.username}`)).json();
                 if (balanceData.code === 200) {
                     document.querySelector('.balance-val').textContent = balanceData.balance.toFixed(2);
                 }
@@ -610,7 +610,7 @@
             if (!username || !password) return alert('用户名和密码不能为空');
             
             try {
-                const data = await (await fetch('https://immmor.com/api/login', {
+                const data = await (await fetch('https://api.immmor.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -636,7 +636,7 @@
             if (password !== confirmPassword) return alert('两次输入的密码不一致');
             
             try {
-                const data = await (await fetch('https://immmor.com/api/register', {
+                const data = await (await fetch('https://api.immmor.com/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -982,7 +982,7 @@
                 
                 console.log('确认充值请求参数:', requestBody);
                 
-                const response = await fetch('https://immmor.com/api/recharge/confirm', {
+                const response = await fetch('https://api.immmor.com/api/recharge/confirm', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
@@ -1074,7 +1074,7 @@
                     
                     // 立即创建订单记录到后端
                     try {
-                        await fetch('https://immmor.com/api/order/create-static', {
+                        await fetch('https://api.immmor.com/api/order/create-static', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1284,7 +1284,7 @@
         // USDT支付成功后确认充值
         async function confirmUSDTRecharge(orderId, username, rmbAmount) {
             try {
-                const response = await fetch('https://immmor.com/api/recharge/confirm', {
+                const response = await fetch('https://api.immmor.com/api/recharge/confirm', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1331,7 +1331,7 @@
             const typeFilter = document.getElementById('type-filter').value;
             
             try {
-                const ordersData = await (await fetch(`https://immmor.com/api/orders?username=${currentUser.username}&page=${currentPage}&limit=5`)).json();
+                const ordersData = await (await fetch(`https://api.immmor.com/api/orders?username=${currentUser.username}&page=${currentPage}&limit=5`)).json();
                 
                 if (ordersData.code === 200) {
                     displayOrders(ordersData.data.orders, ordersData.data.pagination);
