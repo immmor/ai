@@ -897,6 +897,7 @@
     <script>
         // API 基础地址
         const API_BASE = 'https://api.immmor.com';
+        const MAIN_API_BASE = 'https://immmor.com';
         
         // 当前登录用户信息
         let currentUserInfo = null;
@@ -905,7 +906,7 @@
         const MESSAGE_API_BASE = 'https://api.immmor.com';
         
         // API 请求工具函数
-        async function apiRequest(endpoint, method = 'GET', data = null) {
+        async function apiRequest(endpoint, method = 'GET', data = null, useMainApi = false) {
             const options = {
                 method,
                 headers: {
@@ -917,7 +918,8 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const baseUrl = useMainApi ? MAIN_API_BASE : API_BASE;
+                const response = await fetch(`${baseUrl}${endpoint}`, options);
                 const result = await response.json();
                 return result;
             } catch (error) {
@@ -1222,7 +1224,7 @@
         
         // 检查用户VIP状态
         async function checkUserVIP(username) {
-            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET', null, true);
             
             if (result.code === 200) {
                 const vipInfo = result.data;
@@ -1544,7 +1546,7 @@
             const result = await apiRequest('/api/recharge', 'POST', { 
                 username, 
                 amount: parseFloat(amount) 
-            });
+            }, true);
             
             if (result.code === 200) {
                 alert(`充值成功！当前余额: ¥${result.balance}`);
@@ -1599,7 +1601,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                 order_no: orderNo,
                 amount: parseFloat(amount),
                 payment_type: paymentType || 'manual'
-            });
+            }, true);
             
             if (result.success) {
                 alert('收款确认成功！用户余额已更新');
@@ -1657,7 +1659,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             const result = await apiRequest('/api/recharge', 'POST', { 
                 username, 
                 amount: parseFloat(amount) 
-            });
+            }, true);
             
             if (result.code === 200) {
                 alert(`充值成功！用户 ${username} 当前余额: ¥${result.balance}`);
@@ -1672,7 +1674,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             if (!username) return;
             
             // 查询VIP状态
-            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET', null, true);
             
             if (result.code === 200) {
                 const vipInfo = result.data;
@@ -1701,7 +1703,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                         username,
                         amount: parseFloat(amount),
                         duration: parseInt(duration)
-                    });
+                    }, true);
                     
                     if (buyResult.code === 200) {
                         alert(`VIP开通成功！\n过期时间: ${new Date(buyResult.data.vip_expire_date).toLocaleString()}`);
