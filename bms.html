@@ -194,7 +194,7 @@
             flex: 1;
             padding: 2rem;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
         }
 
         .dashboard-grid {
@@ -1232,8 +1232,8 @@
                     <td>${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
-                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
-                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_v2ray || '-'}">${user.v_link_v2ray || '-'}</td>
+                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
+                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_v2ray || '-'}">${user.v_link_v2ray || '-'}</td>
                     <td>
                         <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
