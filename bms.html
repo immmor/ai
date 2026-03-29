@@ -920,7 +920,7 @@
         let currentUserInfo = null;
         
         // 消息API基础地址
-        const MESSAGE_API_BASE = 'https://api.immmor.com';
+        const NEW_API_BASE = 'https://api.immmor.com';
         
         // API 请求工具函数
         async function apiRequest(endpoint, method = 'GET', data = null) {
@@ -945,7 +945,7 @@
         }
         
         // 消息API请求工具函数
-        async function messageApiRequest(endpoint, method = 'GET', data = null) {
+        async function newApiRequest(endpoint, method = 'GET', data = null) {
             const options = {
                 method,
                 headers: {
@@ -957,7 +957,7 @@
             }
             
             try {
-                const response = await fetch(`${MESSAGE_API_BASE}${endpoint}`, options);
+                const response = await fetch(`${NEW_API_BASE}${endpoint}`, options);
                 const result = await response.json();
                 return result;
             } catch (error) {
@@ -1469,7 +1469,7 @@
                     return user ? user.username : '';
                 }).filter(Boolean);
                 
-                const result = await apiRequest('/api/batch-update-links', 'POST', {
+                const result = await newApiRequest('/api/batch-update-links', 'POST', {
                     usernames: usernames,
                     v_link_clash: clashLink,
                     v_link_v2ray: v2rayLink
@@ -1971,7 +1971,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             loadingBtn.disabled = true;
             
             try {
-                const result = await messageApiRequest('/api/send-message', 'POST', { 
+                const result = await newApiRequest('/api/send-message', 'POST', { 
                     content, 
                     target,
                     username: target === 'single' ? document.getElementById('singleUsername').value.trim() : null
