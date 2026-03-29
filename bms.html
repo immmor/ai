@@ -688,7 +688,24 @@
                         </div>
                     </div>
                     
-                    <div class="data-table">
+                    <div class="data-table" style="margin-top: 1rem;">
+                        <div class="table-header">
+                            <h3>更新用户订阅链接（仅管理员）</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="updateLinkUser" placeholder="用户名" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <input type="text" id="updateLinkClash" placeholder="Clash链接" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <input type="text" id="updateLinkV2ray" placeholder="V2Ray链接" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="updateUserLink()" style="background-color: #ed8936;">更新链接</button>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="background-color: #fffbeb; padding: 1rem; border-radius: 8px; font-size: 0.875rem; line-height: 1.8; border-left: 4px solid #ed8936;">
+                                <p style="margin: 0;"><strong>说明：</strong> 仅 immmor 和 admin 用户可以更新其他用户的订阅链接。填写要更新的用户名和对应的 Clash 或 V2Ray 链接（可选）。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table" style="margin-top: 1rem;">
                         <div class="table-header">
                             <h3>订阅链接说明</h3>
                         </div>
@@ -1859,6 +1876,39 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                 }).catch(() => {
                     alert('复制失败，请手动复制');
                 });
+            }
+        }
+        
+        // 更新用户订阅链接
+        async function updateUserLink() {
+            const username = document.getElementById('updateLinkUser').value.trim();
+            const clashLink = document.getElementById('updateLinkClash').value.trim();
+            const v2rayLink = document.getElementById('updateLinkV2ray').value.trim();
+            
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            
+            if (!clashLink && !v2rayLink) {
+                alert('请至少填写一个链接（Clash 或 V2Ray）');
+                return;
+            }
+            
+            const result = await apiRequest('/api/update-link', 'POST', {
+                username: username,
+                v_link_clash: clashLink || null,
+                v_link_v2ray: v2rayLink || null,
+                currentUser: document.getElementById('currentUser').textContent
+            });
+            
+            if (result.code === 200) {
+                alert('链接更新成功！');
+                document.getElementById('updateLinkUser').value = '';
+                document.getElementById('updateLinkClash').value = '';
+                document.getElementById('updateLinkV2ray').value = '';
+            } else {
+                alert(result.msg || '更新失败');
             }
         }
         
