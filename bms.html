@@ -1251,7 +1251,7 @@
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">加载中...</td></tr>';
             document.getElementById('orderSearchInput').value = '';
             
-            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET');
+            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET', null, true);
             
             if (result.code === 200) {
                 ordersData = result.data.orders || [];
@@ -1573,7 +1573,7 @@
         
         // 查看订单详情
         async function viewOrderDetail(orderNo) {
-            const result = await apiRequest(`/api/order/detail?order_no=${encodeURIComponent(orderNo)}`, 'GET');
+            const result = await apiRequest(`/api/order/detail?order_no=${encodeURIComponent(orderNo)}`, 'GET', null, true);
             
             if (result.code === 200) {
                 const order = result.data;
