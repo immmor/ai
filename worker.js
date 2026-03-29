@@ -212,6 +212,58 @@ export default {
         }
       }
 
+      // ========== 用户管理接口（BMS） ==========
+      if (path === '/api/bms/users' && request.method === 'GET') {
+        try {
+          const page = parseInt(url.searchParams.get('page') || '1');
+          const limit = parseInt(url.searchParams.get('limit') || '10');
+          const username = url.searchParams.get('username');
+          
+          let query = 'SELECT rowid, username, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash FROM user';
+          let countQuery = 'SELECT COUNT(*) as total FROM user';
+          let whereClause = '';
+          let bindParams = [];
+          
+          if (username) {
+            whereClause = ' WHERE username LIKE ?';
+            bindParams = [`%${username}%`];
+          }
+          
+          const totalResult = await DB
+            .prepare(countQuery + whereClause)
+            .bind(...bindParams)
+            .first();
+          
+          const total = totalResult?.total || 0;
+          const totalPages = Math.ceil(total / limit);
+          const offset = (page - 1) * limit;
+          
+          let finalQuery = query + whereClause + ' ORDER BY rowid LIMIT ? OFFSET ?';
+          
+          const results = await DB
+            .prepare(finalQuery)
+            .bind(...bindParams, limit, offset)
+            .all();
+          
+          return resJson({
+            code: 200,
+            msg: '查询成功',
+            data: {
+              list: results.results || [],
+              pagination: {
+                total,
+                page,
+                limit,
+                totalPages
+              }
+            }
+          });
+        } catch (err) {
+          console.error('BMS users query error:', err);
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 按用户名查询（测试kkk专用） ==========
       if (path === '/api/get-user' && request.method === 'GET') {
         const name = url.searchParams.get('name');
