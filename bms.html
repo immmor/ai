@@ -896,8 +896,7 @@
 
     <script>
         // API 基础地址
-        const API_BASE = 'https://api.immmor.com';
-        const MAIN_API_BASE = 'https://immmor.com';
+        const API_BASE = '';
         
         // 当前登录用户信息
         let currentUserInfo = null;
@@ -906,7 +905,7 @@
         const MESSAGE_API_BASE = 'https://api.immmor.com';
         
         // API 请求工具函数
-        async function apiRequest(endpoint, method = 'GET', data = null, useMainApi = false) {
+        async function apiRequest(endpoint, method = 'GET', data = null) {
             const options = {
                 method,
                 headers: {
@@ -918,8 +917,7 @@
             }
             
             try {
-                const baseUrl = useMainApi ? MAIN_API_BASE : API_BASE;
-                const response = await fetch(`${baseUrl}${endpoint}`, options);
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
                 const result = await response.json();
                 return result;
             } catch (error) {
@@ -1177,10 +1175,10 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
             
-            const result = await apiRequest('/api/users?page=1&limit=50', 'GET');
+            const result = await messageApiRequest('/api/users?page=1&limit=50', 'GET');
             
             if (result.code === 200) {
-                usersData = result.data.users || [];
+                usersData = result.data.list || [];
                 renderUsers();
             } else {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
@@ -1224,7 +1222,7 @@
         
         // 检查用户VIP状态
         async function checkUserVIP(username) {
-            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET', null, true);
+            const result = await messageApiRequest(`/api/vip/status?username=${encodeURIComponent(username)}`, 'GET');
             
             if (result.code === 200) {
                 const vipInfo = result.data;
@@ -1251,7 +1249,7 @@
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">加载中...</td></tr>';
             document.getElementById('orderSearchInput').value = '';
             
-            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET', null, true);
+            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET');
             
             if (result.code === 200) {
                 ordersData = result.data.orders || [];
@@ -1453,7 +1451,7 @@
                     return user ? user.username : '';
                 }).filter(Boolean);
                 
-                const result = await apiRequest('/api/batch-update-links', 'POST', {
+                const result = await messageApiRequest('/api/batch-update-links', 'POST', {
                     usernames: usernames,
                     v_link_clash: clashLink,
                     v_link_v2ray: v2rayLink
@@ -1476,10 +1474,23 @@
 
         // 删除用户
         async function deleteUser(id) {
-            if (confirm('确定要删除这个用户吗？')) {
-                usersData = usersData.filter(u => u.id !== id);
-                renderUsers();
-                alert('用户已删除（前端演示，需要后端接口支持）');
+            if (!confirm('确定要删除这个用户吗？')) {
+                return;
+            }
+            
+            const user = usersData.find(u => u.id === id);
+            if (!user) {
+                alert('用户不存在');
+                return;
+            }
+            
+            const result = await messageApiRequest('/api/users', 'DELETE', { usernames: [user.username] });
+            
+            if (result.code === 200) {
+                alert(`成功删除 ${result.data?.deleted || 0} 个用户`);
+                loadUsers();
+            } else {
+                alert(result.msg || '删除失败');
             }
         }
 
@@ -1512,7 +1523,7 @@
                     return;
                 }
                 
-                const result = await apiRequest('/api/register', 'POST', { 
+                const result = await messageApiRequest('/api/register', 'POST', { 
                     username, 
                     password 
                 });
@@ -1543,10 +1554,10 @@
                 return;
             }
             
-            const result = await apiRequest('/api/recharge', 'POST', { 
+            const result = await messageApiRequest('/api/recharge', 'POST', { 
                 username, 
                 amount: parseFloat(amount) 
-            }, true);
+            });
             
             if (result.code === 200) {
                 alert(`充值成功！当前余额: ¥${result.balance}`);
@@ -1562,7 +1573,7 @@
                 return;
             }
             
-            const result = await apiRequest(`/api/balance?username=${encodeURIComponent(username)}`, 'GET');
+            const result = await messageApiRequest(`/api/balance?username=${encodeURIComponent(username)}`, 'GET');
             
             if (result.code === 200) {
                 alert(`用户 ${username} 的当前余额: ¥${result.balance}`);
@@ -1573,7 +1584,7 @@
         
         // 查看订单详情
         async function viewOrderDetail(orderNo) {
-            const result = await apiRequest(`/api/order/detail?order_no=${encodeURIComponent(orderNo)}`, 'GET', null, true);
+            const result = await apiRequest(`/api/order/detail?order_no=${encodeURIComponent(orderNo)}`, 'GET');
             
             if (result.code === 200) {
                 const order = result.data;
@@ -1601,7 +1612,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                 order_no: orderNo,
                 amount: parseFloat(amount),
                 payment_type: paymentType || 'manual'
-            }, true);
+            });
             
             if (result.success) {
                 alert('收款确认成功！用户余额已更新');
@@ -1659,7 +1670,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             const result = await apiRequest('/api/recharge', 'POST', { 
                 username, 
                 amount: parseFloat(amount) 
-            }, true);
+            });
             
             if (result.code === 200) {
                 alert(`充值成功！用户 ${username} 当前余额: ¥${result.balance}`);
@@ -1674,7 +1685,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
             if (!username) return;
             
             // 查询VIP状态
-            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET', null, true);
+            const result = await apiRequest(`/api/learn/vip/status?username=${encodeURIComponent(username)}`, 'GET');
             
             if (result.code === 200) {
                 const vipInfo = result.data;
@@ -1703,7 +1714,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                         username,
                         amount: parseFloat(amount),
                         duration: parseInt(duration)
-                    }, true);
+                    });
                     
                     if (buyResult.code === 200) {
                         alert(`VIP开通成功！\n过期时间: ${new Date(buyResult.data.vip_expire_date).toLocaleString()}`);
@@ -1760,7 +1771,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                 return;
             }
             
-            const result = await apiRequest('/api/quota/reset', 'POST', { username });
+            const result = await messageApiRequest('/api/quota/reset', 'POST', { username });
             
             if (result.code === 200) {
                 alert(`流量已重置！当前剩余流量: ${result.data.remaining_quota || 0} MB`);
@@ -1776,7 +1787,7 @@ ${order.paid_at ? '支付时间: ' + new Date(order.paid_at).toLocaleString() : 
                 return;
             }
             
-            const result = await apiRequest(`/api/vip/status?username=${encodeURIComponent(username)}`, 'GET');
+            const result = await messageApiRequest(`/api/vip/status?username=${encodeURIComponent(username)}`, 'GET');
             
             if (result.code === 200) {
                 const data = result.data;

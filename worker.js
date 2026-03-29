@@ -152,6 +152,182 @@ export default {
         }
       }
 
+      // ========== 用户管理接口 ==========
+      if (path === '/api/users') {
+        if (request.method === 'GET') {
+          try {
+            const searchUsername = url.searchParams.get('search');
+            const page = parseInt(url.searchParams.get('page') || '1');
+            const pageSize = parseInt(url.searchParams.get('limit') || '10');
+            const offset = (page - 1) * pageSize;
+            
+            let whereClause = '1=1';
+            let bindParams = [];
+            
+            if (searchUsername) {
+              whereClause += ' AND username LIKE ?';
+              bindParams.push(`%${searchUsername}%`);
+            }
+            
+            const users = await DB
+              .prepare(`SELECT rowid, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash FROM user WHERE ${whereClause} ORDER BY rowid LIMIT ? OFFSET ?`)
+              .bind(...bindParams, pageSize, offset)
+              .all();
+            
+            const totalResult = await DB
+              .prepare(`SELECT COUNT(*) as total FROM user WHERE ${whereClause}`)
+              .bind(...bindParams)
+              .first();
+            
+            const total = totalResult ? totalResult.total : 0;
+            
+            return resJson({
+              code: 200,
+              msg: '查询成功',
+              data: {
+                total: total,
+                page: page,
+                pageSize: pageSize,
+                list: users.results || []
+              }
+            });
+          } catch (err) {
+            console.error('查询用户列表错误:', err);
+            return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+          }
+        }
+        
+        if (request.method === 'POST') {
+          try {
+            const params = await request.json();
+            const { username, password, balance = 0, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota = 0, monthly_quota = 1024, invite_code, v_token, v_link_v2ray = '', v_link_clash = '' } = params;
+            
+            if (!username || !password) {
+              return resJson({ code: 400, msg: '用户名和密码不能为空' }, 400);
+            }
+            
+            const existingUser = await DB
+              .prepare('SELECT * FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            
+            if (existingUser) {
+              return resJson({ code: 409, msg: '用户名已存在' }, 409);
+            }
+            
+            const result = await DB
+              .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+              .bind(username, password, balance, v_expire_date || null, learn_vip_expire_date || null, quota_reset_date || null, used_quota, monthly_quota, invite_code || '', v_token || '', v_link_v2ray, v_link_clash)
+              .run();
+            
+            if (result.success) {
+              return resJson({
+                code: 200,
+                msg: '添加用户成功',
+                data: { id: result.meta.last_row_id, username: username }
+              });
+            } else {
+              return resJson({ code: 500, msg: '添加用户失败' }, 500);
+            }
+          } catch (err) {
+            console.error('添加用户错误:', err);
+            return resJson({ code: 500, msg: '添加失败', error: err.message }, 500);
+          }
+        }
+        
+        if (request.method === 'PUT') {
+          try {
+            const params = await request.json();
+            const { username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash } = params;
+            
+            if (!username) {
+              return resJson({ code: 400, msg: '用户名不能为空' }, 400);
+            }
+            
+            const existingUser = await DB
+              .prepare('SELECT * FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            
+            if (!existingUser) {
+              return resJson({ code: 404, msg: '用户不存在' }, 404);
+            }
+            
+            const fields = [];
+            const bindParams = [];
+            
+            if (password !== undefined) { fields.push('password = ?'); bindParams.push(password); }
+            if (balance !== undefined) { fields.push('balance = ?'); bindParams.push(balance); }
+            if (v_expire_date !== undefined) { fields.push('v_expire_date = ?'); bindParams.push(v_expire_date); }
+            if (learn_vip_expire_date !== undefined) { fields.push('learn_vip_expire_date = ?'); bindParams.push(learn_vip_expire_date); }
+            if (quota_reset_date !== undefined) { fields.push('quota_reset_date = ?'); bindParams.push(quota_reset_date); }
+            if (used_quota !== undefined) { fields.push('used_quota = ?'); bindParams.push(used_quota); }
+            if (monthly_quota !== undefined) { fields.push('monthly_quota = ?'); bindParams.push(monthly_quota); }
+            if (invite_code !== undefined) { fields.push('invite_code = ?'); bindParams.push(invite_code); }
+            if (v_token !== undefined) { fields.push('v_token = ?'); bindParams.push(v_token); }
+            if (v_link_v2ray !== undefined) { fields.push('v_link_v2ray = ?'); bindParams.push(v_link_v2ray); }
+            if (v_link_clash !== undefined) { fields.push('v_link_clash = ?'); bindParams.push(v_link_clash); }
+            
+            if (fields.length === 0) {
+              return resJson({ code: 400, msg: '没有需要更新的字段' }, 400);
+            }
+            
+            bindParams.push(username);
+            
+            const result = await DB
+              .prepare(`UPDATE user SET ${fields.join(', ')} WHERE username = ?`)
+              .bind(...bindParams)
+              .run();
+            
+            if (result.success && result.meta.changes > 0) {
+              return resJson({
+                code: 200,
+                msg: '更新用户成功',
+                data: { username: username }
+              });
+            } else {
+              return resJson({ code: 500, msg: '更新用户失败' }, 500);
+            }
+          } catch (err) {
+            console.error('更新用户错误:', err);
+            return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
+          }
+        }
+        
+        if (request.method === 'DELETE') {
+          try {
+            const params = await request.json();
+            const { usernames } = params;
+            
+            if (!usernames || !Array.isArray(usernames) || usernames.length === 0) {
+              return resJson({ code: 400, msg: '请提供至少一个用户名' }, 400);
+            }
+            
+            let deletedCount = 0;
+            
+            for (const username of usernames) {
+              const result = await DB
+                .prepare('DELETE FROM user WHERE username = ?')
+                .bind(username)
+                .run();
+              
+              if (result.success && result.meta.changes > 0) {
+                deletedCount++;
+              }
+            }
+            
+            return resJson({
+              code: 200,
+              msg: `成功删除 ${deletedCount} 个用户`,
+              data: { deleted: deletedCount }
+            });
+          } catch (err) {
+            console.error('删除用户错误:', err);
+            return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
+          }
+        }
+      }
+      
       // ========== 批量更新链接接口 ==========
       if (path === '/api/batch-update-links' && request.method === 'POST') {
         try {
@@ -1021,78 +1197,6 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         } catch (err) {
           console.error('标记消息错误:', err);
           return resJson({ code: 500, msg: '标记失败', error: err.message }, 500);
-        }
-      }
-
-      // ========== 统计数据接口 ==========
-      if (path === '/api/stats' && request.method === 'GET') {
-        try {
-          const totalUsers = await DB
-            .prepare('SELECT COUNT(*) as count FROM user')
-            .first();
-          
-          const totalOrders = await DB
-            .prepare('SELECT COUNT(*) as count FROM orders')
-            .first();
-          
-          const pendingOrders = await DB
-            .prepare('SELECT COUNT(*) as count FROM orders WHERE status = ?')
-            .bind('pending')
-            .first();
-          
-          const revenueResult = await DB
-            .prepare('SELECT COALESCE(SUM(amount), 0) as total FROM orders WHERE status = ?')
-            .bind('paid')
-            .first();
-          
-          return resJson({
-            code: 200,
-            msg: '查询成功',
-            data: {
-              totalUsers: totalUsers?.count || 0,
-              totalOrders: totalOrders?.count || 0,
-              pendingOrders: pendingOrders?.count || 0,
-              totalRevenue: revenueResult?.total || 0
-            }
-          });
-        } catch (err) {
-          console.error('获取统计数据错误:', err);
-          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
-        }
-      }
-
-      // ========== 用户列表接口 ==========
-      if (path === '/api/users' && request.method === 'GET') {
-        try {
-          const page = parseInt(url.searchParams.get('page')) || 1;
-          const limit = parseInt(url.searchParams.get('limit')) || 50;
-          const offset = (page - 1) * limit;
-          
-          const users = await DB
-            .prepare('SELECT id, username, password, balance, learn_vip_expire_date, invite_code, v_link_clash, v_link_v2ray FROM user ORDER BY id LIMIT ? OFFSET ?')
-            .bind(limit, offset)
-            .all();
-          
-          const total = await DB
-            .prepare('SELECT COUNT(*) as count FROM user')
-            .first();
-          
-          return resJson({
-            code: 200,
-            msg: '查询成功',
-            data: {
-              users: users.results || [],
-              pagination: {
-                page,
-                limit,
-                total: total?.count || 0,
-                pages: Math.ceil(total?.count || 0 / limit)
-              }
-            }
-          });
-        } catch (err) {
-          console.error('获取用户列表错误:', err);
-          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
         }
       }
 
