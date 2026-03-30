@@ -1196,7 +1196,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">加载中...</td></tr>';
             
-            const result = await apiRequest('/api/users?page=1&limit=50', 'GET');
+            const result = await apiRequest('/api/users?page=1&limit=9999', 'GET');
             
             if (result.code === 200) {
                 usersData = result.data.users || [];
@@ -1271,7 +1271,7 @@
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">加载中...</td></tr>';
             document.getElementById('orderSearchInput').value = '';
             
-            const result = await apiRequest('/api/orders?page=1&limit=50', 'GET');
+            const result = await apiRequest('/api/orders?page=1&limit=9999', 'GET');
             
             if (result.code === 200) {
                 ordersData = result.data.orders || [];
