@@ -579,7 +579,20 @@
                     document.getElementById('username').value = username;
                     document.getElementById('password').value = decodedPassword;
                     
-                    await login();
+                    const data = await (await fetch('https://immmor.com/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password: decodedPassword })
+                    })).json();
+                    
+                    if (data.success) {
+                        localStorage.setItem('currentUser', JSON.stringify(data.userInfo));
+                        const url = window.location.origin + window.location.pathname;
+                        window.history.replaceState({}, document.title, url);
+                        location.reload();
+                    } else {
+                        console.error('自动登录失败：' + data.message);
+                    }
                 } catch (e) {
                     console.error('自动登录失败:', e);
                 }
