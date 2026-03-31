@@ -579,7 +579,7 @@
             
             if (autoLogin === '1' && username && encodedPassword) {
                 try {
-                    const decodedPassword = decodeURIComponent(atob(encodedPassword));
+                    const decodedPassword = atob(encodedPassword);
                     console.log('decodedPassword:', decodedPassword);
                     document.getElementById('username').value = username;
                     document.getElementById('password').value = decodedPassword;
