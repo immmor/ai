@@ -1234,7 +1234,7 @@
                     <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
                     <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_v2ray || '-'}">${user.v_link_v2ray || '-'}</td>
                     <td style="min-width: 200px;">
-                        <button class="action-btn edit-btn" onclick="rechargeUser('${user.username}')">充值</button>
+                        <button class="action-btn edit-btn" onclick="editUserBalance('${user.username}', '${user.balance}')">修改余额</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
                     </td>
                 `;
@@ -1555,23 +1555,23 @@
             }
         });
         
-        // 给用户充值
-        async function rechargeUser(username) {
-            const amount = prompt(`请输入为 ${username} 充值的金额：`, '100');
-            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        // 修改用户余额
+        async function editUserBalance(username, currentBalance) {
+            const amount = prompt(`请输入为 ${username} 修改后的余额（当前: ${currentBalance}）：`, currentBalance.toString());
+            if (!amount || isNaN(amount)) {
                 alert('请输入有效的金额');
                 return;
             }
             
-            const result = await apiRequest('/api/recharge', 'POST', { 
+            const result = await newApiRequest('/api/balance/edit', 'POST', { 
                 username, 
-                amount: parseFloat(amount) 
+                balance: parseFloat(amount) 
             });
             
             if (result.code === 200) {
-                alert(`充值成功！当前余额: ¥${result.balance}`);
+                alert(`余额修改成功！新余额: ¥${result.balance}`);
             } else {
-                alert(result.msg || '充值失败');
+                alert(result.msg || '修改失败');
             }
         }
         

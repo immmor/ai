@@ -108,6 +108,20 @@ export default {
               .prepare('UPDATE user SET balance = balance + 2 WHERE username = ?')
               .bind(inviterUser.username)
               .run();
+            
+            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            
+            // 给被邀请人发送奖励通知
+            await DB
+              .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(username, `[系统通知] 您使用邀请码 ${inviteCode} 注册成功，获得奖励 2 元`, now)
+              .run();
+            
+            // 给邀请人发送奖励通知
+            await DB
+              .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(inviterUser.username, `[系统通知] 您的邀请用户 ${username} 已注册，您获得奖励 2 元`, now)
+              .run();
           }
         }
 
@@ -443,6 +457,47 @@ export default {
         }
       }
 
+      // ========== 修改余额接口 ==========
+      if (path === '/api/balance/edit' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, balance } = params;
+          
+          if (!username) {
+            return resJson({ code: 400, msg: '缺少username参数' }, 400);
+          }
+          
+          if (balance === undefined || balance === null || isNaN(parseFloat(balance))) {
+            return resJson({ code: 400, msg: '缺少有效的balance参数' }, 400);
+          }
+          
+          const newBalance = parseFloat(balance);
+          
+          const user = await DB
+            .prepare('SELECT username FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          if (!user) {
+            return resJson({ code: 404, msg: '用户不存在' }, 404);
+          }
+          
+          const result = await DB
+            .prepare('UPDATE user SET balance = ? WHERE username = ?')
+            .bind(newBalance, username)
+            .run();
+          
+          if (result.success && result.meta.changes > 0) {
+            return resJson({ code: 200, msg: '余额修改成功', balance: newBalance });
+          } else {
+            return resJson({ code: 500, msg: '余额修改失败' }, 500);
+          }
+        } catch (err) {
+          console.error('Balance edit error:', err);
+          return resJson({ code: 500, msg: '修改失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 查询流量使用情况接口 ==========
       if (path === '/api/quota' && request.method === 'GET') {
         try {
@@ -535,7 +590,7 @@ export default {
           const month = String(now.getMonth() + 1).padStart(2, '0');
           const day = String(now.getDate()).padStart(2, '0');
           
-          const vipUrl = user.v_link_clash || `https://7zl9d.no-mad-world.club/link/jyKqfN5alnAaPXbQ?clash=3&extend=1`;
+          const vipUrl = user.v_link_clash || `https://wgzdb.no-mad-sub.one/link/jyKqfN5alnAaPXbQ?clash=3&extend=1`;
           
           // 获取VIP Clash配置
           const response = await fetch(vipUrl);
@@ -583,7 +638,7 @@ export default {
             return resJson({ code: 403, msg: 'VIP已过期或未开通' }, 403);
           }
           
-          const vipV2rayUrl = user.v_link_v2ray || `https://7zl9d.no-mad-world.club/link/jyKqfN5alnAaPXbQ?sub=3&extend=1`;
+          const vipV2rayUrl = user.v_link_v2ray || `https://wgzdb.no-mad-sub.one/link/jyKqfN5alnAaPXbQ?sub=3&extend=1`;
           
           const response = await fetch(vipV2rayUrl);
           
