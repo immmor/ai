@@ -1456,6 +1456,15 @@
             }
         }
 
+        function showTextarea(title, val) {
+            document.getElementById('infoTitle').textContent = title;
+            document.getElementById('infoContent').value = val;
+            document.getElementById('infoModal').style.display = 'flex';
+        }
+        function closeInfoModal() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+
         // 修改用户余额
         async function editUserBalance(username, currentBalance) {
             const amount = prompt(`请输入为 ${username} 修改后的余额（当前: ${currentBalance}）：`, currentBalance.toString());
