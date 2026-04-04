@@ -597,6 +597,7 @@
                                     <th>Clash链接</th>
                                     <th>V2Ray链接</th>
                                     <th style="min-width: 150px;">登录信息</th>
+                                    <th style="min-width: 80px;">不信任</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -1206,7 +1207,7 @@
         // 加载用户列表
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">加载中...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">加载中...</td></tr>';
             
             const result = await apiRequest('/api/users?page=1&limit=9999', 'GET');
             
@@ -1214,7 +1215,7 @@
                 usersData = result.data.users || [];
                 renderUsers();
             } else {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
             }
         }
         
@@ -1246,6 +1247,7 @@
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="prompt('Clash链接：', decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.v_link_clash || '')}" title="点击查看完整内容">${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="prompt('V2Ray链接：', decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.v_link_v2ray || '')}" title="点击查看完整内容">${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="showTextarea(this.dataset.title, decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.login_info || '')}" data-title="登录信息" title="点击查看完整内容">${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
+                    <td>${user.not_trusted === 'yes' ? '是' : '否'}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUserBalance('${user.username}', '${user.balance}')">修改余额</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>

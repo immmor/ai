@@ -125,7 +125,7 @@ export default {
 
         try {
           const user = await env.DB
-            .prepare('SELECT rowid, username, balance FROM user WHERE username = ? AND password = ?')
+            .prepare('SELECT rowid, username, balance, not_trusted FROM user WHERE username = ? AND password = ?')
             .bind(username, password)
             .first();
 
