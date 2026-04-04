@@ -861,14 +861,14 @@
 
     <!-- 用户编辑模态框 -->
     <div id="userModal" class="modal">
-        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h3 id="userModalTitle">修改用户</h3>
                 <button class="close-btn" onclick="closeUserModal()">&times;</button>
             </div>
             <form id="userForm">
                 <input type="hidden" id="editUsername" name="editUsername">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: calc(80vh - 150px); overflow-y: auto;">
                     <div class="form-group">
                         <label for="userPassword">密码</label>
                         <input type="text" id="userPassword" name="userPassword">
@@ -906,7 +906,7 @@
                         <input type="text" id="userNotTrusted" name="userNotTrusted" placeholder="留空或其他值表示正常">
                     </div>
                 </div>
-                <button type="submit" class="btn" style="margin-top: 15px;">保存</button>
+                <button type="submit" class="btn" style="margin-top: 15px; flex-shrink: 0;">保存</button>
             </form>
         </div>
     </div>
