@@ -155,6 +155,18 @@ export default {
             .bind(username, '免费节点链接和付费节点链接不一样！！！！！', now)
             .run();
           
+          const loginInfo = JSON.stringify([{
+            type: 'register',
+            time: now,
+            ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+            device: request.headers.get('User-Agent') || 'unknown'
+          }]);
+          
+          await DB
+            .prepare('UPDATE user SET login_info = ? WHERE username = ?')
+            .bind(loginInfo, username)
+            .run();
+          
           return resJson({ 
             success: true, 
             message: finalBalance > 0 ? '注册成功！获得邀请奖励2元' : '注册成功！', 
@@ -257,6 +269,36 @@ export default {
           .first();
 
         if (user) {
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const loginInfoEntry = {
+            type: 'login',
+            time: now,
+            ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+            device: request.headers.get('User-Agent') || 'unknown'
+          };
+          
+          const loginInfo = await DB
+            .prepare('SELECT login_info FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+          
+          if (loginInfo && loginInfo.login_info) {
+            try {
+              const existingInfo = JSON.parse(loginInfo.login_info);
+              existingInfo.unshift(loginInfoEntry);
+              updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
+            } catch (e) {
+              updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+            }
+          }
+          
+          await DB
+            .prepare('UPDATE user SET login_info = ? WHERE username = ?')
+            .bind(updatedLoginInfo, username)
+            .run();
+          
           return resJson({ success: true, message: '登录成功！', userInfo: { id: user.id, username: user.username, balance: user.balance } });
         } else {
           return resJson({ success: false, message: '用户名或密码错误' }, 401);
@@ -330,9 +372,13 @@ export default {
           
           const vToken = generateVToken();
           
+          const isYearly = duration === 365;
+          const vLinkClash = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?clash=3&extend=1' : (user.v_link_clash || 'https://lxlv9.no-mad-sub.one/link/Q8fwb1PCpjDpH1dK?clash=3&extend=1');
+          const vLinkV2ray = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?sub=3&extend=1' : (user.v_link_v2ray || 'https://lxlv9.no-mad-sub.one/link/Q8fwb1PCpjDpH1dK?sub=2&extend=1');
+          
           const result = await DB
             .prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_token = ?, v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
-            .bind(vipPrice, newExpireDate.toISOString().slice(0, 19).replace('T', ' '), vToken, '', '', username)
+            .bind(vipPrice, newExpireDate.toISOString().slice(0, 19).replace('T', ' '), vToken, vLinkClash, vLinkV2ray, username)
             .run();
           
           if (result.success && result.meta.changes > 0) {
@@ -590,7 +636,7 @@ export default {
           const month = String(now.getMonth() + 1).padStart(2, '0');
           const day = String(now.getDate()).padStart(2, '0');
           
-          const vipUrl = user.v_link_clash || `https://wgzdb.no-mad-sub.one/link/jyKqfN5alnAaPXbQ?clash=3&extend=1`;
+          const vipUrl = user.v_link_clash;
           
           // 获取VIP Clash配置
           const response = await fetch(vipUrl);
@@ -638,7 +684,7 @@ export default {
             return resJson({ code: 403, msg: 'VIP已过期或未开通' }, 403);
           }
           
-          const vipV2rayUrl = user.v_link_v2ray || `https://wgzdb.no-mad-sub.one/link/jyKqfN5alnAaPXbQ?sub=3&extend=1`;
+          const vipV2rayUrl = user.v_link_v2ray;
           
           const response = await fetch(vipV2rayUrl);
           

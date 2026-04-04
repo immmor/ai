@@ -596,6 +596,7 @@
                                     <th>邀请码</th>
                                     <th>Clash链接</th>
                                     <th>V2Ray链接</th>
+                                    <th style="min-width: 150px;">登录信息</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -1221,6 +1222,11 @@
 
             usersData.forEach(user => {
                 const row = document.createElement('tr');
+                const loginInfo = user.login_info ? JSON.parse(user.login_info) : [];
+                const lastLogin = loginInfo.length > 0 ? loginInfo[0] : null;
+                const loginInfoText = lastLogin 
+                    ? `${lastLogin.type === 'login' ? '登录' : '注册'}<br><small style="color:#718096">${lastLogin.time}<br>${lastLogin.ip}<br>${lastLogin.device.substring(0, 30)}...</small>` 
+                    : '-';
                 row.innerHTML = `
                     <td><input type="checkbox" class="user-checkbox" onchange="toggleUserSelection(${user.id}, this)"></td>
                     <td>${user.id}</td>
@@ -1231,8 +1237,9 @@
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
-                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
-                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_v2ray || '-'}">${user.v_link_v2ray || '-'}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_clash || '-'}">${user.v_link_clash || '-'}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_link_v2ray || '-'}">${user.v_link_v2ray || '-'}</td>
+                    <td style="max-width: 200px; font-size: 0.85rem;">${loginInfoText}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUserBalance('${user.username}', '${user.balance}')">修改余额</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
