@@ -1450,7 +1450,7 @@
             const not_trusted = document.getElementById('userNotTrusted').value;
             
             try {
-                const result = await apiRequest('/api/user/edit', 'POST', {
+                const result = await newApiRequest('/api/user/edit', 'POST', {
                     username: username,
                     password: password,
                     balance: balance !== '' ? parseFloat(balance) : null,
@@ -1603,58 +1603,6 @@
             }
         }
 
-        // 用户表单提交 - 对接注册接口
-        document.getElementById('userForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('userId').value);
-            const username = document.getElementById('userName').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const role = document.getElementById('userRole').value;
-
-            if (id) {
-                // 编辑用户 - 前端模拟
-                const userIndex = usersData.findIndex(u => u.id === id);
-                if (userIndex !== -1) {
-                    usersData[userIndex] = {
-                        ...usersData[userIndex],
-                        username,
-                        email,
-                        role
-                    };
-                }
-                renderUsers();
-                closeUserModal();
-            } else {
-                // 添加用户 - 调用注册接口
-                if (!password) {
-                    alert('请设置密码');
-                    return;
-                }
-                
-                const result = await apiRequest('/api/register', 'POST', { 
-                    username, 
-                    password 
-                });
-                
-                if (result.success) {
-                    alert('用户添加成功！');
-                    // 添加到本地数据
-                    usersData.push({
-                        id: usersData.length + 1,
-                        username,
-                        email,
-                        role,
-                        registerDate: new Date().toISOString().split('T')[0]
-                    });
-                    renderUsers();
-                    closeUserModal();
-                } else {
-                    alert(result.message || '添加失败');
-                }
-            }
-        });
-        
         // 修改用户余额
         async function editUserBalance(username, currentBalance) {
             const amount = prompt(`请输入为 ${username} 修改后的余额（当前: ${currentBalance}）：`, currentBalance.toString());
