@@ -583,7 +583,7 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
-            document.getElementById('username-display').textContent = currentUser.username;
+            document.getElementById('username-display').textContent = currentUser.username.length > 6 ? currentUser.username.slice(0, 6) + '*' : currentUser.username;
             updateBalance();
         } else {
             document.getElementById('login-form').style.display = 'block';
@@ -1386,9 +1386,9 @@
                 }[order.payment_type] || order.payment_type;
                 
                 html += `
-                    <div class="order-item" onclick="showOrderDetail('${order.order_no}')">
+                    <div class="order-item" onclick="prompt('订单号：', '${order.order_no}')">
                         <div class="order-header">
-                            <div class="order-no">${order.order_no}</div>
+                            <div class="order-no">${order.order_no.slice(0, 15)}${order.order_no.length > 15 ? '*' : ''}</div>
                             <div class="order-amount">¥${parseFloat(order.amount).toFixed(2)}</div>
                         </div>
                         <div class="order-details">
@@ -1423,11 +1423,6 @@
             if (!dateString) return '-';
             const date = new Date(dateString);
             return date.toLocaleString('zh-CN');
-        }
-        
-        function showOrderDetail(orderNo) {
-            alert(`订单详情：${orderNo}\n点击确定查看完整信息`);
-            // 这里可以扩展为显示详细订单信息的模态框
         }
         
         function toggleDropdown() {
