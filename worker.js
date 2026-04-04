@@ -473,7 +473,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -526,6 +526,10 @@ export default {
           if (not_trusted !== undefined) {
             updates.push('not_trusted = ?');
             values.push(not_trusted);
+          }
+          if (login_info !== undefined) {
+            updates.push('login_info = ?');
+            values.push(login_info);
           }
           
           if (updates.length === 0) {
