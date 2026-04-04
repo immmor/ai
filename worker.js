@@ -178,81 +178,6 @@ export default {
         }
       }
 
-      // ========== 批量更新链接接口 ==========
-      if (path === '/api/batch-update-links' && request.method === 'POST') {
-        try {
-          const params = await request.json();
-          const { usernames, v_link_clash, v_link_v2ray } = params;
-          
-          if (!usernames || !Array.isArray(usernames) || usernames.length === 0) {
-            return resJson({ code: 400, msg: '请提供至少一个用户名' }, 400);
-          }
-          
-          if (!v_link_clash && !v_link_v2ray) {
-            return resJson({ code: 400, msg: '请至少提供一个链接' }, 400);
-          }
-          
-          let updatedCount = 0;
-          
-          for (const username of usernames) {
-            const result = await DB
-              .prepare('UPDATE user SET v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
-              .bind(v_link_clash || '', v_link_v2ray || '', username)
-              .run();
-            
-            if (result.success && result.meta.changes > 0) {
-              updatedCount++;
-            }
-          }
-          
-          return resJson({
-            code: 200,
-            msg: `成功更新 ${updatedCount} 个用户的链接`,
-            data: { updated: updatedCount }
-          });
-        } catch (err) {
-          console.error('批量更新链接错误:', err);
-          return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
-        }
-      }
-
-      // ========== 更新用户链接接口（仅immmor和admin可操作） ==========
-      if (path === '/api/update-link' && request.method === 'POST') {
-        try {
-          const params = await request.json();
-          const { username, v_link_clash, v_link_v2ray } = params;
-          
-          if (!username) {
-            return resJson({ code: 400, msg: '请提供用户名' }, 400);
-          }
-          
-          if (!v_link_clash && !v_link_v2ray) {
-            return resJson({ code: 400, msg: '请至少提供一个链接' }, 400);
-          }
-          
-          const allowedUsers = ['immmor', 'admin'];
-          const currentUser = params.currentUser;
-          
-          if (!currentUser || !allowedUsers.includes(currentUser)) {
-            return resJson({ code: 403, msg: '无权限操作' }, 403);
-          }
-          
-          const result = await DB
-            .prepare('UPDATE user SET v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
-            .bind(v_link_clash || '', v_link_v2ray || '', username)
-            .run();
-          
-          if (result.success && result.meta.changes > 0) {
-            return resJson({ code: 200, msg: '链接更新成功' });
-          } else {
-            return resJson({ code: 404, msg: '用户不存在' }, 404);
-          }
-        } catch (err) {
-          console.error('更新链接错误:', err);
-          return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
-        }
-      }
-
       // ========== 登录接口（核心）→ 用户名密码登录 ==========
       if (path === '/api/login' && request.method === 'POST') {
         const params = await request.json();
@@ -373,8 +298,8 @@ export default {
           const vToken = generateVToken();
           
           const isYearly = duration === 365;
-          const vLinkClash = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?clash=3&extend=1' : (user.v_link_clash || 'https://lxlv9.no-mad-sub.one/link/Q8fwb1PCpjDpH1dK?clash=3&extend=1');
-          const vLinkV2ray = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?sub=3&extend=1' : (user.v_link_v2ray || 'https://lxlv9.no-mad-sub.one/link/Q8fwb1PCpjDpH1dK?sub=2&extend=1');
+          const vLinkClash = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?clash=3&extend=1' : (user.v_link_clash || 'https://9alh9.no-mad-sub.one/link/CE3VhuOL5JWxjurX?clash=3&extend=1');
+          const vLinkV2ray = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?sub=3&extend=1' : (user.v_link_v2ray || 'https://9alh9.no-mad-sub.one/link/CE3VhuOL5JWxjurX?sub=3&extend=1');
           
           const result = await DB
             .prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_token = ?, v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
