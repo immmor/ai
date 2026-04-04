@@ -674,7 +674,7 @@ export default {
           
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
             .bind(limit, offset)
             .all();
           
