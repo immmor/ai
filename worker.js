@@ -544,6 +544,88 @@ export default {
         }
       }
 
+      // ========== 修改用户完整信息接口 ==========
+      if (path === '/api/user/edit' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted } = params;
+          
+          if (!username) {
+            return resJson({ code: 400, msg: '缺少username参数' }, 400);
+          }
+          
+          const user = await DB
+            .prepare('SELECT rowid FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          
+          if (!user) {
+            return resJson({ code: 404, msg: '用户不存在' }, 404);
+          }
+          
+          const updates = [];
+          const values = [];
+          
+          if (password !== undefined && password !== null && password !== '') {
+            updates.push('password = ?');
+            values.push(password);
+          }
+          if (balance !== undefined && balance !== null) {
+            updates.push('balance = ?');
+            values.push(balance);
+          }
+          if (v_expire_date !== undefined) {
+            updates.push('v_expire_date = ?');
+            values.push(v_expire_date);
+          }
+          if (learn_vip_expire_date !== undefined) {
+            updates.push('learn_vip_expire_date = ?');
+            values.push(learn_vip_expire_date);
+          }
+          if (v_token !== undefined) {
+            updates.push('v_token = ?');
+            values.push(v_token);
+          }
+          if (invite_code !== undefined) {
+            updates.push('invite_code = ?');
+            values.push(invite_code);
+          }
+          if (v_link_clash !== undefined) {
+            updates.push('v_link_clash = ?');
+            values.push(v_link_clash);
+          }
+          if (v_link_v2ray !== undefined) {
+            updates.push('v_link_v2ray = ?');
+            values.push(v_link_v2ray);
+          }
+          if (not_trusted !== undefined) {
+            updates.push('not_trusted = ?');
+            values.push(not_trusted);
+          }
+          
+          if (updates.length === 0) {
+            return resJson({ code: 400, msg: '没有需要更新的字段' }, 400);
+          }
+          
+          values.push(username);
+          const sql = `UPDATE user SET ${updates.join(', ')} WHERE username = ?`;
+          
+          const result = await DB
+            .prepare(sql)
+            .bind(...values)
+            .run();
+          
+          if (result.success) {
+            return resJson({ code: 200, msg: '用户信息修改成功' });
+          } else {
+            return resJson({ code: 500, msg: '修改失败' }, 500);
+          }
+        } catch (err) {
+          console.error('User edit error:', err);
+          return resJson({ code: 500, msg: '修改失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 查询流量使用情况接口 ==========
       if (path === '/api/quota' && request.method === 'GET') {
         try {

@@ -861,33 +861,52 @@
 
     <!-- 用户编辑模态框 -->
     <div id="userModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <h3 id="userModalTitle">添加用户</h3>
+                <h3 id="userModalTitle">修改用户</h3>
                 <button class="close-btn" onclick="closeUserModal()">&times;</button>
             </div>
             <form id="userForm">
-                <input type="hidden" id="userId" name="userId">
-                <div class="form-group">
-                    <label for="userName">用户名</label>
-                    <input type="text" id="userName" name="userName" required>
+                <input type="hidden" id="editUsername" name="editUsername">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="userPassword">密码</label>
+                        <input type="text" id="userPassword" name="userPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="userBalance">余额</label>
+                        <input type="number" step="0.01" id="userBalance" name="userBalance">
+                    </div>
+                    <div class="form-group">
+                        <label for="userVExpireDate">VIP过期时间</label>
+                        <input type="date" id="userVExpireDate" name="userVExpireDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="userLearnVipExpireDate">Learn VIP过期</label>
+                        <input type="date" id="userLearnVipExpireDate" name="userLearnVipExpireDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="userVToken">v_token</label>
+                        <input type="text" id="userVToken" name="userVToken">
+                    </div>
+                    <div class="form-group">
+                        <label for="userInviteCode">邀请码</label>
+                        <input type="text" id="userInviteCode" name="userInviteCode">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="userVLinkClash">Clash链接</label>
+                        <input type="text" id="userVLinkClash" name="userVLinkClash">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="userVLinkV2ray">V2Ray链接</label>
+                        <input type="text" id="userVLinkV2ray" name="userVLinkV2ray">
+                    </div>
+                    <div class="form-group">
+                        <label for="userNotTrusted">不信任 (yes/否)</label>
+                        <input type="text" id="userNotTrusted" name="userNotTrusted" placeholder="留空或其他值表示正常">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="userEmail">邮箱</label>
-                    <input type="email" id="userEmail" name="userEmail" required>
-                </div>
-                <div class="form-group">
-                    <label for="userPassword">密码</label>
-                    <input type="password" id="userPassword" name="userPassword">
-                </div>
-                <div class="form-group">
-                    <label for="userRole">角色</label>
-                    <select id="userRole" name="userRole" required>
-                        <option value="user">普通用户</option>
-                        <option value="admin">管理员</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn">保存</button>
+                <button type="submit" class="btn" style="margin-top: 15px;">保存</button>
             </form>
         </div>
     </div>
@@ -1247,9 +1266,10 @@
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="prompt('Clash链接：', decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.v_link_clash || '')}" title="点击查看完整内容">${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="prompt('V2Ray链接：', decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.v_link_v2ray || '')}" title="点击查看完整内容">${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #667eea;" onclick="showTextarea(this.dataset.title, decodeURIComponent(this.dataset.val))" data-val="${encodeURIComponent(user.login_info || '')}" data-title="登录信息" title="点击查看完整内容">${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
-                    <td>${user.not_trusted === 'yes' ? '是' : '否'}</td>
+                    <td>${user.not_trusted}</td>
                     <td style="min-width: 200px;">
-                        <button class="action-btn edit-btn" onclick="editUserBalance('${user.username}', '${user.balance}')">修改余额</button>
+                        <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
+                        <button class="action-btn edit-btn" onclick="editUserBalance('${user.username}', '${user.balance}')">余额</button>
                         <button class="action-btn edit-btn" onclick="checkUserVIP('${user.username}')">VIP</button>
                     </td>
                 `;
@@ -1391,13 +1411,69 @@
             document.getElementById('userModal').style.display = 'none';
         }
 
-        // 编辑用户 - 目前仅支持查看
-        function editUser(id) {
-            const user = usersData.find(u => u.id === id);
-            if (user) {
-                alert(`用户信息：\nID: ${user.id}\n用户名: ${user.username}\n余额: ¥${user.balance || 0}\nVIP过期: ${user.learn_vip_expire_date || '无'}`);
+        // 修改用户 - 打开编辑弹窗
+        function editUser(username) {
+            const user = usersData.find(u => u.username === username);
+            if (!user) {
+                alert('用户不存在');
+                return;
             }
+            
+            document.getElementById('userModalTitle').textContent = '修改用户 - ' + username;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('userPassword').value = user.password || '';
+            document.getElementById('userBalance').value = user.balance || 0;
+            document.getElementById('userVExpireDate').value = user.v_expire_date ? user.v_expire_date.split(' ')[0] : '';
+            document.getElementById('userLearnVipExpireDate').value = user.learn_vip_expire_date ? user.learn_vip_expire_date.split(' ')[0] : '';
+            document.getElementById('userVToken').value = user.v_token || '';
+            document.getElementById('userInviteCode').value = user.invite_code || '';
+            document.getElementById('userVLinkClash').value = user.v_link_clash || '';
+            document.getElementById('userVLinkV2ray').value = user.v_link_v2ray || '';
+            document.getElementById('userNotTrusted').value = user.not_trusted || '';
+            
+            document.getElementById('userModal').style.display = 'block';
         }
+
+        // 用户编辑表单提交
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('editUsername').value;
+            const password = document.getElementById('userPassword').value;
+            const balance = document.getElementById('userBalance').value;
+            const v_expire_date = document.getElementById('userVExpireDate').value;
+            const learn_vip_expire_date = document.getElementById('userLearnVipExpireDate').value;
+            const v_token = document.getElementById('userVToken').value;
+            const invite_code = document.getElementById('userInviteCode').value;
+            const v_link_clash = document.getElementById('userVLinkClash').value;
+            const v_link_v2ray = document.getElementById('userVLinkV2ray').value;
+            const not_trusted = document.getElementById('userNotTrusted').value;
+            
+            try {
+                const result = await apiRequest('/api/user/edit', 'POST', {
+                    username: username,
+                    password: password,
+                    balance: balance !== '' ? parseFloat(balance) : null,
+                    v_expire_date: v_expire_date || null,
+                    learn_vip_expire_date: learn_vip_expire_date || null,
+                    v_token: v_token || '',
+                    invite_code: invite_code || '',
+                    v_link_clash: v_link_clash || '',
+                    v_link_v2ray: v_link_v2ray || '',
+                    not_trusted: not_trusted || ''
+                });
+                
+                if (result.code === 200) {
+                    alert('修改成功');
+                    closeUserModal();
+                    loadUsers();
+                } else {
+                    alert(result.msg || '修改失败');
+                }
+            } catch (error) {
+                alert('网络错误，请稍后重试');
+            }
+        });
 
         // 批量修改链接相关变量
         let selectedUserIds = [];
