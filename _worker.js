@@ -174,7 +174,11 @@ export default {
           
           const epayType = type === 'alipay' ? 'alipay' : 'wxpay';
           
-          const finalOrderNo = params.username ? `${params.username}_${order_no}` : order_no;
+          const finalOrderNo = params.username 
+            ? (params.username.includes('@') 
+                ? `${params.username.split('@')[0]}_${order_no}` 
+                : `${params.username}_${order_no}`)
+            : order_no;
           
           const paymentParams = {
             pid: pid,
