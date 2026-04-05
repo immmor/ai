@@ -781,8 +781,11 @@
             const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（取@前面的内容当订单号）
-            const orderNo = currentUser.username.split('@')[0] + '_' + Date.now();
+            // 生成订单号（使用用户名开头，如果是邮箱则取@之前的部分）
+            const usernamePart = currentUser.username.includes('@')
+                ? currentUser.username.split('@')[0]
+                : currentUser.username;
+            const orderNo = usernamePart + '_' + Date.now();
             
             // 创建遮罩层
             const overlay = document.createElement('div');
@@ -1099,7 +1102,7 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                order_no: currentUser.username.split('@')[0] + '_' + Date.now(),
+                                order_no: currentUser.username + '_' + Date.now(),
                                 username: currentUser.username,
                                 amount: parseFloat(rmbAmount),
                                 payment_type: 'usdt',
