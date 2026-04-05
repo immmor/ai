@@ -505,8 +505,8 @@
                 <option value="alipay">支付宝 (回调)</option>
                 <option value="wechat">微信支付 (回调)</option>
                 <option value="usdt">TRON USDT</option>
-                <option value="alipay_static">支付宝 (人工审核)</option>
                 <option value="wechat_static">微信支付 (人工审核)</option>
+                <option value="alipay_static">支付宝 (人工审核)</option>
             </select>
 
             <button class="glitch-btn" onclick="pay()"></button>
@@ -531,8 +531,8 @@
                 </select>
                 <select id="type-filter" class="filter-select" onchange="loadOrders()">
                     <option value="">全部类型</option>
-                    <option value="alipay">支付宝</option>
                     <option value="wxpay">微信支付</option>
+                    <option value="alipay">支付宝</option>
                 </select>
             </div>
             
@@ -567,7 +567,7 @@
         document.addEventListener('dblclick', function(e) {
             e.preventDefault();
         });
-        let mode = 'wechat'; // 默认选择微信支付
+        let mode = 'alipay'; // 默认选择支付宝支付
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
