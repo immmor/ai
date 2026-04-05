@@ -502,11 +502,11 @@
             </div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="alipay">支付宝 (回调)</option>
                 <option value="wechat">微信支付 (回调)</option>
+                <option value="alipay">支付宝 (回调)</option>
                 <option value="usdt">TRON USDT</option>
-                <option value="alipay_static">支付宝 (人工审核)</option>
                 <option value="wechat_static">微信支付 (人工审核)</option>
+                <option value="alipay_static">支付宝 (人工审核)</option>
             </select>
 
             <button class="glitch-btn" onclick="pay()"></button>
@@ -754,15 +754,12 @@
             }
             
             try {
-                const orderUsernamePart = currentUser.username.includes('@')
-                    ? currentUser.username.split('@')[0]
-                    : currentUser.username;
                 const payData = await (await fetch('https://immmor.com/api/pay/build-url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: mode,
-                        order_no: orderUsernamePart + '_' + Date.now(),
+                        order_no: Date.now().toString(),
                         amount: parseFloat(amount),
                         description: '以墨钱包充值',
                         username: currentUser.username
@@ -784,11 +781,8 @@
             const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（使用用户名开头，如果是邮箱则取@之前的部分）
-            const usernamePart = currentUser.username.includes('@')
-                ? currentUser.username.split('@')[0]
-                : currentUser.username;
-            const orderNo = usernamePart + '_' + Date.now();
+            // 生成订单号（使用用户名开头） 
+            const orderNo = currentUser.username + '_' + Date.now();
             
             // 创建遮罩层
             const overlay = document.createElement('div');
@@ -1101,14 +1095,11 @@
                     
                     // 立即创建订单记录到后端
                     try {
-                        const orderUsernamePart = currentUser.username.includes('@')
-                            ? currentUser.username.split('@')[0]
-                            : currentUser.username;
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                order_no: orderUsernamePart + '_' + Date.now(),
+                                order_no: currentUser.username + '_' + Date.now(),
                                 username: currentUser.username,
                                 amount: parseFloat(rmbAmount),
                                 payment_type: 'usdt',
