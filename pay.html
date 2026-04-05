@@ -1086,11 +1086,14 @@
                 console.log('创建USDT订单结果:', data);
                 
                 if (data.oid) {
+                    const orderNo = data.oid;
+                    
                     // 保存订单信息到本地存储
                     localStorage.setItem('usdtOrder_' + data.oid, JSON.stringify({
                         username: currentUser.username,
                         rmbAmount: rmbAmount,
-                        usdtAmount: usdtAmount
+                        usdtAmount: usdtAmount,
+                        order_no: orderNo
                     }));
                     
                     // 立即创建订单记录到后端
@@ -1099,7 +1102,7 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                order_no: currentUser.username + '_' + Date.now(),
+                                order_no: orderNo,
                                 username: currentUser.username,
                                 amount: parseFloat(rmbAmount),
                                 payment_type: 'usdt',
@@ -1111,7 +1114,7 @@
                         console.error('创建订单记录失败:', e);
                     }
                     
-                    showUSDTQRCode(data, usdtAmount, rmbAmount);
+                    showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
                 } else {
                     alert("创建USDT订单失败：" + (data.msg || '未知错误'));
                 }
@@ -1125,7 +1128,7 @@
             }
         }
         
-        function showUSDTQRCode(data, usdtAmount, rmbAmount) {
+        function showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo) {
             // 创建遮罩层
             const overlay = document.createElement('div');
             overlay.style.cssText = `
@@ -1177,8 +1180,8 @@
             const oidDiv = document.createElement('div');
             oidDiv.style.margin = '10px 0';
             oidDiv.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">订单ID</div>
-                <div style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all;">${data.oid}</div>
+                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">订单号</div>
+                <div style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all;">${orderNo}</div>
             `;
             
             // 收款地址
@@ -1273,8 +1276,8 @@
                     // 支付成功，调用后端充值接口
                     const orderInfo = localStorage.getItem('usdtOrder_' + orderId);
                     if (orderInfo) {
-                        const { username, rmbAmount } = JSON.parse(orderInfo);
-                        await confirmUSDTRecharge(orderId, username, rmbAmount);
+                        const { username, rmbAmount, order_no } = JSON.parse(orderInfo);
+                        await confirmUSDTRecharge(orderId, username, rmbAmount, order_no);
                     } else {
                         alert('支付成功！但无法找到订单信息，请联系客服');
                     }
@@ -1303,14 +1306,14 @@
         }
         
         // USDT支付成功后确认充值
-        async function confirmUSDTRecharge(orderId, username, rmbAmount) {
+        async function confirmUSDTRecharge(orderId, username, rmbAmount, orderNo) {
             try {
                 const response = await fetch('https://immmor.com/api/recharge/confirm', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         username: username,
-                        order_no: 'USDT_' + orderId,
+                        order_no: orderNo,
                         amount: parseFloat(rmbAmount),
                         payment_type: 'usdt'
                     })
