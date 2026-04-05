@@ -754,12 +754,15 @@
             }
             
             try {
+                const orderUsernamePart = currentUser.username.includes('@')
+                    ? currentUser.username.split('@')[0]
+                    : currentUser.username;
                 const payData = await (await fetch('https://immmor.com/api/pay/build-url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: mode,
-                        order_no: Date.now().toString(),
+                        order_no: orderUsernamePart + '_' + Date.now(),
                         amount: parseFloat(amount),
                         description: '以墨钱包充值',
                         username: currentUser.username
@@ -1098,11 +1101,14 @@
                     
                     // 立即创建订单记录到后端
                     try {
+                        const orderUsernamePart = currentUser.username.includes('@')
+                            ? currentUser.username.split('@')[0]
+                            : currentUser.username;
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                order_no: currentUser.username + '_' + Date.now(),
+                                order_no: orderUsernamePart + '_' + Date.now(),
                                 username: currentUser.username,
                                 amount: parseFloat(rmbAmount),
                                 payment_type: 'usdt',
