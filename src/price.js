@@ -456,3 +456,5 @@ function initPriceDelayed() {
 
 // 自动初始化
 initPriceDelayed();
+
+window.addEventListener('load', () => setTimeout(showPricePlanPopup, 500));
