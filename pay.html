@@ -737,18 +737,15 @@
                 amount = document.getElementById('amt').value;
             }
             if (!amount || amount <= 0) return alert('请输入有效金额');
-            if (amount < 10) return alert('自定义支付额度最低需10元');
             
             // 静态支付特殊处理
             if (mode === 'wechat_static' || mode === 'alipay_static') {
-                if (amount < 10) return alert('自定义支付额度最低需10元');
                 showStaticPayment(mode, amount);
                 return;
             }
             
             // USDT支付特殊处理
             if (mode === 'usdt') {
-                if (amount < 10) return alert('自定义支付额度最低需10元');
                 createUSDTOrder(amount);
                 return;
             }

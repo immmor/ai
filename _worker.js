@@ -184,7 +184,7 @@ export default {
             pid: pid,
             type: epayType,
             out_trade_no: finalOrderNo,
-            notify_url: 'https://immmor.com/api/pay/notify',
+            notify_url: `https://immmor.com/api/pay/notify?username=${encodeURIComponent(params.username || '')}`,
             return_url: 'https://immmor.com/pay',
             name: description,
             money: amount.toFixed(2),
@@ -257,10 +257,13 @@ export default {
           const trade_status = url.searchParams.get('trade_status');
           const money = url.searchParams.get('money');
           const sign = url.searchParams.get('sign');
+          const username = url.searchParams.get('username');
+          
+          if (!username) {
+            return new Response('fail', { status: 400 });
+          }
           
           if (trade_status === 'TRADE_SUCCESS') {
-            const username = order_no.split('_')[0];
-            
             // 更新用户余额
             const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
