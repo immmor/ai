@@ -1,6 +1,6 @@
-// 价格计划和会员相关功能
+// Price plan and membership features
 
-// 价格相关常量
+// Price constants
 const PRICE_MONTHLY = 10;
 const PRICE_YEARLY = 100;
 const SUPPORT_EMAIL = 'support@immmor.com';
@@ -15,7 +15,7 @@ function showPricePlanPopup() {
     popup.innerHTML = `
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">会员价格计划</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Membership Plans</h2>
                 <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             
@@ -23,83 +23,83 @@ function showPricePlanPopup() {
             <div class="grid md:grid-cols-2 gap-4 mb-6">
                 <!-- 月度计划 -->
                 <div class="border-2 border-gray-200 rounded-lg p-5 hover:border-blue-500 transition-colors">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">月度会员</h3>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Monthly Membership</h3>
                     <div class="flex items-baseline mb-4">
                         <span class="text-3xl font-bold text-gray-900">¥${PRICE_MONTHLY}</span>
-                        <span class="text-gray-500 ml-2">/月</span>
+                        <span class="text-gray-500 ml-2">/month</span>
                     </div>
                     <ul class="space-y-2 mb-6 text-sm text-gray-600">
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>无限能量恢复</span>
+                            <span>Unlimited energy recovery</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>无广告体验</span>
+                            <span>Ad-free experience</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>专属徽章</span>
+                            <span>Exclusive badge</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>优先支持</span>
+                            <span>Priority support</span>
                         </li>
                     </ul>
                     <button onclick="buyVipMonthly()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium">
-                        选择月度计划
+                        Select Monthly Plan
                     </button>
                 </div>
                 
                 <!-- 年度计划 -->
                 <div class="border-2 border-blue-500 rounded-lg p-5 shadow-lg bg-gradient-to-br from-blue-50 to-white">
                     <div class="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
-                        推荐
+                        Recommended
                     </div>
-                    <h3 class="text-lg font-semibold text-blue-600 mb-2">年度会员</h3>
+                    <h3 class="text-lg font-semibold text-blue-600 mb-2">Annual Membership</h3>
                     <div class="flex items-baseline mb-4">
                         <span class="text-3xl font-bold text-gray-900">¥${PRICE_YEARLY}</span>
-                        <span class="text-gray-500 ml-2">/年</span>
+                        <span class="text-gray-500 ml-2">/year</span>
                     </div>
                     <div class="text-green-600 text-sm font-medium mb-4">
                         <i class="fas fa-tag mr-1"></i>
-                        节省¥20（相当于¥8.3/月）
+                        Save ¥20 (¥8.3/month)
                     </div>
                     <ul class="space-y-2 mb-6 text-sm text-gray-600">
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>所有月度会员权益</span>
+                            <span>All monthly membership benefits</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>额外赠送7天</span>
+                            <span>Additional 7 days free</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>永久专属徽章</span>
+                            <span>Permanent exclusive badge</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-2"></i>
-                            <span>一对一学习咨询</span>
+                            <span>1-on-1 learning consultation</span>
                         </li>
                     </ul>
                     <button onclick="buyVipYearly()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors font-medium">
-                        选择年度计划
+                        Select Annual Plan
                     </button>
                 </div>
             </div>
             
             <!-- 支付方式 -->
             <div class="mb-6">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">支持的支付方式</h3>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Payment Methods</h3>
                 <div class="flex items-center space-x-4 text-sm text-gray-600">
                     <div class="flex items-center">
                         <i class="fab fa-alipay text-blue-600 mr-2 text-xl"></i>
-                        <span>支付宝</span>
+                        <span>Alipay</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fab fa-weixin text-green-600 mr-2 text-xl"></i>
-                        <span>微信支付</span>
+                        <span>WeChat Pay</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-wallet text-purple-600 mr-2 text-xl"></i>
@@ -111,10 +111,10 @@ function showPricePlanPopup() {
             <!-- 隐私政策和条款链接 -->
             <div class="border-t pt-4">
                 <p class="text-sm text-gray-600 mb-3">
-                    购买即表示您同意我们的
-                    <a href="javascript:showPrivacyPolicy()" class="text-blue-600 hover:underline">隐私政策</a>
-                    和
-                    <a href="javascript:showTermsOfService()" class="text-blue-600 hover:underline">服务条款</a>
+                    By purchasing, you agree to our
+                    <a href="javascript:showPrivacyPolicy()" class="text-blue-600 hover:underline">Privacy Policy</a>
+                    and
+                    <a href="javascript:showTermsOfService()" class="text-blue-600 hover:underline">Terms of Service</a>
                 </p>
             </div>
             
@@ -123,8 +123,8 @@ function showPricePlanPopup() {
                 <div class="flex items-start space-x-3">
                     <i class="fas fa-envelope text-gray-400 mt-1"></i>
                     <div>
-                        <p class="text-sm font-semibold text-gray-700 mb-1">需要帮助？</p>
-                        <p class="text-sm text-gray-600 mb-2">如有任何问题，请随时联系我们：</p>
+                        <p class="text-sm font-semibold text-gray-700 mb-1">Need Help?</p>
+                        <p class="text-sm text-gray-600 mb-2">If you have any questions, please contact us:</p>
                         <a href="mailto:${SUPPORT_EMAIL}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm">
                             <i class="fas fa-arrow-right mr-1"></i>
                             ${SUPPORT_EMAIL}
@@ -154,11 +154,11 @@ function buyVipMonthly() {
     const popup = document.createElement('div');
     popup.className = 'bg-white rounded-lg p-6 w-80';
     popup.innerHTML = `
-        <h3 class="text-lg font-bold mb-4">确认购买</h3>
-        <p class="text-gray-600 mb-4">您确定要花费 ¥${PRICE_MONTHLY} 购买30天会员吗？</p>
+        <h3 class="text-lg font-bold mb-4">Confirm Purchase</h3>
+        <p class="text-gray-600 mb-4">Are you sure you want to spend ¥${PRICE_MONTHLY} for 30 days of membership?</p>
         <div class="flex space-x-2">
-            <button onclick="confirmVipPurchase(${PRICE_MONTHLY}, 30, 'monthly')" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">确认</button>
-            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">取消</button>
+            <button onclick="confirmVipPurchase(${PRICE_MONTHLY}, 30, 'monthly')" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Confirm</button>
+            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">Cancel</button>
         </div>
     `;
     overlay.appendChild(popup);
@@ -173,12 +173,12 @@ function buyVipYearly() {
     const popup = document.createElement('div');
     popup.className = 'bg-white rounded-lg p-6 w-80';
     popup.innerHTML = `
-        <h3 class="text-lg font-bold mb-4">确认购买</h3>
-        <p class="text-gray-600 mb-4">您确定要花费 ¥${PRICE_YEARLY} 购买365天会员吗？</p>
-        <p class="text-green-600 text-sm mb-4"><i class="fas fa-star"></i> 额外赠送7天！</p>
+        <h3 class="text-lg font-bold mb-4">Confirm Purchase</h3>
+        <p class="text-gray-600 mb-4">Are you sure you want to spend ¥${PRICE_YEARLY} for 365 days of membership?</p>
+        <p class="text-green-600 text-sm mb-4"><i class="fas fa-star"></i> Additional 7 days free!</p>
         <div class="flex space-x-2">
-            <button onclick="confirmVipPurchase(${PRICE_YEARLY}, 365, 'yearly')" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">确认</button>
-            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">取消</button>
+            <button onclick="confirmVipPurchase(${PRICE_YEARLY}, 365, 'yearly')" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Confirm</button>
+            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">Cancel</button>
         </div>
     `;
     overlay.appendChild(popup);
@@ -189,14 +189,14 @@ function buyVipYearly() {
 async function confirmVipPurchase(amount, days, type) {
     // 检查用户是否已登录
     if (typeof isLoggedIn === 'undefined' || !isLoggedIn) {
-        showFeedback('请先登录后再购买会员', 'error');
+        showFeedback('Please login first before purchasing membership', 'error');
         return;
     }
     
     try {
         const username = localStorage.getItem('username');
         if (!username) {
-            showFeedback('用户信息获取失败', 'error');
+            showFeedback('Failed to get user information', 'error');
             return;
         }
         
@@ -223,7 +223,7 @@ async function confirmVipPurchase(amount, days, type) {
                 updateCachedBalance(parseFloat(result.data.balance));
             }
             
-            showFeedback(`会员购买成功！VIP有效期至${result.data.vip_expire_date}，剩余${result.data.remaining_days}天`, 'success');
+            showFeedback(`Membership purchase successful! VIP expires on ${result.data.vip_expire_date}, ${result.data.remaining_days} days remaining`, 'success');
             
             // 关闭所有弹窗
             const overlays = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-50');
@@ -233,12 +233,12 @@ async function confirmVipPurchase(amount, days, type) {
                 }
             });
         } else {
-            throw new Error(result.msg || '购买失败');
+            throw new Error(result.msg || 'Purchase failed');
         }
         
     } catch (error) {
-        console.error('购买失败:', error);
-        showFeedback('购买失败: ' + error.message, 'error');
+        console.error('Purchase failed:', error);
+        showFeedback('Purchase failed: ' + error.message, 'error');
     }
 }
 
@@ -252,56 +252,56 @@ function showPrivacyPolicy() {
     popup.innerHTML = `
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">隐私政策</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Privacy Policy</h2>
                 <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             
             <div class="prose max-w-none text-sm text-gray-700 space-y-4">
-                <p><strong>生效日期：</strong>2024年1月1日</p>
+                <p><strong>Effective Date:</strong> January 1, 2024</p>
                 
-                <p>欢迎使用我们的服务。我们深知您的隐私对您的重要性，本隐私政策旨在向您说明我们如何收集、使用、保护您的个人信息。</p>
+                <p>Welcome to our service. We understand the importance of your privacy, and this Privacy Policy is designed to explain how we collect, use, and protect your personal information.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">1. 我们收集的信息</h3>
+                <h3 class="font-semibold text-gray-800 mt-4">1. Information We Collect</h3>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>账户信息：用户名、邮箱地址</li>
-                    <li>学习数据：学习进度、答题记录、经验值</li>
-                    <li>设备信息：设备类型、操作系统、浏览器类型</li>
-                    <li>使用数据：访问时间、页面浏览记录</li>
+                    <li>Account Information: username, email address</li>
+                    <li>Learning Data: learning progress, answer records, experience points</li>
+                    <li>Device Information: device type, operating system, browser type</li>
+                    <li>Usage Data: access time, page view history</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">2. 信息使用方式</h3>
+                <h3 class="font-semibold text-gray-800 mt-4">2. How We Use Your Information</h3>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>提供和维护我们的服务</li>
-                    <li>改进和优化用户体验</li>
-                    <li>发送重要通知（如服务变更）</li>
-                    <li>保护我们的服务安全</li>
+                    <li>To provide and maintain our service</li>
+                    <li>To improve and optimize user experience</li>
+                    <li>To send important notifications (e.g., service changes)</li>
+                    <li>To protect the security of our service</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">3. 信息保护</h3>
-                <p>我们采取合理的技术和管理措施保护您的个人信息，包括加密技术、访问控制等。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">3. Information Protection</h3>
+                <p>We implement reasonable technical and management measures to protect your personal information, including encryption and access control.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">4. 信息共享</h3>
-                <p>我们不会出售您的个人信息。在以下情况下可能会共享信息：</p>
+                <h3 class="font-semibold text-gray-800 mt-4">4. Information Sharing</h3>
+                <p>We do not sell your personal information. Information may be shared in the following cases:</p>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>获得您的明确同意</li>
-                    <li>遵守法律法规要求</li>
-                    <li>保护我们的合法权利</li>
+                    <li>With your explicit consent</li>
+                    <li>To comply with legal requirements</li>
+                    <li>To protect our legitimate rights</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">5. 您的权利</h3>
-                <p>您可以访问、更正、删除您的个人信息，也可以撤回同意。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">5. Your Rights</h3>
+                <p>You have the right to access, correct, delete your personal information, or withdraw consent.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">6. 隐私政策更新</h3>
-                <p>我们可能会不时更新本隐私政策。更新后将在页面上发布新版本。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">6. Privacy Policy Updates</h3>
+                <p>We may update this Privacy Policy from time to time. The new version will be posted on the website.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">7. 联系我们</h3>
-                <p>如对本隐私政策有任何疑问，请联系我们：</p>
-                <p class="text-blue-600 font-medium">邮箱：${SUPPORT_EMAIL}</p>
+                <h3 class="font-semibold text-gray-800 mt-4">7. Contact Us</h3>
+                <p>If you have any questions about this Privacy Policy, please contact us:</p>
+                <p class="text-blue-600 font-medium">Email: ${SUPPORT_EMAIL}</p>
             </div>
             
             <div class="mt-6 pt-4 border-t text-center">
                 <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                    关闭
+                    Close
                 </button>
             </div>
         </div>
@@ -321,64 +321,64 @@ function showTermsOfService() {
     popup.innerHTML = `
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">服务条款</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Terms of Service</h2>
                 <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             
             <div class="prose max-w-none text-sm text-gray-700 space-y-4">
-                <p><strong>生效日期：</strong>2024年1月1日</p>
+                <p><strong>Effective Date:</strong> January 1, 2024</p>
                 
-                <p>感谢您使用我们的服务。使用我们的服务即表示您同意遵守以下服务条款。</p>
+                <p>Thank you for using our service. By using our service, you agree to the following Terms of Service.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">1. 服务说明</h3>
-                <p>我们提供在线学习平台，包括题库、学习工具等功能。服务可能会不定期更新和改进。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">1. Service Description</h3>
+                <p>We provide an online learning platform, including question banks, learning tools, and other features. The service may be updated and improved from time to time.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">2. 账户注册</h3>
+                <h3 class="font-semibold text-gray-800 mt-4">2. Account Registration</h3>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>您必须提供真实、准确的注册信息</li>
-                    <li>您有责任维护账户安全</li>
-                    <li>您对账户下的所有活动负责</li>
+                    <li>You must provide true and accurate registration information</li>
+                    <li>You are responsible for maintaining account security</li>
+                    <li>You are responsible for all activities under your account</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">3. 使用规则</h3>
-                <p>您同意：</p>
+                <h3 class="font-semibold text-gray-800 mt-4">3. Use Rules</h3>
+                <p>You agree to:</p>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>遵守所有适用的法律法规</li>
-                    <li>不用于任何非法或未经授权的目的</li>
-                    <li>不干扰服务的正常运行</li>
-                    <li>不尝试获取未授权的访问权限</li>
+                    <li>Comply with all applicable laws and regulations</li>
+                    <li>Not use the service for any illegal or unauthorized purpose</li>
+                    <li>Not interfere with the normal operation of the service</li>
+                    <li>Not attempt to obtain unauthorized access</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">4. 知识产权</h3>
-                <p>服务中的所有内容（包括但不限于题库、代码、文档）的知识产权归我们所有。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">4. Intellectual Property</h3>
+                <p>All content in the service (including but not limited to question banks, code, documentation) is owned by us.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">5. 会员服务</h3>
+                <h3 class="font-semibold text-gray-800 mt-4">5. Membership Service</h3>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li>会员服务自购买之日起生效</li>
-                    <li>会员权益仅限个人使用</li>
-                    <li>我们保留调整会员权益的权利</li>
+                    <li>Membership service takes effect from the date of purchase</li>
+                    <li>Membership benefits are for personal use only</li>
+                    <li>We reserve the right to adjust membership benefits</li>
                 </ul>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">6. 免责声明</h3>
-                <p>服务按"现状"提供，我们不对服务的可用性、准确性、及时性作任何保证。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">6. Disclaimer</h3>
+                <p>The service is provided "as is". We make no warranties regarding the availability, accuracy, or timeliness of the service.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">7. 责任限制</h3>
-                <p>在法律允许的最大范围内，我们对任何间接、附带或 consequential 损失不承担责任。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">7. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by law, we are not liable for any indirect, incidental, or consequential damages.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">8. 条款修改</h3>
-                <p>我们保留随时修改本服务条款的权利。修改后将继续在页面上发布新版本。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">8. Terms Modifications</h3>
+                <p>We reserve the right to modify these Terms of Service at any time. The new version will be posted on the website.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">9. 适用法律</h3>
-                <p>本条款受中华人民共和国法律管辖。</p>
+                <h3 class="font-semibold text-gray-800 mt-4">9. Governing Law</h3>
+                <p>These terms are governed by the laws of the People's Republic of China.</p>
                 
-                <h3 class="font-semibold text-gray-800 mt-4">10. 联系我们</h3>
-                <p>如对本服务条款有任何疑问，请联系我们：</p>
-                <p class="text-blue-600 font-medium">邮箱：${SUPPORT_EMAIL}</p>
+                <h3 class="font-semibold text-gray-800 mt-4">10. Contact Us</h3>
+                <p>If you have any questions about these Terms of Service, please contact us:</p>
+                <p class="text-blue-600 font-medium">Email: ${SUPPORT_EMAIL}</p>
             </div>
             
             <div class="mt-6 pt-4 border-t text-center">
                 <button onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                    关闭
+                    Close
                 </button>
             </div>
         </div>
@@ -393,14 +393,14 @@ function initPrice() {
     // 检查能量显示元素是否存在
     const energyDisplay = document.getElementById('energy-display');
     if (!energyDisplay) {
-        console.error('能量显示元素未找到');
+        console.error('Energy display element not found');
         return;
     }
     
     // 创建dollar按钮容器
     const dollarContainer = document.createElement('div');
     dollarContainer.className = 'relative cursor-pointer w-5 px-1.5 py-0.5 rounded-md overflow-hidden flex items-center justify-center';
-    dollarContainer.title = '查看价格计划';
+    dollarContainer.title = 'View Price Plans';
     dollarContainer.innerHTML = `
         <div class="absolute inset-0 bg-gray-200"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 opacity-70"></div>
@@ -450,11 +450,12 @@ function initPriceDelayed() {
     // 5秒超时
     setTimeout(() => {
         clearInterval(checkInterval);
-        console.warn('等待能量显示元素超时');
+        console.warn('Waiting for energy display element timed out');
     }, 5000);
 }
 
 // 自动初始化
 initPriceDelayed();
 
+// Automatically show price plan popup after page loads
 window.addEventListener('load', () => setTimeout(showPricePlanPopup, 500));
