@@ -353,14 +353,18 @@ export default {
           const checkoutResult = await response.json();
           
           if (response.ok && checkoutResult.id) {
-            await supabaseFetch('orders', createSupabaseConfig('POST', {
-              order_no: order_no,
-              username: username,
-              amount: amountCny,
-              payment_type: 'credit_card',
-              status: 'pending',
-              description: '信用卡支付'
-            }));
+            try {
+              await supabaseFetch('orders', createSupabaseConfig('POST', {
+                order_no: order_no,
+                username: username,
+                amount: amountCny,
+                payment_type: 'credit_card',
+                status: 'pending',
+                description: '信用卡支付'
+              }));
+            } catch (supabaseError) {
+              console.error('Supabase订单记录失败:', supabaseError);
+            }
             
             return jsonResponse({
               code: 200,
