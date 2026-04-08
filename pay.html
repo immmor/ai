@@ -933,12 +933,27 @@
             `;
             openAppBtn.onclick = () => {
                 let appScheme = '';
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                
                 if (paymentType === 'alipay_static') {
-                    appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                    if (isAndroid) {
+                        appScheme = 'alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                    } else {
+                        appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                    }
+                    window.location.href = appScheme;
                 } else if (paymentType === 'wechat_static') {
-                    appScheme = 'weixin://scanQRCode?orgDebts=' + encodeURIComponent(orderNo);
+                    if (isAndroid) {
+                        try {
+                            window.location.href = 'weixin://scanQRCode';
+                        } catch(e) {
+                            alert('请手动打开微信，点击右上角"+" -> 扫一扫');
+                        }
+                    } else {
+                        appScheme = 'weixin://scanQRCode?orgDebts=' + encodeURIComponent(orderNo);
+                        window.location.href = appScheme;
+                    }
                 }
-                window.location.href = appScheme;
             };
             
             // 确认充值按钮
@@ -966,8 +981,8 @@
             };
             
             // 组装容器
-            buttonContainer.appendChild(openAppBtn);
             buttonContainer.appendChild(confirmBtn);
+            buttonContainer.appendChild(openAppBtn);
             buttonContainer.appendChild(closeBtn);
             
             // 启动计时器
