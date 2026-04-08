@@ -812,8 +812,7 @@
             
             // 信用卡支付特殊处理
             if (mode === 'credit_card') {
-                if (amount < 10) return alert('自定义支付额度最低需10元');
-                createCreditCardOrder(amount);
+                createCreditCardOrder();
                 return;
             }
             
@@ -1193,7 +1192,7 @@
         }
         
         // 信用卡支付功能
-        async function createCreditCardOrder(amount) {
+        async function createCreditCardOrder() {
             const orderNo = currentUser.username + '_' + Date.now();
             
             try {
@@ -1201,7 +1200,6 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        amount: parseFloat(amount),
                         username: currentUser.username,
                         order_no: orderNo
                     })
@@ -1212,7 +1210,7 @@
                 if (data.code === 200) {
                     localStorage.setItem('creditCardOrder_' + orderNo, JSON.stringify({
                         username: currentUser.username,
-                        amount: amount,
+                        amount: 140,
                         order_no: orderNo
                     }));
                     

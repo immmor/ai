@@ -307,9 +307,9 @@ export default {
       if (url.pathname === '/api/pay/creem-checkout' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { amount, username, order_no } = params;
+          const { username, order_no } = params;
           
-          if (!amount || !username || !order_no) {
+          if (!username || !order_no) {
             return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
           }
           
@@ -317,19 +317,27 @@ export default {
           const creemBaseUrl = 'https://test-api.creem.io/v1/checkouts';
           
           if (!creemApiKey) {
-            return jsonResponse({ code: 500, msg: '支付服务未配置' }, 500);
+            return jsonResponse({ code: 500, msg: '支付服务未配置，请配置 CREEM_API_KEY 环境变量' }, 500);
           }
           
           const product_id = env.CREEM_PRODUCT_ID || 'prod_26bLueeFDoGSSi3FuW4xwi';
           
+          const CNY_TO_USD_RATE = 7.2;
+          const amountCny = 140;
+          const amountUsd = amountCny / CNY_TO_USD_RATE;
+          const amountInCents = Math.round(amountUsd * 100);
+          
           const checkoutData = {
             product_id: product_id,
+            amount: amountInCents,
+            currency: 'usd',
             success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`,
             cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`,
             metadata: {
               order_no: order_no,
               username: username,
-              amount: amount
+              amount: amountCny,
+              amount_usd: amountUsd
             }
           };
           
@@ -393,7 +401,7 @@ export default {
             
             if (creemApiKey) {
               try {
-                const checkoutResponse = await fetch(`https://api.creem.io/v1/checkouts/${checkout_id}`, {
+                const checkoutResponse = await fetch(`https://test-api.creem.io/v1/checkouts/${checkout_id}`, {
                   method: 'GET',
                   headers: {
                     'x-api-key': creemApiKey,
