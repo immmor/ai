@@ -181,7 +181,7 @@
         }
 
         .orders-list {
-            max-height: 400px;
+            height: 300px;
             overflow-y: auto;
         }
 
@@ -376,9 +376,9 @@
         </div>
         <div class="content">
             <div class="form-group">
-                <input type="number" id="custom-amount" placeholder="Enter amount (USD)" min="1" step="1">
+                <input type="number" id="custom-amount" placeholder="Enter amount (USD, min $20)" min="20" step="1">
             </div>
-            <button class="pay-btn" onclick="pay()">Pay with Credit Card</button>
+            <button class="pay-btn" onclick="pay()">Pay with Credit Card ($20 minimum)</button>
         </div>
     </div>
 
@@ -458,7 +458,7 @@
         }
 
         try {
-            const response = await fetch('https://immmor.com/api/user/login', {
+            const response = await fetch('https://immmor.com/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -534,7 +534,7 @@
         if (!currentUser) return;
 
         try {
-            const response = await fetch(`https://immmor.com/api/user/balance?username=${currentUser.username}`);
+            const response = await fetch(`https://immmor.com/api/balance?username=${currentUser.username}`);
             const data = await response.json();
 
             if (data.success) {
@@ -554,8 +554,8 @@
         const amountInput = document.getElementById('custom-amount').value;
         const amount = parseFloat(amountInput);
 
-        if (!amount || amount < 1) {
-            alert('Please enter a valid amount (minimum $1)');
+        if (!amount || amount < 20) {
+            alert('Minimum recharge amount is $20');
             return;
         }
 
