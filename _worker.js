@@ -314,7 +314,7 @@ export default {
           }
           
           const creemApiKey = env.CREEM_API_KEY;
-          const creemBaseUrl = 'https://test-api.creem.io/v1/checkouts';
+          const creemBaseUrl = 'https://api.creem.io/v1/checkouts';
           
           if (!creemApiKey) {
             return jsonResponse({ code: 500, msg: '支付服务未配置，请配置 CREEM_API_KEY 环境变量' }, 500);
