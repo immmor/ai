@@ -325,12 +325,7 @@ export default {
           const checkoutData = {
             product_id: product_id,
             success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`,
-            cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`,
-            metadata: {
-              order_no: order_no,
-              username: username,
-              amount: 140
-            }
+            cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`
           };
           
           const response = await fetch(creemBaseUrl, {
@@ -342,7 +337,9 @@ export default {
             body: JSON.stringify(checkoutData)
           });
           
+          console.log('Creem.io response status:', response.status);
           const checkoutResult = await response.json();
+          console.log('Creem.io response:', checkoutResult);
           
           if (response.ok && checkoutResult.id) {
             try {
