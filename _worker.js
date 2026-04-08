@@ -320,7 +320,7 @@ export default {
             return jsonResponse({ code: 500, msg: '支付服务未配置，请配置 CREEM_API_KEY 环境变量' }, 500);
           }
           
-          const product_id = env.CREEM_PRODUCT_ID || 'prod_26bLueeFDoGSSi3FuW4xwi';
+          const product_id = env.CREEM_PRODUCT_ID || 'prod_6SdsEpr0Bv5d3cyLUdcU6c';
           
           const checkoutData = {
             product_id: product_id,
