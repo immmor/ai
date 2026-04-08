@@ -937,9 +937,9 @@
                 
                 if (paymentType === 'alipay_static') {
                     if (isAndroid) {
-                        appScheme = 'alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                        appScheme = 'alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/';
                     } else {
-                        appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                        appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/';
                     }
                     window.location.href = appScheme;
                 } else if (paymentType === 'wechat_static') {
