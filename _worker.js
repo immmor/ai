@@ -358,7 +358,7 @@ export default {
               code: 200,
               msg: '支付链接创建成功',
               data: {
-                checkout_url: checkoutResult.url,
+                checkout_url: checkoutResult.checkout_url,
                 checkout_id: checkoutResult.id,
                 order_no: order_no
               }
@@ -380,35 +380,58 @@ export default {
       // 路由匹配：/api/pay/creem-notify creem.io支付通知接口
       if (url.pathname === '/api/pay/creem-notify' && request.method === 'GET') {
         try {
+          const checkout_id = url.searchParams.get('checkout_id');
           const order_no = url.searchParams.get('order_no');
           const username = url.searchParams.get('username');
-          const status = url.searchParams.get('status');
           
-          if (!order_no || !username) {
+          if (!checkout_id && !order_no) {
             return new Response('fail', { status: 400 });
           }
           
-          if (status === 'complete' || status === 'paid') {
-            const orderData = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
+          if (checkout_id) {
+            const creemApiKey = env.CREEM_API_KEY;
             
-            if (orderData && orderData.length > 0) {
-              const amount = orderData[0].amount;
-              
-              await env.DB
-                .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-                .bind(parseFloat(amount), username)
-                .run();
-              
-              await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                status: 'paid',
-                paid_at: new Date().toISOString()
-              }));
-              
-              return new Response('success', { status: 200 });
+            if (creemApiKey) {
+              try {
+                const checkoutResponse = await fetch(`https://api.creem.io/v1/checkouts/${checkout_id}`, {
+                  method: 'GET',
+                  headers: {
+                    'x-api-key': creemApiKey,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                
+                if (checkoutResponse.ok) {
+                  const checkoutData = await checkoutResponse.json();
+                  
+                  if (checkoutData.status === 'complete' || checkoutData.status === 'paid') {
+                    if (!order_no) {
+                      order_no = checkoutData.metadata?.order_no;
+                    }
+                    if (!username) {
+                      username = checkoutData.metadata?.username;
+                    }
+                    
+                    if (order_no && username) {
+                      await env.DB
+                        .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+                        .bind(parseFloat(checkoutData.metadata?.amount || 0), username)
+                        .run();
+                      
+                      await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                        status: 'paid',
+                        paid_at: new Date().toISOString()
+                      }));
+                    }
+                  }
+                }
+              } catch (err) {
+                console.error('Creem.io检查支付状态失败:', err);
+              }
             }
           }
           
-          return new Response('fail', { status: 200 });
+          return new Response('success', { status: 200 });
         } catch (err) {
           console.error('Creem.io通知处理错误:', err);
           return new Response('fail', { status: 500 });
