@@ -846,6 +846,40 @@
             // 生成订单号（使用用户名开头） 
             const orderNo = currentUser.username + '_' + Date.now();
             
+            // 检测移动设备并尝试跳转App
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // 移动端尝试跳转对应App
+                let appScheme = '';
+                
+                if (paymentType === 'alipay_static') {
+                    // 支付宝扫一扫协议
+                    appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/' + encodeURIComponent(orderNo);
+                } else if (paymentType === 'wechat_static') {
+                    // 微信扫一扫协议
+                    appScheme = 'weixin://scanQRCode?orgDebts=' + encodeURIComponent(orderNo);
+                }
+                
+                // 尝试跳转App
+                window.location.href = appScheme;
+                
+                // 延迟2秒后如果还在页面，显示二维码作为备选
+                setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        showStaticQRCode(paymentName, imagePath, orderNo, amount, paymentType);
+                    }
+                }, 2000);
+                
+                return;
+            }
+            
+            // PC端直接显示二维码
+            showStaticQRCode(paymentName, imagePath, orderNo, amount, paymentType);
+        }
+        
+        // 显示静态支付二维码
+        function showStaticQRCode(paymentName, imagePath, orderNo, amount, paymentType) {
             // 创建遮罩层
             const overlay = document.createElement('div');
             overlay.style.cssText = `
