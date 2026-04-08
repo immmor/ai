@@ -303,6 +303,118 @@ export default {
         }
       }
 
+      // 路由匹配：/api/pay/creem-checkout creem.io信用卡支付接口
+      if (url.pathname === '/api/pay/creem-checkout' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { amount, username, order_no } = params;
+          
+          if (!amount || !username || !order_no) {
+            return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
+          }
+          
+          const creemApiKey = env.CREEM_API_KEY;
+          const creemBaseUrl = 'https://test-api.creem.io/v1/checkouts';
+          
+          if (!creemApiKey) {
+            return jsonResponse({ code: 500, msg: '支付服务未配置' }, 500);
+          }
+          
+          const product_id = env.CREEM_PRODUCT_ID || 'prod_26bLueeFDoGSSi3FuW4xwi';
+          
+          const checkoutData = {
+            product_id: product_id,
+            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`,
+            cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`,
+            metadata: {
+              order_no: order_no,
+              username: username,
+              amount: amount
+            }
+          };
+          
+          const response = await fetch(creemBaseUrl, {
+            method: 'POST',
+            headers: {
+              'x-api-key': creemApiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(checkoutData)
+          });
+          
+          const checkoutResult = await response.json();
+          
+          if (response.ok && checkoutResult.id) {
+            await supabaseFetch('orders', createSupabaseConfig('POST', {
+              order_no: order_no,
+              username: username,
+              amount: amount,
+              payment_type: 'credit_card',
+              status: 'pending',
+              description: '信用卡支付'
+            }));
+            
+            return jsonResponse({
+              code: 200,
+              msg: '支付链接创建成功',
+              data: {
+                checkout_url: checkoutResult.url,
+                checkout_id: checkoutResult.id,
+                order_no: order_no
+              }
+            });
+          } else {
+            console.error('Creem.io创建支付失败:', checkoutResult);
+            return jsonResponse({ 
+              code: 500, 
+              msg: '支付链接创建失败', 
+              error: checkoutResult.error || '未知错误' 
+            }, 500);
+          }
+        } catch (err) {
+          console.error('Creem.io支付接口错误:', err);
+          return jsonResponse({ code: 500, msg: '支付接口错误', error: err.message }, 500);
+        }
+      }
+
+      // 路由匹配：/api/pay/creem-notify creem.io支付通知接口
+      if (url.pathname === '/api/pay/creem-notify' && request.method === 'GET') {
+        try {
+          const order_no = url.searchParams.get('order_no');
+          const username = url.searchParams.get('username');
+          const status = url.searchParams.get('status');
+          
+          if (!order_no || !username) {
+            return new Response('fail', { status: 400 });
+          }
+          
+          if (status === 'complete' || status === 'paid') {
+            const orderData = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
+            
+            if (orderData && orderData.length > 0) {
+              const amount = orderData[0].amount;
+              
+              await env.DB
+                .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+                .bind(parseFloat(amount), username)
+                .run();
+              
+              await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                status: 'paid',
+                paid_at: new Date().toISOString()
+              }));
+              
+              return new Response('success', { status: 200 });
+            }
+          }
+          
+          return new Response('fail', { status: 200 });
+        } catch (err) {
+          console.error('Creem.io通知处理错误:', err);
+          return new Response('fail', { status: 500 });
+        }
+      }
+
       // 路由匹配：/api/recharge 充值接口
       if (url.pathname === '/api/recharge' && request.method === 'POST') {
         try {
