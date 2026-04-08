@@ -324,8 +324,7 @@ export default {
           
           const checkoutData = {
             product_id: product_id,
-            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`,
-            cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`
+            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`
           };
           
           const response = await fetch(creemBaseUrl, {
@@ -366,10 +365,13 @@ export default {
             });
           } else {
             console.error('Creem.io创建支付失败:', checkoutResult);
+            console.error('Creem.io response status:', response.status);
+            console.error('Checkout data sent:', checkoutData);
             return jsonResponse({ 
               code: 500, 
               msg: '支付链接创建失败', 
-              error: checkoutResult.error || '未知错误' 
+              error: checkoutResult.error || '未知错误',
+              details: checkoutResult 
             }, 500);
           }
         } catch (err) {
