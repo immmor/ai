@@ -384,60 +384,65 @@ export default {
       if (url.pathname === '/api/pay/creem-notify' && request.method === 'GET') {
         try {
           const checkout_id = url.searchParams.get('checkout_id');
+          const order_id = url.searchParams.get('order_id');
           let order_no = url.searchParams.get('order_no');
           let username = url.searchParams.get('username');
           
-          if (!checkout_id && !order_no) {
-            return new Response('fail', { status: 400 });
-          }
+          const creemApiKey = env.CREEM_API_KEY;
           
-          if (checkout_id) {
-            const creemApiKey = env.CREEM_API_KEY;
-            
-            if (creemApiKey) {
-              try {
-                const checkoutResponse = await fetch(`https://test-api.creem.io/v1/checkouts/${checkout_id}`, {
-                  method: 'GET',
-                  headers: {
-                    'x-api-key': creemApiKey,
-                    'Content-Type': 'application/json'
-                  }
-                });
+          if (creemApiKey && checkout_id) {
+            try {
+              const checkoutResponse = await fetch(`https://test-api.creem.io/v1/checkouts/${checkout_id}`, {
+                method: 'GET',
+                headers: {
+                  'x-api-key': creemApiKey,
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (checkoutResponse.ok) {
+                const checkoutData = await checkoutResponse.json();
+                console.log('Creem.io checkout status:', checkoutData.status);
                 
-                if (checkoutResponse.ok) {
-                  const checkoutData = await checkoutResponse.json();
+                if (checkoutData.status === 'complete') {
+                  if (!order_no && checkoutData.metadata?.order_no) {
+                    order_no = checkoutData.metadata.order_no;
+                  }
+                  if (!username && checkoutData.metadata?.username) {
+                    username = checkoutData.metadata.username;
+                  }
                   
-                  if (checkoutData.status === 'complete' || checkoutData.status === 'paid') {
-                    if (!order_no) {
-                      order_no = checkoutData.metadata?.order_no;
-                    }
-                    if (!username) {
-                      username = checkoutData.metadata?.username;
-                    }
+                  if (order_no && username) {
+                    const amountCny = checkoutData.metadata?.amount || 140;
                     
-                    if (order_no && username) {
-                      await env.DB
-                        .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-                        .bind(parseFloat(checkoutData.metadata?.amount || 0), username)
-                        .run();
-                      
+                    await env.DB
+                      .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+                      .bind(parseFloat(amountCny), username)
+                      .run();
+                    
+                    console.log(`Balance updated for ${username}: +${amountCny}`);
+                    
+                    try {
                       await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
                         status: 'paid',
-                        paid_at: new Date().toISOString()
+                        paid_at: new Date().toISOString(),
+                        trade_no: order_id || checkout_id
                       }));
+                    } catch (supabaseError) {
+                      console.error('Supabase订单更新失败:', supabaseError);
                     }
                   }
                 }
-              } catch (err) {
-                console.error('Creem.io检查支付状态失败:', err);
               }
+            } catch (err) {
+              console.error('Creem.io检查支付状态失败:', err);
             }
           }
           
-          return new Response('success', { status: 200 });
+          return Response.redirect('https://immmor.com/pay', 302);
         } catch (err) {
           console.error('Creem.io通知处理错误:', err);
-          return new Response('fail', { status: 500 });
+          return Response.redirect('https://immmor.com/pay', 302);
         }
       }
 
