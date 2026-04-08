@@ -683,32 +683,59 @@
             mode = m;
             
             if (m === 'credit_card') {
-                selectedAmount = null;
-                document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+                selectedAmount = 140;
+                document.querySelectorAll('.amount-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.display = 'none';
+                });
                 
                 const customBtn = document.getElementById('custom-amount-btn');
                 if (customBtn) {
-                    customBtn.outerHTML = '<input type="number" class="custom-input" id="amt" value="140" min="0.01" step="0.01">';
-                    
-                    document.getElementById('amt').focus();
-                    
-                    const amtInput = document.getElementById('amt');
-                    amtInput.addEventListener('blur', function() {
-                        if (!this.value) {
-                            restoreCustomButton();
-                        }
-                    });
-                    
-                    amtInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            this.blur();
-                        }
-                    });
+                    customBtn.style.display = 'none';
+                }
+                
+                const amountGrid = document.querySelector('.amount-grid');
+                if (amountGrid) {
+                    const creditCardInfo = document.createElement('div');
+                    creditCardInfo.id = 'credit-card-info';
+                    creditCardInfo.style.cssText = `
+                        grid-column: 1 / -1;
+                        text-align: center;
+                        padding: 15px;
+                        background: rgba(255, 0, 255, 0.1);
+                        border: 2px solid var(--neon-pink);
+                        border-radius: 5px;
+                        margin-bottom: 25px;
+                    `;
+                    creditCardInfo.innerHTML = `
+                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 5px;">信用卡支付固定金额</div>
+                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
+                        <div style="color: #999; font-size: 12px; margin-top: 5px;">(约20美元)</div>
+                    `;
+                    amountGrid.appendChild(creditCardInfo);
+                }
+            } else {
+                document.querySelectorAll('.amount-btn').forEach(btn => {
+                    btn.style.display = 'block';
+                });
+                
+                const customBtn = document.getElementById('custom-amount-btn');
+                if (customBtn) {
+                    customBtn.style.display = 'block';
+                }
+                
+                const creditCardInfo = document.getElementById('credit-card-info');
+                if (creditCardInfo) {
+                    creditCardInfo.remove();
                 }
             }
         }
 
         function selectAmount(amount) {
+            if (mode === 'credit_card') {
+                return;
+            }
+            
             selectedAmount = amount;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -723,6 +750,10 @@
         }
 
         function showCustomAmount() {
+            if (mode === 'credit_card') {
+                return;
+            }
+            
             selectedAmount = null;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             
