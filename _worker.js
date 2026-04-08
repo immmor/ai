@@ -322,22 +322,14 @@ export default {
           
           const product_id = env.CREEM_PRODUCT_ID || 'prod_26bLueeFDoGSSi3FuW4xwi';
           
-          const CNY_TO_USD_RATE = 7.2;
-          const amountCny = 140;
-          const amountUsd = amountCny / CNY_TO_USD_RATE;
-          const amountInCents = Math.round(amountUsd * 100);
-          
           const checkoutData = {
             product_id: product_id,
-            amount: amountInCents,
-            currency: 'usd',
             success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`,
             cancel_url: `https://immmor.com/pay?username=${encodeURIComponent(username)}`,
             metadata: {
               order_no: order_no,
               username: username,
-              amount: amountCny,
-              amount_usd: amountUsd
+              amount: 140
             }
           };
           
@@ -357,7 +349,7 @@ export default {
               await supabaseFetch('orders', createSupabaseConfig('POST', {
                 order_no: order_no,
                 username: username,
-                amount: amountCny,
+                amount: 140,
                 payment_type: 'credit_card',
                 status: 'pending',
                 description: '信用卡支付'
