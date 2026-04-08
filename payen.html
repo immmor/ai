@@ -401,7 +401,7 @@
 </div>
 
 <script>
-    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
     let currentPage = 1;
     let totalPages = 1;
 
