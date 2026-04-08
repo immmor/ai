@@ -932,22 +932,19 @@
                 font-weight: 600;
             `;
             openAppBtn.onclick = () => {
-                let appScheme = '';
                 const isAndroid = /Android/i.test(navigator.userAgent);
                 
                 if (paymentType === 'alipay_static') {
                     if (isAndroid) {
-                        appScheme = 'alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/';
+                        window.location.href = 'alipays://';
                     } else {
-                        appScheme = 'alipay://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/';
+                        window.location.href = 'alipay://';
                     }
-                    window.location.href = appScheme;
                 } else if (paymentType === 'wechat_static') {
                     if (isAndroid) {
                         window.location.href = 'intent://scanQRCode#Intent;scheme=weixin;package=com.tencent.mm;end';
                     } else {
-                        appScheme = 'weixin://scanQRCode?orgDebts=' + encodeURIComponent(orderNo);
-                        window.location.href = appScheme;
+                        window.location.href = 'weixin://';
                     }
                 }
             };
