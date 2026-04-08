@@ -356,7 +356,7 @@ export default {
             await supabaseFetch('orders', createSupabaseConfig('POST', {
               order_no: order_no,
               username: username,
-              amount: amount,
+              amount: amountCny,
               payment_type: 'credit_card',
               status: 'pending',
               description: '信用卡支付'
