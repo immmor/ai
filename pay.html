@@ -944,11 +944,7 @@
                     window.location.href = appScheme;
                 } else if (paymentType === 'wechat_static') {
                     if (isAndroid) {
-                        try {
-                            window.location.href = 'weixin://scanQRCode';
-                        } catch(e) {
-                            alert('请手动打开微信，点击右上角"+" -> 扫一扫');
-                        }
+                        window.location.href = 'intent://scanQRCode#Intent;scheme=weixin;package=com.tencent.mm;end';
                     } else {
                         appScheme = 'weixin://scanQRCode?orgDebts=' + encodeURIComponent(orderNo);
                         window.location.href = appScheme;
