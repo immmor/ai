@@ -385,54 +385,35 @@ export default {
         try {
           const checkout_id = url.searchParams.get('checkout_id');
           const order_id = url.searchParams.get('order_id');
-          let order_no = url.searchParams.get('order_no');
-          let username = url.searchParams.get('username');
+          const order_no = url.searchParams.get('order_no');
+          const username = url.searchParams.get('username');
           
-          const creemApiKey = env.CREEM_API_KEY;
+          console.log('收到支付回调:', { checkout_id, order_id, order_no, username });
           
-          if (creemApiKey && checkout_id) {
-            try {
-              const checkoutResponse = await fetch(`https://test-api.creem.io/v1/checkouts/${checkout_id}`, {
-                method: 'GET',
-                headers: {
-                  'x-api-key': creemApiKey,
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (checkoutResponse.ok) {
-                const checkoutData = await checkoutResponse.json();
-                console.log('Creem.io checkout status:', checkoutData.status);
-                console.log('order_no from URL:', order_no);
-                console.log('username from URL:', username);
+          if (order_no && username) {
+            const amountCny = 140;
                 
-                // 测试模式下，只要跳转到success_url就认为支付成功
-                if (order_no && username) {
-                  const amountCny = 140;
-                      
-                  await env.DB
-                    .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-                    .bind(parseFloat(amountCny), username)
-                    .run();
-                  
-                  console.log(`Balance updated for ${username}: +${amountCny}`);
-                  
-                  try {
-                    await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                      status: 'paid',
-                      paid_at: new Date().toISOString(),
-                      trade_no: order_id || checkout_id
-                    }));
-                  } catch (supabaseError) {
-                    console.error('Supabase订单更新失败:', supabaseError);
-                  }
-                }
-              } else {
-                console.error('Creem.io API返回错误:', checkoutResponse.status);
-              }
-            } catch (err) {
-              console.error('Creem.io检查支付状态失败:', err);
+            // 更新用户余额
+            await env.DB
+              .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+              .bind(parseFloat(amountCny), username)
+              .run();
+            
+            console.log(`余额更新成功: ${username} +${amountCny}`);
+            
+            // 更新订单状态
+            try {
+              await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
+                status: 'paid',
+                paid_at: new Date().toISOString(),
+                trade_no: order_id || checkout_id
+              }));
+              console.log('订单状态更新成功');
+            } catch (supabaseError) {
+              console.error('Supabase订单更新失败:', supabaseError);
             }
+          } else {
+            console.log('缺少必要参数，无法更新');
           }
           
           return Response.redirect('https://immmor.com/pay', 302);
