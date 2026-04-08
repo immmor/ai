@@ -389,8 +389,8 @@ export default {
       if (url.pathname === '/api/pay/creem-notify' && request.method === 'GET') {
         try {
           const checkout_id = url.searchParams.get('checkout_id');
-          const order_no = url.searchParams.get('order_no');
-          const username = url.searchParams.get('username');
+          let order_no = url.searchParams.get('order_no');
+          let username = url.searchParams.get('username');
           
           if (!checkout_id && !order_no) {
             return new Response('fail', { status: 400 });
