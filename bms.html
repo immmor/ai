@@ -944,9 +944,9 @@
                         <label for="userNotTrusted">不信任 (yes/否)</label>
                         <input type="text" id="userNotTrusted" name="userNotTrusted" placeholder="留空或其他值表示正常">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="grid-column: span 2;">
                         <label for="userPricePlan">订阅价格</label>
-                        <input type="text" id="userPricePlan" name="userPricePlan" placeholder="如: monthly, annual">
+                        <textarea id="userPricePlan" name="userPricePlan" rows="4" style="width: 100%; resize: vertical; font-family: monospace;"></textarea>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userLoginInfo">登录信息</label>
@@ -1312,7 +1312,7 @@
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
-                    <td>${user.price_plan || '-'}</td>
+                    <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td style="min-width: 100px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                     </td>

@@ -126,9 +126,14 @@ export default {
         }
 
         // 插入新用户（默认余额0，VIP过期时间为null，流量限制相关字段）
+        const defaultPrice = { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+        const linkRows = await DB.prepare('SELECT key, value FROM link WHERE key LIKE ?').bind('price_%').all();
+        linkRows.results.forEach(r => { if (r.value) defaultPrice[r.key.replace('price_', '')] = parseFloat(r.value); });
+        const pricePlanStr = JSON.stringify(defaultPrice);
+
         const result = await DB
-          .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?)')
-          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '')
+          .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?)')
+          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr)
           .run();
 
         if (result.success) {
@@ -182,49 +187,34 @@ export default {
       if (path === '/api/login' && request.method === 'POST') {
         const params = await request.json();
         const { username, password } = params;
-        
+
         if (!username || !password) {
           return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
         }
 
-        // 查询账号：包含余额和VIP信息
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date FROM user WHERE username = ? AND password = ?')
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan FROM user WHERE username = ? AND password = ?')
           .bind(username, password)
           .first();
 
         if (user) {
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-          const loginInfoEntry = {
-            type: 'login',
-            time: now,
-            ip: request.headers.get('CF-Connecting-IP') || 'unknown',
-            device: request.headers.get('User-Agent') || 'unknown'
-          };
-          
-          const loginInfo = await DB
-            .prepare('SELECT login_info FROM user WHERE username = ?')
-            .bind(username)
-            .first();
-          
+          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown' };
+
+          const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
           let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
-          
-          if (loginInfo && loginInfo.login_info) {
+          if (loginInfo?.login_info) {
             try {
               const existingInfo = JSON.parse(loginInfo.login_info);
               existingInfo.unshift(loginInfoEntry);
               updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
-            } catch (e) {
-              updatedLoginInfo = JSON.stringify([loginInfoEntry]);
-            }
+            } catch (e) {}
           }
-          
-          await DB
-            .prepare('UPDATE user SET login_info = ? WHERE username = ?')
-            .bind(updatedLoginInfo, username)
-            .run();
-          
-          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.id, username: user.username, balance: user.balance } });
+          await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
+
+          const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance }, pricePlan });
         } else {
           return resJson({ success: false, message: '用户名或密码错误' }, 401);
         }
@@ -270,6 +260,16 @@ export default {
           const now = new Date();
           let newExpireDate = new Date();
           
+          const linkConfig = await DB
+            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
+            .bind('clash_monthly', 'v2ray_monthly', 'clash_yearly', 'v2ray_yearly')
+            .all();
+          
+          const config = {};
+          linkConfig.results.forEach(row => {
+            config[row.key] = row.value;
+          });
+          
           const user = await DB
             .prepare('SELECT balance, v_expire_date, v_token, v_link_clash, v_link_v2ray FROM user WHERE username = ?')
             .bind(username)
@@ -298,8 +298,8 @@ export default {
           const vToken = generateVToken();
           
           const isYearly = duration === 365;
-          const vLinkClash = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?clash=3&extend=1' : (user.v_link_clash || 'https://9alh9.no-mad-sub.one/link/CE3VhuOL5JWxjurX?clash=3&extend=1');
-          const vLinkV2ray = isYearly ? 'https://p5jli.no-mad-sub.one/link/R4eay53N8l0ooeQn?sub=3&extend=1' : (user.v_link_v2ray || 'https://9alh9.no-mad-sub.one/link/CE3VhuOL5JWxjurX?sub=3&extend=1');
+          const vLinkClash = isYearly ? config.clash_yearly : (user.v_link_clash || config.clash_monthly);
+          const vLinkV2ray = isYearly ? config.v2ray_yearly : (user.v_link_v2ray || config.v2ray_monthly);
           
           const result = await DB
             .prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_token = ?, v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
@@ -473,7 +473,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -526,6 +526,10 @@ export default {
           if (not_trusted !== undefined) {
             updates.push('not_trusted = ?');
             values.push(not_trusted);
+          }
+          if (price_plan !== undefined) {
+            updates.push('price_plan = ?');
+            values.push(price_plan);
           }
           if (login_info !== undefined) {
             updates.push('login_info = ?');
@@ -986,6 +990,16 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           
           const now = new Date();
           
+          const linkConfig = await DB
+            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
+            .bind('clash_monthly', 'v2ray_monthly', 'clash_yearly', 'v2ray_yearly')
+            .all();
+          
+          const config = {};
+          linkConfig.results.forEach(row => {
+            config[row.key] = row.value;
+          });
+          
           const user = await DB
             .prepare('SELECT username, v_expire_date, v_token, v_link_clash, v_link_v2ray FROM user WHERE username = ?')
             .bind(username)
@@ -1003,7 +1017,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           
           const result = await DB
             .prepare('UPDATE user SET v_token = ?, v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
-            .bind(newVToken, '', '', username)
+            .bind(newVToken, config.clash_monthly, config.v2ray_monthly, username)
             .run();
           
           if (result.success && result.meta.changes > 0) {
@@ -1170,6 +1184,88 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         } catch (err) {
           console.error('标记消息错误:', err);
           return resJson({ code: 500, msg: '标记失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 获取订阅链接配置 ==========
+      if (path === '/api/link/config' && request.method === 'GET') {
+        try {
+          const links = await DB
+            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
+            .bind('clash_monthly', 'v2ray_monthly', 'clash_yearly', 'v2ray_yearly')
+            .all();
+          
+          const config = {};
+          links.results.forEach(row => {
+            config[row.key] = row.value;
+          });
+          
+          return resJson({
+            code: 200,
+            data: config
+          });
+        } catch (err) {
+          console.error('获取链接配置错误:', err);
+          return resJson({ code: 500, msg: '获取失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 更新订阅链接配置 ==========
+      if (path === '/api/link/update' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { key, value } = params;
+
+          if (!key || !value) {
+            return resJson({ code: 400, msg: '缺少必要参数' }, 400);
+          }
+
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          const result = await DB
+            .prepare('UPDATE link SET value = ?, updated_at = ? WHERE key = ?')
+            .bind(value, now, key)
+            .run();
+
+          if (result.success && result.meta.changes > 0) {
+            return resJson({ code: 200, msg: '更新成功' });
+          } else {
+            return resJson({ code: 500, msg: '更新失败' }, 500);
+          }
+        } catch (err) {
+          console.error('更新链接配置错误:', err);
+          return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 获取价格计划 ==========
+      if (path === '/api/price-plan' && request.method === 'GET') {
+        try {
+          const rows = await DB.prepare('SELECT key, value FROM link WHERE key LIKE ?').bind('price_%').all();
+          const plan = {};
+          rows.results.forEach(r => plan[r.key.replace('price_', '')] = parseFloat(r.value) || 0);
+          return resJson({ code: 200, data: plan });
+        } catch (err) {
+          return resJson({ code: 500, msg: '获取失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 更新价格计划 ==========
+      if (path === '/api/price-plan/update' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { monthly_original, monthly_discount, annual_original, annual_discount, savings } = params;
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const prices = { monthly_original, monthly_discount, annual_original, annual_discount, savings };
+          for (const [key, value] of Object.entries(prices)) {
+            if (value !== undefined) {
+              await DB.prepare('INSERT OR REPLACE INTO link (key, value, updated_at) VALUES (?, ?, ?)')
+                .bind(`price_${key}`, String(value), now).run();
+            }
+          }
+          return resJson({ code: 200, msg: '更新成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
         }
       }
 
