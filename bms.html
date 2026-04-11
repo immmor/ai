@@ -1242,12 +1242,14 @@
                 savings: parseFloat(document.getElementById('price_savings').value) || 0
             };
             try {
-                await fetch(NEW_API_BASE + '/api/price-plan/update', {
+                const res = await fetch(NEW_API_BASE + '/api/price-plan/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(plan)
                 });
-            } catch (err) { console.error('保存价格失败:', err); }
+                const data = await res.json();
+                alert(data.code === 200 ? '保存成功' : '保存失败');
+            } catch (err) { alert('保存失败'); }
         }
 
         // 显示订单页面
@@ -1845,8 +1847,9 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             );
 
             try {
-                await Promise.all(promises);
-            } catch (err) { console.error('保存订阅链接失败:', err); }
+                const results = await Promise.all(promises);
+                alert(results.every(r => r.code === 200) ? '保存成功' : '部分保存失败');
+            } catch (err) { alert('保存失败'); }
         }
 
         // 复制邀请码
