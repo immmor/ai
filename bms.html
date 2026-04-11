@@ -1758,7 +1758,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         
         // 加载订阅链接配置
         async function loadLinkConfig() {
-            const result = await apiRequest('/api/link/config', 'GET');
+            const result = await newApiRequest('/api/link/config', 'GET');
             
             if (result.code === 200) {
                 const config = result.data;
@@ -1789,7 +1789,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
             
             const promises = Object.entries(links).map(([key, value]) => 
-                apiRequest('/api/link/update', 'POST', { key, value })
+                newApiRequest('/api/link/update', 'POST', { key, value })
             );
             
             try {
