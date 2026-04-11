@@ -392,7 +392,9 @@
             .sidebar {
                 width: 100%;
                 height: auto;
-                position: relative;
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
 
             .main-container {
@@ -409,6 +411,10 @@
             }
 
             .dashboard-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .link-config-grid {
                 grid-template-columns: 1fr !important;
             }
 
@@ -702,7 +708,7 @@
                             <h3>默认订阅链接配置</h3>
                         </div>
                         <div style="padding: 1.5rem;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="link-config-grid">
                                 <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px;">
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Clash 月度链接</label>
                                     <input type="text" id="linkClashMonthly" style="width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
