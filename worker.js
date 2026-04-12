@@ -1063,28 +1063,35 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
           
           if (target === 'all') {
-            // 获取所有用户
             const users = await DB
               .prepare('SELECT username FROM user')
               .all();
-            
+
             if (!users.results || users.results.length === 0) {
               return resJson({ code: 404, msg: '暂无用户' }, 404);
             }
-            
-            // 为每个用户插入消息
-            for (const user of users.results) {
+
+            const BATCH_SIZE = 30;
+            let totalInserted = 0;
+
+            for (let i = 0; i < users.results.length; i += BATCH_SIZE) {
+              const batch = users.results.slice(i, i + BATCH_SIZE);
+              const placeholders = batch.map(() => '(?, ?, ?, 0)').join(', ');
+              const values = batch.flatMap(user => [user.username, content, now]);
+              
               await DB
-                .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-                .bind(user.username, content, now)
+                .prepare(`INSERT INTO messages (username, content, created_at, is_read) VALUES ${placeholders}`)
+                .bind(...values)
                 .run();
+              
+              totalInserted += batch.length;
             }
-            
+
             return resJson({
               code: 200,
               msg: '发送成功',
               data: {
-                total: users.results.length,
+                total: totalInserted,
                 content
               }
             });
