@@ -847,9 +847,11 @@ export default {
             totalRevenue = paidOrdersResult.reduce((sum, order) => sum + parseFloat(order.amount || 0), 0);
           }
           
-          // 获取VIP用户数
+          // 获取VIP用户数 (v_expire_date 未过期)
+          const now = new Date().toISOString();
           const vipUsersResult = await env.DB
-            .prepare('SELECT COUNT(*) as total FROM user WHERE balance >= 99')
+            .prepare('SELECT COUNT(*) as total FROM user WHERE v_expire_date IS NOT NULL AND v_expire_date > ?')
+            .bind(now)
             .first();
           const vipUsers = vipUsersResult ? vipUsersResult.total : 0;
           const normalUsers = totalUsers - vipUsers;
