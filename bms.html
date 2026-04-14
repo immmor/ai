@@ -613,6 +613,7 @@
                                     <th style="min-width: 150px;">登录信息</th>
                                     <th style="min-width: 120px;">不信任</th>
                                     <th>订阅价格</th>
+                                    <th style="min-width: 100px;">问卷</th>
                                     <th style="min-width: 100px;">操作</th>
                                 </tr>
                             </thead>
@@ -1297,7 +1298,7 @@
             tbody.innerHTML = '';
 
             if (usersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
 
@@ -1317,6 +1318,7 @@
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
+                    <td>${user.survey || '-'}</td>
                     <td style="min-width: 100px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                     </td>
