@@ -796,65 +796,6 @@
                             </form>
                         </div>
                     </div>
-
-                    <div class="data-table" style="margin-bottom: 2rem;">
-                        <div class="table-header">
-                            <h3>支付配置</h3>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <p style="color: #718096; margin-bottom: 1rem;">支付配置需要在后端 _worker.js 的环境变量中设置</p>
-                            <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.875rem;">
-                                <p><strong>环境变量配置：</strong></p>
-                                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-                                    <li>PAY_API_URL - 支付网关地址</li>
-                                    <li>PAY_MID - 商户ID</li>
-                                    <li>PAY_KEY - 支付密钥</li>
-                                    <li>SUPABASE_URL - Supabase数据库地址</li>
-                                    <li>SUPABASE_KEY - Supabase API密钥</li>
-                                    <li>DB - D1数据库绑定</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="data-table">
-                        <div class="table-header">
-                            <h3>API 接口文档</h3>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
-                                <p style="margin-bottom: 1rem;"><strong>可用接口列表：</strong></p>
-                                <table style="width: 100%; font-size: 0.8rem;">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: left; padding: 0.5rem;">接口</th>
-                                            <th style="text-align: left; padding: 0.5rem;">方法</th>
-                                            <th style="text-align: left; padding: 0.5rem;">说明</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td>/api/register</td><td>POST</td><td>用户注册</td></tr>
-                                        <tr><td>/api/login</td><td>POST</td><td>用户登录</td></tr>
-                                        <tr><td>/api/balance</td><td>GET</td><td>查询余额</td></tr>
-                                        <tr><td>/api/quota</td><td>GET</td><td>查询流量使用情况</td></tr>
-                                        <tr><td>/api/recharge</td><td>POST</td><td>直接充值</td></tr>
-                                        <tr><td>/api/recharge/confirm</td><td>POST</td><td>确认收款（人工审核）</td></tr>
-                                        <tr><td>/api/orders</td><td>GET</td><td>查询订单列表</td></tr>
-                                        <tr><td>/api/order/detail</td><td>GET</td><td>查询订单详情</td></tr>
-                                        <tr><td>/api/order/create-static</td><td>POST</td><td>创建静态订单</td></tr>
-                                        <tr><td>/api/pay/build-url</td><td>POST</td><td>构建支付URL</td></tr>
-                                        <tr><td>/api/pay/notify</td><td>GET</td><td>支付回调通知</td></tr>
-                                        <tr><td>/api/open-vip</td><td>POST</td><td>开通VIP</td></tr>
-                                        <tr><td>/api/vip/status</td><td>GET</td><td>查询VIP状态</td></tr>
-                                        <tr><td>/vip/clash</td><td>GET</td><td>获取VIP Clash配置</td></tr>
-                                        <tr><td>/vip/v2ray</td><td>GET</td><td>获取VIP V2Ray配置</td></tr>
-                                        <tr><td>/free/clash</td><td>GET</td><td>获取免费 Clash 配置</td></tr>
-                                        <tr><td>/free/v2ray</td><td>GET</td><td>获取免费 V2Ray 配置</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 消息管理页面 -->
