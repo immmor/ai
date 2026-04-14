@@ -859,9 +859,11 @@
 
                 <!-- 消息管理页面 -->
                 <div id="messagesPage" class="page-section" style="display: none;">
-                    <div class="stat-card" style="max-width: 800px;">
-                        <h3 style="margin-bottom: 1.5rem; color: #4a5568;">发送消息</h3>
-                        <div style="background: #fff; padding: 1.5rem; border-radius: 8px;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>发送消息</h3>
+                        </div>
+                        <div style="padding: 1.5rem;">
                             <div class="form-group">
                                 <label for="messageContent">消息内容</label>
                                 <textarea id="messageContent" rows="5" placeholder="请输入消息内容" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; resize: vertical;"></textarea>
@@ -877,7 +879,7 @@
                                 <label for="singleUsername">用户名</label>
                                 <input type="text" id="singleUsername" placeholder="请输入用户名" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                             </div>
-                            <button type="button" class="btn" onclick="sendMessage()">发送消息</button>
+                            <button type="button" class="btn" onclick="sendMessage()" style="width: auto;">发送消息</button>
                         </div>
                     </div>
                 </div>
