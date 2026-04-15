@@ -7,412 +7,505 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --neon-pink: #ff00ff;
-            --neon-blue: #00f2ff;
-            --neon-green: #0aff99;
-            --bg-dark: #050505;
+            --primary-blue: #1677ff;
+            --primary-blue-hover: #4096ff;
+            --success-green: #52c41a;
+            --text-primary: #1f1f1f;
+            --text-secondary: #666666;
+            --border-color: #e8e8e8;
+            --bg-light: #f5f5f5;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
         }
 
         body {
             margin: 0;
-            background: var(--bg-dark);
-            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #fff;
-            overflow: hidden;
-            touch-action: auto; /* 允许所有触摸操作 */
-            overscroll-behavior: none;
-            position: fixed;
-            width: 100%;
-            height: 100%;
+            color: var(--text-primary);
+            overflow-x: hidden;
         }
 
-        /* 背景流光线条 */
         body::before {
-            content: "";
-            position: fixed;
-            width: 200%;
-            height: 200%;
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.05) 1px, rgba(0, 242, 255, 0.05) 2px);
-            background-size: 100% 4px;
-            animation: move-bg 20s linear infinite;
-            z-index: -1;
-            pointer-events: none;
+            display: none;
         }
 
-        @keyframes move-bg {
-            from { transform: translateY(0); }
-            to { transform: translateY(-50%); }
-        }
-
-        /* 核心卡片 */
         .neon-card {
             position: relative;
-            width: 380px;
-            max-width: 90vw;
-            max-height: 90vh;
-            padding: 40px;
-            background: rgba(10, 10, 10, 0.9);
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 15px var(--neon-blue), inset 0 0 10px var(--neon-blue);
-            border-radius: 5px;
-            clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
+            width: 420px;
+            max-width: 95vw;
+            padding: 32px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow-hover);
             overflow: hidden;
-            touch-action: pan-y;
         }
 
         .header {
             text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin-bottom: 30px;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .header-logo i {
             font-size: 28px;
+            color: var(--primary-blue);
         }
 
-        /* 余额区 */
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--success-green);
+        }
+
+        .trust-badge i {
+            font-size: 12px;
+        }
+
         .balance-display {
-            border-left: 4px solid var(--neon-pink);
-            padding-left: 15px;
-            margin-bottom: 30px;
-            background: rgba(255, 0, 255, 0.05);
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f4ff 100%);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #91caff;
         }
 
-        .balance-label { font-size: 12px; color: var(--neon-pink); }
-        .balance-val { font-size: 32px; font-weight: 800; color: #fff; }
+        .balance-label { 
+            font-size: 13px; 
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .balance-val { 
+            font-size: 28px; 
+            font-weight: 700; 
+            color: var(--primary-blue);
+        }
 
-        /* 输入框 */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
         .input-box {
             position: relative;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .input-box input {
             width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-size: 24px;
-            padding: 10px 5px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 15px;
+            padding: 12px 16px;
             outline: none;
             box-sizing: border-box;
+            transition: all 0.3s;
         }
 
-        /* 支付方式下拉框 */
+        .input-box input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+        }
+
+        .input-box input::placeholder {
+            color: #bfbfbf;
+        }
+
         .pay-select {
             width: 100%;
-            background: rgba(0, 242, 255, 0.1);
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 12px;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            font-family: inherit;
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 12px center;
+            background-position: right 14px center;
             background-size: 16px;
         }
 
         .pay-select:focus {
             outline: none;
-            box-shadow: 0 0 15px var(--neon-blue);
-            background-color: var(--neon-blue);
-            color: #000;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
         }
 
         .pay-select option {
-            background: #1a1a1a;
-            color: var(--neon-blue);
-            padding: 10px;
+            background: #fff;
+            color: var(--text-primary);
+            padding: 12px;
         }
         
-        /* 金额选择器 */
         .amount-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 24px;
         }
 
         .amount-btn {
-            background: rgba(0, 242, 255, 0.1);
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 12px;
-            border-radius: 5px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 14px 8px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 500;
             text-align: center;
         }
 
         .amount-btn:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-blue);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: #fff;
         }
 
         .amount-btn.active {
-            background: var(--neon-pink);
-            border-color: var(--neon-pink);
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
             color: #fff;
-            box-shadow: 0 0 15px var(--neon-pink);
+            box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
         }
 
         .custom-btn {
-            border-color: var(--neon-pink);
-            color: var(--neon-pink);
+            border-color: var(--success-green);
+            color: var(--success-green);
         }
 
         .custom-btn:hover {
-            background: var(--neon-pink);
+            background: var(--success-green);
             color: #fff;
         }
 
         .custom-input {
-            background: rgba(0, 242, 255, 0.1);
-            border: 2px solid var(--neon-pink);
-            color: var(--neon-pink);
-            padding: 12px;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
+            background: var(--bg-light);
+            border: 1px solid var(--success-green);
+            color: var(--text-primary);
+            padding: 14px 12px;
+            border-radius: 8px;
+            font-size: 15px;
             text-align: center;
             width: 100%;
             box-sizing: border-box;
-            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+            font-family: inherit;
         }
 
         .custom-input:focus {
             outline: none;
-            background: var(--neon-pink);
-            color: #fff;
-            box-shadow: 0 0 15px var(--neon-pink);
+            border-color: var(--success-green);
+            box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.1);
         }
 
-        /* 按钮 */
-        .glitch-btn {
+        .submit-btn {
             width: 100%;
             height: 50px;
-            background: var(--neon-blue);
+            background: var(--primary-blue);
             border: none;
-            color: #000;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            position: relative;
-            transition: 0.2s;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .glitch-btn:hover {
-            background: var(--neon-pink);
-            box-shadow: 0 0 20px var(--neon-pink);
+            border-radius: 8px;
             color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
         }
-        
-        .glitch-btn.login-btn:hover {
-            background: var(--neon-blue);
-            box-shadow: 0 0 20px var(--neon-blue);
-            color: #000;
+
+        .submit-btn:hover {
+            background: var(--primary-blue-hover);
+            box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
         }
-        
-        .glitch-btn.confirm-register-btn:hover,
-        .glitch-btn.cancel-btn:hover {
-            background: inherit;
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .submit-btn.secondary {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .submit-btn.secondary:hover {
+            background: var(--bg-light);
             box-shadow: none;
-            color: inherit;
         }
 
-        .glitch-btn::before {
-            content: "确认交易";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .glitch-btn.login-btn::before {
-            content: "登录";
-        }
-        .glitch-btn.register-btn::before {
-            content: "注册";
-        }
-        .glitch-btn.confirm-register-btn::before {
-            content: "确认注册";
-        }
-        .glitch-btn.cancel-btn::before {
-            content: "返回";
+        .submit-btn.danger {
+            background: #ff4d4f;
         }
 
-        /* 装饰点缀 */
-        .corner-tag {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
+        .submit-btn.danger:hover {
+            background: #ff7875;
+        }
+
+        .submit-btn.success {
+            background: var(--success-green);
+        }
+
+        .submit-btn.success:hover {
+            background: #73d13d;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-security {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success-green);
+            margin-bottom: 8px;
+        }
+
+        .footer-security i {
+            font-size: 14px;
+        }
+
+        .footer-links {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .footer-links a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            margin: 0 6px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-copyright {
+            margin-top: 8px;
             font-size: 10px;
-            color: var(--neon-blue);
-            opacity: 0.5;
+            color: #999;
         }
-        
+
         /* 导航标签样式 */
         .nav-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--neon-blue);
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--bg-light);
+            padding: 4px;
+            border-radius: 10px;
         }
-        
+
         .nav-tab {
+            flex: 1;
             background: transparent;
             border: none;
-            color: #666;
-            padding: 8px 16px;
+            color: var(--text-secondary);
+            padding: 10px 16px;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            border-radius: 8px;
             transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
         }
-        
+
         .nav-tab.active {
-            color: var(--neon-blue);
-            border-bottom-color: var(--neon-blue);
+            background: #fff;
+            color: var(--primary-blue);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tab:hover:not(.active) {
+            color: var(--text-primary);
         }
         
-        /* 筛选器样式 */
         .filter-section {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
-        
+
         .filter-select {
-            background: rgba(0, 242, 255, 0.1);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 5px 10px;
-            border-radius: 3px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
             flex: 1;
+            font-size: 13px;
         }
-        
-        /* 订单项样式 - 优化移动端触摸 */
+
         .order-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 10px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
             transition: all 0.3s;
             cursor: pointer;
-            user-select: none; /* 禁止文本选择 */
         }
-        
+
         .order-item:hover {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+            border-color: var(--primary-blue);
+            box-shadow: 0 2px 8px rgba(22, 119, 255, 0.15);
         }
-        
+
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
-        
+
         .order-no {
             font-size: 12px;
-            color: var(--neon-blue);
+            color: var(--text-secondary);
             font-family: monospace;
         }
-        
+
         .order-amount {
             font-size: 18px;
-            font-weight: bold;
-            color: #fff;
+            font-weight: 600;
+            color: var(--text-primary);
         }
-        
+
         .order-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 11px;
-            color: #999;
-        }
-        
-        .order-status {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .status-pending { background: #ffa500; color: #000; }
-        .status-paid { background: #07c160; color: #fff; }
-        .status-failed { background: #ff4757; color: #fff; }
-        
-        /* 订单列表容器 - 优化移动端滑动 */
-        .orders-container {
-            max-height: 300px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* 启用iOS弹性滚动 */
-            scroll-behavior: smooth; /* 平滑滚动 */
-            touch-action: pan-y; /* 仅允许垂直滑动 */
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        /* 分页按钮 */
-        .page-btn {
-            background: var(--neon-blue);
-            border: none;
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
+        .order-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
             font-size: 11px;
+            font-weight: 500;
         }
-        
+
+        .status-pending { background: #fff7e6; color: #d46b08; }
+        .status-paid { background: #f6ffed; color: #52c41a; }
+        .status-failed { background: #fff1f0; color: #ff4d4f; }
+
+        .orders-container {
+            max-height: 350px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            border-radius: 8px;
+            padding-right: 4px;
+        }
+
+        .page-btn {
+            background: var(--primary-blue);
+            border: none;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover {
+            background: var(--primary-blue-hover);
+        }
+
         .page-btn:disabled {
-            background: #666;
+            background: #d9d9d9;
             cursor: not-allowed;
         }
 
-        /* 用户下拉菜单 */
         .user-dropdown {
             position: relative;
-            margin-left: auto;
         }
 
         .user-btn {
-            background: transparent;
-            border: none;
-            color: var(--neon-pink);
-            padding: 8px 16px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 8px 14px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .user-btn:hover {
+            background: #fff;
+            border-color: var(--primary-blue);
         }
 
         .dropdown-menu {
             position: absolute;
             right: 0;
-            top: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            border: 1px solid var(--neon-blue);
-            border-radius: 5px;
-            min-width: 90px;
+            top: calc(100% + 4px);
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            min-width: 100px;
             display: none;
             z-index: 100;
+            box-shadow: var(--shadow-hover);
         }
 
         .dropdown-menu.show {
@@ -420,19 +513,34 @@
         }
 
         .dropdown-item {
-            padding: 10px 15px;
-            color: #ff4757;
+            padding: 10px 16px;
+            color: #ff4d4f;
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
             text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background: #fff1f0;
         }
     </style>
 </head>
 <body>
 
 <div class="neon-card">
-        <div class="header">以墨钱包</div>
+        <div class="header">
+            <div class="header-logo">
+                <i class="fas fa-wallet"></i>
+                <h1>以墨钱包</h1>
+            </div>
+            <div class="header-subtitle">安全便捷的在线充值服务</div>
+            <div class="trust-badges">
+                <span class="trust-badge"><i class="fas fa-shield-halved"></i> SSL加密</span>
+                <span class="trust-badge"><i class="fas fa-lock"></i> 安全支付</span>
+                <span class="trust-badge"><i class="fas fa-check-circle"></i> 官方认证</span>
+            </div>
+        </div>
         
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
@@ -460,8 +568,8 @@
                 如果您已有账号，请直接登录，无需重复注册
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
-                <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
+                <button class="submit-btn" onclick="login()" style="flex: 1;">登录</button>
+                <button class="submit-btn secondary" onclick="showRegister()" style="flex: 1;">注册</button>
             </div>
         </div>
         
@@ -480,8 +588,8 @@
                 如果您已有账号，请直接登录，无需重复注册
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
-                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+                <button class="submit-btn success" onclick="register()" style="flex: 1;">确认注册</button>
+                <button class="submit-btn secondary" onclick="showLogin()" style="flex: 1;">返回</button>
             </div>
         </div>
         
@@ -502,17 +610,33 @@
             </div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="alipay">支付宝 (回调)</option>
-                <option value="wechat">微信支付 (回调)</option>
-                <option value="usdt">TRON USDT</option>
-                <option value="credit_card">信用卡 (固定20美元)</option>
-                <option value="wechat_static">微信支付 (人工审核)</option>
-                <option value="alipay_static">支付宝 (人工审核)</option>
+                <option value="alipay">支付宝</option>
+                <option value="wechat">微信支付</option>
+                <option value="usdt">USDT (TRC20)</option>
+                <option value="credit_card">国际信用卡</option>
+                <option value="wechat_static">微信支付</option>
+                <option value="alipay_static">支付宝</option>
             </select>
 
-            <button class="glitch-btn" onclick="pay()"></button>
+            <button class="submit-btn" onclick="pay()">
+                <i class="fas fa-credit-card"></i>
+                立即充值
+            </button>
             
-            <div class="corner-tag">安全连接已激活</div>
+            <div class="footer">
+                <div class="footer-security">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>资金安全由保险公司承保</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#">服务条款</a>
+                    <a href="#">隐私政策</a>
+                    <a href="#">联系我们</a>
+                </div>
+                <div class="footer-copyright">
+                    © 2024 以墨钱包 版权所有 | 备案号：XXXXXXXX
+                </div>
+            </div>
         </div>
         
         <!-- 订单记录界面 -->
@@ -555,20 +679,11 @@
 
 <script>
         document.addEventListener('touchmove', function(e) {
-            // 允许订单列表滑动
             if (e.target.closest('.orders-container')) {
                 return;
             }
-            // 其他区域阻止默认行为
-            if (e.target.tagName !== 'INPUT') {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        document.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-        });
-        let mode = 'alipay'; // 默认选择支付宝支付
+        }, { passive: true });
+        let mode = 'alipay';
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
@@ -701,15 +816,15 @@
                     creditCardInfo.style.cssText = `
                         grid-column: 1 / -1;
                         text-align: center;
-                        padding: 12px;
-                        background: rgba(255, 0, 255, 0.1);
-                        border: 2px solid var(--neon-pink);
-                        border-radius: 5px;
+                        padding: 16px;
+                        background: linear-gradient(135deg, #fff7e6 0%, #fff1db 100%);
+                        border: 1px solid #ffc53d;
+                        border-radius: 8px;
                     `;
                     creditCardInfo.innerHTML = `
-                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">信用卡支付固定金额</div>
-                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
-                        <div style="color: #999; font-size: 12px; margin-top: 2px;">(20美元)</div>
+                        <div style="color: #d46b08; font-size: 12px; margin-bottom: 4px;">国际信用卡支付按实时汇率计算</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #ad6800;">1 USDT ≈ 7.00 CNY</div>
+                        <div style="color: #8c8c8c; font-size: 11px; margin-top: 4px;">最低充值 20 USDT 起</div>
                     `;
                     amountGrid.appendChild(creditCardInfo);
                 }
