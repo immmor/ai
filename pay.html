@@ -503,10 +503,10 @@
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
                 <option value="alipay">支付宝</option>
                 <option value="wechat">微信支付</option>
-                <option value="credit_card">信用卡 (固定20美元)</option>
-                <option value="wechat_static">微信支付 (人工)</option>
-                <option value="alipay_static">支付宝 (人工)</option>
-                <option value="usdt">TRON USDT</option>
+                <option value="credit_card">信用卡(固定20美元)</option>
+                <option value="wechat_static">微信支付(人工)</option>
+                <option value="alipay_static">支付宝(人工)</option>
+                <option value="usdt">TRON USDT(最低100元)</option>
             </select>
 
             <button class="glitch-btn" onclick="pay()"></button>
@@ -800,10 +800,9 @@
                 showStaticPayment(mode, amount);
                 return;
             }
-            
             // USDT支付特殊处理
             if (mode === 'usdt') {
-                if (amount < 10) return alert('自定义支付额度最低需10元');
+                if (amount < 100) return alert('TRON USDT最低需充值100元');
                 createUSDTOrder(amount);
                 return;
             }
