@@ -132,8 +132,8 @@ export default {
         const pricePlanStr = JSON.stringify(defaultPrice);
 
         const result = await DB
-          .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?)')
-          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr)
+          .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?)')
+          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}')
           .run();
 
         if (result.success) {
@@ -164,7 +164,9 @@ export default {
             type: 'register',
             time: now,
             ip: request.headers.get('CF-Connecting-IP') || 'unknown',
-            device: request.headers.get('User-Agent') || 'unknown'
+            device: request.headers.get('User-Agent') || 'unknown',
+            acceptLanguage: request.headers.get('Accept-Language') || 'unknown',
+            country: request.headers.get('CF-IPCountry') || 'unknown'
           }]);
           
           await DB
@@ -199,7 +201,7 @@ export default {
 
         if (user) {
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown' };
+          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
 
           const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
           let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
@@ -350,8 +352,24 @@ export default {
           return resJson({ 
             code: 500, 
             msg: '开通VIP失败', 
-            error: err.message 
+            error: err.message
           }, 500);
+        }
+      }
+
+      // ========== 问卷接口 ==========
+      if (path === '/api/survey' && request.method === 'POST') {
+        try {
+          const { username, key, value } = await request.json();
+          if (!username || !key) return resJson({ code: 400, msg: '缺少参数' }, 400);
+          const user = await DB.prepare('SELECT survey FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+          const survey = user.survey ? JSON.parse(user.survey) : {};
+          survey[key] = value;
+          await DB.prepare('UPDATE user SET survey = ? WHERE username = ?').bind(JSON.stringify(survey), username).run();
+          return resJson({ code: 200, msg: '提交成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '提交失败', error: err.message }, 500);
         }
       }
 
@@ -1274,6 +1292,12 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         } catch (err) {
           return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
         }
+      }
+
+      // ========== 检测用户Clash链接 ==========
+      if (path === '/api/clash-links' && request.method === 'GET') {
+        const users = await DB.prepare('SELECT username, v_link_clash FROM user WHERE v_link_clash IS NOT NULL AND v_link_clash != ""').all();
+        return resJson({ code: 200, data: users.results || [] });
       }
 
       // ========== 默认接口提示 ==========

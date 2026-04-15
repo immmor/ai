@@ -664,6 +664,7 @@
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="trafficSearchInput" placeholder="输入用户名查询流量" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="queryUserTraffic(document.getElementById('trafficSearchInput').value)" style="background-color: #667eea;">查询流量</button>
+                                <button class="add-btn" onclick="checkAllClashLinks()" style="background-color:#e53e3e;">检测Clash链接</button>
                             </div>
                         </div>
                         <table id="trafficTable">
@@ -1640,6 +1641,46 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
         
+        async function checkAllClashLinks() {
+            const tbody = document.getElementById('trafficTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">检测中...</td></tr>';
+            
+            const result = await apiRequest('/api/clash-links', 'GET');
+            
+            if (result.code !== 200 || !result.data.length) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">无Clash链接可检测</td></tr>`;
+                return;
+            }
+
+            const seen = new Set();
+            const uniqueLinks = result.data.filter(u => {
+                if (!u.v_link_clash || seen.has(u.v_link_clash)) return false;
+                seen.add(u.v_link_clash);
+                return true;
+            });
+
+            let html = '';
+            for (const u of uniqueLinks) {
+                try {
+                    const res = await fetch(u.v_link_clash);
+                    const info = res.headers.get('subscription-userinfo');
+                    let infoText = '-';
+                    if (info) {
+                        const m = info.match(/upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)/);
+                        if (m) {
+                            const toGB = n => (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+                            const toDate = t => new Date(t * 1000).toLocaleDateString();
+                            infoText = `↑${toGB(m[1])} ↓${toGB(m[2])} 总${toGB(m[3])} 到期${toDate(m[4])}`;
+                        }
+                    }
+                    html += `<tr><td>${u.username}</td><td colspan="5">${infoText}</td><td>${u.v_link_clash.substring(0, 30)}...</td></tr>`;
+                } catch {
+                    html += `<tr><td>${u.username}</td><td colspan="5"><span style="color:#e53e3e;">请求失败</span></td><td>${u.v_link_clash.substring(0, 30)}...</td></tr>`;
+                }
+            }
+            tbody.innerHTML = html;
+        }
+
         // 重置用户流量
         async function resetUserTraffic(username) {
             if (!username) {
