@@ -506,7 +506,7 @@
                 <option value="credit_card">信用卡(固定20美元)</option>
                 <option value="wechat_static">微信支付(人工)</option>
                 <option value="alipay_static">支付宝(人工)</option>
-                <option value="usdt">TRON USDT(最低100元)</option>
+                <option value="usdt">TRON USDT(>100元)</option>
             </select>
 
             <button class="glitch-btn" onclick="pay()"></button>
@@ -687,14 +687,12 @@
                     btn.classList.remove('active');
                     btn.style.display = 'none';
                 });
-                
-                const customBtn = document.getElementById('custom-amount-btn');
-                if (customBtn) {
-                    customBtn.style.display = 'none';
+                const amtInput = document.getElementById('amt');
+                if (amtInput) {
+                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
                 }
-                
                 const amountGrid = document.querySelector('.amount-grid');
-                if (amountGrid) {
+                if (amountGrid && !document.getElementById('credit-card-info')) {
                     const creditCardInfo = document.createElement('div');
                     creditCardInfo.id = 'credit-card-info';
                     creditCardInfo.style.cssText = `
@@ -713,15 +711,13 @@
                     amountGrid.appendChild(creditCardInfo);
                 }
             } else {
+                const amtInput = document.getElementById('amt');
+                if (amtInput) {
+                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
+                }
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.style.display = 'block';
                 });
-                
-                const customBtn = document.getElementById('custom-amount-btn');
-                if (customBtn) {
-                    customBtn.style.display = 'block';
-                }
-                
                 const creditCardInfo = document.getElementById('credit-card-info');
                 if (creditCardInfo) {
                     creditCardInfo.remove();
