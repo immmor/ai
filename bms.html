@@ -1645,38 +1645,27 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const tbody = document.getElementById('trafficTableBody');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">检测中...</td></tr>';
             
-            const result = await newApiRequest('/api/clash-links', 'GET');
+            const result = await apiRequest('/api/clash-links', 'GET');
             
-            if (result.code !== 200 || !result.data.length) {
+            if (result.code !== 200 || !result.data?.length) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">无Clash链接可检测</td></tr>`;
                 return;
             }
 
-            const seen = new Set();
-            const uniqueLinks = result.data.filter(u => {
-                if (!u.v_link_clash || seen.has(u.v_link_clash)) return false;
-                seen.add(u.v_link_clash);
-                return true;
-            });
-
             let html = '';
-            for (const u of uniqueLinks) {
-                try {
-                    const res = await fetch(u.v_link_clash);
-                    const info = res.headers.get('subscription-userinfo');
-                    let infoText = '-';
-                    if (info) {
-                        const m = info.match(/upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)/);
-                        if (m) {
-                            const toGB = n => (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
-                            const toDate = t => new Date(t * 1000).toLocaleDateString();
-                            infoText = `↑${toGB(m[1])} ↓${toGB(m[2])} 总${toGB(m[3])} 到期${toDate(m[4])}`;
-                        }
+            for (const u of result.data) {
+                let infoText = '-';
+                if (u.subscription_userinfo) {
+                    const m = u.subscription_userinfo.match(/upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)/);
+                    if (m) {
+                        const toGB = n => (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+                        const toDate = t => new Date(t * 1000).toLocaleDateString();
+                        infoText = `↑${toGB(m[1])} ↓${toGB(m[2])} 总${toGB(m[3])} 到期${toDate(m[4])}`;
                     }
-                    html += `<tr><td>${u.username}</td><td colspan="5">${infoText}</td><td>${u.v_link_clash.substring(0, 30)}...</td></tr>`;
-                } catch {
-                    html += `<tr><td>${u.username}</td><td colspan="5"><span style="color:#e53e3e;">请求失败</span></td><td>${u.v_link_clash.substring(0, 30)}...</td></tr>`;
+                } else {
+                    infoText = `<span style="color:#e53e3e;">${u.error || '请求失败'}</span>`;
                 }
+                html += `<tr><td>${u.username}</td><td colspan="5">${infoText}</td><td>${u.link?.substring(0, 30)}...</td></tr>`;
             }
             tbody.innerHTML = html;
         }

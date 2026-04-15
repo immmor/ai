@@ -1297,7 +1297,24 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 检测用户Clash链接 ==========
       if (path === '/api/clash-links' && request.method === 'GET') {
         const users = await DB.prepare('SELECT username, v_link_clash FROM user WHERE v_link_clash IS NOT NULL AND v_link_clash != ""').all();
-        return resJson({ code: 200, data: users.results || [] });
+        const seen = new Set();
+        const unique = (users.results || []).filter(u => {
+          if (!u.v_link_clash || seen.has(u.v_link_clash)) return false;
+          seen.add(u.v_link_clash);
+          return true;
+        });
+
+        const results = [];
+        for (const u of unique) {
+          try {
+            const res = await fetch(u.v_link_clash);
+            const info = res.headers.get('subscription-userinfo');
+            results.push({ username: u.username, link: u.v_link_clash, subscription_userinfo: info, ok: res.ok, status: res.status });
+          } catch (err) {
+            results.push({ username: u.username, link: u.v_link_clash, error: err.message });
+          }
+        }
+        return resJson({ code: 200, data: results });
       }
 
       // ========== 默认接口提示 ==========
