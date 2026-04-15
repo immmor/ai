@@ -194,34 +194,6 @@
             margin-bottom: 24px;
         }
 
-        .pay-select {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: inherit;
-            margin-bottom: 24px;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-        }
-
-        .pay-select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .pay-select option {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            padding: 10px;
-        }
-
         .pay-method {
             display: flex;
             align-items: center;
@@ -770,14 +742,50 @@
                 </div>
 
                 <div class="section-title">选择支付方式</div>
-                <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                    <option value="alipay">支付宝 (即时到账)</option>
-                    <option value="wechat">微信支付 (即时到账)</option>
-                    <option value="alipay_static">支付宝 (人工审核)</option>
-                    <option value="wechat_static">微信支付 (人工审核)</option>
-                    <option value="usdt">USDT (TRON网络)</option>
-                    <option value="credit_card">信用卡 (固定$20)</option>
-                </select>
+                <div class="pay-methods" id="pay-methods">
+                    <div class="pay-method active" data-value="alipay" onclick="selectPayMethod('alipay')">
+                        <i class="fab fa-alipay"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">支付宝</div>
+                            <div class="pay-method-desc">即时到账</div>
+                        </div>
+                    </div>
+                    <div class="pay-method" data-value="wechat" onclick="selectPayMethod('wechat')">
+                        <i class="fab fa-weixin"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">微信支付</div>
+                            <div class="pay-method-desc">即时到账</div>
+                        </div>
+                    </div>
+                    <div class="pay-method" data-value="alipay_static" onclick="selectPayMethod('alipay_static')">
+                        <i class="fab fa-alipay"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">支付宝</div>
+                            <div class="pay-method-desc">人工审核</div>
+                        </div>
+                    </div>
+                    <div class="pay-method" data-value="wechat_static" onclick="selectPayMethod('wechat_static')">
+                        <i class="fab fa-weixin"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">微信支付</div>
+                            <div class="pay-method-desc">人工审核</div>
+                        </div>
+                    </div>
+                    <div class="pay-method" data-value="usdt" onclick="selectPayMethod('usdt')">
+                        <i class="fab fa-bitcoin"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">USDT</div>
+                            <div class="pay-method-desc">TRON网络</div>
+                        </div>
+                    </div>
+                    <div class="pay-method" data-value="credit_card" onclick="selectPayMethod('credit_card')">
+                        <i class="fas fa-credit-card"></i>
+                        <div class="pay-method-info">
+                            <div class="pay-method-name">信用卡</div>
+                            <div class="pay-method-desc">固定$20</div>
+                        </div>
+                    </div>
+                </div>
 
                 <button class="submit-btn" id="pay-btn" onclick="pay()">
                     立即充值
