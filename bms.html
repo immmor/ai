@@ -1645,7 +1645,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const tbody = document.getElementById('trafficTableBody');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">检测中...</td></tr>';
             
-            const result = await apiRequest('/api/clash-links', 'GET');
+            const result = await newApiRequest('/api/clash-links', 'GET');
             
             if (result.code !== 200 || !result.data?.length) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">无Clash链接可检测</td></tr>`;
