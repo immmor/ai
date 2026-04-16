@@ -719,6 +719,10 @@
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.style.display = 'block';
                 });
+                const customBtn = document.getElementById('custom-amount-btn');
+                if (customBtn) {
+                    customBtn.style.display = 'none';
+                }
                 const creditCardInfo = document.getElementById('credit-card-info');
                 if (creditCardInfo) {
                     creditCardInfo.remove();
