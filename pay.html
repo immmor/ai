@@ -689,8 +689,7 @@
                 });
                 const amtInput = document.getElementById('amt');
                 if (amtInput) {
-                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
-                    document.getElementById('custom-amount-btn').style.display = 'none';
+                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" style="display: none;">自定义</button>';
                 }
                 const amountGrid = document.querySelector('.amount-grid');
                 if (amountGrid && !document.getElementById('credit-card-info')) {
@@ -717,12 +716,10 @@
                     amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
                 }
                 document.querySelectorAll('.amount-btn').forEach(btn => {
-                    btn.style.display = 'block';
+                    if (btn.id !== 'credit-card-info') {
+                        btn.style.display = 'block';
+                    }
                 });
-                const customBtn = document.getElementById('custom-amount-btn');
-                if (customBtn) {
-                    customBtn.style.display = 'none';
-                }
                 const creditCardInfo = document.getElementById('credit-card-info');
                 if (creditCardInfo) {
                     creditCardInfo.remove();
