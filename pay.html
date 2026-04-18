@@ -447,113 +447,107 @@
             </div>
         </div>
         
-        <!-- 登录/注册表单容器 -->
-        <div style="height: 450px; display: flex; flex-direction: column; justify-content: center;">
-            <!-- 登录/注册表单 -->
-            <div id="login-form">
-                <div class="input-box">
-                    <input type="text" placeholder="用户名" id="username">
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="密码" id="password">
-                </div>
-                <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
-                    如果您已有账号，请直接登录，无需重复注册
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
-                    <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
-                </div>
+        <!-- 登录/注册表单 -->
+        <div id="login-form">
+            <div class="input-box">
+                <input type="text" placeholder="用户名" id="username">
             </div>
-            
-            <!-- 注册表单 -->
-            <div id="register-form" style="display: none;">
-                <div class="input-box">
-                    <input type="text" placeholder="用户名" id="reg-username">
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="密码" id="reg-password">
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="确认密码" id="reg-confirm-password">
-                </div>
-                <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
-                    如果您已有账号，请直接登录，无需重复注册
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
-                    <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
-                </div>
+            <div class="input-box">
+                <input type="password" placeholder="密码" id="password">
+            </div>
+            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+                如果您已有账号，请直接登录，无需重复注册
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
+                <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
             </div>
         </div>
         
-        <!-- 内容容器 -->
-        <div style="height: 450px; flex-direction: column; display: flex;">
-            <!-- 支付界面 -->
-            <div id="pay-interface">
-                <div class="balance-display">
-                    <div class="balance-label">可用余额</div>
-                    <div class="balance-val">0.00</div>
-                </div>
+        <!-- 注册表单 -->
+        <div id="register-form" style="display: none;">
+            <div class="input-box">
+                <input type="text" placeholder="用户名" id="reg-username">
+            </div>
+            <div class="input-box">
+                <input type="password" placeholder="密码" id="reg-password">
+            </div>
+            <div class="input-box">
+                <input type="password" placeholder="确认密码" id="reg-confirm-password">
+            </div>
+            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+                如果您已有账号，请直接登录，无需重复注册
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
+                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+            </div>
+        </div>
+        
+        <!-- 支付界面 -->
+        <div id="pay-interface">
+            <div class="balance-display">
+                <div class="balance-label">可用余额</div>
+                <div class="balance-val">0.00</div>
+            </div>
 
-                <div class="amount-grid">
-                    <button class="amount-btn" onclick="selectAmount(10)">¥10</button>
-                    <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
-                    <button class="amount-btn" onclick="selectAmount(30)">¥30</button>
-                    <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
-                    <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
-                    <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
-                </div>
+            <div class="amount-grid">
+                <button class="amount-btn" onclick="selectAmount(10)">¥10</button>
+                <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
+                <button class="amount-btn" onclick="selectAmount(30)">¥30</button>
+                <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
+                <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
+                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
+            </div>
 
-                <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                    <option value="alipay">支付宝</option>
-                    <option value="wechat">微信支付</option>
-                    <option value="credit_card">信用卡(固定20美元)</option>
-                    <option value="wechat_static">微信支付(人工)</option>
-                    <option value="alipay_static">支付宝(人工)</option>
-                    <option value="usdt">TRON USDT(>100元)</option>
-                </select>
+            <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
+                <option value="alipay">支付宝</option>
+                <option value="wechat">微信支付</option>
+                <option value="credit_card">信用卡(固定20美元)</option>
+                <option value="wechat_static">微信支付(人工)</option>
+                <option value="alipay_static">支付宝(人工)</option>
+                <option value="usdt">TRON USDT(>100元)</option>
+            </select>
 
-                <button class="glitch-btn" onclick="pay()"></button>
-                
-                <div class="corner-tag">安全连接已激活</div>
+            <button class="glitch-btn" onclick="pay()"></button>
+            
+            <div class="corner-tag">安全连接已激活</div>
+        </div>
+        
+        <!-- 订单记录界面 -->
+        <div id="orders-interface" style="display: none;">
+            <div class="balance-display">
+                <div class="balance-label">订单总数</div>
+                <div class="balance-val" id="total-orders">0</div>
             </div>
             
-            <!-- 订单界面 -->
-            <div id="orders-interface" style="display: none; height: 100%; flex-direction: column;">
-                <div class="balance-display">
-                    <div class="balance-label">订单总数</div>
-                    <div class="balance-val" id="total-orders">0</div>
+            <!-- 订单筛选 -->
+            <div class="filter-section" style="margin-bottom: 20px; display: none;">
+                <select id="status-filter" class="filter-select" onchange="loadOrders()">
+                    <option value="">全部状态</option>
+                    <option value="pending">待支付</option>
+                    <option value="paid">已支付</option>
+                    <option value="failed">支付失败</option>
+                </select>
+                <select id="type-filter" class="filter-select" onchange="loadOrders()">
+                    <option value="">全部类型</option>
+                    <option value="wxpay">微信支付</option>
+                    <option value="alipay">支付宝</option>
+                </select>
+            </div>
+            
+            <!-- 订单列表 -->
+            <div id="orders-list" class="orders-container" style="max-height: 300px; overflow-y: auto;">
+                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">
+                    加载中...
                 </div>
-                
-                <!-- 订单筛选 -->
-                <div class="filter-section" style="margin-bottom: 20px; display: none;">
-                    <select id="status-filter" class="filter-select" onchange="loadOrders()">
-                        <option value="">全部状态</option>
-                        <option value="pending">待支付</option>
-                        <option value="paid">已支付</option>
-                        <option value="failed">支付失败</option>
-                    </select>
-                    <select id="type-filter" class="filter-select" onchange="loadOrders()">
-                        <option value="">全部类型</option>
-                        <option value="wxpay">微信支付</option>
-                        <option value="alipay">支付宝</option>
-                    </select>
-                </div>
-                
-                <!-- 订单列表 -->
-                <div id="orders-list" class="orders-container" style="flex: 1; overflow-y: auto; min-height: 300px;">
-                    <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">
-                        加载中...
-                    </div>
-                </div>
-                
-                <!-- 分页 -->
-                <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                    <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled>上一页</button>
-                    <span id="page-info" style="font-size: 12px;">第 1/1 页</span>
-                    <button id="next-page" class="page-btn" onclick="changePage(1)" disabled>下一页</button>
-                </div>
+            </div>
+            
+            <!-- 分页 -->
+            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled>上一页</button>
+                <span id="page-info" style="font-size: 12px;">第 1/1 页</span>
+                <button id="next-page" class="page-btn" onclick="changePage(1)" disabled>下一页</button>
             </div>
         </div>
     </div>
@@ -993,11 +987,11 @@
             document.body.appendChild(overlay);
             document.body.appendChild(paymentContainer);
             
-            // 自动生成订单
+            // 自动生成订单记录
             createStaticOrderRecord(paymentType, amount, orderNo);
         }
         
-        // 创建静态支付订单
+        // 创建静态支付订单记录
         async function createStaticOrderRecord(paymentType, amount, orderNo) {
             const orderData = {
                 order_no: orderNo,
@@ -1193,7 +1187,7 @@
                         order_no: orderNo
                     }));
                     
-                    // 立即创建订单到后端
+                    // 立即创建订单记录到后端
                     try {
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
@@ -1208,7 +1202,7 @@
                             })
                         });
                     } catch (e) {
-                        console.error('创建订单失败:', e);
+                        console.error('创建订单记录失败:', e);
                     }
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
@@ -1293,7 +1287,7 @@
                         order_no: orderNo
                     }));
                     
-                    // 立即创建订单到后端
+                    // 立即创建订单记录到后端
                     try {
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
@@ -1308,7 +1302,7 @@
                             })
                         });
                     } catch (e) {
-                        console.error('创建订单失败:', e);
+                        console.error('创建订单记录失败:', e);
                     }
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
@@ -1572,7 +1566,7 @@
             totalOrders.textContent = pagination.total;
             totalPages = pagination.pages;
             if (orders.length === 0) {
-                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单</div>';
+                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单记录</div>';
                 updatePagination();
                 return;
             }
