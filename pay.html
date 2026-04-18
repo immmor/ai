@@ -436,7 +436,7 @@
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
-            <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单记录</button>
+            <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
                     <span id="username-display"></span>
@@ -484,39 +484,39 @@
             </div>
         </div>
         
-        <!-- 支付界面 -->
-        <div id="pay-interface">
-            <div class="balance-display">
-                <div class="balance-label">可用余额</div>
-                <div class="balance-val">0.00</div>
-            </div>
-
-            <div class="amount-grid">
-                <button class="amount-btn" onclick="selectAmount(10)">¥10</button>
-                <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
-                <button class="amount-btn" onclick="selectAmount(30)">¥30</button>
-                <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
-                <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
-                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
-            </div>
-
-            <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="alipay">支付宝</option>
-                <option value="wechat">微信支付</option>
-                <option value="credit_card">信用卡(固定20美元)</option>
-                <option value="wechat_static">微信支付(人工)</option>
-                <option value="alipay_static">支付宝(人工)</option>
-                <option value="usdt">TRON USDT(>100元)</option>
-            </select>
-
-            <button class="glitch-btn" onclick="pay()"></button>
-            
-            <div class="corner-tag">安全连接已激活</div>
-        </div>
-        
-        <!-- 订单记录界面容器 -->
+        <!-- 内容容器 -->
         <div style="height: 450px; flex-direction: column; display: flex;">
-            <!-- 订单记录界面 -->
+            <!-- 支付界面 -->
+            <div id="pay-interface">
+                <div class="balance-display">
+                    <div class="balance-label">可用余额</div>
+                    <div class="balance-val">0.00</div>
+                </div>
+
+                <div class="amount-grid">
+                    <button class="amount-btn" onclick="selectAmount(10)">¥10</button>
+                    <button class="amount-btn" onclick="selectAmount(20)">¥20</button>
+                    <button class="amount-btn" onclick="selectAmount(30)">¥30</button>
+                    <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
+                    <button class="amount-btn" onclick="selectAmount(100)">¥100</button>
+                    <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
+                </div>
+
+                <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
+                    <option value="alipay">支付宝</option>
+                    <option value="wechat">微信支付</option>
+                    <option value="credit_card">信用卡(固定20美元)</option>
+                    <option value="wechat_static">微信支付(人工)</option>
+                    <option value="alipay_static">支付宝(人工)</option>
+                    <option value="usdt">TRON USDT(>100元)</option>
+                </select>
+
+                <button class="glitch-btn" onclick="pay()"></button>
+                
+                <div class="corner-tag">安全连接已激活</div>
+            </div>
+            
+            <!-- 订单界面 -->
             <div id="orders-interface" style="display: none; height: 100%; flex-direction: column;">
                 <div class="balance-display">
                     <div class="balance-label">订单总数</div>
@@ -990,11 +990,11 @@
             document.body.appendChild(overlay);
             document.body.appendChild(paymentContainer);
             
-            // 自动生成订单记录
+            // 自动生成订单
             createStaticOrderRecord(paymentType, amount, orderNo);
         }
         
-        // 创建静态支付订单记录
+        // 创建静态支付订单
         async function createStaticOrderRecord(paymentType, amount, orderNo) {
             const orderData = {
                 order_no: orderNo,
@@ -1190,7 +1190,7 @@
                         order_no: orderNo
                     }));
                     
-                    // 立即创建订单记录到后端
+                    // 立即创建订单到后端
                     try {
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
@@ -1205,7 +1205,7 @@
                             })
                         });
                     } catch (e) {
-                        console.error('创建订单记录失败:', e);
+                        console.error('创建订单失败:', e);
                     }
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
@@ -1290,7 +1290,7 @@
                         order_no: orderNo
                     }));
                     
-                    // 立即创建订单记录到后端
+                    // 立即创建订单到后端
                     try {
                         await fetch('https://immmor.com/api/order/create-static', {
                             method: 'POST',
@@ -1305,7 +1305,7 @@
                             })
                         });
                     } catch (e) {
-                        console.error('创建订单记录失败:', e);
+                        console.error('创建订单失败:', e);
                     }
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
@@ -1569,7 +1569,7 @@
             totalOrders.textContent = pagination.total;
             totalPages = pagination.pages;
             if (orders.length === 0) {
-                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单记录</div>';
+                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单</div>';
                 updatePagination();
                 return;
             }
