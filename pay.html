@@ -952,7 +952,7 @@
             const confirmBtn = document.createElement('button');
             confirmBtn.id = 'confirm-recharge-btn';
             confirmBtn.style.cssText = `
-                flex: 5; padding: 12px; background: #666; color: white;
+                flex: 6; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
                 font-weight: 600; opacity: 0.5;
             `;
@@ -962,7 +962,7 @@
             const closeBtn = document.createElement('button');
             closeBtn.textContent = '关闭';
             closeBtn.style.cssText = `
-                flex: 2; padding: 12px; background: #666; color: white;
+                flex: 1; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
                 font-weight: 600;
             `;
@@ -1048,7 +1048,7 @@
                 if (countdown < 0) {
                     clearInterval(countdownInterval);
                     confirmBtn.style.cssText = `
-                        flex: 5; padding: 12px; background: var(--neon-pink); color: #000;
+                        flex: 6; padding: 12px; background: var(--neon-pink); color: #000;
                         border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
                         font-weight: 600;
                     `;
@@ -1072,7 +1072,7 @@
                 if (remainingTime < 0) {
                     clearInterval(interval);
                     confirmBtn.style.cssText = `
-                        flex: 5; padding: 12px; background: var(--neon-pink); color: #000;
+                        flex: 6; padding: 12px; background: var(--neon-pink); color: #000;
                         border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
                         font-weight: 600;
                     `;
@@ -1123,7 +1123,7 @@
                     
                     // 置灰按钮1小时
                     confirmBtn.style.cssText = `
-                        flex: 5; padding: 12px; background: #666; color: white;
+                        flex: 6; padding: 12px; background: #666; color: white;
                         border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
                         font-weight: 600; opacity: 0.5;
                     `;
