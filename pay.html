@@ -447,40 +447,43 @@
             </div>
         </div>
         
-        <!-- 登录/注册表单 -->
-        <div id="login-form">
-            <div class="input-box">
-                <input type="text" placeholder="用户名" id="username">
+        <!-- 登录/注册表单容器 -->
+        <div style="height: 450px; display: flex; flex-direction: column; justify-content: center;">
+            <!-- 登录/注册表单 -->
+            <div id="login-form">
+                <div class="input-box">
+                    <input type="text" placeholder="用户名" id="username">
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="密码" id="password">
+                </div>
+                <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+                    如果您已有账号，请直接登录，无需重复注册
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
+                    <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
+                </div>
             </div>
-            <div class="input-box">
-                <input type="password" placeholder="密码" id="password">
-            </div>
-            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
-                如果您已有账号，请直接登录，无需重复注册
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="glitch-btn login-btn" onclick="login()" style="flex: 1;"></button>
-                <button class="glitch-btn register-btn" onclick="showRegister()" style="flex: 1; background: var(--neon-pink);"></button>
-            </div>
-        </div>
-        
-        <!-- 注册表单 -->
-        <div id="register-form" style="display: none;">
-            <div class="input-box">
-                <input type="text" placeholder="用户名" id="reg-username">
-            </div>
-            <div class="input-box">
-                <input type="password" placeholder="密码" id="reg-password">
-            </div>
-            <div class="input-box">
-                <input type="password" placeholder="确认密码" id="reg-confirm-password">
-            </div>
-            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
-                如果您已有账号，请直接登录，无需重复注册
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
-                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+            
+            <!-- 注册表单 -->
+            <div id="register-form" style="display: none;">
+                <div class="input-box">
+                    <input type="text" placeholder="用户名" id="reg-username">
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="密码" id="reg-password">
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="确认密码" id="reg-confirm-password">
+                </div>
+                <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+                    如果您已有账号，请直接登录，无需重复注册
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
+                    <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+                </div>
             </div>
         </div>
         
