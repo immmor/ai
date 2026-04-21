@@ -918,20 +918,27 @@
             `;
             openAppBtn.onclick = () => {
                 const isAndroid = /Android/i.test(navigator.userAgent);
+                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
                 
                 if (paymentType === 'alipay_static') {
-                    if (isAndroid) {
-                        window.location.href = 'alipays://';
-                    } else {
+                    if (isIOS) {
                         window.location.href = 'alipay://';
+                    } else {
+                        window.location.href = 'alipays://';
                     }
                 } else if (paymentType === 'wechat_static') {
-                    if (isAndroid) {
-                        window.location.href = 'intent://scanQRCode#Intent;scheme=weixin;package=com.tencent.mm;end';
+                    if (isIOS) {
+                        window.location.href = 'weixin://';
                     } else {
                         window.location.href = 'weixin://';
                     }
                 }
+                
+                setTimeout(() => {
+                    if (isIOS) {
+                        alert('如果未能打开微信，请手动打开微信App');
+                    }
+                }, 500);
             };
             
             // 确认充值按钮
