@@ -555,7 +555,7 @@
         document.addEventListener('dblclick', function(e) {
             e.preventDefault();
         });
-        let mode = 'alipay'; // 默认选择支付宝支付
+        let mode = 'alipay_static'; // 默认选择支付宝(人工)支付
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
