@@ -76,10 +76,8 @@
         .marquee {
             overflow: hidden;
             white-space: nowrap;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
             padding: 8px 0;
             margin-bottom: 18px;
-            border-radius: 3px;
         }
         .marquee span {
             display: inline-block;
@@ -87,6 +85,11 @@
             animation: marquee 10s linear infinite;
             color: #fff;
             font-size: 14px;
+        }
+        .marquee .highlight {
+            color: var(--neon-pink);
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--neon-pink);
         }
         @keyframes marquee {
             from { transform: translateX(0); }
@@ -439,7 +442,7 @@
 
 <div class="neon-card">
         <div class="header">以墨钱包</div>
-        <div class="marquee"><span id="marquee-text">🎉限时特惠！！充20美元到账200人民币！！</span></div>
+        <div class="marquee"><span id="marquee-text">限时特惠！！<span class="highlight">信用卡</span>充值20美元到账200人民币！！</span></div>
         
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
