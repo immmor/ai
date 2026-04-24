@@ -186,7 +186,7 @@ export default {
                 invitedUsers = JSON.parse(inviter.invited_user);
               } catch (e) {}
             }
-            invitedUsers.push({ username: username, registerTime: now });
+            invitedUsers.unshift({ username: username, registerTime: now });
             await DB.prepare('UPDATE user SET invited_user = ? WHERE username = ?').bind(JSON.stringify(invitedUsers), inviterUsername).run();
           }
           
