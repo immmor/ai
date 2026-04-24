@@ -73,6 +73,25 @@
             text-shadow: 0 0 10px var(--neon-blue);
             font-size: 28px;
         }
+        .marquee {
+            overflow: hidden;
+            white-space: nowrap;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            padding: 8px 0;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        .marquee span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 10s linear infinite;
+            color: #fff;
+            font-size: 14px;
+        }
+        @keyframes marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
 
         /* 余额区 */
         .balance-display {
@@ -420,6 +439,7 @@
 
 <div class="neon-card">
         <div class="header">以墨钱包</div>
+        <div class="marquee"><span id="marquee-text">限时特惠！！充20美元到账200人民币！！</span></div>
         
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
