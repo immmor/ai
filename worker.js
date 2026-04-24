@@ -92,6 +92,8 @@ export default {
 
         let finalBalance = 0;
 
+        let inviterUsername = null;
+
         // 如果提供了邀请码，检查邀请人是否存在并给予奖励
         if (inviteCode) {
           const inviterUser = await DB
@@ -100,6 +102,7 @@ export default {
             .first();
           
           if (inviterUser) {
+            inviterUsername = inviterUser.username;
             // 被邀请人奖励2元
             finalBalance = 2;
             
@@ -173,6 +176,18 @@ export default {
             .prepare('UPDATE user SET login_info = ? WHERE username = ?')
             .bind(loginInfo, username)
             .run();
+          
+          if (inviterUsername) {
+            const inviter = await DB.prepare('SELECT invited_user FROM user WHERE username = ?').bind(inviterUsername).first();
+            let invitedUsers = [];
+            if (inviter?.invited_user) {
+              try {
+                invitedUsers = JSON.parse(inviter.invited_user);
+              } catch (e) {}
+            }
+            invitedUsers.push({ username: username, registerTime: now });
+            await DB.prepare('UPDATE user SET invited_user = ? WHERE username = ?').bind(JSON.stringify(invitedUsers), inviterUsername).run();
+          }
           
           return resJson({ 
             success: true, 

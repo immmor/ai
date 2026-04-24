@@ -608,6 +608,7 @@
                                     <th style="min-width: 160px;">VIP过期时间</th>
                                     <th>v_token</th>
                                     <th>邀请码</th>
+                                    <th style="min-width: 150px;">邀请用户</th>
                                     <th>Clash链接</th>
                                     <th>V2Ray链接</th>
                                     <th style="min-width: 150px;">登录信息</th>
@@ -862,6 +863,10 @@
                     <div class="form-group">
                         <label for="userInviteCode">邀请码</label>
                         <input type="text" id="userInviteCode" name="userInviteCode">
+                    </div>
+                    <div class="form-group">
+                        <label for="userInvitedUser">邀请用户</label>
+                        <textarea id="userInvitedUser" name="userInvitedUser" rows="3" style="width: 100%; resize: vertical; font-family: monospace;" readonly></textarea>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userVLinkClash">Clash链接</label>
@@ -1239,6 +1244,7 @@
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
+                    <td>${user.invited_user ? (() => { try { return JSON.parse(user.invited_user).map(u => u.username).join(', '); } catch(e) { return '-'; } })() : '-'}</td>
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
@@ -1385,6 +1391,7 @@
             document.getElementById('userLearnVipExpireDate').value = user.learn_vip_expire_date ? user.learn_vip_expire_date.split(' ')[0] : '';
             document.getElementById('userVToken').value = user.v_token || '';
             document.getElementById('userInviteCode').value = user.invite_code || '';
+            document.getElementById('userInvitedUser').value = user.invited_user ? (() => { try { const arr = JSON.parse(user.invited_user); return arr.map(u => `${u.username} (${u.registerTime})`).join('\n'); } catch(e) { return '-'; } })() : '';
             document.getElementById('userVLinkClash').value = user.v_link_clash || '';
             document.getElementById('userVLinkV2ray').value = user.v_link_v2ray || '';
             document.getElementById('userNotTrusted').value = user.not_trusted || '';
