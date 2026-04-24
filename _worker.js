@@ -345,7 +345,7 @@ export default {
               await supabaseFetch('orders', createSupabaseConfig('POST', {
                 order_no: order_no,
                 username: username,
-                amount: 140,
+                amount: 200,
                 payment_type: 'credit_card',
                 status: 'pending',
                 description: '信用卡支付'
@@ -391,7 +391,7 @@ export default {
           console.log('收到支付回调:', { checkout_id, order_id, order_no, username });
           
           if (order_no && username) {
-            const amountCny = 140;
+            const amountCny = 200;
                 
             // 更新用户余额
             await env.DB
