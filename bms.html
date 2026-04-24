@@ -1244,7 +1244,7 @@
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
-                    <td style="max-width: 200px; word-break: break-all;">${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
+                    <td>${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
