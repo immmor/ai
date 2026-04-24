@@ -493,7 +493,7 @@
                 <option value="wechat">微信支付</option> -->
                 <option value="alipay_static">支付宝(人工)</option>
                 <option value="wechat_static">微信支付(人工)</option>
-                <option value="credit_card">信用卡(固定20美元)</option>
+                <option value="credit_card">信用卡(付20美元到账200RMB)</option>
                 <option value="usdt">TRON USDT(>100元)</option>
             </select>
 
@@ -674,7 +674,7 @@
             mode = m;
             
             if (m === 'credit_card') {
-                selectedAmount = 140;
+                selectedAmount = 200;
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.classList.remove('active');
                     btn.style.display = 'none';
@@ -696,8 +696,8 @@
                         border-radius: 5px;
                     `;
                     creditCardInfo.innerHTML = `
-                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">信用卡支付固定金额</div>
-                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
+                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">信用卡支付</div>
+                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥200</div>
                         <div style="color: #999; font-size: 12px; margin-top: 2px;">(20美元)</div>
                     `;
                     amountGrid.appendChild(creditCardInfo);
@@ -1231,7 +1231,7 @@
                 if (data.code === 200) {
                     localStorage.setItem('creditCardOrder_' + orderNo, JSON.stringify({
                         username: currentUser.username,
-                        amount: 140,
+                        amount: 200,
                         order_no: orderNo
                     }));
                     
