@@ -615,6 +615,7 @@
                                     <th style="min-width: 120px;">不信任</th>
                                     <th>订阅价格</th>
                                     <th style="min-width: 100px;">问卷</th>
+                                    <th style="min-width: 120px;">密保答案</th>
                                     <th style="min-width: 100px;">操作</th>
                                 </tr>
                             </thead>
@@ -887,6 +888,10 @@
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userLoginInfo">登录信息</label>
                         <textarea id="userLoginInfo" name="userLoginInfo" rows="8" style="width: 100%; resize: vertical; font-family: monospace;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="userSecurityAnswer">密保答案</label>
+                        <input type="text" id="userSecurityAnswer" name="userSecurityAnswer">
                     </div>
                 </div>
                 <button type="submit" class="btn" style="margin-top: 15px; flex-shrink: 0;">保存</button>
@@ -1251,6 +1256,7 @@
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>${user.survey || '-'}</td>
+                    <td>${user.security_answer ? user.security_answer.substring(0, 30) + '...' : '-'}</td>
                     <td style="min-width: 100px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                     </td>
@@ -1397,6 +1403,7 @@
             document.getElementById('userNotTrusted').value = user.not_trusted || '';
             document.getElementById('userPricePlan').value = user.price_plan || '';
             document.getElementById('userLoginInfo').value = user.login_info || '';
+            document.getElementById('userSecurityAnswer').value = user.security_answer || '';
             
             document.getElementById('userModal').style.display = 'block';
         }
@@ -1416,6 +1423,7 @@
             const v_link_v2ray = document.getElementById('userVLinkV2ray').value;
             const not_trusted = document.getElementById('userNotTrusted').value;
             const login_info = document.getElementById('userLoginInfo').value;
+            const security_answer = document.getElementById('userSecurityAnswer').value;
             
             try {
                 const result = await newApiRequest('/api/user/edit', 'POST', {
@@ -1430,7 +1438,8 @@
                     v_link_v2ray: v_link_v2ray || '',
                     not_trusted: not_trusted || '',
                     price_plan: document.getElementById('userPricePlan').value || '',
-                    login_info: login_info || ''
+                    login_info: login_info || '',
+                    security_answer: security_answer || ''
                 });
                 
                 if (result.code === 200) {

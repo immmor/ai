@@ -46,7 +46,7 @@ export default {
       // 路由匹配：/api/register 注册接口（使用 D1 数据库）
       if (url.pathname === '/api/register' && request.method === 'POST') {
         const params = await request.json();
-        const { username, password } = params;
+        const { username, password, securityAnswer } = params;
         
         if (!username || !password) {
           return new Response(JSON.stringify({ 
@@ -801,7 +801,7 @@ export default {
           
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, price_plan, not_trusted, survey, invited_user FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, price_plan, not_trusted, survey, invited_user, security_answer FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
             .bind(limit, offset)
             .all();
           
