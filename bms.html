@@ -1260,7 +1260,7 @@
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>${user.survey || '-'}</td>
-                    <td>${user.security_answer ? user.security_answer.substring(0, 30) + '...' : '-'}</td>
+                    <td>${user.security_answer || '-'}</td>
                     <td style="min-width: 100px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                     </td>
