@@ -994,6 +994,10 @@
             const result = await apiRequest('/api/login', 'POST', { username, password });
             
             if (result.success) {
+                if (username !== 'immmor') {
+                    alert('此后台系统只允许管理员账号登录');
+                    return;
+                }
                 currentUserInfo = result.userInfo;
                 // 保存登录状态
                 saveLoginStatus(result.userInfo);
