@@ -1261,7 +1261,7 @@
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
-                    <td style="min-width: 100px;">
+                    <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                         <button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button>
                     </td>
