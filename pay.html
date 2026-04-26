@@ -1041,10 +1041,11 @@
             // 检查上次充值时间
             const lastRechargeTime = localStorage.getItem('lastRechargeTime');
             const now = Date.now();
-            
-            // 如果距离上次充值不足1小时，直接置灰1小时
-            if (lastRechargeTime && (now - parseInt(lastRechargeTime)) < 3600000) {
-                const remainingTime = 3600000 - (now - parseInt(lastRechargeTime));
+            const COOLDOWN_TIME = 86400000; // 24小时
+
+            // 如果距离上次充值不足24小时，直接置灰24小时
+            if (lastRechargeTime && (now - parseInt(lastRechargeTime)) < COOLDOWN_TIME) {
+                const remainingTime = COOLDOWN_TIME - (now - parseInt(lastRechargeTime));
                 startCooldownTimer(confirmBtn, remainingTime, '下次充值');
                 return;
             }
@@ -1074,11 +1075,18 @@
         // 启动冷却计时器
         function startCooldownTimer(confirmBtn, remainingTime, label) {
             const interval = setInterval(() => {
-                const minutes = Math.floor(remainingTime / 60000);
+                const hours = Math.floor(remainingTime / 3600000);
+                const minutes = Math.floor((remainingTime % 3600000) / 60000);
                 const seconds = Math.floor((remainingTime % 60000) / 1000);
-                confirmBtn.textContent = `${label} (${minutes}:${seconds.toString().padStart(2, '0')})`;
+
+                if (hours > 0) {
+                    confirmBtn.textContent = `${label}(${hours}hours)`;
+                } else {
+                    confirmBtn.textContent = `${label}(${minutes}:${seconds.toString().padStart(2, '0')})`;
+                }
+
                 remainingTime -= 1000;
-                
+
                 if (remainingTime < 0) {
                     clearInterval(interval);
                     confirmBtn.style.cssText = `
@@ -1131,7 +1139,7 @@
                     
                     alert('充值成功！余额已更新。');
                     
-                    // 置灰按钮1小时
+                    // 置灰按钮24小时
                     confirmBtn.style.cssText = `
                         flex: 6; padding: 12px; background: #666; color: white;
                         border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
@@ -1139,8 +1147,8 @@
                     `;
                     confirmBtn.disabled = true;
                     confirmBtn.onclick = null;
-                    
-                    startCooldownTimer(confirmBtn, 3600000, '下次充值');
+
+                    startCooldownTimer(confirmBtn, 86400000, '下次充值');
                 } else {
                     alert('充值失败：' + result.message);
                     console.error('充值失败详情:', result);
