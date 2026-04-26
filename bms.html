@@ -1692,7 +1692,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         async function checkUserClashLink(username) {
-            const result = await apiRequest(`/api/clash-link?username=${encodeURIComponent(username)}`, 'GET');
+            const result = await newApiRequest(`/api/clash-link?username=${encodeURIComponent(username)}`, 'GET');
             if (result.code === 200 && result.data?.subscription_userinfo) {
                 const m = result.data.subscription_userinfo.match(/upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)/);
                 if (m) {
