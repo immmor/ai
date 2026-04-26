@@ -1256,6 +1256,7 @@
                     <td>${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
+                    <td><button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button></td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
@@ -1688,6 +1689,20 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 html += `<tr><td>${u.username}</td><td colspan="5">${infoText}</td><td>${u.link?.substring(0, 30)}...</td></tr>`;
             }
             tbody.innerHTML = html;
+        }
+
+        async function checkUserClashLink(username) {
+            const result = await apiRequest(`/api/clash-link?username=${encodeURIComponent(username)}`, 'GET');
+            if (result.code === 200 && result.data?.subscription_userinfo) {
+                const m = result.data.subscription_userinfo.match(/upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)/);
+                if (m) {
+                    const toGB = n => (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+                    const toDate = t => new Date(t * 1000).toLocaleDateString();
+                    alert(`${username}\n↑${toGB(m[1])} ↓${toGB(m[2])} 总${toGB(m[3])} 到期${toDate(m[4])}`);
+                    return;
+                }
+            }
+            alert(`${username} 检测失败: ${result.msg || '链接无效或请求失败'}`);
         }
 
         // 重置用户流量
