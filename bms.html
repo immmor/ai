@@ -613,6 +613,8 @@
                                     <th style="min-width: 150px;">登录信息</th>
                                     <th style="min-width: 120px;">不信任</th>
                                     <th>订阅价格</th>
+                                    <th>成功支付次数</th>
+                                    <th>成功支付金额</th>
                                     <th style="min-width: 100px;">问卷</th>
                                     <th style="min-width: 120px;">密保答案</th>
                                     <th style="min-width: 100px;">操作</th>
@@ -1242,6 +1244,9 @@
             }
 
             usersData.forEach(user => {
+                const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
+                const successCount = successOrders.length;
+                const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
@@ -1258,6 +1263,8 @@
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
+                    <td>${successCount}</td>
+                    <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
                     <td style="min-width: 200px;">
@@ -1469,7 +1476,7 @@
         
         function filterUsers() {
             const keyword = document.getElementById('userSearchInput').value.trim().toLowerCase();
-            const filtered = usersData.filter(u => u.username.toLowerCase().includes(keyword));
+            const filtered = usersData.filter(u => JSON.stringify(u).toLowerCase().includes(keyword));
             renderFilteredUsers(filtered);
         }
 
@@ -1477,10 +1484,13 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;">未找到匹配的用户</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
             data.forEach(user => {
+                const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
+                const successCount = successOrders.length;
+                const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
@@ -1497,6 +1507,8 @@
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
+                    <td>${successCount}</td>
+                    <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
                     <td style="min-width: 200px;">
