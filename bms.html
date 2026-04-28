@@ -611,8 +611,10 @@
                                     <th>Clash链接</th>
                                     <th>V2Ray链接</th>
                                     <th style="min-width: 150px;">登录信息</th>
+                                    <th style="min-width: 150px;">fetch_link</th>
                                     <th style="min-width: 120px;">不信任</th>
                                     <th>订阅价格</th>
+                                    <th>余额</th>
                                     <th style="min-width: 100px;">成功支付次数</th>
                                     <th style="min-width: 100px;">成功支付金额</th>
                                     <th style="min-width: 100px;">问卷</th>
@@ -889,6 +891,10 @@
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userLoginInfo">登录信息</label>
                         <textarea id="userLoginInfo" name="userLoginInfo" rows="8" style="width: 100%; resize: vertical; font-family: monospace;"></textarea>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="userFetchLink">fetch_link</label>
+                        <input type="text" id="userFetchLink" name="userFetchLink">
                     </div>
                     <div class="form-group">
                         <label for="userSecurityAnswer">密保答案</label>
@@ -1252,7 +1258,6 @@
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.password || '-'}</td>
-                    <td>¥${user.balance || 0}</td>
                     <td style="min-width: 130px;">${user.v_expire_date && new Date(user.v_expire_date) > new Date() ? 'VIP' : '普通用户'}</td>
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
@@ -1261,8 +1266,10 @@
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
+                    <td>${user.fetch_link || '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
+                    <td>¥${user.balance || 0}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
@@ -1414,6 +1421,7 @@
             document.getElementById('userNotTrusted').value = user.not_trusted || '';
             document.getElementById('userPricePlan').value = user.price_plan || '';
             document.getElementById('userLoginInfo').value = user.login_info || '';
+            document.getElementById('userFetchLink').value = user.fetch_link || '';
             document.getElementById('userSecurityAnswer').value = user.security_answer || '';
             
             document.getElementById('userModal').style.display = 'block';
@@ -1434,6 +1442,7 @@
             const v_link_v2ray = document.getElementById('userVLinkV2ray').value;
             const not_trusted = document.getElementById('userNotTrusted').value;
             const login_info = document.getElementById('userLoginInfo').value;
+            const fetch_link = document.getElementById('userFetchLink').value;
             const security_answer = document.getElementById('userSecurityAnswer').value;
             
             try {
@@ -1450,6 +1459,7 @@
                     not_trusted: not_trusted || '',
                     price_plan: document.getElementById('userPricePlan').value || '',
                     login_info: login_info || '',
+                    fetch_link: fetch_link || '',
                     security_answer: security_answer || ''
                 });
                 
@@ -1496,7 +1506,6 @@
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.password || '-'}</td>
-                    <td>¥${user.balance || 0}</td>
                     <td style="min-width: 130px;">${user.v_expire_date && new Date(user.v_expire_date) > new Date() ? 'VIP' : '普通用户'}</td>
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
@@ -1505,8 +1514,10 @@
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
+                    <td>${user.fetch_link || '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
+                    <td>¥${user.balance || 0}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
