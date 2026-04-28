@@ -591,10 +591,9 @@
                         <div class="table-header">
                             <h3>用户列表</h3>
                             <div style="display: flex; gap: 10px;">
-                                <input type="text" id="userSearchInput" placeholder="输入用户名查询余额" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <button class="add-btn" onclick="queryUserBalance(document.getElementById('userSearchInput').value)" style="background-color: #667eea;">查询余额</button>
+                                <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
                                 <button class="add-btn" onclick="openUserModal()">添加用户</button>
-                                
                             </div>
                         </div>
                         <table id="usersTable">
@@ -1468,20 +1467,45 @@
             }
         }
         
-        // 查询用户余额
-        async function queryUserBalance(username) {
-            if (!username) {
-                alert('请输入用户名');
+        function filterUsers() {
+            const keyword = document.getElementById('userSearchInput').value.trim().toLowerCase();
+            const filtered = usersData.filter(u => u.username.toLowerCase().includes(keyword));
+            renderFilteredUsers(filtered);
+        }
+
+        function renderFilteredUsers(data) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
-            
-            const result = await apiRequest(`/api/balance?username=${encodeURIComponent(username)}`, 'GET');
-            
-            if (result.code === 200) {
-                alert(`用户 ${username} 的当前余额: ¥${result.balance}`);
-            } else {
-                alert(result.msg || '查询失败');
-            }
+            data.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.password || '-'}</td>
+                    <td>¥${user.balance || 0}</td>
+                    <td>${user.v_expire_date && new Date(user.v_expire_date) > new Date() ? 'VIP' : '普通用户'}</td>
+                    <td>${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
+                    <td>${user.invite_code || '-'}</td>
+                    <td>${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.clash_link || '-'}">${user.clash_link ? '<button onclick="copyToClipboard(\'cl' + user.id + '\')" class="btn" style="padding:0.25rem 0.5rem;font-size:0.75rem;">复制</button><span id="cl' + user.id + '" style="display:none">' + user.clash_link + '</span>' : '-'}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v2ray_link || '-'}">${user.v2ray_link ? '<button onclick="copyToClipboard(\'v2' + user.id + '\')" class="btn" style="padding:0.25rem 0.5rem;font-size:0.75rem;">复制</button><span id="v2' + user.id + '" style="display:none">' + user.v2ray_link + '</span>' : '-'}</td>
+                    <td style="min-width: 150px;">${user.login_info || '-'}</td>
+                    <td>${user.distrust ? '是' : '否'}</td>
+                    <td>¥${user.sub_price || 0}</td>
+                    <td>${user.questionnaire || '-'}</td>
+                    <td>${user.answer || '-'}</td>
+                    <td style="min-width: 100px;">
+                        <button onclick="editUser(${user.id})" class="btn" style="padding:0.25rem 0.5rem;font-size:0.75rem;margin-right:0.25rem;">编辑</button>
+                        <button onclick="deleteUser(${user.id})" class="btn" style="padding:0.25rem 0.5rem;font-size:0.75rem;background-color:#e53e3e;">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
         
         // 查看订单详情
@@ -1950,6 +1974,10 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         window.onload = function() {
             // 检查是否已登录
             checkLoginStatus();
+            // 用户搜索回车支持
+            document.getElementById('userSearchInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') filterUsers();
+            });
         }
     </script>
 </body>
