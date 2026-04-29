@@ -725,6 +725,7 @@
                     amountGrid.appendChild(creditCardInfo);
                 }
             } else {
+                selectedAmount = null;
                 const amtInput = document.getElementById('amt');
                 if (amtInput) {
                     amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
