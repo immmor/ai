@@ -942,13 +942,13 @@
             `;
             openAppBtn.onclick = () => {
                 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                const imageUrl = encodeURIComponent(window.location.origin + '/static/pay/zfb.jpg');
 
                 if (paymentType === 'alipay_static') {
+                    const qrContent = encodeURIComponent('https://qr.alipay.com/fkx15464aezwcqfyl4aiga0');
                     if (isIOS) {
-                        window.location.href = `alipay://platformapi/startApp?saId=10000007&qrcode=${imageUrl}`;
+                        window.location.href = `alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=${qrContent}`;
                     } else {
-                        window.location.href = `alipays://platformapi/startApp?saId=10000007&qrcode=${imageUrl}`;
+                        window.location.href = `alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=${qrContent}`;
                     }
                 } else if (paymentType === 'wechat_static') {
                     if (isIOS) {
