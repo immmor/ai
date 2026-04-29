@@ -583,6 +583,8 @@
         let currentPage = 1;
         let totalPages = 1;
         let selectedAmount = null;
+
+        selectPayMethod('credit_card');
         
         const urlParams = new URLSearchParams(window.location.search);
         const urlUsername = urlParams.get('username');
