@@ -946,9 +946,9 @@
 
                 if (paymentType === 'alipay_static') {
                     if (isIOS) {
-                        window.location.href = `alipay://platformapi/startapp?appId=20000065&url=${imageUrl}`;
+                        window.location.href = `alipay://platformapi/startApp?saId=10000007&qrcode=${imageUrl}`;
                     } else {
-                        window.location.href = `alipays://platformapi/startapp?appId=20000065&url=${imageUrl}`;
+                        window.location.href = `alipays://platformapi/startApp?saId=10000007&qrcode=${imageUrl}`;
                     }
                 } else if (paymentType === 'wechat_static') {
                     if (isIOS) {
