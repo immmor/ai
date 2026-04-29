@@ -1,0 +1,124 @@
+{
+    "appTitle": "以墨钱包",
+    "marqueeText": "🎉限时特惠！！信用卡充值20美元到账200人民币！！",
+    "nav": {
+        "recharge": "充值",
+        "orders": "订单",
+        "logout": "退出登录"
+    },
+    "login": {
+        "username": "用户名",
+        "password": "密码",
+        "loginHint": "请直接登录，无需重复注册。",
+        "login": "登录",
+        "noAccount": "没有账号？注册",
+        "registerHint": "如果您已有账号，请直接登录，无需重复注册"
+    },
+    "register": {
+        "confirmPassword": "确认密码",
+        "confirmRegister": "确认注册"
+    },
+    "balance": {
+        "available": "可用余额"
+    },
+    "amount": {
+        "custom": "自定义"
+    },
+    "payMethod": {
+        "creditCard": "信用卡(充20美元到账200RMB)",
+        "usdt": "TRON USDT(>100元)",
+        "alipayStatic": "支付宝(人工)",
+        "wechatStatic": "微信支付(人工)"
+    },
+    "button": {
+        "confirmTrade": "确认交易",
+        "cancel": "返回"
+    },
+    "complaint": "投诉",
+    "securityConnection": "安全连接已激活",
+    "orders": {
+        "totalOrders": "订单总数",
+        "allStatus": "全部状态",
+        "pending": "待支付",
+        "paid": "已支付",
+        "failed": "支付失败",
+        "allTypes": "全部类型",
+        "wxpay": "微信支付",
+        "alipay": "支付宝",
+        "loading": "加载中...",
+        "prevPage": "上一页",
+        "nextPage": "下一页",
+        "pageInfo": "第 {current}/{total} 页",
+        "payMethod": "支付方式",
+        "status": "状态",
+        "createdAt": "创建时间",
+        "paidAt": "支付时间"
+    },
+    "creditCard": {
+        "pay": "信用卡支付",
+        "limitedOffer": "(限时特惠！！充20美元到账200人民币)",
+        "createFailed": "创建支付失败"
+    },
+    "alert": {
+        "emptyUsernamePassword": "用户名和密码不能为空",
+        "loginFailed": "登录失败：{message}",
+        "networkError": "网络错误，请稍后重试",
+        "emptyRegUsernamePassword": "用户名和密码不能为空",
+        "passwordMismatch": "两次输入的密码不一致",
+        "registerFailed": "注册失败：{message}",
+        "registerSuccess": "注册成功！请登录",
+        "invalidAmount": "请输入有效金额",
+        "minAmount10": "自定义支付额度最低需10元",
+        "minAmount100": "TRON USDT最低需充值100元",
+        "payUrlBuildFailed": "支付URL构建失败：{msg}",
+        "rechargeSuccess": "充值成功！余额已更新。",
+        "rechargeFailed": "充值失败，请稍后重试",
+        "rechargeCooldown": "充值冷却中，请{time}后再试",
+        "copyFailed": "复制失败",
+        "copySuccess": "复制成功",
+        "logoutConfirm": "确定要退出登录吗？",
+        "confirmPayment": "请先确认已支付"
+    },
+    "staticPay": {
+        "title": "{name}静态支付",
+        "orderNo": "订单号",
+        "copy": "复制",
+        "amount": "支付金额：¥{amount}",
+        "instruction": "支付说明：",
+        "instruction1": "请使用{name}扫描或下载上方二维码",
+        "instruction2": "支付金额：¥{amount}",
+        "instruction3": "支付时请务必备注订单号，否则充值失败",
+        "instruction4": "支付成功后请务必点击确认充值",
+        "openApp": "打开App",
+        "confirmRecharge": "确认充值",
+        "close": "关闭",
+        "wait": "请稍等{countdown}s",
+        "cooldown": "充值冷却中({time})",
+        "cooldownNext": "下次充值",
+        "hours": "{hours}小时",
+        "copied": "已复制"
+    },
+    "usdt": {
+        "title": "TRON USDT 充值",
+        "address": "充值地址",
+        "copyAddress": "复制地址",
+        "minAmount": "最低充值：{amount}元",
+        "instruction": "请向上述地址转入 USDT，充值金额需大于100元",
+        "confirm": "我已转账",
+        "checking": "检查中...",
+        "createFailed": "创建USDT订单失败",
+        "timeout": "请求超时，请稍后重试。",
+        "paySuccess": "支付成功！余额已到账",
+        "paySuccessNoOrder": "支付成功！但无法找到订单信息，请联系客服",
+        "payPending": "支付未完成。刚转币请等待大约30秒即可！",
+        "confirmFailed": "充值确认失败：{message}",
+        "confirmFailedContact": "充值确认失败，请联系客服处理",
+        "loadOrdersFailed": "加载订单失败：{message}",
+        "loadOrdersFailedRetry": "加载失败，请重试",
+        "noOrders": "暂无订单记录",
+        "complaintPrompt": "请输入投诉内容：",
+        "complaintSubmit": "投诉已提交",
+        "complaintFailed": "提交失败：{msg}",
+        "networkError": "网络错误，请稍后重试"
+    }
+}

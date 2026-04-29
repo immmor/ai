@@ -1,0 +1,124 @@
+{
+    "appTitle": "Yimo Wallet",
+    "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥200!!",
+    "nav": {
+        "recharge": "Top Up",
+        "orders": "Orders",
+        "logout": "Logout"
+    },
+    "login": {
+        "username": "Username",
+        "password": "Password",
+        "loginHint": "Please login directly, no need to register again.",
+        "login": "Login",
+        "noAccount": "No account? Register",
+        "registerHint": "If you already have an account, please login directly."
+    },
+    "register": {
+        "confirmPassword": "Confirm Password",
+        "confirmRegister": "Confirm Register"
+    },
+    "balance": {
+        "available": "Available Balance"
+    },
+    "amount": {
+        "custom": "Custom"
+    },
+    "payMethod": {
+        "creditCard": "Credit Card ($20 gets ¥200)",
+        "usdt": "TRON USDT (>100 yuan)",
+        "alipayStatic": "Alipay (Manual)",
+        "wechatStatic": "WeChat Pay (Manual)"
+    },
+    "button": {
+        "confirmTrade": "Confirm Transaction",
+        "cancel": "Cancel"
+    },
+    "complaint": "Complaint",
+    "securityConnection": "Secure Connection Active",
+    "orders": {
+        "totalOrders": "Total Orders",
+        "allStatus": "All Status",
+        "pending": "Pending",
+        "paid": "Paid",
+        "failed": "Failed",
+        "allTypes": "All Types",
+        "wxpay": "WeChat Pay",
+        "alipay": "Alipay",
+        "loading": "Loading...",
+        "prevPage": "Previous",
+        "nextPage": "Next",
+        "pageInfo": "Page {current}/{total}",
+        "payMethod": "Pay Method",
+        "status": "Status",
+        "createdAt": "Created",
+        "paidAt": "Paid At"
+    },
+    "creditCard": {
+        "pay": "Credit Card Payment",
+        "limitedOffer": "(Limited Offer! $20 gets ¥200)",
+        "createFailed": "Payment Creation Failed"
+    },
+    "alert": {
+        "emptyUsernamePassword": "Username and password cannot be empty",
+        "loginFailed": "Login failed: {message}",
+        "networkError": "Network error, please try again later",
+        "emptyRegUsernamePassword": "Username and password cannot be empty",
+        "passwordMismatch": "Passwords do not match",
+        "registerFailed": "Registration failed: {message}",
+        "registerSuccess": "Registration successful! Please login",
+        "invalidAmount": "Please enter a valid amount",
+        "minAmount10": "Minimum custom amount is 10 yuan",
+        "minAmount100": "TRON USDT minimum is 100 yuan",
+        "payUrlBuildFailed": "Payment URL build failed: {msg}",
+        "rechargeSuccess": "Recharge successful! Balance updated.",
+        "rechargeFailed": "Recharge failed, please try again later",
+        "rechargeCooldown": "Recharge cooling down, please try again in {time}",
+        "copyFailed": "Copy failed",
+        "copySuccess": "Copy successful",
+        "logoutConfirm": "Are you sure you want to logout?",
+        "confirmPayment": "Please confirm payment first"
+    },
+    "staticPay": {
+        "title": "{name} Manual Payment",
+        "orderNo": "Order No.",
+        "copy": "Copy",
+        "amount": "Payment Amount: ¥{amount}",
+        "instruction": "Payment Instructions:",
+        "instruction1": "Please scan or download the QR code above using {name}",
+        "instruction2": "Payment Amount: ¥{amount}",
+        "instruction3": "Please be sure to include the order number when paying, otherwise top-up will fail",
+        "instruction4": "Please click confirm top-up after payment is successful",
+        "openApp": "Open App",
+        "confirmRecharge": "Confirm Top-up",
+        "close": "Close",
+        "wait": "Please wait {countdown}s",
+        "cooldown": "Cooling down ({time})",
+        "cooldownNext": "Next top-up",
+        "hours": "{hours} hours",
+        "copied": "Copied"
+    },
+    "usdt": {
+        "title": "TRON USDT Top-up",
+        "address": "Top-up Address",
+        "copyAddress": "Copy Address",
+        "minAmount": "Minimum: {amount} yuan",
+        "instruction": "Please transfer USDT to the address above, amount must be greater than 100 yuan",
+        "confirm": "I Have Transferred",
+        "checking": "Checking...",
+        "createFailed": "USDT Order Creation Failed",
+        "timeout": "Request timeout, please try again later.",
+        "paySuccess": "Payment successful! Balance updated.",
+        "paySuccessNoOrder": "Payment successful! But order info not found, please contact customer service.",
+        "payPending": "Payment not completed. If you just transferred, please wait about 30 seconds!",
+        "confirmFailed": "Top-up confirmation failed: {message}",
+        "confirmFailedContact": "Top-up confirmation failed, please contact customer service.",
+        "loadOrdersFailed": "Failed to load orders: {message}",
+        "loadOrdersFailedRetry": "Failed to load, please retry",
+        "noOrders": "No order records",
+        "complaintPrompt": "Please enter complaint content:",
+        "complaintSubmit": "Complaint submitted",
+        "complaintFailed": "Submission failed: {msg}",
+        "networkError": "Network request failed, please try again later."
+    }
+}

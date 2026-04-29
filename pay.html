@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>以墨钱包</title>
+    <title data-i18n="appTitle">以墨钱包</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -249,19 +249,10 @@
         }
 
         .glitch-btn::before {
-            content: "确认交易";
+            content: attr(data-text);
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
-        }
-        .glitch-btn.login-btn::before {
-            content: "登录";
-        }
-        .glitch-btn.confirm-register-btn::before {
-            content: "确认注册";
-        }
-        .glitch-btn.cancel-btn::before {
-            content: "返回";
         }
 
         /* 装饰点缀 */
@@ -438,64 +429,65 @@
 <body>
 
 <div class="neon-card">
-        <div class="header">以墨钱包</div>
-        <div class="marquee"><span id="marquee-text">🎉限时特惠！！<b style="color:rgb(217, 255, 0);font-size:18px;">信用卡</b>充值20美元到账200人民币！！</span></div>
+        <div class="header" data-i18n="appTitle">以墨钱包</div>
+        <div class="marquee"><span id="marquee-text" data-i18n="marqueeText">🎉限时特惠！！<b style="color:rgb(217, 255, 0);font-size:18px;">信用卡</b>充值20美元到账200人民币！！</span></div>
         
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
-            <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')">充值</button>
-            <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')">订单</button>
+            <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')" data-i18n="nav.recharge">充值</button>
+            <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')" data-i18n="nav.orders">订单</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
                     <span id="username-display"></span>
                 </button>
                 <div class="dropdown-menu" id="user-dropdown-menu">
-                    <div class="dropdown-item" onclick="logout()">退出登录</div>
+                    <div class="dropdown-item" onclick="logout()" data-i18n="nav.logout">退出登录</div>
                 </div>
             </div>
+            <button id="lang-switch" class="lang-switch" onclick="switchLanguage()" style="background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 0; border-radius: 3px; cursor: pointer; font-size: 12px; font-family: monospace; margin-left: 8px; width: 30px; height: 30px; text-align: center; box-sizing: border-box; line-height: 30px;">EN</button>
         </div>
         
         <!-- 登录/注册表单 -->
         <div id="login-form">
             <div class="input-box">
-                <input type="text" placeholder="用户名" id="username">
+                <input type="text" placeholder="用户名" id="username" data-i18n-placeholder="login.username">
             </div>
             <div class="input-box">
-                <input type="password" placeholder="密码" id="password">
+                <input type="password" placeholder="密码" id="password" data-i18n-placeholder="login.password">
             </div>
-            <div style="text-align: center; margin-bottom: 15px; color: #888; font-size: 12px;">
+            <div style="text-align: center; margin-bottom: 15px; color: #888; font-size: 12px;" data-i18n="login.loginHint">
                 请直接登录，无需重复注册。
             </div>
-            <button class="glitch-btn login-btn" onclick="login()" style="margin-bottom: 15px;"></button>
+            <button class="glitch-btn login-btn" onclick="login()" style="margin-bottom: 15px;" data-text="登录"></button>
             <div style="text-align: center;">
-                <a onclick="showRegister()" style="color: #666; font-size: 11px; cursor: pointer; text-decoration: underline; display: none;">没有账号？注册</a>
+                <a onclick="showRegister()" style="color: #666; font-size: 11px; cursor: pointer; text-decoration: underline; display: none;" data-i18n="login.noAccount">没有账号？注册</a>
             </div>
         </div>
         
         <!-- 注册表单 -->
         <div id="register-form" style="display: none;">
             <div class="input-box">
-                <input type="text" placeholder="用户名" id="reg-username">
+                <input type="text" placeholder="用户名" id="reg-username" data-i18n-placeholder="login.username">
             </div>
             <div class="input-box">
-                <input type="password" placeholder="密码" id="reg-password">
+                <input type="password" placeholder="密码" id="reg-password" data-i18n-placeholder="login.password">
             </div>
             <div class="input-box">
-                <input type="password" placeholder="确认密码" id="reg-confirm-password">
+                <input type="password" placeholder="确认密码" id="reg-confirm-password" data-i18n-placeholder="register.confirmPassword">
             </div>
-            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+            <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;" data-i18n="login.registerHint">
                 如果您已有账号，请直接登录，无需重复注册
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);"></button>
-                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;"></button>
+                <button class="glitch-btn confirm-register-btn" onclick="register()" style="flex: 1; background: var(--neon-green);" data-text="确认注册"></button>
+                <button class="glitch-btn cancel-btn" onclick="showLogin()" style="flex: 1; background: #666;" data-text="返回"></button>
             </div>
         </div>
         
         <!-- 支付界面 -->
         <div id="pay-interface">
             <div class="balance-display">
-                <div class="balance-label">可用余额</div>
+                <div class="balance-label" data-i18n="balance.available">可用余额</div>
                 <div class="balance-val">0.00</div>
             </div>
 
@@ -505,65 +497,129 @@
                 <button class="amount-btn" onclick="selectAmount(50)">¥50</button>
                 <button class="amount-btn" onclick="selectAmount(450)">¥450</button>
                 <button class="amount-btn" onclick="selectAmount(550)">¥550</button>
-                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>
+                <button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" data-i18n="amount.custom">自定义</button>
             </div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <!-- <option value="alipay">支付宝</option> 
-                <option value="wechat">微信支付</option> -->
-                <option value="credit_card">信用卡(充20美元到账200RMB)</option>
-                <option value="usdt">TRON USDT(>100元)</option>
-                <option value="alipay_static">支付宝(人工)</option>
-                <option value="wechat_static">微信支付(人工)</option>
+                <option value="credit_card" data-i18n="payMethod.creditCard">信用卡(充20美元到账200RMB)</option>
+                <option value="usdt" data-i18n="payMethod.usdt">TRON USDT(>100元)</option>
+                <option value="alipay_static" data-i18n="payMethod.alipayStatic">支付宝(人工)</option>
+                <option value="wechat_static" data-i18n="payMethod.wechatStatic">微信支付(人工)</option>
             </select>
 
-            <button class="glitch-btn" onclick="pay()"></button>
+            <button class="glitch-btn" onclick="pay()" data-text="确认交易"></button>
             
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span class="corner-tag" style="cursor:pointer;" onclick="showComplaint()">投诉</span>
-                <div class="corner-tag">安全连接已激活</div>
+                <span class="corner-tag" style="cursor:pointer;" onclick="showComplaint()" data-i18n="complaint">投诉</span>
+                <div class="corner-tag" data-i18n="securityConnection">安全连接已激活</div>
             </div>
         </div>
         
         <!-- 订单记录界面 -->
         <div id="orders-interface" style="display: none;">
             <div class="balance-display">
-                <div class="balance-label">订单总数</div>
+                <div class="balance-label" data-i18n="orders.totalOrders">订单总数</div>
                 <div class="balance-val" id="total-orders">0</div>
             </div>
             
             <!-- 订单筛选 -->
             <div class="filter-section" style="margin-bottom: 20px; display: none;">
                 <select id="status-filter" class="filter-select" onchange="loadOrders()">
-                    <option value="">全部状态</option>
-                    <option value="pending">待支付</option>
-                    <option value="paid">已支付</option>
-                    <option value="failed">支付失败</option>
+                    <option value="" data-i18n="orders.allStatus">全部状态</option>
+                    <option value="pending" data-i18n="orders.pending">待支付</option>
+                    <option value="paid" data-i18n="orders.paid">已支付</option>
+                    <option value="failed" data-i18n="orders.failed">支付失败</option>
                 </select>
                 <select id="type-filter" class="filter-select" onchange="loadOrders()">
-                    <option value="">全部类型</option>
-                    <option value="wxpay">微信支付</option>
-                    <option value="alipay">支付宝</option>
+                    <option value="" data-i18n="orders.allTypes">全部类型</option>
+                    <option value="wxpay" data-i18n="orders.wxpay">微信支付</option>
+                    <option value="alipay" data-i18n="orders.alipay">支付宝</option>
                 </select>
             </div>
             
             <!-- 订单列表 -->
             <div id="orders-list" class="orders-container" style="max-height: 267px; overflow-y: auto;">
-                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">
+                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="orders.loading">
                     加载中...
                 </div>
             </div>
             
             <!-- 分页 -->
             <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled>上一页</button>
-                <span id="page-info" style="font-size: 12px;">第 1/1 页</span>
-                <button id="next-page" class="page-btn" onclick="changePage(1)" disabled>下一页</button>
+                <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
+                <span id="page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
+                <button id="next-page" class="page-btn" onclick="changePage(1)" disabled data-i18n="orders.nextPage">下一页</button>
             </div>
         </div>
     </div>
 
 <script>
+        let currentLang = localStorage.getItem('lang') || 'zh';
+        let translations = {};
+
+        async function loadTranslations() {
+            try {
+                const response = await fetch(`lang/${currentLang}.json`);
+                translations = await response.json();
+            } catch (error) {
+                console.error('Failed to load translations:', error);
+            }
+        }
+
+        function t(key, params = {}) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            if (typeof value === 'string') {
+                return value.replace(/\{(\w+)\}/g, (_, k) => params[k] ?? `{${k}}`);
+            }
+            return key;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                el.placeholder = t(key);
+            });
+            const langSwitch = document.getElementById('lang-switch');
+            if (langSwitch) {
+                langSwitch.textContent = currentLang === 'zh' ? 'EN' : 'ZH';
+            }
+            document.title = t('appTitle');
+            document.documentElement.lang = currentLang;
+            
+            document.querySelectorAll('.glitch-btn').forEach(btn => {
+                if (btn.classList.contains('login-btn')) {
+                    btn.setAttribute('data-text', t('login.login'));
+                } else if (btn.classList.contains('confirm-register-btn')) {
+                    btn.setAttribute('data-text', t('register.confirmRegister'));
+                } else if (btn.classList.contains('cancel-btn')) {
+                    btn.setAttribute('data-text', t('button.cancel'));
+                } else {
+                    btn.setAttribute('data-text', t('button.confirmTrade'));
+                }
+            });
+        }
+
+        async function switchLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('lang', currentLang);
+            await loadTranslations();
+            applyTranslations();
+            updateDynamicText();
+        }
+
+        async function initI18n() {
+            await loadTranslations();
+            applyTranslations();
+        }
+
         document.addEventListener('touchmove', function(e) {
             // 允许订单列表滑动
             if (e.target.closest('.orders-container')) {
@@ -585,6 +641,7 @@
         let selectedAmount = null;
 
         selectPayMethod('credit_card');
+        initI18n();
         
         const urlParams = new URLSearchParams(window.location.search);
         const urlUsername = urlParams.get('username');
@@ -642,10 +699,10 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            if (!username || !password) return alert('用户名和密码不能为空');
+            if (!username || !password) return alert(t('alert.emptyUsernamePassword'));
             
             try {
-                const data = await (await fetch('https://immmor.com/api/login', {
+                const data = await (await fetch('https://api.immmor.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -655,10 +712,10 @@
                     localStorage.setItem('currentUser', JSON.stringify(data.userInfo));
                     location.reload();
                 } else {
-                    alert('登录失败：' + data.message);
+                    alert(t('alert.loginFailed', { message: data.message }));
                 }
             } catch (error) {
-                alert('网络错误，请稍后重试');
+                alert(t('alert.networkError'));
             }
         }
         
@@ -667,8 +724,8 @@
             const password = document.getElementById('reg-password').value;
             const confirmPassword = document.getElementById('reg-confirm-password').value;
             
-            if (!username || !password) return alert('用户名和密码不能为空');
-            if (password !== confirmPassword) return alert('两次输入的密码不一致');
+            if (!username || !password) return alert(t('alert.emptyRegUsernamePassword'));
+            if (password !== confirmPassword) return alert(t('alert.passwordMismatch'));
             
             try {
                 const data = await (await fetch('https://immmor.com/api/register', {
@@ -678,17 +735,44 @@
                 })).json();
                 
                 if (data.success) {
-                    alert('注册成功！请登录');
+                    alert(t('alert.registerSuccess'));
                     showLogin();
-                    // 清空注册表单
                     document.getElementById('reg-username').value = '';
                     document.getElementById('reg-password').value = '';
                     document.getElementById('reg-confirm-password').value = '';
                 } else {
-                    alert('注册失败：' + data.message);
+                    alert(t('alert.registerFailed', { message: data.message }));
                 }
             } catch (error) {
-                alert('网络错误，请稍后重试');
+                alert(t('alert.networkError'));
+            }
+        }
+
+        function updateDynamicText() {
+            const customBtn = document.getElementById('custom-amount-btn');
+            if (customBtn) {
+                customBtn.textContent = t('amount.custom');
+                customBtn.setAttribute('data-i18n', 'amount.custom');
+            }
+            const creditCardInfo = document.getElementById('credit-card-info');
+            if (creditCardInfo) {
+                creditCardInfo.innerHTML = `
+                    <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">${t('creditCard.pay')}</div>
+                    <div style="font-size: 32px; font-weight: 800; color: #fff;">¥200</div>
+                    <div style="color: #999; font-size: 12px; margin-top: 2px;">${t('creditCard.limitedOffer')}</div>
+                `;
+            }
+            const amtInput = document.getElementById('amt');
+            if (amtInput) {
+                amtInput.placeholder = t('amount.custom');
+            }
+            const pageInfo = document.getElementById('page-info');
+            if (pageInfo) {
+                pageInfo.textContent = t('orders.pageInfo', { current: currentPage, total: totalPages });
+            }
+            const langSwitch = document.getElementById('lang-switch');
+            if (langSwitch) {
+                langSwitch.textContent = currentLang === 'zh' ? 'EN' : 'ZH';
             }
         }
 
@@ -703,7 +787,7 @@
                 });
                 const amtInput = document.getElementById('amt');
                 if (amtInput) {
-                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" style="display: none;">自定义</button>';
+                    amtInput.outerHTML = `<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" style="display: none;" data-i18n="amount.custom">${t('amount.custom')}</button>`;
                 }
                 const amountGrid = document.querySelector('.amount-grid');
                 if (amountGrid && !document.getElementById('credit-card-info')) {
@@ -718,9 +802,9 @@
                         border-radius: 5px;
                     `;
                     creditCardInfo.innerHTML = `
-                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">信用卡支付</div>
+                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">${t('creditCard.pay')}</div>
                         <div style="font-size: 32px; font-weight: 800; color: #fff;">¥200</div>
-                        <div style="color: #999; font-size: 12px; margin-top: 2px;">(限时特惠！！充20美元到账200人民币)</div>
+                        <div style="color: #999; font-size: 12px; margin-top: 2px;">${t('creditCard.limitedOffer')}</div>
                     `;
                     amountGrid.appendChild(creditCardInfo);
                 }
@@ -728,7 +812,7 @@
                 selectedAmount = null;
                 const amtInput = document.getElementById('amt');
                 if (amtInput) {
-                    amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
+                    amtInput.outerHTML = `<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" data-i18n="amount.custom">${t('amount.custom')}</button>`;
                 }
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     if (btn.id !== 'credit-card-info') {
@@ -751,11 +835,10 @@
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
-            // 恢复自定义金额按钮
             const customBtn = document.getElementById('custom-amount-btn');
             if (customBtn) {
                 customBtn.style.display = 'block';
-                customBtn.textContent = '自定义';
+                customBtn.textContent = t('amount.custom');
                 customBtn.onclick = showCustomAmount;
             }
         }
@@ -768,15 +851,12 @@
             selectedAmount = null;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             
-            // 将按钮变为输入框
             const customBtn = document.getElementById('custom-amount-btn');
             if (customBtn) {
-                customBtn.outerHTML = '<input type="number" class="custom-input" id="amt" placeholder="请输入" min="0.01" step="0.01">';
+                customBtn.outerHTML = `<input type="number" class="custom-input" id="amt" placeholder="${t('amount.custom')}" min="0.01" step="0.01">`;
                 
-                // 自动聚焦
                 document.getElementById('amt').focus();
                 
-                // 添加输入事件监听，当输入完成时恢复为按钮
                 const amtInput = document.getElementById('amt');
                 amtInput.addEventListener('blur', function() {
                     if (!this.value) {
@@ -795,7 +875,7 @@
         function restoreCustomButton() {
             const amtInput = document.getElementById('amt');
             if (amtInput) {
-                amtInput.outerHTML = '<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()">自定义</button>';
+                amtInput.outerHTML = `<button class="amount-btn custom-btn" id="custom-amount-btn" onclick="showCustomAmount()" data-i18n="amount.custom">${t('amount.custom')}</button>`;
             }
         }
 
@@ -804,23 +884,20 @@
             if (!amount) {
                 amount = document.getElementById('amt').value;
             }
-            if (!amount || amount <= 0) return alert('请输入有效金额');
-            if (amount < 10) return alert('自定义支付额度最低需10元');
+            if (!amount || amount <= 0) return alert(t('alert.invalidAmount'));
+            if (amount < 10) return alert(t('alert.minAmount10'));
             
-            // 静态支付特殊处理
             if (mode === 'wechat_static' || mode === 'alipay_static') {
-                if (amount < 10) return alert('自定义支付额度最低需10元');
+                if (amount < 10) return alert(t('alert.minAmount10'));
                 showStaticPayment(mode, amount);
                 return;
             }
-            // USDT支付特殊处理
             if (mode === 'usdt') {
-                if (amount < 100) return alert('TRON USDT最低需充值100元');
+                if (amount < 100) return alert(t('alert.minAmount100'));
                 createUSDTOrder(amount);
                 return;
             }
             
-            // 信用卡支付特殊处理
             if (mode === 'credit_card') {
                 createCreditCardOrder();
                 return;
@@ -834,7 +911,7 @@
                         type: mode,
                         order_no: Date.now().toString(),
                         amount: parseFloat(amount),
-                        description: '以墨钱包充值',
+                        description: t('appTitle') + '充值',
                         username: currentUser.username
                     })
                 })).json();
@@ -842,35 +919,30 @@
                 if (payData.code === 200) {
                     window.location.href = payData.data.pay_url;
                 } else {
-                    alert('支付URL构建失败：' + payData.msg);
+                    alert(t('alert.payUrlBuildFailed', { msg: payData.msg }));
                 }
             } catch (error) {
-                alert('网络错误，请稍后重试');
+                alert(t('alert.networkError'));
             }
         }
         
         // 静态支付功能
         function showStaticPayment(paymentType, amount) {
-            const paymentName = paymentType === 'wechat_static' ? '微信' : '支付宝';
+            const paymentName = paymentType === 'wechat_static' ? t('orders.wxpay') : t('orders.alipay');
             const imagePath = paymentType === 'wechat_static' ? 'static/pay/weixin.jpg' : 'static/pay/zfb.jpg';
             
-            // 生成订单号（使用用户名开头） 
             const orderNo = currentUser.username + '_' + Date.now();
             
-            // 直接显示二维码
             showStaticQRCode(paymentName, imagePath, orderNo, amount, paymentType);
         }
         
-        // 显示静态支付二维码
         function showStaticQRCode(paymentName, imagePath, orderNo, amount, paymentType) {
-            // 创建遮罩层
             const overlay = document.createElement('div');
             overlay.style.cssText = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0, 0, 0, 0.8); z-index: 9998;
             `;
             
-            // 创建支付展示容器
             const paymentContainer = document.createElement('div');
             paymentContainer.style.cssText = `
                 position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -881,36 +953,31 @@
                 font-family: inherit;
             `;
             
-            // 保存当前body的overflow属性并禁止背景滚动
             const originalBodyOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden';
             
-            // 标题
             const title = document.createElement('h3');
-            title.textContent = `${paymentName}静态支付`;
+            title.textContent = t('staticPay.title', { name: paymentName });
             title.style.margin = '0 0 20px 0';
             title.style.color = 'var(--neon-blue)';
             title.style.fontSize = '20px';
             
-            // 订单号显示
             const orderNoDisplay = document.createElement('div');
             orderNoDisplay.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 5px;">订单号 <span id="copyBtn" style="cursor:pointer;color:#00f2ff;font-size:12px;float:right;min-width:40px;text-align:right;" onclick="copyOrderNo()">复制</span></div>
+                <div style="color: #999; font-size: 12px; margin-bottom: 5px;">${t('staticPay.orderNo')} <span id="copyBtn" style="cursor:pointer;color:#00f2ff;font-size:12px;float:right;min-width:40px;text-align:right;" onclick="copyOrderNo()">${t('staticPay.copy')}</span></div>
                 <div id="orderNoValue" style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all; margin-bottom: 15px;">${orderNo}</div>
             `;
             
-            // 金额显示
             const amountDisplay = document.createElement('div');
-            amountDisplay.textContent = `支付金额：¥${amount}`;
+            amountDisplay.textContent = t('staticPay.amount', { amount: amount });
             amountDisplay.style.fontSize = '18px';
             amountDisplay.style.color = 'var(--neon-green)';
             amountDisplay.style.marginBottom = '15px';
             amountDisplay.style.fontWeight = 'bold';
             
-            // 二维码图片
             const qrImg = document.createElement('img');
             qrImg.src = imagePath;
-            qrImg.alt = `${paymentName}收款码`;
+            qrImg.alt = paymentName + ' QR Code';
             qrImg.style.width = '200px';
             qrImg.style.height = '200px';
             qrImg.style.borderRadius = '8px';
@@ -918,26 +985,23 @@
             qrImg.style.margin = '0 auto 20px auto';
             qrImg.style.display = 'block';
             
-            // 说明文字
             const instruction = document.createElement('div');
             instruction.innerHTML = `
                 <div style="color: #999; font-size: 12px; line-height: 1.5; margin: 0px 50px 20px 50px; text-align: left;">
-                    <strong>支付说明：</strong><br>
-                    1. 请使用${paymentName}扫描或下载上方二维码<br>
-                    2. 支付金额：<strong>¥${amount}</strong><br>
-                    3. 支付时<span style="color: #ff4444; font-weight: bold;">请务必备注订单号，否则充值失败</span><br>
-                    4. 支付成功后请务必点击确认充值
+                    <strong>${t('staticPay.instruction')}</strong><br>
+                    1. ${t('staticPay.instruction1', { name: paymentName })}<br>
+                    2. ${t('staticPay.instruction2', { amount: amount })}<br>
+                    3. ${t('staticPay.instruction3')}<br>
+                    4. ${t('staticPay.instruction4')}
                 </div>
             `;
             
-            // 按钮容器
             const buttonContainer = document.createElement('div');
             buttonContainer.style.display = 'flex';
             buttonContainer.style.gap = '10px';
             
-            // 打开App按钮
             const openAppBtn = document.createElement('button');
-            openAppBtn.textContent = '打开App';
+            openAppBtn.textContent = t('staticPay.openApp');
             openAppBtn.style.cssText = `
                 flex: 3; padding: 12px; background: var(--neon-green); color: #000;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
@@ -962,7 +1026,6 @@
                 }
             };
             
-            // 确认充值按钮
             const confirmBtn = document.createElement('button');
             confirmBtn.id = 'confirm-recharge-btn';
             confirmBtn.style.cssText = `
@@ -972,9 +1035,8 @@
             `;
             confirmBtn.disabled = true;
             
-            // 关闭按钮
             const closeBtn = document.createElement('button');
-            closeBtn.textContent = '关闭';
+            closeBtn.textContent = t('staticPay.close');
             closeBtn.style.cssText = `
                 flex: 2; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
@@ -986,12 +1048,10 @@
                 document.body.style.overflow = originalBodyOverflow;
             };
             
-            // 组装容器
             buttonContainer.appendChild(confirmBtn);
             buttonContainer.appendChild(openAppBtn);
             buttonContainer.appendChild(closeBtn);
             
-            // 启动计时器
             startRechargeTimer(confirmBtn, orderNo, amount, paymentType);
             
             paymentContainer.appendChild(title);
@@ -1004,7 +1064,6 @@
             document.body.appendChild(overlay);
             document.body.appendChild(paymentContainer);
             
-            // 自动生成订单记录
             createStaticOrderRecord(paymentType, amount, orderNo);
         }
         
@@ -1016,10 +1075,9 @@
                 amount: amount,
                 payment_type: paymentType,
                 status: 'pending',
-                description: '钱包充值(人工审核)'
+                description: 'Wallet Top-up (Manual Review)'
             };
             
-            // 保存到Supabase
             try {
                 const response = await fetch('https://immmor.com/api/order/create-static', {
                     method: 'POST',
@@ -1029,35 +1087,31 @@
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.warn('静态订单保存到Supabase失败:', response.status, errorText);
+                    console.warn('Static order save failed:', response.status, errorText);
                 } else {
-                    console.log('静态订单已成功保存到Supabase');
+                    console.log('Static order saved successfully');
                 }
             } catch (error) {
-                console.warn('网络错误，静态订单保存失败:', error);
+                console.warn('Network error, static order save failed:', error);
             }
             
-            console.log('静态支付订单已创建:', orderData);
+            console.log('Static payment order created:', orderData);
         }
         
-        // 启动充值计时器
         function startRechargeTimer(confirmBtn, orderNo, amount, paymentType) {
-            // 检查上次充值时间
             const lastRechargeTime = localStorage.getItem('lastRechargeTime');
             const now = Date.now();
-            const COOLDOWN_TIME = 86400000; // 24小时
+            const COOLDOWN_TIME = 86400000;
 
-            // 如果距离上次充值不足24小时，直接置灰24小时
             if (lastRechargeTime && (now - parseInt(lastRechargeTime)) < COOLDOWN_TIME) {
                 const remainingTime = COOLDOWN_TIME - (now - parseInt(lastRechargeTime));
-                startCooldownTimer(confirmBtn, remainingTime, '下次充值');
+                startCooldownTimer(confirmBtn, remainingTime, t('staticPay.cooldownNext'));
                 return;
             }
             
-            // 否则启动30秒倒计时
             let countdown = 30;
             const countdownInterval = setInterval(() => {
-                confirmBtn.textContent = `请稍等${countdown}s`;
+                confirmBtn.textContent = t('staticPay.wait', { countdown: countdown });
                 countdown--;
                 
                 if (countdown < 0) {
@@ -1068,7 +1122,7 @@
                         font-weight: 600;
                     `;
                     confirmBtn.disabled = false;
-                    confirmBtn.textContent = '确认充值';
+                    confirmBtn.textContent = t('staticPay.confirmRecharge');
                     confirmBtn.onclick = () => {
                         confirmRecharge(orderNo, amount, paymentType, confirmBtn);
                     };
@@ -1076,7 +1130,6 @@
             }, 1000);
         }
         
-        // 启动冷却计时器
         function startCooldownTimer(confirmBtn, remainingTime, label) {
             const interval = setInterval(() => {
                 const hours = Math.floor(remainingTime / 3600000);
@@ -1084,9 +1137,9 @@
                 const seconds = Math.floor((remainingTime % 60000) / 1000);
 
                 if (hours > 0) {
-                    confirmBtn.textContent = `${label}(${hours}小时)`;
+                    confirmBtn.textContent = t('staticPay.cooldown', { time: t('staticPay.hours', { hours: hours }) });
                 } else {
-                    confirmBtn.textContent = `${label}(${minutes}:${seconds.toString().padStart(2, '0')})`;
+                    confirmBtn.textContent = t('staticPay.cooldown', { time: `${minutes}:${seconds.toString().padStart(2, '0')}` });
                 }
 
                 remainingTime -= 1000;
@@ -1099,7 +1152,7 @@
                         font-weight: 600;
                     `;
                     confirmBtn.disabled = false;
-                    confirmBtn.textContent = '确认充值';
+                    confirmBtn.textContent = t('staticPay.confirmRecharge');
                     confirmBtn.onclick = () => {
                         confirmRecharge(orderNo, amount, paymentType, confirmBtn);
                     };
@@ -1138,12 +1191,10 @@
                     // 更新本地订单状态
                     updateLocalOrderStatus(orderNo, 'paid');
                     
-                    // 更新余额显示
                     await updateBalance();
                     
-                    alert('充值成功！余额已更新。');
+                    alert(t('alert.rechargeSuccess'));
                     
-                    // 置灰按钮24小时
                     confirmBtn.style.cssText = `
                         flex: 6; padding: 12px; background: #666; color: white;
                         border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
@@ -1152,14 +1203,14 @@
                     confirmBtn.disabled = true;
                     confirmBtn.onclick = null;
 
-                    startCooldownTimer(confirmBtn, 86400000, '下次充值');
+                    startCooldownTimer(confirmBtn, 86400000, t('staticPay.cooldownNext'));
                 } else {
-                    alert('充值失败：' + result.message);
-                    console.error('充值失败详情:', result);
+                    alert(t('alert.rechargeFailed') + ': ' + result.message);
+                    console.error('Recharge failed:', result);
                 }
             } catch (error) {
-                alert('网络错误：' + error.message);
-                console.error('充值错误详情:', error);
+                alert(t('alert.networkError') + ': ' + error.message);
+                console.error('Recharge error:', error);
             }
         }
         
@@ -1232,14 +1283,14 @@
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
                 } else {
-                    alert("创建USDT订单失败：" + (data.msg || '未知错误'));
+                    alert(t('usdt.createFailed') + ": " + (data.msg || 'Unknown error'));
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
-                    alert("请求超时，请稍后重试。");
+                    alert(t('usdt.timeout'));
                 } else {
-                    alert("网络请求失败，请稍后重试。");
+                    alert(t('usdt.networkError'));
                 }
             }
         }
@@ -1269,11 +1320,11 @@
                     
                     window.location.href = data.data.checkout_url;
                 } else {
-                    alert('创建支付失败：' + data.msg);
+                    alert(t('creditCard.createFailed') + ': ' + data.msg);
                 }
             } catch (error) {
-                console.error('创建信用卡支付失败:', error);
-                alert('网络错误，请稍后重试');
+                console.error('Credit card payment creation failed:', error);
+                alert(t('alert.networkError'));
             }
         }
         
@@ -1332,20 +1383,19 @@
                     
                     showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo);
                 } else {
-                    alert("创建USDT订单失败：" + (data.msg || '未知错误'));
+                    alert(t('usdt.createFailed') + ": " + (data.msg || 'Unknown error'));
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
-                    alert("请求超时，请稍后重试。");
+                    alert(t('usdt.timeout'));
                 } else {
-                    alert("网络请求失败，请稍后重试。");
+                    alert(t('usdt.networkError'));
                 }
             }
         }
         
         function showUSDTQRCode(data, usdtAmount, rmbAmount, orderNo) {
-            // 创建遮罩层
             const overlay = document.createElement('div');
             overlay.style.cssText = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1485,43 +1535,38 @@
                 
                 const data = await response.json();
                 clearTimeout(timeoutId);
-                console.log('支付检查结果:', data);
+                console.log('Payment check result:', data);
                 
-                // 使用code字段判断支付状态，与energy.js保持一致
                 if (data.code === 1) {
-                    // 支付成功，调用后端充值接口
                     const orderInfo = localStorage.getItem('usdtOrder_' + orderId);
                     if (orderInfo) {
                         const { username, rmbAmount, order_no } = JSON.parse(orderInfo);
                         await confirmUSDTRecharge(orderId, username, rmbAmount, order_no);
                     } else {
-                        alert('支付成功！但无法找到订单信息，请联系客服');
+                        alert(t('usdt.paySuccessNoOrder'));
                     }
                     
-                    // 关闭支付窗口
                     const qrContainer = document.querySelector('[style*="z-index: 9999"]');
                     if (qrContainer) {
-                        document.body.removeChild(qrContainer.previousElementSibling); // 移除遮罩层
+                        document.body.removeChild(qrContainer.previousElementSibling);
                         document.body.removeChild(qrContainer);
                         document.body.style.overflow = '';
                     }
                     
-                    // 清理本地存储
                     localStorage.removeItem('usdtOrder_' + orderId);
                 } else {
-                    alert('支付未完成。刚转币请等待大约30秒即可！');
+                    alert(t('usdt.payPending'));
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
-                    alert('请求超时，请稍后重试。');
+                    alert(t('usdt.timeout'));
                 } else {
-                    alert('网络请求失败，请稍后重试。');
+                    alert(t('usdt.networkError'));
                 }
             }
         }
         
-        // USDT支付成功后确认充值
         async function confirmUSDTRecharge(orderId, username, rmbAmount, orderNo) {
             try {
                 const response = await fetch('https://immmor.com/api/recharge/confirm', {
@@ -1537,14 +1582,14 @@
                 
                 const result = await response.json();
                 if (result.success) {
-                    alert('支付成功！余额已到账');
+                    alert(t('usdt.paySuccess'));
                     await updateBalance();
                 } else {
-                    alert('充值确认失败：' + result.message);
+                    alert(t('usdt.confirmFailed', { message: result.message }));
                 }
             } catch (error) {
-                console.error('确认充值失败:', error);
-                alert('充值确认失败，请联系客服处理');
+                console.error('Confirm recharge failed:', error);
+                alert(t('usdt.confirmFailedContact'));
             }
         }
         
@@ -1576,11 +1621,11 @@
                 if (ordersData.code === 200) {
                     displayOrders(ordersData.data.orders, ordersData.data.pagination);
                 } else {
-                    alert('加载订单失败：' + ordersData.msg);
+                    alert(t('usdt.loadOrdersFailed', { message: ordersData.msg }));
                 }
             } catch (error) {
-                console.error('加载订单失败:', error);
-                document.getElementById('orders-list').innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4757;">加载失败，请重试</div>';
+                console.error('Load orders failed:', error);
+                document.getElementById('orders-list').innerHTML = `<div style="text-align: center; padding: 20px; color: #ff4757;">${t('usdt.loadOrdersFailedRetry')}</div>`;
             }
         }
         
@@ -1591,7 +1636,7 @@
             totalOrders.textContent = pagination.total;
             totalPages = pagination.pages;
             if (orders.length === 0) {
-                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无订单记录</div>';
+                ordersList.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${t('usdt.noOrders')}</div>`;
                 updatePagination();
                 return;
             }
@@ -1600,30 +1645,30 @@
             orders.forEach(order => {
                 const statusClass = `status-${order.status}`;
                 const statusText = {
-                    'pending': '待支付',
-                    'paid': '已支付',
-                    'failed': '支付失败'
+                    'pending': t('orders.pending'),
+                    'paid': t('orders.paid'),
+                    'failed': t('orders.failed')
                 }[order.status] || order.status;
                 
                 const typeText = {
-                    'alipay': '支付宝',
-                    'wxpay': '微信支付',
+                    'alipay': t('orders.alipay'),
+                    'wxpay': t('orders.wxpay'),
                     'usdt': 'USDT',
-                    'wechat_static': '微信支付(人工)',
-                    'alipay_static': '支付宝(人工)'
+                    'wechat_static': t('orders.wxpay') + '(Manual)',
+                    'alipay_static': t('orders.alipay') + '(Manual)'
                 }[order.payment_type] || order.payment_type;
                 
                 html += `
-                    <div class="order-item" onclick="prompt('订单号：', '${order.order_no}')">
+                    <div class="order-item" onclick="prompt('Order No:', '${order.order_no}')">
                         <div class="order-header">
                             <div class="order-no">${order.order_no.slice(0, 15)}${order.order_no.length > 15 ? '*' : ''}</div>
                             <div class="order-amount">¥${parseFloat(order.amount).toFixed(2)}</div>
                         </div>
                         <div class="order-details">
-                            <div><strong>支付方式:</strong> ${typeText}</div>
-                            <div><strong>状态:</strong> <span class="order-status ${statusClass}">${statusText}</span></div>
-                            <div><strong>创建时间:</strong> ${formatDate(order.created_at)}</div>
-                            <div><strong>支付时间:</strong> ${order.paid_at ? formatDate(order.paid_at) : '-'}</div>
+                            <div><strong>${t('orders.payMethod') || 'Pay Method'}:</strong> ${typeText}</div>
+                            <div><strong>${t('orders.status') || 'Status'}:</strong> <span class="order-status ${statusClass}">${statusText}</span></div>
+                            <div><strong>${t('orders.createdAt') || 'Created'}:</strong> ${formatDate(order.created_at)}</div>
+                            <div><strong>${t('orders.paidAt') || 'Paid At'}:</strong> ${order.paid_at ? formatDate(order.paid_at) : '-'}</div>
                         </div>
                     </div>
                 `;
@@ -1634,7 +1679,7 @@
         }
         
         function updatePagination() {
-            document.getElementById('page-info').textContent = `第 ${currentPage}/${totalPages} 页`;
+            document.getElementById('page-info').textContent = t('orders.pageInfo', { current: currentPage, total: totalPages });
             document.getElementById('prev-page').disabled = currentPage <= 1;
             document.getElementById('next-page').disabled = currentPage >= totalPages;
         }
@@ -1666,13 +1711,13 @@
         function copyOrderNo() {
             const btn = document.getElementById('copyBtn');
             navigator.clipboard.writeText(document.getElementById('orderNoValue').textContent).then(() => {
-                btn.textContent = '已复制';
-                setTimeout(() => btn.textContent = '复制', 2000);
+                btn.textContent = t('staticPay.copied');
+                setTimeout(() => btn.textContent = t('staticPay.copy'), 2000);
             });
         }
 
         async function showComplaint() {
-            const content = prompt('请输入投诉内容：');
+            const content = prompt(t('usdt.complaintPrompt'));
             if (!content) return;
             try {
                 const res = await fetch('https://api.immmor.com/api/send-message', {
@@ -1681,9 +1726,9 @@
                     body: JSON.stringify({content, target: 'single', username: 'immmor'})
                 });
                 const data = await res.json();
-                alert(data.code === 200 ? '投诉已提交' : '提交失败：' + data.msg);
+                alert(data.code === 200 ? t('usdt.complaintSubmit') : t('usdt.complaintFailed', { msg: data.msg }));
             } catch {
-                alert('网络错误');
+                alert(t('usdt.networkError'));
             }
         }
 
