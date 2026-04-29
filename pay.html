@@ -941,14 +941,14 @@
                 font-weight: 600;
             `;
             openAppBtn.onclick = () => {
-                const isAndroid = /Android/i.test(navigator.userAgent);
                 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                
+                const imageUrl = encodeURIComponent(window.location.origin + '/static/pay/zfb.jpg');
+
                 if (paymentType === 'alipay_static') {
                     if (isIOS) {
-                        window.location.href = 'alipay://';
+                        window.location.href = `alipay://platformapi/startapp?appId=20000065&url=${imageUrl}`;
                     } else {
-                        window.location.href = 'alipays://';
+                        window.location.href = `alipays://platformapi/startapp?appId=20000065&url=${imageUrl}`;
                     }
                 } else if (paymentType === 'wechat_static') {
                     if (isIOS) {

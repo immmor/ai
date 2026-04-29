@@ -794,10 +794,17 @@ export default {
       // ========== 免费节点接口 ==========
       if (path === '/free/clash' && request.method === 'GET') {
         try {
-          const username = url.searchParams.get('username');
+          let username = url.searchParams.get('username');
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少 username 参数' }, 400);
+          }
+          
+          // URL 解码用户名（处理邮箱等特殊字符）
+          try {
+            username = decodeURIComponent(username);
+          } catch (e) {
+            // 如果解码失败，使用原始值
           }
           
           // 验证用户是否存在
@@ -844,10 +851,17 @@ export default {
 
       if (path === '/free/v2ray' && request.method === 'GET') {
         try {
-          const username = url.searchParams.get('username');
+          let username = url.searchParams.get('username');
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少 username 参数' }, 400);
+          }
+          
+          // URL 解码用户名（处理邮箱等特殊字符）
+          try {
+            username = decodeURIComponent(username);
+          } catch (e) {
+            // 如果解码失败，使用原始值
           }
           
           // 验证用户是否存在
