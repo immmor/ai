@@ -1022,7 +1022,7 @@
             openAppBtn.style.cssText = `
                 flex: 3; padding: 12px; background: var(--neon-green); color: #000;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
-                font-weight: 600;
+                font-weight: 600; word-break: break-word;
             `;
             openAppBtn.onclick = () => {
                 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1048,7 +1048,7 @@
             confirmBtn.style.cssText = `
                 flex: 6; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: not-allowed; font-size: 14px;
-                font-weight: 600; opacity: 0.5;
+                font-weight: 600; opacity: 0.5; word-break: break-word;
             `;
             confirmBtn.disabled = true;
             
@@ -1057,7 +1057,7 @@
             closeBtn.style.cssText = `
                 flex: 2; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
-                font-weight: 600;
+                font-weight: 600; word-break: break-word;
             `;
             closeBtn.onclick = () => {
                 document.body.removeChild(overlay);
