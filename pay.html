@@ -420,20 +420,27 @@
             padding: 10px 15px;
             color: #ff4757;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 15px;
             transition: all 0.2s;
             text-align: center;
         }
     </style>
 </head>
 <body>
+<div id="lang-dropdown" style="position: fixed; top: 15px; right: 15px; z-index: 1000;">
+    <button onclick="toggleLangDropdown()" style="background: none; border: none; color: var(--neon-blue); cursor: pointer; font-size: 20px;"><i class="fas fa-globe"></i></button>
+    <div class="dropdown-menu" id="lang-dropdown-menu" style="right: 0; min-width: 50px;">
+        <div class="dropdown-item" onclick="setLanguage('zh')">🇨🇳</div>
+        <div class="dropdown-item" onclick="setLanguage('en')">🇺🇸</div>
+    </div>
+</div>
 
-<div class="neon-card">
+<div class="neon-card" style="position: relative;">
         <div class="header" data-i18n="appTitle">以墨钱包</div>
         <div class="marquee"><span id="marquee-text" data-i18n="marqueeText">🎉限时特惠！！信用卡充值20美元到账200人民币！！</span></div>
         
         <!-- 导航菜单 -->
-        <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
+        <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')" data-i18n="nav.recharge">充值</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')" data-i18n="nav.orders">订单</button>
             <div class="user-dropdown">
@@ -442,15 +449,6 @@
                 </button>
                 <div class="dropdown-menu" id="user-dropdown-menu">
                     <div class="dropdown-item" style="font-size: 13px;" onclick="logout()" data-i18n="nav.logout">退出登录</div>
-                </div>
-            </div>
-            <div class="user-dropdown" style="margin-left: 0px;">
-                <button class="user-btn" onclick="toggleLangDropdown()" style="background:transparent; border:none; color:var(--neon-blue); cursor:pointer; font-size:18px;">
-                    <i class="fas fa-globe"></i>
-                </button>
-                <div class="dropdown-menu" id="lang-dropdown-menu" style="right: 0; left: auto; min-width: 40px;">
-                    <div class="dropdown-item" onclick="setLanguage('zh')">🇨🇳</div>
-                    <div class="dropdown-item" onclick="setLanguage('en')">🇺🇸</div>
                 </div>
             </div>
         </div>
@@ -1728,6 +1726,8 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.user-dropdown')) {
                 document.getElementById('user-dropdown-menu').classList.remove('show');
+            }
+            if (!e.target.closest('#lang-dropdown')) {
                 document.getElementById('lang-dropdown-menu').classList.remove('show');
             }
         });
