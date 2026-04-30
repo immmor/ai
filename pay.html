@@ -1304,6 +1304,7 @@
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
+                console.error('USDT order error:', error);
                 if (error.name === 'AbortError') {
                     alert(t('usdt.timeout'));
                 } else {
@@ -1413,6 +1414,12 @@
                 </div>
                 <div style="color: #666; font-size: 11px; margin-top: 4px;">${t('usdt.exchangeRate', { rate: USDT_RATE })}</div>
             `;
+            
+            // 支付信息容器
+            const infoContainer = document.createElement('div');
+            infoContainer.style.margin = '20px 0';
+            infoContainer.style.textAlign = 'left';
+            infoContainer.style.fontSize = '14px';
             
             // 按钮容器
             const buttonContainer = document.createElement('div');
