@@ -120,6 +120,14 @@
         "complaintPrompt": "Vui lòng nhập nội dung khiếu nại:",
         "complaintSubmit": "Khiếu nại đã được gửi",
         "complaintFailed": "Gửi thất bại: {msg}",
-        "networkError": "Lỗi mạng"
+        "networkError": "Lỗi mạng",
+        "qrTitle": "Thanh toán USDT",
+        "qrAlt": "Mã QR thanh toán USDT",
+        "orderNo": "Số đơn hàng",
+        "receiveAddress": "Địa chỉ nhận",
+        "payAmount": "Số tiền thanh toán",
+        "exchangeRate": "Tỷ giá: 1 USDT = {rate} yuan",
+        "confirmPayDone": "Xác nhận thanh toán xong",
+        "close": "Đóng"
     }
 }

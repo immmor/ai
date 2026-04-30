@@ -120,6 +120,14 @@
         "complaintPrompt": "Por favor ingrese contenido de queja:",
         "complaintSubmit": "Queja enviada",
         "complaintFailed": "Envío fallido: {msg}",
-        "networkError": "Error de red"
+        "networkError": "Error de red",
+        "qrTitle": "Pago USDT",
+        "qrAlt": "Código QR de pago USDT",
+        "orderNo": "No. de pedido",
+        "receiveAddress": "Dirección de recebimento",
+        "payAmount": "Monto del pago",
+        "exchangeRate": "Tipo de cambio: 1 USDT = {rate} yuan",
+        "confirmPayDone": "Confirmar pago completado",
+        "close": "Cerrar"
     }
 }

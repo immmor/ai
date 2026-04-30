@@ -120,6 +120,14 @@
         "complaintPrompt": "クレーム内容を入力してください：",
         "complaintSubmit": "クレームが送信されました",
         "complaintFailed": "送信失敗: {msg}",
-        "networkError": "ネットワークエラー"
+        "networkError": "ネットワークエラー",
+        "qrTitle": "USDT支払い",
+        "qrAlt": "USDT支払いQRコード",
+        "orderNo": "注文番号",
+        "receiveAddress": "受取アドレス",
+        "payAmount": "支払い金額",
+        "exchangeRate": "為替レート：1 USDT = {rate}元",
+        "confirmPayDone": "支払い完了を確認",
+        "close": "閉じる"
     }
 }

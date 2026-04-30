@@ -119,6 +119,14 @@
         "complaintPrompt": "Please enter complaint content:",
         "complaintSubmit": "Complaint submitted",
         "complaintFailed": "Submission failed: {msg}",
-        "networkError": "Network request failed, please try again later."
+        "networkError": "Network request failed, please try again later.",
+        "qrTitle": "USDT Payment",
+        "qrAlt": "USDT Payment QR Code",
+        "orderNo": "Order No",
+        "receiveAddress": "Receive Address",
+        "payAmount": "Payment Amount",
+        "exchangeRate": "Exchange Rate: 1 USDT = {rate} RMB",
+        "confirmPayDone": "Confirm Payment Done",
+        "close": "Close"
     }
 }

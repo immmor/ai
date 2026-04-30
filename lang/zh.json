@@ -119,6 +119,14 @@
         "complaintPrompt": "请输入投诉内容：",
         "complaintSubmit": "投诉已提交",
         "complaintFailed": "提交失败：{msg}",
-        "networkError": "网络错误，请稍后重试"
+        "networkError": "网络错误，请稍后重试",
+        "qrTitle": "USDT支付",
+        "qrAlt": "USDT支付二维码",
+        "orderNo": "订单号",
+        "receiveAddress": "收款地址",
+        "payAmount": "支付金额",
+        "exchangeRate": "汇率：1 USDT = {rate} RMB",
+        "confirmPayDone": "确认支付完成",
+        "close": "关闭"
     }
 }

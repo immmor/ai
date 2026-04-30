@@ -120,6 +120,14 @@
         "complaintPrompt": "يرجى إدخال محتوى الشكوى:",
         "complaintSubmit": "تم إرسال الشكوى",
         "complaintFailed": "فشل الإرسال: {msg}",
-        "networkError": "خطأ في الشبكة"
+        "networkError": "خطأ في الشبكة",
+        "qrTitle": "دفع USDT",
+        "qrAlt": "رمز QR لدفع USDT",
+        "orderNo": "رقم الطلب",
+        "receiveAddress": "عنوان الاستلام",
+        "payAmount": "مبلغ الدفع",
+        "exchangeRate": "سعر الصرف: 1 USDT = {rate} يوان",
+        "confirmPayDone": "تأكيد الدفع المكتمل",
+        "close": "إغلاق"
     }
 }

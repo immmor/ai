@@ -120,6 +120,14 @@
         "complaintPrompt": "불만 내용을 입력해 주세요:",
         "complaintSubmit": "불만이 제출되었습니다",
         "complaintFailed": "제출 실패: {msg}",
-        "networkError": "네트워크 오류"
+        "networkError": "네트워크 오류",
+        "qrTitle": "USDT 결제",
+        "qrAlt": "USDT 결제 QR코드",
+        "orderNo": "주문 번호",
+        "receiveAddress": "수령 주소",
+        "payAmount": "결제 금액",
+        "exchangeRate": "환율：1 USDT = {rate}위안",
+        "confirmPayDone": "결제 완료 확인",
+        "close": "닫기"
     }
 }

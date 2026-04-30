@@ -120,6 +120,14 @@
         "complaintPrompt": "Пожалуйста, введите текст жалобы:",
         "complaintSubmit": "Жалоба отправлена",
         "complaintFailed": "Ошибка отправки: {msg}",
-        "networkError": "Ошибка сети"
+        "networkError": "Ошибка сети",
+        "qrTitle": "Оплата USDT",
+        "qrAlt": "QR-код оплаты USDT",
+        "orderNo": "Номер заказа",
+        "receiveAddress": "Адрес получения",
+        "payAmount": "Сумма оплаты",
+        "exchangeRate": "Курс: 1 USDT = {rate} юаней",
+        "confirmPayDone": "Подтвердить оплату",
+        "close": "Закрыть"
     }
 }

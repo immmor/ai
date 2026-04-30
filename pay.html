@@ -962,8 +962,8 @@
                 background: #1a1a1a; padding: 20px; border-radius: 12px; 
                 border: 2px solid var(--neon-blue); box-shadow: 0 0 30px var(--neon-blue);
                 z-index: 9999; text-align: center; width: min(350px, 95vw);
-                max-height: 90vh; overflow-y: auto; box-sizing: border-box;
-                font-family: inherit;
+                max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+                box-sizing: border-box; font-family: inherit;
             `;
             
             const originalBodyOverflow = document.body.style.overflow;
@@ -977,7 +977,10 @@
             
             const orderNoDisplay = document.createElement('div');
             orderNoDisplay.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 5px;">${t('staticPay.orderNo')} <span id="copyBtn" style="cursor:pointer;color:#00f2ff;font-size:12px;float:right;min-width:40px;text-align:right;" onclick="copyOrderNo()">${t('staticPay.copy')}</span></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="color: #999; font-size: 12px;">${t('staticPay.orderNo')}</span>
+                    <span id="copyBtn" style="cursor:pointer; color:#00f2ff; font-size:12px; min-width: 40px; text-align: right;" onclick="copyOrderNo()">${t('staticPay.copy')}</span>
+                </div>
                 <div id="orderNoValue" style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all; margin-bottom: 15px;">${orderNo}</div>
             `;
             
@@ -1422,8 +1425,8 @@
                 background: #1a1a1a; padding: 20px; border-radius: 12px; 
                 border: 2px solid var(--neon-blue); box-shadow: 0 0 30px var(--neon-blue);
                 z-index: 9999; text-align: center; width: min(350px, 95vw);
-                max-height: 90vh; overflow-y: auto; box-sizing: border-box;
-                font-family: inherit;
+                max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+                box-sizing: border-box; font-family: inherit;
             `;
             
             // 保存当前body的overflow属性并禁止背景滚动
@@ -1432,7 +1435,7 @@
             
             // 标题
             const title = document.createElement('h3');
-            title.textContent = 'USDT支付';
+            title.textContent = t('usdt.qrTitle');
             title.style.margin = '0 0 20px 0';
             title.style.color = 'var(--neon-blue)';
             title.style.fontSize = '20px';
@@ -1441,7 +1444,7 @@
             const qrImg = document.createElement('img');
             const address = data.address || 'TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
             qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`tron:${address}?amount=${usdtAmount}`)}`;
-            qrImg.alt = 'USDT支付二维码';
+            qrImg.alt = t('usdt.qrAlt');
             qrImg.style.width = '200px';
             qrImg.style.height = '200px';
             qrImg.style.borderRadius = '8px';
@@ -1449,17 +1452,11 @@
             qrImg.style.margin = '0 auto 20px auto';
             qrImg.style.display = 'block';
             
-            // 支付信息容器
-            const infoContainer = document.createElement('div');
-            infoContainer.style.margin = '20px 0';
-            infoContainer.style.textAlign = 'left';
-            infoContainer.style.fontSize = '14px';
-            
             // 订单ID
             const oidDiv = document.createElement('div');
             oidDiv.style.margin = '10px 0';
             oidDiv.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">订单号</div>
+                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">${t('usdt.orderNo')}</div>
                 <div style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all;">${orderNo}</div>
             `;
             
@@ -1467,7 +1464,7 @@
             const addressDiv = document.createElement('div');
             addressDiv.style.margin = '10px 0';
             addressDiv.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">收款地址</div>
+                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">${t('usdt.receiveAddress')}</div>
                 <div style="background: rgba(0, 242, 255, 0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all;">${address}</div>
             `;
             
@@ -1475,12 +1472,12 @@
             const amountDiv = document.createElement('div');
             amountDiv.style.margin = '10px 0';
             amountDiv.innerHTML = `
-                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">支付金额</div>
+                <div style="color: #999; font-size: 12px; margin-bottom: 4px;">${t('usdt.payAmount')}</div>
                 <div style="background: rgba(10, 255, 153, 0.1); padding: 8px 12px; border-radius: 6px; font-weight: 600; color: var(--neon-green);">
                     ${usdtAmount} USDT
                     <span style="color: #999; font-size: 12px; font-weight: normal;">(≈ ¥${rmbAmount})</span>
                 </div>
-                <div style="color: #666; font-size: 11px; margin-top: 4px;">汇率：1 USDT = ${USDT_RATE} RMB</div>
+                <div style="color: #666; font-size: 11px; margin-top: 4px;">${t('usdt.exchangeRate', { rate: USDT_RATE })}</div>
             `;
             
             // 按钮容器
@@ -1491,7 +1488,7 @@
             
             // 添加支付确认按钮
             const checkPaymentBtn = document.createElement('button');
-            checkPaymentBtn.textContent = '确认支付完成';
+            checkPaymentBtn.textContent = t('usdt.confirmPayDone');
             checkPaymentBtn.style.cssText = `
                 flex: 1; padding: 12px; background: var(--neon-green); color: #000;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
@@ -1503,7 +1500,7 @@
             
             // 添加关闭按钮
             const closeBtn = document.createElement('button');
-            closeBtn.textContent = '关闭';
+            closeBtn.textContent = t('usdt.close');
             closeBtn.style.cssText = `
                 flex: 1; padding: 12px; background: #666; color: white;
                 border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
