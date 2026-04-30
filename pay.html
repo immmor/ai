@@ -633,11 +633,12 @@
         }
 
         document.addEventListener('touchmove', function(e) {
-            // 允许订单列表滑动
             if (e.target.closest('.orders-container')) {
                 return;
             }
-            // 其他区域阻止默认行为
+            if (e.target.closest('[style*="max-height: 90vh"]')) {
+                return;
+            }
             if (e.target.tagName !== 'INPUT') {
                 e.preventDefault();
             }
