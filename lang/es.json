@@ -1,0 +1,125 @@
+{
+    "appTitle": "Billetera Yimo",
+    "marqueeText": "🎉¡Oferta Limitada! Recarga con tarjeta de crédito $20 obtiene ¥200!!",
+    "nav": {
+        "recharge": "Recargar",
+        "orders": "Pedidos",
+        "logout": "Cerrar sesión"
+    },
+    "login": {
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "loginHint": "Por favor inicie sesión directamente, no necesita registrarse de nuevo.",
+        "login": "Iniciar sesión",
+        "noAccount": "¿No tiene cuenta? Regístrese",
+        "registerHint": "Si ya tiene una cuenta, por favor inicie sesión directamente."
+    },
+    "register": {
+        "confirmPassword": "Confirmar contraseña",
+        "confirmRegister": "Confirmar registro"
+    },
+    "balance": {
+        "available": "Saldo disponible"
+    },
+    "amount": {
+        "custom": "Personalizado"
+    },
+    "payMethod": {
+        "creditCard": "Tarjeta de crédito ($20 = ¥200)",
+        "usdt": "TRON USDT (>100 yuan)",
+        "alipayStatic": "Alipay (Manual)",
+        "wechatStatic": "WeChat Pay (Manual)"
+    },
+    "button": {
+        "confirmTrade": "Confirmar transacción",
+        "cancel": "Cancelar"
+    },
+    "complaint": "Queja",
+    "securityConnection": "Conexión segura activa",
+    "orders": {
+        "totalOrders": "Total de pedidos",
+        "allStatus": "Todos los estados",
+        "pending": "Pendiente",
+        "paid": "Pagado",
+        "failed": "Fallido",
+        "allTypes": "Todos los tipos",
+        "wxpay": "WeChat Pay",
+        "alipay": "Alipay",
+        "loading": "Cargando...",
+        "prevPage": "Anterior",
+        "nextPage": "Siguiente",
+        "pageInfo": "Página {current} de {total}",
+        "payMethod": "Método de pago",
+        "status": "Estado",
+        "createdAt": "Creado",
+        "paidAt": "Pagado el"
+    },
+    "creditCard": {
+        "pay": "Pago con tarjeta de crédito",
+        "limitedOffer": "({Oferta limitada! $20 = ¥200)",
+        "createFailed": "Error al crear el pago"
+    },
+    "alert": {
+        "emptyUsernamePassword": "El nombre de usuario y la contraseña no pueden estar vacíos",
+        "loginFailed": "Error de inicio de sesión: {message}",
+        "networkError": "Error de red, por favor intente más tarde",
+        "emptyRegUsernamePassword": "El nombre de usuario y la contraseña no pueden estar vacíos",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "registerFailed": "Error de registro: {message}",
+        "registerSuccess": "¡Registro exitoso! Por favor inicie sesión",
+        "invalidAmount": "Por favor ingrese una cantidad válida",
+        "minAmount10": "La cantidad mínima personalizada es 10 yuan",
+        "minAmount100": "El mínimo de TRON USDT es 100 yuan",
+        "payUrlBuildFailed": "Error al generar URL de pago: {msg}",
+        "rechargeSuccess": "¡Recarga exitosa! Saldo actualizado.",
+        "rechargeFailed": "Recarga fallida, por favor intente más tarde",
+        "rechargeCooldown": "En enfriamiento de recarga, intente en {time}",
+        "copyFailed": "Error al copiar",
+        "copySuccess": "Copiado exitosamente",
+        "logoutConfirm": "¿Está seguro de que desea cerrar sesión?",
+        "confirmPayment": "Por favor confirme el pago primero"
+    },
+    "staticPay": {
+        "title": "Pago manual de {name}",
+        "orderNo": "No. de pedido",
+        "copy": "Copiar",
+        "amount": "Monto del pago: ¥{amount}",
+        "instruction": "Instrucciones de pago:",
+        "instruction1": "Por favor escanee o descargue el código QR anterior usando {name}",
+        "instruction2": "Monto del pago: ¥{amount}",
+        "instruction3": "Por favor asegúrese de incluir el número de pedido al pagar, de lo contrario la recarga fallará",
+        "instruction4": "Por favor haga clic en confirmar recarga después de que el pago sea exitoso",
+        "openApp": "Abrir App",
+        "confirmRecharge": "Confirmar recarga",
+        "close": "Cerrar",
+        "wait": "Por favor espere {countdown}s",
+        "cooldown": "En enfriamiento ({time})",
+        "cooldownNext": "Próxima recarga",
+        "hours": "{hours} horas",
+        "copied": "Copiado"
+    },
+    "usdt": {
+        "title": "Recarga TRON USDT",
+        "address": "Dirección de recarga",
+        "copyAddress": "Copiar dirección",
+        "minAmount": "Mínimo: {amount} yuan",
+        "instruction": "Por favor transfiera USDT a la dirección anterior, el monto debe ser mayor a 100 yuan",
+        "confirm": "He transferido",
+        "checking": "Verificando...",
+        "createFailed": "Error al crear orden USDT",
+        "timeout": "Tiempo de espera agotado, por favor intente más tarde.",
+        "networkError": "Error de solicitud de red, por favor intente más tarde.",
+        "paySuccess": "¡Pago exitoso! Saldo actualizado.",
+        "paySuccessNoOrder": "¡Pago exitoso! Pero información del pedido no encontrada, por favor contacte a servicio al cliente.",
+        "payPending": "Pago no completado. Si acaba de transferir, por favor espere unos 30 segundos!",
+        "confirmFailed": "Confirmación de recarga fallida: {message}",
+        "confirmFailedContact": "Confirmación de recarga fallida, por favor contacte a servicio al cliente.",
+        "loadOrdersFailed": "Error al cargar pedidos: {message}",
+        "loadOrdersFailedRetry": "Error al cargar, por favor reintente",
+        "noOrders": "Sin registros de pedidos",
+        "complaintPrompt": "Por favor ingrese contenido de queja:",
+        "complaintSubmit": "Queja enviada",
+        "complaintFailed": "Envío fallido: {msg}",
+        "networkError": "Error de red"
+    }
+}

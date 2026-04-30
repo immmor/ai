@@ -1,0 +1,125 @@
+{
+    "appTitle": "محفظة ييمو",
+    "marqueeText": "🎉عرض محدود! شحن البطاقة الائتمانية 20 دولار تحصل على 200 يوان!!",
+    "nav": {
+        "recharge": "شحن",
+        "orders": "الطلبات",
+        "logout": "تسجيل الخروج"
+    },
+    "login": {
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور",
+        "loginHint": "يرجى تسجيل الدخول مباشرة، لا حاجة للتسجيل مرة أخرى.",
+        "login": "تسجيل الدخول",
+        "noAccount": "ليس لديك حساب؟ سجل",
+        "registerHint": "إذا كان لديك حساب بالفعل، يرجى تسجيل الدخول مباشرة."
+    },
+    "register": {
+        "confirmPassword": "تأكيد كلمة المرور",
+        "confirmRegister": "تأكيد التسجيل"
+    },
+    "balance": {
+        "available": "الرصيد المتاح"
+    },
+    "amount": {
+        "custom": "مخصص"
+    },
+    "payMethod": {
+        "creditCard": "بطاقة ائتمانية (20 دولار = 200 يوان)",
+        "usdt": "TRON USDT (>100 يوان)",
+        "alipayStatic": "عليpay (يدوي)",
+        "wechatStatic": "ويipay (يدوي)"
+    },
+    "button": {
+        "confirmTrade": "تأكيد المعاملة",
+        "cancel": "إلغاء"
+    },
+    "complaint": "شكوى",
+    "securityConnection": "الاتصال الآمن نشط",
+    "orders": {
+        "totalOrders": "إجمالي الطلبات",
+        "allStatus": "جميع الحالات",
+        "pending": "في الانتظار",
+        "paid": "مدفوع",
+        "failed": "فشل",
+        "allTypes": "جميع الأنواع",
+        "wxpay": "ويipay",
+        "alipay": "عليpay",
+        "loading": "جارٍ التحميل...",
+        "prevPage": "السابق",
+        "nextPage": "التالي",
+        "pageInfo": "صفحة {current} من {total}",
+        "payMethod": "طريقة الدفع",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "paidAt": "تاريخ الدفع"
+    },
+    "creditCard": {
+        "pay": "دفع البطاقة الائتمانية",
+        "limitedOffer": "(عرض محدود! 20 دولار = 200 يوان)",
+        "createFailed": "فشل إنشاء الدفع"
+    },
+    "alert": {
+        "emptyUsernamePassword": "اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين",
+        "loginFailed": "فشل تسجيل الدخول: {message}",
+        "networkError": "خطأ في الشبكة، يرجى المحاولة لاحقاً",
+        "emptyRegUsernamePassword": "اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين",
+        "passwordMismatch": "كلمات المرور غير متطابقة",
+        "registerFailed": "فشل التسجيل: {message}",
+        "registerSuccess": "تم التسجيل بنجاح! يرجى تسجيل الدخول",
+        "invalidAmount": "يرجى إدخال مبلغ صالح",
+        "minAmount10": "الحد الأدنى للمبلغ المخصص هو 10 يوان",
+        "minAmount100": "الحد الأدنى لـ TRON USDT هو 100 يوان",
+        "payUrlBuildFailed": "فشل بناء رابط الدفع: {msg}",
+        "rechargeSuccess": "تم الشحن بنجاح! تم تحديث الرصيد.",
+        "rechargeFailed": "فشل الشحن، يرجى المحاولة لاحقاً",
+        "rechargeCooldown": "تبريد الشحن، يرجى المحاولة خلال {time}",
+        "copyFailed": "فشل النسخ",
+        "copySuccess": "تم النسخ بنجاح",
+        "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
+        "confirmPayment": "يرجى تأكيد الدفع أولاً"
+    },
+    "staticPay": {
+        "title": "دفع {name} اليدوي",
+        "orderNo": "رقم الطلب",
+        "copy": "نسخ",
+        "amount": "مبلغ الدفع: ¥{amount}",
+        "instruction": "تعليمات الدفع:",
+        "instruction1": "يرجى مسح أو تحميل رمز QR أعلاه باستخدام {name}",
+        "instruction2": "مبلغ الدفع: ¥{amount}",
+        "instruction3": "يرجى التأكد من تضمين رقم الطلب عند الدفع، وإلا سيفشل الشحن",
+        "instruction4": "يرجى النقر فوق تأكيد الشحن بعد نجاح الدفع",
+        "openApp": "فتح التطبيق",
+        "confirmRecharge": "تأكيد الشحن",
+        "close": "إغلاق",
+        "wait": "يرجى الانتظار {countdown} ثانية",
+        "cooldown": "تبريد ({time})",
+        "cooldownNext": "الشحن التالي",
+        "hours": "{hours} ساعة",
+        "copied": "تم النسخ"
+    },
+    "usdt": {
+        "title": "شحن TRON USDT",
+        "address": "عنوان الشحن",
+        "copyAddress": "نسخ العنوان",
+        "minAmount": "الحد الأدنى: {amount} يوان",
+        "instruction": "يرجى تحويل USDT إلى العنوان أعلاه، يجب أن يكون المبلغ أكبر من 100 يوان",
+        "confirm": "لقد حولت",
+        "checking": "جارٍ التحقق...",
+        "createFailed": "فشل إنشاء طلب USDT",
+        "timeout": "انتهت مهلة الطلب، يرجى المحاولة لاحقاً.",
+        "networkError": "فشل طلب الشبكة، يرجى المحاولة لاحقاً.",
+        "paySuccess": "تم الدفع بنجاح! تم تحديث الرصيد.",
+        "paySuccessNoOrder": "تم الدفع بنجاح! لكن معلومات الطلب غير موجودة، يرجى الاتصال بخدمة العملاء.",
+        "payPending": "لم يكتمل الدفع. إذا حولت للتو، يرجى الانتظار حوالي 30 ثانية!",
+        "confirmFailed": "فشل تأكيد الشحن: {message}",
+        "confirmFailedContact": "فشل تأكيد الشحن، يرجى الاتصال بخدمة العملاء.",
+        "loadOrdersFailed": "فشل تحميل الطلبات: {message}",
+        "loadOrdersFailedRetry": "فشل التحميل، يرجى إعادة المحاولة",
+        "noOrders": "لا توجد سجلات طلبات",
+        "complaintPrompt": "يرجى إدخال محتوى الشكوى:",
+        "complaintSubmit": "تم إرسال الشكوى",
+        "complaintFailed": "فشل الإرسال: {msg}",
+        "networkError": "خطأ في الشبكة"
+    }
+}

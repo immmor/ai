@@ -1,0 +1,125 @@
+{
+    "appTitle": "Ví Yimo",
+    "marqueeText": "🎉Ưu đãi giới hạn! Nạp thẻ tín dụng $20 nhận ¥200!!",
+    "nav": {
+        "recharge": "Nạp tiền",
+        "orders": "Đơn hàng",
+        "logout": "Đăng xuất"
+    },
+    "login": {
+        "username": "Tên đăng nhập",
+        "password": "Mật khẩu",
+        "loginHint": "Vui lòng đăng nhập trực tiếp, không cần đăng ký lại.",
+        "login": "Đăng nhập",
+        "noAccount": "Chưa có tài khoản? Đăng ký",
+        "registerHint": "Nếu bạn đã có tài khoản, vui lòng đăng nhập trực tiếp."
+    },
+    "register": {
+        "confirmPassword": "Xác nhận mật khẩu",
+        "confirmRegister": "Xác nhận đăng ký"
+    },
+    "balance": {
+        "available": "Số dư khả dụng"
+    },
+    "amount": {
+        "custom": "Tùy chỉnh"
+    },
+    "payMethod": {
+        "creditCard": "Thẻ tín dụng ($20=¥200)",
+        "usdt": "TRON USDT(>100 yuan)",
+        "alipayStatic": "Alipay (Thủ công)",
+        "wechatStatic": "WeChat Pay (Thủ công)"
+    },
+    "button": {
+        "confirmTrade": "Xác nhận giao dịch",
+        "cancel": "Hủy"
+    },
+    "complaint": "Khiếu nại",
+    "securityConnection": "Kết nối bảo mật đang hoạt động",
+    "orders": {
+        "totalOrders": "Tổng đơn hàng",
+        "allStatus": "Tất cả trạng thái",
+        "pending": "Đang chờ",
+        "paid": "Đã thanh toán",
+        "failed": "Thất bại",
+        "allTypes": "Tất cả loại",
+        "wxpay": "WeChat Pay",
+        "alipay": "Alipay",
+        "loading": "Đang tải...",
+        "prevPage": "Trước",
+        "nextPage": "Sau",
+        "pageInfo": "Trang {current}/{total}",
+        "payMethod": "Phương thức thanh toán",
+        "status": "Trạng thái",
+        "createdAt": "Ngày tạo",
+        "paidAt": "Ngày thanh toán"
+    },
+    "creditCard": {
+        "pay": "Thanh toán thẻ tín dụng",
+        "limitedOffer": "(Ưu đãi giới hạn! $20=¥200)",
+        "createFailed": "Tạo thanh toán thất bại"
+    },
+    "alert": {
+        "emptyUsernamePassword": "Tên đăng nhập và mật khẩu không được để trống",
+        "loginFailed": "Đăng nhập thất bại: {message}",
+        "networkError": "Lỗi mạng, vui lòng thử lại sau",
+        "emptyRegUsernamePassword": "Tên đăng nhập và mật khẩu không được để trống",
+        "passwordMismatch": "Mật khẩu không khớp",
+        "registerFailed": "Đăng ký thất bại: {message}",
+        "registerSuccess": "Đăng ký thành công! Vui lòng đăng nhập",
+        "invalidAmount": "Vui lòng nhập số tiền hợp lệ",
+        "minAmount10": "Số tiền tùy chỉnh tối thiểu là 10 yuan",
+        "minAmount100": "TRON USDT tối thiểu là 100 yuan",
+        "payUrlBuildFailed": "Tạo URL thanh toán thất bại: {msg}",
+        "rechargeSuccess": "Nạp tiền thành công! Số dư đã được cập nhật.",
+        "rechargeFailed": "Nạp tiền thất bại, vui lòng thử lại sau",
+        "rechargeCooldown": "Đang chờ nạp lại, vui lòng thử lại sau {time}",
+        "copyFailed": "Sao chép thất bại",
+        "copySuccess": "Sao chép thành công",
+        "logoutConfirm": "Bạn có chắc muốn đăng xuất không?",
+        "confirmPayment": "Vui lòng xác nhận thanh toán trước"
+    },
+    "staticPay": {
+        "title": "Thanh toán thủ công {name}",
+        "orderNo": "Số đơn hàng",
+        "copy": "Sao chép",
+        "amount": "Số tiền thanh toán: ¥{amount}",
+        "instruction": "Hướng dẫn thanh toán:",
+        "instruction1": "Vui lòng quét hoặc tải mã QR bên trên bằng {name}",
+        "instruction2": "Số tiền thanh toán: ¥{amount}",
+        "instruction3": "Vui lòng nhất định ghi số đơn hàng khi thanh toán, nếu không nạp tiền sẽ thất bại",
+        "instruction4": "Vui lòng nhấn xác nhận nạp tiền sau khi thanh toán thành công",
+        "openApp": "Mở ứng dụng",
+        "confirmRecharge": "Xác nhận nạp tiền",
+        "close": "Đóng",
+        "wait": "Vui lòng đợi {countdown}s",
+        "cooldown": "Đang chờ ({time})",
+        "cooldownNext": "Nạp tiền tiếp theo",
+        "hours": "{hours} giờ",
+        "copied": "Đã sao chép"
+    },
+    "usdt": {
+        "title": "Nạp TRON USDT",
+        "address": "Địa chỉ nạp",
+        "copyAddress": "Sao chép địa chỉ",
+        "minAmount": "Tối thiểu: {amount} yuan",
+        "instruction": "Vui lòng chuyển USDT đến địa chỉ trên, số tiền phải lớn hơn 100 yuan",
+        "confirm": "Tôi đã chuyển",
+        "checking": "Đang kiểm tra...",
+        "createFailed": "Tạo đơn USDT thất bại",
+        "timeout": "Hết thời gian chờ, vui lòng thử lại sau.",
+        "networkError": "Yêu cầu mạng thất bại, vui lòng thử lại sau.",
+        "paySuccess": "Thanh toán thành công! Số dư đã được cập nhật.",
+        "paySuccessNoOrder": "Thanh toán thành công! Nhưng không tìm thấy thông tin đơn hàng, vui lòng liên hệ hotline.",
+        "payPending": "Thanh toán chưa hoàn tất. Nếu bạn vừa chuyển tiền, vui lòng đợi khoảng 30 giây!",
+        "confirmFailed": "Xác nhận nạp tiền thất bại: {message}",
+        "confirmFailedContact": "Xác nhận nạp tiền thất bại, vui lòng liên hệ hotline.",
+        "loadOrdersFailed": "Tải đơn hàng thất bại: {message}",
+        "loadOrdersFailedRetry": "Tải thất bại, vui lòng thử lại",
+        "noOrders": "Không có bản ghi đơn hàng",
+        "complaintPrompt": "Vui lòng nhập nội dung khiếu nại:",
+        "complaintSubmit": "Khiếu nại đã được gửi",
+        "complaintFailed": "Gửi thất bại: {msg}",
+        "networkError": "Lỗi mạng"
+    }
+}

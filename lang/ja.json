@@ -1,0 +1,125 @@
+{
+    "appTitle": "イモウォレット",
+    "marqueeText": "🎉限定キャンペーン！クレジットカードで$20チャージで¥200GET!!",
+    "nav": {
+        "recharge": "チャージ",
+        "orders": "注文",
+        "logout": "ログアウト"
+    },
+    "login": {
+        "username": "ユーザー名",
+        "password": "パスワード",
+        "loginHint": "そのままログインしてください。登録の必要はありません。",
+        "login": "ログイン",
+        "noAccount": "アカウントがない？登録",
+        "registerHint": "すでにアカウントをお持ちの方は、そのままログインしてください。"
+    },
+    "register": {
+        "confirmPassword": "パスワード確認",
+        "confirmRegister": "登録確認"
+    },
+    "balance": {
+        "available": "利用可能残高"
+    },
+    "amount": {
+        "custom": "カスタム"
+    },
+    "payMethod": {
+        "creditCard": "クレジットカード($20=¥200)",
+        "usdt": "TRON USDT(>100元)",
+        "alipayStatic": "アリペイ(手動)",
+        "wechatStatic": "ウィチャットpay(手動)"
+    },
+    "button": {
+        "confirmTrade": "取引確認",
+        "cancel": "キャンセル"
+    },
+    "complaint": "クレーム",
+    "securityConnection": "安全な接続が有効",
+    "orders": {
+        "totalOrders": "注文合計",
+        "allStatus": "すべてのステータス",
+        "pending": "保留中",
+        "paid": "支払済み",
+        "failed": "失敗",
+        "allTypes": "すべてのタイプ",
+        "wxpay": "ウィチャットpay",
+        "alipay": "アリペイ",
+        "loading": "読み込み中...",
+        "prevPage": "前へ",
+        "nextPage": "次へ",
+        "pageInfo": "ページ {current}/{total}",
+        "payMethod": "支払方法",
+        "status": "ステータス",
+        "createdAt": "作成日時",
+        "paidAt": "支払日時"
+    },
+    "creditCard": {
+        "pay": "クレジットカード支払い",
+        "limitedOffer": "(限定キャンペーン！$20=¥200)",
+        "createFailed": "支払い作成失敗"
+    },
+    "alert": {
+        "emptyUsernamePassword": "ユーザー名とパスワードは必須です",
+        "loginFailed": "ログイン失敗: {message}",
+        "networkError": "ネットワークエラー。後でもう一度お試しください",
+        "emptyRegUsernamePassword": "ユーザー名とパスワードは必須です",
+        "passwordMismatch": "パスワードが一致しません",
+        "registerFailed": "登録失敗: {message}",
+        "registerSuccess": "登録成功！ログインしてください",
+        "invalidAmount": "有効な金額を入力してください",
+        "minAmount10": "カスタム最低金額は10元です",
+        "minAmount100": "TRON USDTの最低金額は100元です",
+        "payUrlBuildFailed": "支払いURLの作成に失敗: {msg}",
+        "rechargeSuccess": "チャージ成功！残高更新済",
+        "rechargeFailed": "チャージ失敗。後でもう一度お試しください",
+        "rechargeCooldown": "チャージクールダウン中、{time}後に再試行してください",
+        "copyFailed": "コピーに失敗しました",
+        "copySuccess": "コピー成功",
+        "logoutConfirm": "ログアウトしてもよろしいですか？",
+        "confirmPayment": "先に支払いを確認してください"
+    },
+    "staticPay": {
+        "title": "{name}手動支払い",
+        "orderNo": "注文番号",
+        "copy": "コピー",
+        "amount": "支払い金額: ¥{amount}",
+        "instruction": "支払い手順：",
+        "instruction1": "上のQRコードを{name}でスキャンまたはダウンロードしてください",
+        "instruction2": "支払い金額: ¥{amount}",
+        "instruction3": "お支払い時に注文番号を必ず含めてください。含めない場合、チャージに失敗します",
+        "instruction4": "支払いが成功后、チャージ確認をクリックしてください",
+        "openApp": "アプリを開く",
+        "confirmRecharge": "チャージ確認",
+        "close": "閉じる",
+        "wait": "{countdown}秒お待ちください",
+        "cooldown": "クールダウン中({time})",
+        "cooldownNext": "次のチャージ",
+        "hours": "{hours}時間",
+        "copied": "コピー済"
+    },
+    "usdt": {
+        "title": "TRON USDTチャージ",
+        "address": "チャージアドレス",
+        "copyAddress": "アドレスをコピー",
+        "minAmount": "最低: {amount}元",
+        "instruction": "上記のアドレスにUSDTを送金してください。金額は100元を超える必要があります",
+        "confirm": "送金しました",
+        "checking": "確認中...",
+        "createFailed": "USDT注文の作成に失敗しました",
+        "timeout": "リクエストタイムアウト。後でもう一度お試しください。",
+        "networkError": "ネットワークリクエスト失敗。後でもう一度お試しください。",
+        "paySuccess": "支払い成功！残高更新済",
+        "paySuccessNoOrder": "支払い成功！但し注文情報が見つかりません。カスタマーサービスにお問い合わせください。",
+        "payPending": "支払いが完了していません。たった今送金した場合は、約30秒お待ちください！",
+        "confirmFailed": "チャージ確認失敗: {message}",
+        "confirmFailedContact": "チャージ確認失敗。カスタマーサービスにお問い合わせください。",
+        "loadOrdersFailed": "注文の読み込みに失敗: {message}",
+        "loadOrdersFailedRetry": "読み込み失敗。再試行してください",
+        "noOrders": "注文記録なし",
+        "complaintPrompt": "クレーム内容を入力してください：",
+        "complaintSubmit": "クレームが送信されました",
+        "complaintFailed": "送信失敗: {msg}",
+        "networkError": "ネットワークエラー"
+    }
+}
