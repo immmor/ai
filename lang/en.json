@@ -2,7 +2,7 @@
     "appTitle": "Yimo Wallet",
     "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥200!!",
     "nav": {
-        "recharge": "Top Up",
+        "recharge": "Recharge",
         "orders": "Orders",
         "logout": "Logout"
     },
