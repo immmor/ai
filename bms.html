@@ -593,9 +593,9 @@
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
-                                <button class="add-btn" onclick="openUserModal()">添加用户</button>
                             </div>
                         </div>
+                        <div id="searchResultInfo" style="padding: 10px; color: #666;"></div>
                         <table id="usersTable">
                             <thead>
                                 <tr>
@@ -1488,6 +1488,12 @@
         function filterUsers() {
             const keyword = document.getElementById('userSearchInput').value.trim().toLowerCase();
             const filtered = usersData.filter(u => JSON.stringify(u).toLowerCase().includes(keyword));
+            const resultInfo = document.getElementById('searchResultInfo');
+            if (keyword) {
+                resultInfo.textContent = `搜索 "${keyword}" 找到 ${filtered.length} 个结果`;
+            } else {
+                resultInfo.textContent = '';
+            }
             renderFilteredUsers(filtered);
         }
 
