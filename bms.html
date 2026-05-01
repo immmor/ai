@@ -1523,6 +1523,7 @@
                     <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
+                    <td>${user.source || '-'}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                         <button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button>
