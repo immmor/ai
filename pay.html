@@ -425,13 +425,20 @@
             padding: 6px 4px;
             color: var(--neon-blue);
             cursor: pointer;
-            font-size: 22px;
+            font-size: 18px;
             transition: all 0.2s;
             text-align: center;
         }
 
         .dropdown-item:hover {
             background: rgba(0, 242, 255, 0.1);
+        }
+
+        @media (max-width: 480px) {
+            .dropdown-item {
+                font-size: 14px;
+                padding: 3px 4px;
+            }
         }
     </style>
 </head>
