@@ -22,7 +22,8 @@
         "available": "利用可能残高"
     },
     "amount": {
-        "custom": "カスタム"
+        "custom": "カスタム",
+        "yimoNote": "1元=1以墨コイン"
     },
     "payMethod": {
         "creditCard": "クレジットカード($20=¥200)",

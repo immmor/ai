@@ -22,7 +22,8 @@
         "available": "사용 가능 잔액"
     },
     "amount": {
-        "custom": "사용자 지정"
+        "custom": "사용자 지정",
+        "yimoNote": "1위안 = 1이모코인"
     },
     "payMethod": {
         "creditCard": "신용카드($20=¥200)",

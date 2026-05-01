@@ -22,7 +22,8 @@
         "available": "可用余额"
     },
     "amount": {
-        "custom": "自定义"
+        "custom": "自定义",
+        "yimoNote": "1元=1以墨币"
     },
     "payMethod": {
         "creditCard": "信用卡(充20美元到账200RMB)",

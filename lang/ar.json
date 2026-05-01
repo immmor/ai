@@ -22,7 +22,8 @@
         "available": "الرصيد المتاح"
     },
     "amount": {
-        "custom": "مخصص"
+        "custom": "مخصص",
+        "yimoNote": "1 يوان = 1 ييمو"
     },
     "payMethod": {
         "creditCard": "بطاقة ائتمانية (20 دولار = 200 يوان)",

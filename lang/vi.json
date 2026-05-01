@@ -22,7 +22,8 @@
         "available": "Số dư khả dụng"
     },
     "amount": {
-        "custom": "Tùy chỉnh"
+        "custom": "Tùy chỉnh",
+        "yimoNote": "1 yuan = 1 Yimo"
     },
     "payMethod": {
         "creditCard": "Thẻ tín dụng ($20=¥200)",

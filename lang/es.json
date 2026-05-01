@@ -22,7 +22,8 @@
         "available": "Saldo disponible"
     },
     "amount": {
-        "custom": "Personalizado"
+        "custom": "Personalizado",
+        "yimoNote": "1 yuan = 1 Yimo"
     },
     "payMethod": {
         "creditCard": "Tarjeta de crédito ($20 = ¥200)",

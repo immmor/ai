@@ -22,7 +22,8 @@
         "available": "Доступный баланс"
     },
     "amount": {
-        "custom": "Другой"
+        "custom": "Другой",
+        "yimoNote": "1 юань = 1 Йимо"
     },
     "payMethod": {
         "creditCard": "Кредитная карта ($20 = ¥200)",

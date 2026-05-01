@@ -22,7 +22,8 @@
         "available": "Available Balance"
     },
     "amount": {
-        "custom": "Custom"
+        "custom": "Custom",
+        "yimoNote": "1 yuan = 1 Yimo Coin"
     },
     "payMethod": {
         "creditCard": "Credit Card ($20 gets ¥200)",
