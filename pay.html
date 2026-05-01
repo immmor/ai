@@ -69,8 +69,10 @@
             text-transform: uppercase;
             letter-spacing: 5px;
             margin-bottom: 18px;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-size: 28px;
         }
         .marquee {
@@ -87,6 +89,7 @@
             animation: marquee 10s linear infinite;
             color: #fff;
             font-size: 14px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         @keyframes marquee {
             from { transform: translateX(0); }
