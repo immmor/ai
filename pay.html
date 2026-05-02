@@ -415,6 +415,7 @@
             min-width: 40px;
             display: none;
             z-index: 100;
+            padding-bottom: 2px;
         }
 
         .dropdown-menu.show {
@@ -422,7 +423,7 @@
         }
 
         .dropdown-item {
-            padding: 6px 4px;
+            padding: 10px 4px;
             color: var(--neon-blue);
             cursor: pointer;
             font-size: 18px;
@@ -433,10 +434,75 @@
         .dropdown-item:hover {
             background: rgba(0, 242, 255, 0.1);
         }
+
+        .login-method-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-method-overlay.hidden {
+            display: none;
+        }
+
+        .login-method-title {
+            font-size: 24px;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-method-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 280px;
+        }
+
+        .login-method-btn {
+            padding: 20px;
+            border: 2px solid var(--neon-blue);
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--neon-blue);
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+        }
+
+        .login-method-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        .login-method-btn.phantom {
+            border-color: var(--neon-purple, #bf5af2);
+            color: var(--neon-purple, #bf5af2);
+            background: rgba(191, 90, 242, 0.1);
+        }
+
+        .login-method-btn.phantom:hover {
+            background: var(--neon-purple, #bf5af2);
+            color: #fff;
+            box-shadow: 0 0 30px var(--neon-purple, #bf5af2);
+        }
     </style>
 </head>
 <body>
-<div id="lang-dropdown" style="position: fixed; top: 15px; right: 15px; z-index: 1000;">
+<div id="lang-dropdown" style="position: fixed; top: 15px; right: 15px; z-index: 10001;">
     <button onclick="toggleLangDropdown()" style="background: none; border: none; color: var(--neon-blue); cursor: pointer; font-size: 20px;"><i class="fas fa-globe"></i></button>
     <div class="dropdown-menu" id="lang-dropdown-menu" style="right: 0; min-width: 50px;">
         <div class="dropdown-item" onclick="setLanguage('zh')">🇨🇳</div>
@@ -447,6 +513,14 @@
         <div class="dropdown-item" onclick="setLanguage('ja')">🇯🇵</div>
         <div class="dropdown-item" onclick="setLanguage('ko')">🇰🇷</div>
         <div class="dropdown-item" onclick="setLanguage('vi')">🇻🇳</div>
+    </div>
+</div>
+
+<div id="login-method-overlay" class="login-method-overlay">
+    <div class="login-method-title" data-i18n="login.selectMethod">选择登录方式</div>
+    <div class="login-method-buttons">
+        <button class="login-method-btn" onclick="selectLoginMethod('learn')" data-i18n="login.learn">学</button>
+        <button class="login-method-btn phantom" onclick="selectLoginMethod('phantom')" data-i18n="login.phantom">Phantom</button>
     </div>
 </div>
 
@@ -658,29 +732,39 @@
         document.addEventListener('dblclick', function(e) {
             e.preventDefault();
         });
-        let mode = 'credit_card'; // 默认选择支付宝(人工)支付
+        let mode = 'credit_card';
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         let currentPage = 1;
         let totalPages = 1;
         let selectedAmount = null;
+        let phantomWallet = localStorage.getItem('phantomWallet');
+        let walletType = localStorage.getItem('walletType');
 
         initI18n().then(() => {
             selectPayMethod('credit_card');
         });
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         const urlUsername = urlParams.get('username');
         if (urlUsername) {
             document.getElementById('username').value = urlUsername;
         }
-        
-        if (currentUser) {
+
+        if (phantomWallet && walletType === 'phantom') {
+            document.getElementById('login-method-overlay').classList.add('hidden');
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('nav-tabs-container').style.display = 'flex';
+            document.getElementById('pay-interface').style.display = 'block';
+            document.getElementById('username-display').textContent = phantomWallet.slice(0, 6) + '...' + phantomWallet.slice(-4);
+            updateBalance();
+        } else if (currentUser) {
+            document.getElementById('login-method-overlay').classList.add('hidden');
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
             document.getElementById('username-display').textContent = currentUser.username.length > 6 ? currentUser.username.slice(0, 6) + '*' : currentUser.username;
             updateBalance();
-            loadOrders(); // 同时加载订单数据
+            loadOrders();
             if (currentUser.not_trusted === 'yes') {
                 const paySelect = document.getElementById('pay-method');
                 const options = paySelect.options;
@@ -691,6 +775,7 @@
                 }
             }
         } else {
+            document.getElementById('login-method-overlay').classList.remove('hidden');
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('nav-tabs-container').style.display = 'none';
             document.getElementById('pay-interface').style.display = 'none';
@@ -719,7 +804,11 @@
             document.getElementById('register-form').style.display = 'none';
             document.getElementById('login-form').style.display = 'block';
         }
-        
+
+        function selectLoginMethod(method) {
+            document.getElementById('login-method-overlay').classList.add('hidden');
+        }
+
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -1713,6 +1802,8 @@
 
         function logout() {
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('phantomWallet');
+            localStorage.removeItem('walletType');
             location.reload();
         }
         

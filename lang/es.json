@@ -12,7 +12,10 @@
         "loginHint": "Por favor inicie sesión directamente, no necesita registrarse de nuevo.",
         "login": "Iniciar sesión",
         "noAccount": "¿No tiene cuenta? Regístrese",
-        "registerHint": "Si ya tiene una cuenta, por favor inicie sesión directamente."
+        "registerHint": "Si ya tiene una cuenta, por favor inicie sesión directamente.",
+        "selectMethod": "Seleccionar método de inicio",
+        "learn": "Aprender",
+        "phantom": "Phantom"
     },
     "register": {
         "confirmPassword": "Confirmar contraseña",

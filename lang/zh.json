@@ -12,7 +12,10 @@
         "loginHint": "请直接登录，无需重复注册。",
         "login": "登录",
         "noAccount": "没有账号？注册",
-        "registerHint": "如果您已有账号，请直接登录，无需重复注册"
+        "registerHint": "如果您已有账号，请直接登录，无需重复注册",
+        "selectMethod": "选择登录方式",
+        "learn": "学",
+        "phantom": "Phantom"
     },
     "register": {
         "confirmPassword": "确认密码",

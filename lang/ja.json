@@ -12,7 +12,10 @@
         "loginHint": "そのままログインしてください。登録の必要はありません。",
         "login": "ログイン",
         "noAccount": "アカウントがない？登録",
-        "registerHint": "すでにアカウントをお持ちの方は、そのままログインしてください。"
+        "registerHint": "すでにアカウントをお持ちの方は、そのままログインしてください。",
+        "selectMethod": "ログイン方法を選択",
+        "learn": "学ぶ",
+        "phantom": "Phantom"
     },
     "register": {
         "confirmPassword": "パスワード確認",

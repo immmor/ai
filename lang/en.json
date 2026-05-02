@@ -12,7 +12,10 @@
         "loginHint": "Please login directly, no need to register again.",
         "login": "Login",
         "noAccount": "No account? Register",
-        "registerHint": "If you already have an account, please login directly."
+        "registerHint": "If you already have an account, please login directly.",
+        "selectMethod": "Select Login Method",
+        "learn": "Learn",
+        "phantom": "Phantom"
     },
     "register": {
         "confirmPassword": "Confirm Password",

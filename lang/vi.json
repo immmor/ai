@@ -12,7 +12,10 @@
         "loginHint": "Vui lòng đăng nhập trực tiếp, không cần đăng ký lại.",
         "login": "Đăng nhập",
         "noAccount": "Chưa có tài khoản? Đăng ký",
-        "registerHint": "Nếu bạn đã có tài khoản, vui lòng đăng nhập trực tiếp."
+        "registerHint": "Nếu bạn đã có tài khoản, vui lòng đăng nhập trực tiếp.",
+        "selectMethod": "Chọn phương thức đăng nhập",
+        "learn": "Học",
+        "phantom": "Phantom"
     },
     "register": {
         "confirmPassword": "Xác nhận mật khẩu",
