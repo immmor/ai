@@ -590,11 +590,11 @@
                     <div class="data-table">
                         <div class="table-header">
                             <h3>用户列表</h3>
-                            <div style="display: flex; gap: 10px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
+                                <span id="searchResultInfo" style="color: #666;"></span>
                             </div>
-                            <div id="searchResultInfo" style="padding: 10px; color: #666;"></div>
                         </div>
                         <table id="usersTable">
                             <thead>
@@ -1514,7 +1514,7 @@
             const filtered = usersData.filter(u => JSON.stringify(u).toLowerCase().includes(keyword));
             const resultInfo = document.getElementById('searchResultInfo');
             if (keyword) {
-                resultInfo.textContent = `搜索 "${keyword}" 找到 ${filtered.length} 个结果`;
+                resultInfo.textContent = `共${filtered.length}`;
             } else {
                 resultInfo.textContent = '';
             }

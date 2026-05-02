@@ -9,7 +9,7 @@ export default {
       return new Response(null, {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
           'Access-Control-Max-Age': '86400'
         }
@@ -1437,7 +1437,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 获取所有节点链接 ==========
       if (path === '/api/links' && request.method === 'GET') {
         try {
-          const links = await DB.prepare('SELECT * FROM link ORDER BY id DESC').all();
+          const links = await DB.prepare("SELECT * FROM link WHERE key LIKE 'node%' ORDER BY id DESC").all();
           return resJson({ code: 200, msg: '查询成功', data: links.results || [] });
         } catch (err) {
           return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
