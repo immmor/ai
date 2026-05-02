@@ -66,6 +66,7 @@
     "alert": {
         "emptyUsernamePassword": "Username and password cannot be empty",
         "loginFailed": "Login failed: {message}",
+        "invalidCredentials": "Login failed: Username or password is incorrect",
         "networkError": "Network error, please try again later",
         "emptyRegUsernamePassword": "Username and password cannot be empty",
         "passwordMismatch": "Passwords do not match",

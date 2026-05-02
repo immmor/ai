@@ -66,6 +66,7 @@
     "alert": {
         "emptyUsernamePassword": "El nombre de usuario y la contraseña no pueden estar vacíos",
         "loginFailed": "Error de inicio de sesión: {message}",
+        "invalidCredentials": "Error de inicio de sesión: Nombre de usuario o contraseña incorrectos",
         "networkError": "Error de red, por favor intente más tarde",
         "emptyRegUsernamePassword": "El nombre de usuario y la contraseña no pueden estar vacíos",
         "passwordMismatch": "Las contraseñas no coinciden",

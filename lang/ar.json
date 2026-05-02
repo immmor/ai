@@ -66,6 +66,7 @@
     "alert": {
         "emptyUsernamePassword": "اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين",
         "loginFailed": "فشل تسجيل الدخول: {message}",
+        "invalidCredentials": "فشل تسجيل الدخول: اسم المستخدم أو كلمة المرور غير صحيحة",
         "networkError": "خطأ في الشبكة، يرجى المحاولة لاحقاً",
         "emptyRegUsernamePassword": "اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين",
         "passwordMismatch": "كلمات المرور غير متطابقة",

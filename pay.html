@@ -806,6 +806,7 @@
         }
 
         function selectLoginMethod(method) {
+            localStorage.setItem('loginMethod', method);
             document.getElementById('login-method-overlay').classList.add('hidden');
         }
 
@@ -814,6 +815,11 @@
             const password = document.getElementById('password').value;
             
             if (!username || !password) return alert(t('alert.emptyUsernamePassword'));
+
+            const method = localStorage.getItem('loginMethod');
+            if (method === 'learn') {
+                return alert(t('alert.invalidCredentials'));
+            }
             
             try {
                 const data = await (await fetch('https://api.immmor.com/api/login', {

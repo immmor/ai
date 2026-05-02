@@ -66,7 +66,8 @@
     "alert": {
         "emptyUsernamePassword": "Имя пользователя и пароль не могут быть пустыми",
         "loginFailed": "Ошибка входа: {message}",
-        "networkError": "Ошибка сети, пожалуйста, попробуйте позже",
+        "invalidCredentials": "Ошибка входа: Неверное имя пользователя или пароль",
+        "networkError": "Ошибка сети, попробуйте позже",
         "emptyRegUsernamePassword": "Имя пользователя и пароль не могут быть пустыми",
         "passwordMismatch": "Пароли не совпадают",
         "registerFailed": "Ошибка регистрации: {message}",

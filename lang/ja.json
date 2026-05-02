@@ -66,6 +66,7 @@
     "alert": {
         "emptyUsernamePassword": "ユーザー名とパスワードは必須です",
         "loginFailed": "ログイン失敗: {message}",
+        "invalidCredentials": "ログイン失敗：ユーザー名またはパスワードが正しくありません",
         "networkError": "ネットワークエラー。後でもう一度お試しください",
         "emptyRegUsernamePassword": "ユーザー名とパスワードは必須です",
         "passwordMismatch": "パスワードが一致しません",

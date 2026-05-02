@@ -66,6 +66,7 @@
     "alert": {
         "emptyUsernamePassword": "Tên đăng nhập và mật khẩu không được để trống",
         "loginFailed": "Đăng nhập thất bại: {message}",
+        "invalidCredentials": "Đăng nhập thất bại: Tên đăng nhập hoặc mật khẩu không đúng",
         "networkError": "Lỗi mạng, vui lòng thử lại sau",
         "emptyRegUsernamePassword": "Tên đăng nhập và mật khẩu không được để trống",
         "passwordMismatch": "Mật khẩu không khớp",
