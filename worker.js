@@ -136,7 +136,7 @@ export default {
 
         const result = await DB
           .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source)
+          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '')
           .run();
 
         if (result.success) {
@@ -689,15 +689,12 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            return resJson({ 
-              code: 403, 
-              msg: 'VIP已过期或未开通',
-              quota_info: {
-                monthly_quota: user.monthly_quota || 307200,
-                used_quota: user.used_quota || 0,
-                remaining_quota: (user.monthly_quota || 307200) - (user.used_quota || 0)
-              }
-            }, 403);
+            // VIP 已过期，重定向到免费节点接口
+            const freeUrl = `/free/clash?username=${encodeURIComponent(user.username)}`;
+            return new Response(null, {
+              status: 307,
+              headers: { 'Location': freeUrl }
+            });
           }
           
           const year = now.getFullYear();
@@ -756,7 +753,12 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            return resJson({ code: 403, msg: 'VIP已过期或未开通' }, 403);
+            // VIP 已过期，重定向到免费节点接口
+            const freeUrl = `/free/v2ray?username=${encodeURIComponent(user.username)}`;
+            return new Response(null, {
+              status: 307,
+              headers: { 'Location': freeUrl }
+            });
           }
           
           const vipV2rayUrl = user.v_link_v2ray;
@@ -813,11 +815,13 @@ export default {
             return resJson({ code: 404, msg: '用户不存在' }, 404);
           }
           
-          // 根据当前日期生成链接
+          // 根据当前日期生成链接（获取昨天的配置文件）
           const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate() - 1).padStart(2, '0');
+          // 减去1天获取昨天的日期
+          const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          const year = yesterday.getFullYear();
+          const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+          const day = String(yesterday.getDate()).padStart(2, '0');
           
           const clashUrl = `https://node.clashnode.top/uploads/${year}/${month}/0-${year}${month}${day}.yaml`;
           
@@ -870,11 +874,13 @@ export default {
             return resJson({ code: 404, msg: '用户不存在' }, 404);
           }
           
-          // 根据当前日期生成链接
+          // 根据当前日期生成链接（获取昨天的配置文件）
           const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate() - 1).padStart(2, '0');
+          // 减去 1 天获取昨天的日期
+          const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          const year = yesterday.getFullYear();
+          const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+          const day = String(yesterday.getDate()).padStart(2, '0');
           
           const v2rayUrl = `https://node.clashnode.top/uploads/${year}/${month}/0-${year}${month}${day}.txt`;
           
@@ -1426,6 +1432,47 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           }
         }
         return resJson({ code: 200, data: results });
+      }
+
+      // ========== 获取所有节点链接 ==========
+      if (path === '/api/links' && request.method === 'GET') {
+        try {
+          const links = await DB.prepare('SELECT * FROM link ORDER BY id DESC').all();
+          return resJson({ code: 200, msg: '查询成功', data: links.results || [] });
+        } catch (err) {
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 添加或更新节点链接 ==========
+      if (path === '/api/links' && request.method === 'POST') {
+        try {
+          const { key, value } = await request.json();
+          if (!key || value === undefined) {
+            return resJson({ code: 400, msg: '缺少key或value参数' }, 400);
+          }
+          const existing = await DB.prepare('SELECT * FROM link WHERE key = ?').bind(key).first();
+          if (existing) {
+            await DB.prepare('UPDATE link SET value = ?, updated_at = ? WHERE key = ?').bind(value, new Date().toISOString().slice(0, 19).replace('T', ' '), key).run();
+          } else {
+            await DB.prepare('INSERT INTO link (key, value) VALUES (?, ?)').bind(key, value).run();
+          }
+          return resJson({ code: 200, msg: '保存成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '保存失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 删除节点链接 ==========
+      if (path === '/api/links' && request.method === 'DELETE') {
+        try {
+          const { key } = await request.json();
+          if (!key) return resJson({ code: 400, msg: '缺少key参数' }, 400);
+          await DB.prepare('DELETE FROM link WHERE key = ?').bind(key).run();
+          return resJson({ code: 200, msg: '删除成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
+        }
       }
 
       // ========== 默认接口提示 ==========

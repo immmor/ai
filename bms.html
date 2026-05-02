@@ -514,7 +514,7 @@
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
                 <a href="#traffic" class="menu-item" onclick="showPage('traffic')">流量管理</a>
-                <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点订阅</a>
+                <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
             </nav>
@@ -742,6 +742,29 @@
                                 <button class="add-btn" onclick="saveLinkConfig()" style="background-color: #667eea;">保存订阅链接</button>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="data-table" style="margin-top: 1rem;">
+                        <div class="table-header">
+                            <h3>节点链接管理</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="newLinkKey" placeholder="链接名称" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <input type="text" id="newLinkValue" placeholder="链接地址" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; width: 300px;">
+                                <button class="add-btn" onclick="addLink()" style="background-color: #48bb78;">添加链接</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>链接</th>
+                                    <th>更新时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linksTableBody"></tbody>
+                        </table>
                     </div>
 
                     <div class="data-table" style="margin-top: 1rem;">
@@ -1151,7 +1174,7 @@
                 'users': '用户管理',
                 'orders': '订单管理',
                 'traffic': '流量管理',
-                'nodes': '节点订阅',
+                'nodes': '节点管理',
                 'settings': '系统设置',
                 'messages': '消息管理'
             };
@@ -1171,6 +1194,7 @@
             } else if (pageName === 'nodes') {
                 await loadLinkConfig();
                 await loadPricePlan();
+                await loadLinks();
             } else if (pageName === 'messages') {
                 // 消息管理页面不需要加载数据
             }
@@ -1909,6 +1933,44 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 const results = await Promise.all(promises);
                 alert(results.every(r => r.code === 200) ? '保存成功' : '部分保存失败');
             } catch (err) { alert('保存失败'); }
+        }
+
+        async function loadLinks() {
+            const result = await newApiRequest('/api/links', 'GET');
+            const tbody = document.getElementById('linksTableBody');
+            if (result.code === 200 && result.data.length > 0) {
+                tbody.innerHTML = result.data.map(link => `
+                    <tr>
+                        <td>${link.id}</td>
+                        <td>${link.key}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${link.value}">${link.value}</td>
+                        <td>${link.updated_at || link.created_at}</td>
+                        <td><button class="action-btn delete-btn" onclick="deleteLink('${link.key}')">删除</button></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">暂无链接数据</td></tr>';
+            }
+        }
+
+        async function addLink() {
+            const key = document.getElementById('newLinkKey').value.trim();
+            const value = document.getElementById('newLinkValue').value.trim();
+            if (!key || !value) { alert('请填写链接名称和地址'); return; }
+            const result = await newApiRequest('/api/links', 'POST', { key, value });
+            if (result.code === 200) {
+                document.getElementById('newLinkKey').value = '';
+                document.getElementById('newLinkValue').value = '';
+                loadLinks();
+                alert('添加成功');
+            } else { alert(result.msg || '添加失败'); }
+        }
+
+        async function deleteLink(key) {
+            if (!confirm('确定删除该链接？')) return;
+            const result = await newApiRequest('/api/links', 'DELETE', { key });
+            if (result.code === 200) { loadLinks(); alert('删除成功'); }
+            else { alert(result.msg || '删除失败'); }
         }
 
         // 复制邀请码
