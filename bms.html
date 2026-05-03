@@ -1943,7 +1943,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     <tr>
                         <td>${link.id}</td>
                         <td>${link.key}</td>
-                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${link.value}">${link.value}</td>
+                        <td style="word-break: break-all; font-family: monospace; font-size: 0.85em;">${link.value}</td>
                         <td>${link.updated_at || link.created_at}</td>
                         <td><button class="action-btn delete-btn" onclick="deleteLink('${link.key}')">删除</button></td>
                     </tr>
