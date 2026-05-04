@@ -224,6 +224,46 @@
             box-shadow: 0 0 15px var(--neon-pink);
         }
 
+        /* 验证按钮样式 */
+        .verify-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+        }
+
+        .verify-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .verify-btn.verified {
+            background: var(--neon-green);
+            border-color: var(--neon-green);
+            color: #000;
+            cursor: default;
+        }
+
+        .verify-btn.verifying {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         /* 按钮 */
         .glitch-btn {
             width: 100%;
@@ -238,6 +278,13 @@
             transition: 0.2s;
             overflow: hidden;
             margin-bottom: 20px;
+        }
+
+        .glitch-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         .glitch-btn:hover {
@@ -568,10 +615,15 @@
             <div class="input-box">
                 <input type="password" placeholder="密码" id="password" data-i18n-placeholder="login.password">
             </div>
+            <div class="verify-box" style="margin-bottom: 15px;">
+                <button type="button" id="verify-btn" class="verify-btn" onclick="startVerify()">
+                    <i class="fas fa-robot"></i> <span id="verify-text">点击验证</span>
+                </button>
+            </div>
             <div style="text-align: center; margin-bottom: 15px; color: #888; font-size: 12px;" data-i18n="login.loginHint">
                 请直接登录，无需重复注册。
             </div>
-            <button class="glitch-btn login-btn" onclick="login()" style="margin-bottom: 15px;" data-text="登录"></button>
+            <button class="glitch-btn login-btn" id="login-submit-btn" onclick="login()" style="margin-bottom: 15px;" data-text="登录" disabled></button>
             <div style="text-align: center;">
                 <a onclick="showRegister()" style="color: #666; font-size: 11px; cursor: pointer; text-decoration: underline; display: none;" data-i18n="login.noAccount">没有账号？注册</a>
             </div>
@@ -757,9 +809,54 @@
         let selectedAmount = null;
         let phantomWallet = localStorage.getItem('phantomWallet');
         let walletType = localStorage.getItem('walletType');
+        let isVerified = false;
+        let verifyTimer = null;
+
+        function startVerify() {
+            if (isVerified) return;
+            const btn = document.getElementById('verify-btn');
+            const text = document.getElementById('verify-text');
+            const loginBtn = document.getElementById('login-submit-btn');
+
+            btn.classList.remove('verified');
+            btn.classList.add('verifying');
+            text.textContent = '验证中...';
+
+            let dots = 0;
+            verifyTimer = setInterval(() => {
+                dots = (dots + 1) % 4;
+                text.textContent = '验证中' + '.'.repeat(dots);
+            }, 500);
+
+            setTimeout(() => {
+                clearInterval(verifyTimer);
+                isVerified = true;
+                btn.classList.remove('verifying');
+                btn.classList.add('verified');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>验证成功</span>';
+                loginBtn.disabled = false;
+                loginBtn.style.cursor = 'pointer';
+            }, Math.random() * 2000 + 2000);
+        }
+
+        function resetVerify() {
+            isVerified = false;
+            const btn = document.getElementById('verify-btn');
+            const text = document.getElementById('verify-text');
+            const loginBtn = document.getElementById('login-submit-btn');
+            if (btn && text) {
+                btn.classList.remove('verified', 'verifying');
+                btn.innerHTML = '<i class="fas fa-robot"></i> <span id="verify-text">点击验证</span>';
+            }
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.style.cursor = 'not-allowed';
+            }
+        }
 
         initI18n().then(() => {
             selectPayMethod('credit_card');
+            resetVerify();
         });
 
         const urlParams = new URLSearchParams(window.location.search);
