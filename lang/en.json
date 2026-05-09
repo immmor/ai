@@ -1,6 +1,6 @@
 {
     "appTitle": "Yimo Wallet",
-    "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥200!!",
+    "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥140!!",
     "nav": {
         "recharge": "Recharge",
         "orders": "Orders",
@@ -29,7 +29,7 @@
         "yimoNote": "1 yuan = 1 Yimo Coin"
     },
     "payMethod": {
-        "creditCard": "Credit Card ($20 gets ¥200)",
+        "creditCard": "Credit Card ($20 gets ¥140)",
         "usdt": "TRON USDT (>100 yuan)",
         "alipayStatic": "Alipay (Manual)",
         "wechatStatic": "WeChat Pay (Manual)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "Credit Card Payment",
-        "limitedOffer": "(Limited Offer! $20 gets ¥200)",
+        "limitedOffer": "($20 gets ¥140)",
         "createFailed": "Payment Creation Failed"
     },
     "alert": {

@@ -1,6 +1,6 @@
 {
     "appTitle": "イモウォレット",
-    "marqueeText": "🎉限定キャンペーン！クレジットカードで$20チャージで¥200GET!!",
+    "marqueeText": "🎉限定キャンペーン！クレジットカードで$20チャージで¥140GET!!",
     "nav": {
         "recharge": "チャージ",
         "orders": "注文",
@@ -29,7 +29,7 @@
         "yimoNote": "1元=1以墨コイン"
     },
     "payMethod": {
-        "creditCard": "クレジットカード($20=¥200)",
+        "creditCard": "クレジットカード($20=¥140)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "アリペイ(手動)",
         "wechatStatic": "ウィチャットpay(手動)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "クレジットカード支払い",
-        "limitedOffer": "(限定キャンペーン！$20=¥200)",
+        "limitedOffer": "($20=¥140)",
         "createFailed": "支払い作成失敗"
     },
     "alert": {

@@ -505,7 +505,7 @@
 
 <div class="neon-card" style="position: relative;">
         <div class="header" data-i18n="appTitle">以墨钱包</div>
-        <div class="marquee"><span id="marquee-text" data-i18n="marqueeText">🎉限时特惠！！信用卡充值20美元到账200人民币！！</span></div>
+        <!-- <div class="marquee"><span id="marquee-text" data-i18n="marqueeText">🎉限时特惠！！信用卡充值20美元到账140人民币！！</span></div> -->
         
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
@@ -582,7 +582,7 @@
             <div style="text-align: center; font-size: 11px; color: var(--neon-green); margin-top: -12px; margin-bottom: 15px;" data-i18n="amount.yimoNote">1元=1以墨币</div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="credit_card" data-i18n="payMethod.creditCard">信用卡(充20美元到账200RMB)</option>
+                <option value="credit_card" data-i18n="payMethod.creditCard">信用卡(充20美元到账140RMB)</option>
                 <option value="usdt" data-i18n="payMethod.usdt">TRON USDT(>100元)</option>
                 <option value="alipay_static" data-i18n="payMethod.alipayStatic">支付宝(人工)</option>
                 <!-- <option value="wechat_static" data-i18n="payMethod.wechatStatic">微信支付(人工)</option> -->
@@ -894,7 +894,7 @@
             if (creditCardInfo) {
                 creditCardInfo.innerHTML = `
                     <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">${t('creditCard.pay')}</div>
-                    <div style="font-size: 32px; font-weight: 800; color: #fff;">¥200</div>
+                    <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
                     <div style="color: #999; font-size: 12px; margin-top: 2px;">${t('creditCard.limitedOffer')}</div>
                 `;
             }
@@ -916,7 +916,7 @@
             mode = m;
             
             if (m === 'credit_card') {
-                selectedAmount = 200;
+                selectedAmount = 140;
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.classList.remove('active');
                     btn.style.display = 'none';
@@ -939,7 +939,7 @@
                     `;
                     creditCardInfo.innerHTML = `
                         <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">${t('creditCard.pay')}</div>
-                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥200</div>
+                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
                         <div style="color: #999; font-size: 12px; margin-top: 2px;">${t('creditCard.limitedOffer')}</div>
                     `;
                     amountGrid.appendChild(creditCardInfo);

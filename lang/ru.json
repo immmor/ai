@@ -1,6 +1,6 @@
 {
     "appTitle": "Кошелёк Yimo",
-    "marqueeText": "🎉Ограниченное предложение! Пополнение картой $20 = ¥200!!",
+    "marqueeText": "🎉Ограниченное предложение! Пополнение картой $20 = ¥140!!",
     "nav": {
         "recharge": "Пополнение",
         "orders": "Заказы",
@@ -29,7 +29,7 @@
         "yimoNote": "1 юань = 1 Йимо"
     },
     "payMethod": {
-        "creditCard": "Кредитная карта ($20 = ¥200)",
+        "creditCard": "Кредитная карта ($20 = ¥140)",
         "usdt": "TRON USDT (>100 юаней)",
         "alipayStatic": "Alipay (Ручной)",
         "wechatStatic": "WeChat Pay (Ручной)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "Оплата картой",
-        "limitedOffer": "(Ограниченное предложение! $20 = ¥200)",
+        "limitedOffer": "($20 = ¥140)",
         "createFailed": "Ошибка создания платежа"
     },
     "alert": {

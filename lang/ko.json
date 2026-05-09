@@ -1,6 +1,6 @@
 {
     "appTitle": "이모 지갑",
-    "marqueeText": "🎉한정 혜택! 신용카드 충전 $20하면 ¥200 획득!!",
+    "marqueeText": "🎉한정 혜택! 신용카드 충전 $20하면 ¥140 획득!!",
     "nav": {
         "recharge": "충전",
         "orders": "주문",
@@ -29,7 +29,7 @@
         "yimoNote": "1위안 = 1이모코인"
     },
     "payMethod": {
-        "creditCard": "신용카드($20=¥200)",
+        "creditCard": "신용카드($20=¥140)",
         "usdt": "TRON USDT(>100위안)",
         "alipayStatic": "알리페이(수동)",
         "wechatStatic": "위챗페이(수동)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "신용카드 결제",
-        "limitedOffer": "(한정 혜택! $20=¥200)",
+        "limitedOffer": "($20=¥140)",
         "createFailed": "결제 생성 실패"
     },
     "alert": {

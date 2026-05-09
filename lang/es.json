@@ -1,6 +1,6 @@
 {
     "appTitle": "Billetera Yimo",
-    "marqueeText": "🎉¡Oferta Limitada! Recarga con tarjeta de crédito $20 obtiene ¥200!!",
+    "marqueeText": "🎉¡Oferta Limitada! Recarga con tarjeta de crédito $20 obtiene ¥140!!",
     "nav": {
         "recharge": "Recargar",
         "orders": "Pedidos",
@@ -29,7 +29,7 @@
         "yimoNote": "1 yuan = 1 Yimo"
     },
     "payMethod": {
-        "creditCard": "Tarjeta de crédito ($20 = ¥200)",
+        "creditCard": "Tarjeta de crédito ($20 = ¥140)",
         "usdt": "TRON USDT (>100 yuan)",
         "alipayStatic": "Alipay (Manual)",
         "wechatStatic": "WeChat Pay (Manual)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "Pago con tarjeta de crédito",
-        "limitedOffer": "({Oferta limitada! $20 = ¥200)",
+        "limitedOffer": "($20 = ¥140)",
         "createFailed": "Error al crear el pago"
     },
     "alert": {

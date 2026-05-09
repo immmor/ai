@@ -1,6 +1,6 @@
 {
     "appTitle": "Ví Yimo",
-    "marqueeText": "🎉Ưu đãi giới hạn! Nạp thẻ tín dụng $20 nhận ¥200!!",
+    "marqueeText": "🎉Ưu đãi giới hạn! Nạp thẻ tín dụng $20 nhận ¥140!!",
     "nav": {
         "recharge": "Nạp tiền",
         "orders": "Đơn hàng",
@@ -29,7 +29,7 @@
         "yimoNote": "1 yuan = 1 Yimo"
     },
     "payMethod": {
-        "creditCard": "Thẻ tín dụng ($20=¥200)",
+        "creditCard": "Thẻ tín dụng ($20=¥140)",
         "usdt": "TRON USDT(>100 yuan)",
         "alipayStatic": "Alipay (Thủ công)",
         "wechatStatic": "WeChat Pay (Thủ công)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "Thanh toán thẻ tín dụng",
-        "limitedOffer": "(Ưu đãi giới hạn! $20=¥200)",
+        "limitedOffer": "($20=¥140)",
         "createFailed": "Tạo thanh toán thất bại"
     },
     "alert": {

@@ -1,6 +1,6 @@
 {
     "appTitle": "以墨钱包",
-    "marqueeText": "🎉限时特惠！！信用卡充值20美元到账200人民币！！",
+    "marqueeText": "🎉限时特惠！！信用卡充值20美元到账140人民币！！",
     "nav": {
         "recharge": "充值",
         "orders": "订单",
@@ -29,7 +29,7 @@
         "yimoNote": "1元=1以墨币"
     },
     "payMethod": {
-        "creditCard": "信用卡(充20美元到账200RMB)",
+        "creditCard": "信用卡(充20美元到账140RMB)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "支付宝(人工)",
         "wechatStatic": "微信支付(人工)"
@@ -60,7 +60,7 @@
     },
     "creditCard": {
         "pay": "信用卡支付",
-        "limitedOffer": "(限时特惠！！充20美元到账200人民币)",
+        "limitedOffer": "(充20美元到账140人民币)",
         "createFailed": "创建支付失败"
     },
     "alert": {
