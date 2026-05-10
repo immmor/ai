@@ -626,6 +626,23 @@ export default {
         }
       }
 
+      // 路由匹配：/api/orders 删除订单接口
+      if (url.pathname === '/api/orders' && request.method === 'DELETE') {
+        try {
+          const { order_no } = await request.json();
+          if (!order_no) {
+            return jsonResponse({ code: 400, msg: '订单号不能为空' }, 400);
+          }
+          await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('DELETE'));
+          return jsonResponse({ code: 200, msg: '删除成功' });
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '删除失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       // 路由匹配：/api/order/detail 查询订单详情接口
       if (url.pathname === '/api/order/detail' && request.method === 'GET') {
         try {
