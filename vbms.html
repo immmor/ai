@@ -638,7 +638,6 @@
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
                                 <button class="add-btn" onclick="loadAllOrders()">显示全部</button>
-                                <button class="add-btn" onclick="exportOrders()" style="background-color: #667eea;">导出订单</button>
                             </div>
                         </div>
                         <table id="ordersTable">
@@ -1341,11 +1340,19 @@
                 renderOrders();
                 return;
             }
-            
-            const filtered = ordersData.filter(order => 
-                order.username.toLowerCase().includes(keyword) ||
-                order.order_no.toLowerCase().includes(keyword)
-            );
+
+            const filtered = ordersData.filter(order => {
+                const statusMap = { 'pending': '待支付', 'paid': '已支付', 'failed': '支付失败', 'completed': '已完成' };
+                const paymentTypeMap = { 'alipay': '支付宝', 'wxpay': '微信支付', 'manual': '人工审核' };
+                return (
+                    order.username.toLowerCase().includes(keyword) ||
+                    order.order_no.toLowerCase().includes(keyword) ||
+                    order.amount.toString().includes(keyword) ||
+                    (paymentTypeMap[order.payment_type] || order.payment_type || '').toLowerCase().includes(keyword) ||
+                    (statusMap[order.status] || order.status || '').toLowerCase().includes(keyword) ||
+                    new Date(order.created_at).toLocaleString().toLowerCase().includes(keyword)
+                );
+            });
             renderFilteredOrders(filtered);
         }
         
@@ -1617,39 +1624,6 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
 
-        // 导出订单
-        function exportOrders() {
-            if (ordersData.length === 0) {
-                alert('没有可导出的订单数据');
-                return;
-            }
-            
-            const statusMap = {
-                'pending': '待支付',
-                'paid': '已支付',
-                'failed': '支付失败',
-                'completed': '已完成'
-            };
-            const paymentTypeMap = {
-                'alipay': '支付宝',
-                'wxpay': '微信支付',
-                'manual': '人工审核'
-            };
-            
-            // 构建CSV内容
-            let csv = '\uFEFF订单号,客户,金额,支付方式,状态,日期\n';
-            ordersData.forEach(order => {
-                csv += `${order.order_no},${order.username},${order.amount},${paymentTypeMap[order.payment_type] || order.payment_type || '-'},${statusMap[order.status] || order.status},${new Date(new Date(order.created_at).getTime() + 8 * 60 * 60 * 1000).toLocaleString()}\n`;
-            });
-            
-            // 下载CSV文件
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-        }
-        
         // 快速充值
         async function quickRecharge() {
             const username = prompt('请输入要充值的用户名：');
