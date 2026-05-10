@@ -1402,9 +1402,10 @@
                     <td>${paymentTypeMap[order.payment_type] || order.payment_type || '-'}</td>
                     <td style="min-width: 120px;">${statusMap[order.status] || order.status}</td>
                     <td style="min-width: 250px;">${new Date(new Date(order.created_at).getTime() + 8 * 60 * 60 * 1000).toLocaleString()}</td>
-                    <td style="min-width: 200px;">
+                    <td style="min-width: 250px;">
                         <button class="action-btn edit-btn" onclick="viewOrderDetail('${order.order_no}')">查看</button>
                         ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
+                        <button class="action-btn delete-btn" onclick="deleteOrder('${order.order_no}')">删除</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1601,6 +1602,18 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 searchUserOrders(username);
             } else {
                 alert(result.message || '确认失败');
+            }
+        }
+
+        // 删除订单
+        async function deleteOrder(orderNo) {
+            if (!confirm('确定删除该订单？')) return;
+            const result = await apiRequest('/api/orders', 'DELETE', { order_no: orderNo });
+            if (result.code === 200) {
+                loadAllOrders();
+                alert('删除成功');
+            } else {
+                alert(result.msg || '删除失败');
             }
         }
 
