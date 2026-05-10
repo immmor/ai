@@ -1035,7 +1035,7 @@
             }
             
             if (mode === 'credit_card') {
-                createCreditCardOrder();
+                createCreditCardOrder(amount);
                 return;
             }
             
@@ -1454,7 +1454,7 @@
                 if (data.code === 200) {
                     localStorage.setItem('creditCardOrder_' + orderNo, JSON.stringify({
                         username: currentUser.username,
-                        amount: 140,
+                        amount: rmbAmount,
                         order_no: orderNo
                     }));
                     

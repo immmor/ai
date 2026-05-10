@@ -307,7 +307,7 @@ export default {
       if (url.pathname === '/api/pay/creem-checkout' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, order_no } = params;
+          const { username, order_no, amount, description } = params;
           
           if (!username || !order_no) {
             return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
@@ -345,10 +345,10 @@ export default {
               await supabaseFetch('orders', createSupabaseConfig('POST', {
                 order_no: order_no,
                 username: username,
-                amount: 200,
+                amount: amount || 200,
                 payment_type: 'credit_card',
                 status: 'pending',
-                description: '信用卡支付'
+                description: description || '信用卡支付'
               }));
             } catch (supabaseError) {
               console.error('Supabase订单记录失败:', supabaseError);
