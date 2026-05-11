@@ -771,6 +771,17 @@
                             <h3>价格配置（新用户默认价格）</h3>
                         </div>
                         <div style="padding: 1.5rem;">
+                            <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                                <label style="font-weight: 500; color: #4a5568;">快速配置：</label>
+                                <select id="pricePreset" onchange="applyPricePreset()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; min-width: 200px;">
+                                    <option value="">-- 选择预设 --</option>
+                                    <option value="basic">基础版 (12/10 - 144/100 - 44)</option>
+                                    <option value="standard">标准版 (25/20 - 300/200 - 100)</option>
+                                    <option value="premium">高级版 (37.5/30 - 450/350 - 100)</option>
+                                    <option value="enterprise">企业版 (50/40 - 600/450 - 150)</option>
+                                    <option value="luxury">豪华版 (62.5/50 - 750/550 - 200)</option>
+                                </select>
+                            </div>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
                                 <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px;">
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">月付原价</label>
@@ -1211,6 +1222,24 @@
                     document.getElementById('price_savings').value = data.data.savings || '';
                 }
             } catch (err) { console.error('加载价格失败:', err); }
+        }
+
+        function applyPricePreset() {
+            const preset = document.getElementById('pricePreset').value;
+            const presets = {
+                'basic':   { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 },
+                'standard': { monthly_original: 25, monthly_discount: 20, annual_original: 300, annual_discount: 200, savings: 100 },
+                'premium': { monthly_original: 37.5, monthly_discount: 30, annual_original: 450, annual_discount: 350, savings: 100 },
+                'enterprise': { monthly_original: 50, monthly_discount: 40, annual_original: 600, annual_discount: 450, savings: 150 },
+                'luxury': { monthly_original: 62.5, monthly_discount: 50, annual_original: 750, annual_discount: 550, savings: 200 }
+            };
+            if (presets[preset]) {
+                document.getElementById('price_monthly_original').value = presets[preset].monthly_original;
+                document.getElementById('price_monthly_discount').value = presets[preset].monthly_discount;
+                document.getElementById('price_annual_original').value = presets[preset].annual_original;
+                document.getElementById('price_annual_discount').value = presets[preset].annual_discount;
+                document.getElementById('price_savings').value = presets[preset].savings;
+            }
         }
 
         async function savePricePlan() {
