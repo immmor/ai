@@ -29,7 +29,7 @@
         "yimoNote": "1元=1以墨币"
     },
     "payMethod": {
-        "creditCard": "信用卡(充20美元到账140RMB)",
+        "creditCard": "信用卡(充20美元/100美元)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "支付宝(人工)",
         "wechatStatic": "微信支付(人工)"

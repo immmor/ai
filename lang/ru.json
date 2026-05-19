@@ -29,7 +29,7 @@
         "yimoNote": "1 юань = 1 Йимо"
     },
     "payMethod": {
-        "creditCard": "Кредитная карта ($20 = ¥140)",
+        "creditCard": "Кредитная карта ($20/$100)",
         "usdt": "TRON USDT (>100 юаней)",
         "alipayStatic": "Alipay (Ручной)",
         "wechatStatic": "WeChat Pay (Ручной)"

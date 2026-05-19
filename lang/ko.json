@@ -29,7 +29,7 @@
         "yimoNote": "1위안 = 1이모코인"
     },
     "payMethod": {
-        "creditCard": "신용카드($20=¥140)",
+        "creditCard": "신용카드($20/$100)",
         "usdt": "TRON USDT(>100위안)",
         "alipayStatic": "알리페이(수동)",
         "wechatStatic": "위챗페이(수동)"

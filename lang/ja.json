@@ -29,7 +29,7 @@
         "yimoNote": "1元=1以墨コイン"
     },
     "payMethod": {
-        "creditCard": "クレジットカード($20=¥140)",
+        "creditCard": "クレジットカード($20/$100)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "アリペイ(手動)",
         "wechatStatic": "ウィチャットpay(手動)"

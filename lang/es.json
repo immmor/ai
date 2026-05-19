@@ -29,7 +29,7 @@
         "yimoNote": "1 yuan = 1 Yimo"
     },
     "payMethod": {
-        "creditCard": "Tarjeta de crédito ($20 = ¥140)",
+        "creditCard": "Tarjeta de crédito ($20/$100)",
         "usdt": "TRON USDT (>100 yuan)",
         "alipayStatic": "Alipay (Manual)",
         "wechatStatic": "WeChat Pay (Manual)"

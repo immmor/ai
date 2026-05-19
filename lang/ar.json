@@ -29,7 +29,7 @@
         "yimoNote": "1 يوان = 1 ييمو"
     },
     "payMethod": {
-        "creditCard": "بطاقة ائتمانية (20 دولار = 140 يوان)",
+        "creditCard": "بطاقة ائتمانية ($20/$100)",
         "usdt": "TRON USDT (>100 يوان)",
         "alipayStatic": "عليpay (يدوي)",
         "wechatStatic": "ويipay (يدوي)"
