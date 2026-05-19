@@ -582,7 +582,7 @@
             <div style="text-align: center; font-size: 11px; color: var(--neon-green); margin-top: -12px; margin-bottom: 15px;" data-i18n="amount.yimoNote">1元=1以墨币</div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="credit_card" data-i18n="payMethod.creditCard">信用卡(充20美元到账140RMB)</option>
+                <option value="credit_card" data-i18n="payMethod.creditCard">信用卡($20/$100)</option>
                 <option value="usdt" data-i18n="payMethod.usdt">TRON USDT(>100元)</option>
                 <option value="alipay_static" data-i18n="payMethod.alipayStatic">支付宝(人工)</option>
                 <!-- <option value="wechat_static" data-i18n="payMethod.wechatStatic">微信支付(人工)</option> -->
@@ -717,6 +717,7 @@
             e.preventDefault();
         });
         let mode = 'credit_card';
+        let creditCardAmount = 20;
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser) {
             const loginTime = localStorage.getItem('loginTime');
@@ -926,7 +927,7 @@
             mode = m;
             
             if (m === 'credit_card') {
-                selectedAmount = 140;
+                creditCardAmount = 20;
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.classList.remove('active');
                     btn.style.display = 'none';
@@ -939,18 +940,21 @@
                 if (amountGrid && !document.getElementById('credit-card-info')) {
                     const creditCardInfo = document.createElement('div');
                     creditCardInfo.id = 'credit-card-info';
+                    creditCardInfo.innerHTML = `
+                        <button class="amount-btn credit-card-option active" data-usd="20" onclick="selectCreditCardAmount(20)">
+                            <div style="font-size:14px;">$20</div>
+                            <div style="font-size:12px;color:#999;">=¥140</div>
+                        </button>
+                        <button class="amount-btn credit-card-option" data-usd="100" onclick="selectCreditCardAmount(100)">
+                            <div style="font-size:14px;">$100</div>
+                            <div style="font-size:12px;color:#999;">=¥700</div>
+                        </button>
+                    `;
                     creditCardInfo.style.cssText = `
                         grid-column: 1 / -1;
-                        text-align: center;
-                        padding: 12px;
-                        background: rgba(255, 0, 255, 0.1);
-                        border: 2px solid var(--neon-pink);
-                        border-radius: 5px;
-                    `;
-                    creditCardInfo.innerHTML = `
-                        <div style="color: var(--neon-pink); font-size: 12px; margin-bottom: 2px;">${t('creditCard.pay')}</div>
-                        <div style="font-size: 32px; font-weight: 800; color: #fff;">¥140</div>
-                        <div style="color: #999; font-size: 12px; margin-top: 2px;">${t('creditCard.limitedOffer')}</div>
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
                     `;
                     amountGrid.appendChild(creditCardInfo);
                 }
@@ -970,6 +974,14 @@
                     creditCardInfo.remove();
                 }
             }
+        }
+        
+        function selectCreditCardAmount(usd) {
+            creditCardAmount = usd;
+            document.querySelectorAll('.credit-card-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.usd == usd) btn.classList.add('active');
+            });
         }
 
         function selectAmount(amount) {
@@ -1448,6 +1460,7 @@
         // 信用卡支付功能
         async function createCreditCardOrder() {
             const orderNo = currentUser.username + '_' + Date.now();
+            const usdAmount = creditCardAmount || 20;
             
             try {
                 const response = await fetch('https://immmor.com/api/pay/creem-checkout', {
@@ -1455,7 +1468,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         username: currentUser.username,
-                        order_no: orderNo
+                        order_no: orderNo,
+                        amount: usdAmount
                     })
                 });
                 
@@ -1464,7 +1478,7 @@
                 if (data.code === 200) {
                     localStorage.setItem('creditCardOrder_' + orderNo, JSON.stringify({
                         username: currentUser.username,
-                        amount: 140,
+                        amount: usdAmount * 7,
                         order_no: orderNo
                     }));
                     

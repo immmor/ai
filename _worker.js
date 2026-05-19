@@ -307,11 +307,14 @@ export default {
       if (url.pathname === '/api/pay/creem-checkout' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, order_no } = params;
+          const { username, order_no, amount = 20 } = params;
           
           if (!username || !order_no) {
             return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
           }
+          
+          const usdAmount = parseInt(amount) || 20;
+          const cnyAmount = usdAmount * 7;
           
           const creemApiKey = env.CREEM_API_KEY;
           const creemBaseUrl = 'https://api.creem.io/v1/checkouts';
@@ -320,11 +323,11 @@ export default {
             return jsonResponse({ code: 500, msg: '支付服务未配置，请配置 CREEM_API_KEY 环境变量' }, 500);
           }
           
-          const product_id = env.CREEM_PRODUCT_ID || 'prod_6SdsEpr0Bv5d3cyLUdcU6c';
+          const product_id = usdAmount === 100 ? 'prod_oiAMIsdnuWoA7koBEP5jO' : 'prod_6SdsEpr0Bv5d3cyLUdcU6c';
           
           const checkoutData = {
             product_id: product_id,
-            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}`
+            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}&amount=${cnyAmount}`
           };
           
           const response = await fetch(creemBaseUrl, {
@@ -345,10 +348,10 @@ export default {
               await supabaseFetch('orders', createSupabaseConfig('POST', {
                 order_no: order_no,
                 username: username,
-                amount: 140,
+                amount: cnyAmount,
                 payment_type: 'credit_card',
                 status: 'pending',
-                description: '信用卡支付'
+                description: `信用卡支付 $${usdAmount}`
               }));
             } catch (supabaseError) {
               console.error('Supabase订单记录失败:', supabaseError);
@@ -387,16 +390,17 @@ export default {
           const order_id = url.searchParams.get('order_id');
           const order_no = url.searchParams.get('order_no');
           const username = url.searchParams.get('username');
+          const amount = url.searchParams.get('amount');
           
-          console.log('收到支付回调:', { checkout_id, order_id, order_no, username });
+          console.log('收到支付回调:', { checkout_id, order_id, order_no, username, amount });
           
           if (order_no && username) {
-            const amountCny = 140;
+            const amountCny = parseFloat(amount) || 140;
                 
             // 更新用户余额
             await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-              .bind(parseFloat(amountCny), username)
+              .bind(amountCny, username)
               .run();
             
             console.log(`余额更新成功: ${username} +${amountCny}`);

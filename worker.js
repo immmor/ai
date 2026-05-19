@@ -125,6 +125,14 @@ export default {
               .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
               .bind(inviterUser.username, `[系统通知] 您的邀请用户 ${username} 已注册，您获得奖励 2 元`, now)
               .run();
+            
+            // 通知immmor有人邀请注册（邀请人不是immmor时才发）
+            if (inviterUser.username !== 'immmor') {
+              await DB
+                .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+                .bind('immmor', `[系统通知] 用户 ${inviterUser.username} 成功邀请了 ${username} 注册`, now)
+                .run();
+            }
           }
         }
 
@@ -159,11 +167,6 @@ export default {
           await DB
             .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', msg, now)
-            .run();
-          
-          await DB
-            .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-            .bind('admin', msg, now)
             .run();
 
           await DB
@@ -364,16 +367,11 @@ export default {
           
           if (result.success && result.meta.changes > 0) {
             const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            const msg = `[系统通知] 用户 ${username} 开通VIP成功！`;
+            const msg = `[系统通知] 用户 ${username} 开通VIP成功！金额：${vipPrice}元，天数：${duration}天`;
             
             await DB
               .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
               .bind('immmor', msg, now)
-              .run();
-            
-            await DB
-              .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-              .bind('admin', msg, now)
               .run();
             
             const updatedUser = await DB
