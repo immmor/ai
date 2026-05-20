@@ -531,7 +531,7 @@
             </div>
             <div class="verify-box" style="margin-bottom: 15px;">
                 <button type="button" id="verify-btn" class="verify-btn" onclick="startVerify()">
-                    <i class="fas fa-robot"></i> <span id="verify-text">点击验证</span>
+                    <i class="fas fa-robot"></i> <span id="verify-text" data-i18n="verify.click">点击验证</span>
                 </button>
             </div>
             <div style="text-align: center; margin-bottom: 15px; color: #888; font-size: 12px;" data-i18n="login.loginHint">
@@ -744,12 +744,12 @@
 
             btn.classList.remove('verified');
             btn.classList.add('verifying');
-            text.textContent = '验证中...';
+            text.textContent = t('verify.verifying') + '...';
 
             let dots = 0;
             verifyTimer = setInterval(() => {
                 dots = (dots + 1) % 4;
-                text.textContent = '验证中' + '.'.repeat(dots);
+                text.textContent = t('verify.verifying') + '.'.repeat(dots);
             }, 500);
 
             setTimeout(() => {
@@ -757,7 +757,7 @@
                 isVerified = true;
                 btn.classList.remove('verifying');
                 btn.classList.add('verified');
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>验证成功</span>';
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>' + t('verify.success') + '</span>';
                 loginBtn.disabled = false;
                 loginBtn.style.cursor = 'pointer';
             }, Math.random() * 2000 + 2000);
@@ -770,7 +770,7 @@
             const loginBtn = document.getElementById('login-submit-btn');
             if (btn && text) {
                 btn.classList.remove('verified', 'verifying');
-                btn.innerHTML = '<i class="fas fa-robot"></i> <span id="verify-text">点击验证</span>';
+                btn.innerHTML = '<i class="fas fa-robot"></i> <span id="verify-text">' + t('verify.click') + '</span>';
             }
             if (loginBtn) {
                 loginBtn.disabled = true;
@@ -920,6 +920,14 @@
             const langSwitch = document.getElementById('lang-switch');
             if (langSwitch) {
                 langSwitch.textContent = currentLang === 'zh' ? 'EN' : 'ZH';
+            }
+            const verifyText = document.getElementById('verify-text');
+            if (verifyText) {
+                if (isVerified) {
+                    verifyText.textContent = t('verify.success');
+                } else {
+                    verifyText.textContent = t('verify.click');
+                }
             }
         }
 

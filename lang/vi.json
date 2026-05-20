@@ -39,6 +39,11 @@
         "cancel": "Hủy"
     },
     "complaint": "Khiếu nại",
+    "verify": {
+        "click": "Nhấp để xác thực",
+        "verifying": "Đang xác thực",
+        "success": "Xác thực thành công"
+    },
     "securityConnection": "Kết nối bảo mật đang hoạt động",
     "orders": {
         "totalOrders": "Tổng đơn hàng",

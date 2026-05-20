@@ -39,6 +39,11 @@
         "cancel": "キャンセル"
     },
     "complaint": "クレーム",
+    "verify": {
+        "click": "クリックして認証",
+        "verifying": "認証中",
+        "success": "認証成功"
+    },
     "securityConnection": "安全な接続が有効",
     "orders": {
         "totalOrders": "注文合計",

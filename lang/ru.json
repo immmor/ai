@@ -39,6 +39,11 @@
         "cancel": "Отмена"
     },
     "complaint": "Жалоба",
+    "verify": {
+        "click": "Нажмите для проверки",
+        "verifying": "Проверка",
+        "success": "Проверка пройдена"
+    },
     "securityConnection": "Безопасное соединение активно",
     "orders": {
         "totalOrders": "Всего заказов",

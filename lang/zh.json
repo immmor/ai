@@ -39,6 +39,11 @@
         "cancel": "返回"
     },
     "complaint": "投诉",
+    "verify": {
+        "click": "点击验证",
+        "verifying": "验证中",
+        "success": "验证成功"
+    },
     "securityConnection": "安全连接已激活",
     "orders": {
         "totalOrders": "订单总数",

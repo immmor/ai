@@ -39,6 +39,11 @@
         "cancel": "إلغاء"
     },
     "complaint": "شكوى",
+    "verify": {
+        "click": "انقر للتحقق",
+        "verifying": "جارٍ التحقق",
+        "success": "تم التحقق"
+    },
     "securityConnection": "الاتصال الآمن نشط",
     "orders": {
         "totalOrders": "إجمالي الطلبات",

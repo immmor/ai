@@ -39,6 +39,11 @@
         "cancel": "Cancelar"
     },
     "complaint": "Queja",
+    "verify": {
+        "click": "Haga clic para verificar",
+        "verifying": "Verificando",
+        "success": "Verificado"
+    },
     "securityConnection": "Conexión segura activa",
     "orders": {
         "totalOrders": "Total de pedidos",

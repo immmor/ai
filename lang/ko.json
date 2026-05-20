@@ -39,6 +39,11 @@
         "cancel": "취소"
     },
     "complaint": "불만",
+    "verify": {
+        "click": "클릭하여 인증",
+        "verifying": "인증 중",
+        "success": "인증 성공"
+    },
     "securityConnection": "안전한 연결이 활성화됨",
     "orders": {
         "totalOrders": "총 주문",
