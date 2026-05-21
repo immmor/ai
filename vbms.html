@@ -1560,7 +1560,11 @@
         
         function filterUsers() {
             const keyword = document.getElementById('userSearchInput').value.trim().toLowerCase();
-            const filtered = usersData.filter(u => JSON.stringify(u).toLowerCase().includes(keyword));
+            const filtered = usersData.filter(u => {
+                const autoRewnDisplay = (u.auto_rewn === 1 || u.auto_rewn === '1' || u.auto_rewn === true) ? '是' : '否';
+                const str = JSON.stringify(u).toLowerCase() + autoRewnDisplay.toLowerCase();
+                return str.includes(keyword);
+            });
             const resultInfo = document.getElementById('searchResultInfo');
             if (keyword) {
                 resultInfo.textContent = `共${filtered.length}`;
