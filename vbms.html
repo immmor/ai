@@ -1574,7 +1574,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;">未找到匹配的用户</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
             data.forEach(user => {
@@ -1603,6 +1603,7 @@
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
                     <td>${user.source || '-'}</td>
+                    <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                         <button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button>
