@@ -40,7 +40,26 @@ export default {
         headers: { 'Content-Type': 'application/json' }
       });
     }
-    
+
+    // 工具函数：检查订单是否已处理过（幂等性检查）
+    async function isOrderProcessed(order_no) {
+      try {
+        if (env.SUPABASE_URL && env.SUPABASE_KEY) {
+          const existingOrders = await supabaseFetch(
+            `orders?order_no=eq.${order_no}&status=eq.paid&select=id`,
+            createSupabaseConfig()
+          );
+          if (existingOrders && existingOrders.length > 0) {
+            console.log(`订单 ${order_no} 已处理过，跳过重复充值`);
+            return true;
+          }
+        }
+      } catch (checkError) {
+        console.error('幂等性检查失败:', checkError);
+      }
+      return false;
+    }
+
     // 1. 处理自定义 API 接口（后台逻辑）
     if (url.pathname.startsWith('/api/')) {
       // 路由匹配：/api/register 注册接口（使用 D1 数据库）
@@ -258,18 +277,22 @@ export default {
           const money = url.searchParams.get('money');
           const sign = url.searchParams.get('sign');
           const username = url.searchParams.get('username');
-          
+
           if (!username) {
             return new Response('fail', { status: 400 });
           }
-          
+
           if (trade_status === 'TRADE_SUCCESS') {
+            if (await isOrderProcessed(order_no)) {
+              return new Response('success', { status: 200 });
+            }
+
             // 更新用户余额
             const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
               .bind(parseFloat(money), username)
               .run();
-            
+
             // 更新订单状态到Supabase
             try {
               if (env.SUPABASE_URL && env.SUPABASE_KEY) {
@@ -282,7 +305,7 @@ export default {
             } catch (error) {
               console.error('Supabase订单更新失败:', error);
             }
-            
+
             return new Response('success', { status: 200 });
           } else {
             // 支付失败，更新订单状态到Supabase
@@ -295,7 +318,7 @@ export default {
             } catch (error) {
               console.error('Supabase订单更新失败:', error);
             }
-            
+
             return new Response('fail', { status: 200 });
           }
         } catch (err) {
@@ -391,20 +414,24 @@ export default {
           const order_no = url.searchParams.get('order_no');
           const username = url.searchParams.get('username');
           const amount = url.searchParams.get('amount');
-          
+
           console.log('收到支付回调:', { checkout_id, order_id, order_no, username, amount });
-          
+
           if (order_no && username) {
+            if (await isOrderProcessed(order_no)) {
+              return Response.redirect('https://immmor.com/pay', 302);
+            }
+
             const amountCny = parseFloat(amount) || 140;
-                
+
             // 更新用户余额
             await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
               .bind(amountCny, username)
               .run();
-            
+
             console.log(`余额更新成功: ${username} +${amountCny}`);
-            
+
             // 更新订单状态
             try {
               await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
@@ -419,7 +446,7 @@ export default {
           } else {
             console.log('缺少必要参数，无法更新');
           }
-          
+
           return Response.redirect('https://immmor.com/pay', 302);
         } catch (err) {
           console.error('Creem.io通知处理错误:', err);
@@ -473,11 +500,19 @@ export default {
         try {
           const params = await request.json();
           const { username, order_no, amount, payment_type } = params;
-          
+
           if (!username || !order_no || !amount || amount <= 0) {
             return jsonResponse({ success: false, message: '参数错误' }, 400);
           }
-          
+
+          if (await isOrderProcessed(order_no)) {
+            const user = await env.DB
+              .prepare('SELECT balance FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+            return jsonResponse({ success: true, message: '充值成功（已处理过）', balance: user.balance });
+          }
+
           // 更新用户余额
           const result = await env.DB
             .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
