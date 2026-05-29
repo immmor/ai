@@ -1327,51 +1327,42 @@
             if (indicator) indicator.classList.add(usersSortDir);
             renderUsers();
         }
+
+        function applyUserSort(data) {
+            if (!usersSortCol) return data;
+            return [...data].sort((a, b) => {
+                let valA, valB;
+                switch (usersSortCol) {
+                    case 'user_type':
+                        valA = (a.v_expire_date && new Date(a.v_expire_date) > new Date()) ? 1 : 0;
+                        valB = (b.v_expire_date && new Date(b.v_expire_date) > new Date()) ? 1 : 0;
+                        break;
+                    case 'success_count':
+                        valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').length;
+                        valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').length;
+                        break;
+                    case 'success_amount':
+                        valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
+                        valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
+                        break;
+                    default:
+                        valA = a[usersSortCol] || '';
+                        valB = b[usersSortCol] || '';
+                }
+                if (typeof valA === 'number') return usersSortDir === 'asc' ? valA - valB : valB - valA;
+                return usersSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+            });
+        }
         
         // 渲染用户列表
         function renderUsers() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
-
             if (usersData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="22" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
-
-            let sortedData = [...usersData];
-            if (usersSortCol) {
-                sortedData.sort((a, b) => {
-                    let valA, valB;
-                    switch (usersSortCol) {
-                        case 'user_type':
-                            valA = (a.v_expire_date && new Date(a.v_expire_date) > new Date()) ? 1 : 0;
-                            valB = (b.v_expire_date && new Date(b.v_expire_date) > new Date()) ? 1 : 0;
-                            break;
-                        case 'success_count':
-                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').length;
-                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').length;
-                            break;
-                        case 'success_amount':
-                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
-                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
-                            break;
-                        default:
-                            valA = a[usersSortCol] || '';
-                            valB = b[usersSortCol] || '';
-                    }
-                    if (typeof valA === 'number' && typeof valB === 'number') {
-                        return usersSortDir === 'asc' ? valA - valB : valB - valA;
-                    }
-                    const strA = String(valA).toLowerCase();
-                    const strB = String(valB).toLowerCase();
-                    if (usersSortDir === 'asc') {
-                        return strA.localeCompare(strB);
-                    }
-                    return strB.localeCompare(strA);
-                });
-            }
-
-            sortedData.forEach(user => {
+            applyUserSort(usersData).forEach(user => {
                 const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
                 const successCount = successOrders.length;
                 const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
@@ -1643,39 +1634,7 @@
                 tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
-            let sortedData = [...data];
-            if (usersSortCol) {
-                sortedData.sort((a, b) => {
-                    let valA, valB;
-                    switch (usersSortCol) {
-                        case 'user_type':
-                            valA = (a.v_expire_date && new Date(a.v_expire_date) > new Date()) ? 1 : 0;
-                            valB = (b.v_expire_date && new Date(b.v_expire_date) > new Date()) ? 1 : 0;
-                            break;
-                        case 'success_count':
-                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').length;
-                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').length;
-                            break;
-                        case 'success_amount':
-                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
-                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
-                            break;
-                        default:
-                            valA = a[usersSortCol] || '';
-                            valB = b[usersSortCol] || '';
-                    }
-                    if (typeof valA === 'number' && typeof valB === 'number') {
-                        return usersSortDir === 'asc' ? valA - valB : valB - valA;
-                    }
-                    const strA = String(valA).toLowerCase();
-                    const strB = String(valB).toLowerCase();
-                    if (usersSortDir === 'asc') {
-                        return strA.localeCompare(strB);
-                    }
-                    return strB.localeCompare(strA);
-                });
-            }
-            sortedData.forEach(user => {
+            applyUserSort(data).forEach(user => {
                 const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
                 const successCount = successOrders.length;
                 const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
