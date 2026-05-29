@@ -193,6 +193,14 @@
             background-color: #c53030;
         }
 
+        .sort-indicator {
+            font-size: 0.7em;
+            margin-left: 4px;
+            color: #999;
+        }
+        .sort-indicator.asc::after { content: '▲'; color: #667eea; }
+        .sort-indicator.desc::after { content: '▼'; color: #667eea; }
+
         /* 页面内容 */
         .page-content {
             flex: 1;
@@ -604,27 +612,27 @@
                         <table id="usersTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>用户名</th>
-                                    <th>密码</th>
-                                    <th style="min-width: 130px;">用户类型</th>
-                                    <th style="min-width: 160px;">VIP过期时间</th>
-                                    <th>v_token</th>
-                                    <th>邀请码</th>
-                                    <th style="min-width: 150px;">邀请用户</th>
-                                    <th>Clash链接</th>
-                                    <th>V2Ray链接</th>
-                                    <th style="min-width: 150px;">登录信息</th>
-                                    <th style="min-width: 150px;">fetch_link</th>
-                                    <th style="min-width: 120px;">不信任</th>
-                                    <th>订阅价格</th>
-                                    <th>余额</th>
-                                    <th style="min-width: 100px;">成功支付次数</th>
-                                    <th style="min-width: 100px;">成功支付金额</th>
-                                    <th style="min-width: 100px;">问卷</th>
-                                    <th style="min-width: 120px;">密保答案</th>
-                                    <th style="min-width: 100px;">来源</th>
-                                    <th style="min-width: 100px;">自动续费</th>
+                                    <th onclick="sortUsers('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortUsers('username')" style="cursor:pointer;">用户名 <span class="sort-indicator" data-col="username"></span></th>
+                                    <th onclick="sortUsers('password')" style="cursor:pointer;">密码 <span class="sort-indicator" data-col="password"></span></th>
+                                    <th onclick="sortUsers('user_type')" style="cursor:pointer; min-width: 130px;">用户类型 <span class="sort-indicator" data-col="user_type"></span></th>
+                                    <th onclick="sortUsers('v_expire_date')" style="cursor:pointer; min-width: 160px;">VIP过期时间 <span class="sort-indicator" data-col="v_expire_date"></span></th>
+                                    <th onclick="sortUsers('v_token')" style="cursor:pointer;">v_token <span class="sort-indicator" data-col="v_token"></span></th>
+                                    <th onclick="sortUsers('invite_code')" style="cursor:pointer;">邀请码 <span class="sort-indicator" data-col="invite_code"></span></th>
+                                    <th onclick="sortUsers('invited_user')" style="cursor:pointer; min-width: 150px;">邀请用户 <span class="sort-indicator" data-col="invited_user"></span></th>
+                                    <th onclick="sortUsers('v_link_clash')" style="cursor:pointer;">Clash链接 <span class="sort-indicator" data-col="v_link_clash"></span></th>
+                                    <th onclick="sortUsers('v_link_v2ray')" style="cursor:pointer;">V2Ray链接 <span class="sort-indicator" data-col="v_link_v2ray"></span></th>
+                                    <th onclick="sortUsers('login_info')" style="cursor:pointer; min-width: 150px;">登录信息 <span class="sort-indicator" data-col="login_info"></span></th>
+                                    <th onclick="sortUsers('fetch_link')" style="cursor:pointer; min-width: 150px;">fetch_link <span class="sort-indicator" data-col="fetch_link"></span></th>
+                                    <th onclick="sortUsers('not_trusted')" style="cursor:pointer; min-width: 120px;">不信任 <span class="sort-indicator" data-col="not_trusted"></span></th>
+                                    <th onclick="sortUsers('price_plan')" style="cursor:pointer;">订阅价格 <span class="sort-indicator" data-col="price_plan"></span></th>
+                                    <th onclick="sortUsers('balance')" style="cursor:pointer;">余额 <span class="sort-indicator" data-col="balance"></span></th>
+                                    <th onclick="sortUsers('success_count')" style="cursor:pointer; min-width: 100px;">成功支付次数 <span class="sort-indicator" data-col="success_count"></span></th>
+                                    <th onclick="sortUsers('success_amount')" style="cursor:pointer; min-width: 100px;">成功支付金额 <span class="sort-indicator" data-col="success_amount"></span></th>
+                                    <th onclick="sortUsers('survey')" style="cursor:pointer; min-width: 100px;">问卷 <span class="sort-indicator" data-col="survey"></span></th>
+                                    <th onclick="sortUsers('security_answer')" style="cursor:pointer; min-width: 120px;">密保答案 <span class="sort-indicator" data-col="security_answer"></span></th>
+                                    <th onclick="sortUsers('source')" style="cursor:pointer; min-width: 100px;">来源 <span class="sort-indicator" data-col="source"></span></th>
+                                    <th onclick="sortUsers('auto_rewn')" style="cursor:pointer; min-width: 100px;">自动续费 <span class="sort-indicator" data-col="auto_rewn"></span></th>
                                     <th style="min-width: 100px;">操作</th>
                                 </tr>
                             </thead>
@@ -1288,6 +1296,8 @@
         // 用户数据存储
         let usersData = [];
         let ordersData = [];
+        let usersSortCol = '';
+        let usersSortDir = 'asc';
         
         // 加载用户列表
         async function loadUsers() {
@@ -1304,6 +1314,20 @@
             }
         }
         
+        // 排序用户列表
+        function sortUsers(col) {
+            if (usersSortCol === col) {
+                usersSortDir = usersSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                usersSortCol = col;
+                usersSortDir = 'asc';
+            }
+            document.querySelectorAll('.sort-indicator').forEach(el => el.className = 'sort-indicator');
+            const indicator = document.querySelector(`.sort-indicator[data-col="${col}"]`);
+            if (indicator) indicator.classList.add(usersSortDir);
+            renderUsers();
+        }
+        
         // 渲染用户列表
         function renderUsers() {
             const tbody = document.getElementById('usersTableBody');
@@ -1314,7 +1338,40 @@
                 return;
             }
 
-            usersData.forEach(user => {
+            let sortedData = [...usersData];
+            if (usersSortCol) {
+                sortedData.sort((a, b) => {
+                    let valA, valB;
+                    switch (usersSortCol) {
+                        case 'user_type':
+                            valA = (a.v_expire_date && new Date(a.v_expire_date) > new Date()) ? 1 : 0;
+                            valB = (b.v_expire_date && new Date(b.v_expire_date) > new Date()) ? 1 : 0;
+                            break;
+                        case 'success_count':
+                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').length;
+                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').length;
+                            break;
+                        case 'success_amount':
+                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+                            break;
+                        default:
+                            valA = a[usersSortCol] || '';
+                            valB = b[usersSortCol] || '';
+                    }
+                    if (typeof valA === 'number' && typeof valB === 'number') {
+                        return usersSortDir === 'asc' ? valA - valB : valB - valA;
+                    }
+                    const strA = String(valA).toLowerCase();
+                    const strB = String(valB).toLowerCase();
+                    if (usersSortDir === 'asc') {
+                        return strA.localeCompare(strB);
+                    }
+                    return strB.localeCompare(strA);
+                });
+            }
+
+            sortedData.forEach(user => {
                 const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
                 const successCount = successOrders.length;
                 const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
@@ -1586,7 +1643,39 @@
                 tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
-            data.forEach(user => {
+            let sortedData = [...data];
+            if (usersSortCol) {
+                sortedData.sort((a, b) => {
+                    let valA, valB;
+                    switch (usersSortCol) {
+                        case 'user_type':
+                            valA = (a.v_expire_date && new Date(a.v_expire_date) > new Date()) ? 1 : 0;
+                            valB = (b.v_expire_date && new Date(b.v_expire_date) > new Date()) ? 1 : 0;
+                            break;
+                        case 'success_count':
+                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').length;
+                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').length;
+                            break;
+                        case 'success_amount':
+                            valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+                            valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+                            break;
+                        default:
+                            valA = a[usersSortCol] || '';
+                            valB = b[usersSortCol] || '';
+                    }
+                    if (typeof valA === 'number' && typeof valB === 'number') {
+                        return usersSortDir === 'asc' ? valA - valB : valB - valA;
+                    }
+                    const strA = String(valA).toLowerCase();
+                    const strB = String(valB).toLowerCase();
+                    if (usersSortDir === 'asc') {
+                        return strA.localeCompare(strB);
+                    }
+                    return strB.localeCompare(strA);
+                });
+            }
+            sortedData.forEach(user => {
                 const successOrders = ordersData.filter(o => o.username === user.username && o.status === 'paid');
                 const successCount = successOrders.length;
                 const successAmount = successOrders.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);

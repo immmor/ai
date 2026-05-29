@@ -366,12 +366,6 @@ export default {
           }
           await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
 
-          const fetchLinkArr = user.fetch_link ? JSON.parse(user.fetch_link) : [];
-          if (fetchLinkArr.length >= 3 && user.not_trusted === 'yes') {
-            await DB.prepare('UPDATE user SET not_trusted = ? WHERE username = ?').bind('', username).run();
-            user.not_trusted = '';
-          }
-
           const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
 
           return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '' }, pricePlan });
