@@ -638,7 +638,7 @@
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
-                                <button class="add-btn" onclick="loadAllOrders()">显示全部</button>
+                                <button class="delete-btn" onclick="deleteAllPendingOrders()">删除待支付</button>
                             </div>
                         </div>
                         <table id="ordersTable">
@@ -1662,6 +1662,18 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         async function deleteOrder(orderNo) {
             if (!confirm('确定删除该订单？')) return;
             const result = await apiRequest('/api/orders', 'DELETE', { order_no: orderNo });
+            if (result.code === 200) {
+                loadAllOrders();
+                alert('删除成功');
+            } else {
+                alert(result.msg || '删除失败');
+            }
+        }
+
+        // 删除所有待支付订单
+        async function deleteAllPendingOrders() {
+            if (!confirm('确定删除所有待支付订单？此操作不可恢复！')) return;
+            const result = await apiRequest('/api/orders/pending', 'DELETE');
             if (result.code === 200) {
                 loadAllOrders();
                 alert('删除成功');

@@ -682,6 +682,19 @@ export default {
         }
       }
 
+      // 路由匹配：/api/orders/pending 删除所有待支付订单接口
+      if (url.pathname === '/api/orders/pending' && request.method === 'DELETE') {
+        try {
+          await supabaseFetch('orders?status=eq.pending', createSupabaseConfig('DELETE'));
+          return jsonResponse({ code: 200, msg: '删除所有待支付订单成功' });
+        } catch (err) {
+          return new Response(JSON.stringify({ code: 500, msg: '删除失败', error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       // 路由匹配：/api/order/detail 查询订单详情接口
       if (url.pathname === '/api/order/detail' && request.method === 'GET') {
         try {
