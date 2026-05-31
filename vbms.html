@@ -657,13 +657,13 @@
                         <table id="ordersTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>订单号</th>
-                                    <th>客户</th>
-                                    <th>金额</th>
-                                    <th>支付方式</th>
-                                    <th style="min-width: 100px;">状态</th>
-                                    <th>日期</th>
+                                    <th onclick="sortOrders('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortOrders('order_no')" style="cursor:pointer;">订单号 <span class="sort-indicator" data-col="order_no"></span></th>
+                                    <th onclick="sortOrders('username')" style="cursor:pointer;">客户 <span class="sort-indicator" data-col="username"></span></th>
+                                    <th onclick="sortOrders('amount')" style="cursor:pointer;">金额 <span class="sort-indicator" data-col="amount"></span></th>
+                                    <th onclick="sortOrders('payment_type')" style="cursor:pointer;">支付方式 <span class="sort-indicator" data-col="payment_type"></span></th>
+                                    <th onclick="sortOrders('status')" style="cursor:pointer; min-width: 100px;">状态 <span class="sort-indicator" data-col="status"></span></th>
+                                    <th onclick="sortOrders('created_at')" style="cursor:pointer;">日期 <span class="sort-indicator" data-col="created_at"></span></th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -1298,6 +1298,8 @@
         let ordersData = [];
         let usersSortCol = '';
         let usersSortDir = 'asc';
+        let ordersSortCol = '';
+        let ordersSortDir = 'asc';
         
         // 加载用户列表
         async function loadUsers() {
@@ -1351,6 +1353,39 @@
                 }
                 if (typeof valA === 'number') return usersSortDir === 'asc' ? valA - valB : valB - valA;
                 return usersSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+            });
+        }
+
+        function sortOrders(col) {
+            if (ordersSortCol === col) {
+                ordersSortDir = ordersSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                ordersSortCol = col;
+                ordersSortDir = 'asc';
+            }
+            document.querySelectorAll('#ordersTable .sort-indicator').forEach(el => el.className = 'sort-indicator');
+            const indicator = document.querySelector(`#ordersTable .sort-indicator[data-col="${col}"]`);
+            if (indicator) indicator.classList.add(ordersSortDir);
+            renderOrders();
+        }
+
+        function applyOrdersSort(data) {
+            if (!ordersSortCol) return data;
+            return [...data].sort((a, b) => {
+                let valA = a[ordersSortCol] || '';
+                let valB = b[ordersSortCol] || '';
+                if (ordersSortCol === 'amount') {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return ordersSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                if (ordersSortCol === 'created_at') {
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                    return ordersSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                if (typeof valA === 'number') return ordersSortDir === 'asc' ? valA - valB : valB - valA;
+                return ordersSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
             });
         }
         
@@ -1479,7 +1514,7 @@
                 return;
             }
 
-            orders.forEach((order, index) => {
+            applyOrdersSort(orders).forEach((order, index) => {
                 const row = document.createElement('tr');
                 const statusMap = {
                     'pending': '待支付',
@@ -1501,7 +1536,6 @@
                     <td style="min-width: 120px;">${statusMap[order.status] || order.status}</td>
                     <td style="min-width: 250px;">${new Date(new Date(order.created_at).getTime() + 8 * 60 * 60 * 1000).toLocaleString()}</td>
                     <td style="min-width: 250px;">
-                        <button class="action-btn edit-btn" onclick="viewOrderDetail('${order.order_no}')">查看</button>
                         ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
                         <button class="action-btn delete-btn" onclick="deleteOrder('${order.order_no}')">删除</button>
                     </td>
