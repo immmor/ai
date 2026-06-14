@@ -120,14 +120,19 @@ class LearningStats {
         const panel = document.createElement('div');
         panel.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
         panel.innerHTML = `
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[60vh] overflow-hidden">
-                <div class="bg-gradient-to-r from-green-500 to-blue-500 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <i class="fas fa-chart-line mr-2"></i>
-                        学习统计
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+                <div class="bg-gradient-to-r from-green-500 to-blue-500 p-4 flex-shrink-0">
+                    <h3 class="text-lg font-bold text-white flex items-center justify-between">
+                        <span>
+                            <i class="fas fa-chart-line mr-2"></i>
+                            学习统计
+                        </span>
+                        <button onclick="this.closest('.fixed').remove()" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </h3>
                 </div>
-                <div class="p-4 space-y-4 overflow-y-auto">
+                <div class="p-4 space-y-4 overflow-y-auto flex-1">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="text-center p-3 bg-green-50 rounded-lg">
                             <div class="text-2xl font-bold text-green-600">${stats.totalQuestions}</div>
@@ -165,7 +170,7 @@ class LearningStats {
                         </div>
                     </div>
                     
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-2 mt-4">
                         <button onclick="learningStats.resetStats()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded text-sm">
                             重置统计
                         </button>
