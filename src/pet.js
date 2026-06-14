@@ -306,4 +306,165 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // 开始动画
   moveCat();
+
+  // =============================================
+  // 功能增强：答题反应 + 闲置睡觉
+  // =============================================
+
+  // --- 提取显示消息的通用方法 ---
+  function showPetMessage(text, duration = 2000) {
+    messageBubble.textContent = text;
+    messageBubble.style.display = 'block';
+    setTimeout(() => {
+      const catRect = cat.getBoundingClientRect();
+      const bw = messageBubble.offsetWidth || 200;
+      messageBubble.style.left = (catRect.left + catRect.width / 2 - bw / 2) + 'px';
+      messageBubble.style.bottom = (window.innerHeight - catRect.top - 10) + 'px';
+    }, 10);
+    setTimeout(() => {
+      messageBubble.style.display = 'none';
+    }, duration);
+  }
+
+  // --- 创建 Zzz 睡眠指示元素 ---
+  const zzzEl = document.createElement('div');
+  zzzEl.textContent = '💤';
+  zzzEl.style.position = 'fixed';
+  zzzEl.style.fontSize = '20px';
+  zzzEl.style.zIndex = '1002';
+  zzzEl.style.display = 'none';
+  zzzEl.style.pointerEvents = 'none';
+  document.body.appendChild(zzzEl);
+
+  function updateZzzPosition() {
+    const catRect = cat.getBoundingClientRect();
+    zzzEl.style.left = (catRect.right - 10) + 'px';
+    zzzEl.style.top = (catRect.top - 5) + 'px';
+  }
+
+  // --- 答题反应 ---
+  window.petReactToAnswer = function(isCorrect) {
+    // 如果猫在睡觉，先叫醒
+    if (isSleeping) wakeUp();
+
+    if (isCorrect) {
+      // 答对：跳跃 + 庆祝消息
+      cat.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      cat.style.transform = 'translateY(-40px) scale(1.15) rotate(-5deg)';
+      setTimeout(() => {
+        cat.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        cat.style.transform = 'translateY(0) scale(1) rotate(0deg)';
+      }, 400);
+      // 第二次小跳
+      setTimeout(() => {
+        cat.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        cat.style.transform = 'translateY(-20px) scale(1.05) rotate(-2deg)';
+        setTimeout(() => {
+          cat.style.transition = 'transform 0.25s ease-out';
+          cat.style.transform = 'translateY(0) scale(1) rotate(0deg)';
+        }, 250);
+      }, 600);
+
+      const cheers = ['🎉 太棒了！', '✨ 真厉害！', '🌟 完美！', '👏 好厉害！', '🐱 喵喵赞！'];
+      showPetMessage(cheers[Math.floor(Math.random() * cheers.length)], 1800);
+    } else {
+      // 答错：垂头丧气 + 鼓励消息
+      cat.style.transition = 'transform 0.3s ease-out';
+      cat.style.transform = 'translateY(8px) scale(0.85) rotate(3deg)';
+      setTimeout(() => {
+        cat.style.transition = 'transform 0.5s ease-out';
+        cat.style.transform = 'translateY(0) scale(1) rotate(0deg)';
+      }, 600);
+
+      const comforts = ['😿 没关系！', '💪 加油！', '🤗 再试试！', '📖 继续努力！', '🐱 喵...下次一定！'];
+      showPetMessage(comforts[Math.floor(Math.random() * comforts.length)], 2000);
+    }
+
+    resetIdleTimer();
+  };
+
+  // 劫持 playCorrectSound / playWrongSound
+  (function hookAnswerSound() {
+    var checkTimer = setInterval(function() {
+      if (typeof playCorrectSound === 'function' && typeof playWrongSound === 'function') {
+        clearInterval(checkTimer);
+        var origCorrect = playCorrectSound;
+        var origWrong = playWrongSound;
+        playCorrectSound = function() {
+          origCorrect.apply(window, arguments);
+          if (window.petReactToAnswer) window.petReactToAnswer(true);
+        };
+        playWrongSound = function() {
+          origWrong.apply(window, arguments);
+          if (window.petReactToAnswer) window.petReactToAnswer(false);
+        };
+      }
+    }, 200);
+  })();
+
+  // --- 闲置睡觉模式 ---
+  var isSleeping = false;
+  var idleTimer = null;
+  var IDLE_TIMEOUT = 30000; // 30 秒无操作进入睡眠
+
+  function goToSleep() {
+    if (isSleeping) return;
+    isSleeping = true;
+    isAutoMoving = false;
+
+    // 猫停止走动（isAutoMoving=false），视觉上变暗 + 头顶冒 Zzz
+    cat.style.transition = 'opacity 0.8s ease';
+    cat.style.opacity = '0.5';
+
+    zzzEl.style.display = 'block';
+    updateZzzPosition();
+    animateZzz();
+  }
+
+  function wakeUp() {
+    if (!isSleeping) return;
+    isSleeping = false;
+    isAutoMoving = true;
+
+    cat.style.transition = 'opacity 0.3s ease';
+    cat.style.opacity = '1';
+
+    zzzEl.style.display = 'none';
+    if (zzzRAF) cancelAnimationFrame(zzzRAF);
+    showPetMessage('😺 我醒了！', 1500);
+  }
+
+  var zzzRAF = null;
+  var zzzPhase = 0;
+  function animateZzz() {
+    if (!isSleeping) return;
+    zzzPhase++;
+    var offsetY = -Math.sin(zzzPhase * 0.05) * 8;
+    var offsetX = Math.cos(zzzPhase * 0.07) * 4;
+    var opacity = 0.4 + Math.sin(zzzPhase * 0.03) * 0.3;
+    updateZzzPosition();
+    var rect = cat.getBoundingClientRect();
+    zzzEl.style.left = (rect.right - 10 + offsetX) + 'px';
+    zzzEl.style.top = (rect.top - 5 + offsetY) + 'px';
+    zzzEl.style.opacity = Math.max(0.3, opacity);
+    zzzRAF = requestAnimationFrame(animateZzz);
+  }
+
+  function resetIdleTimer() {
+    if (isSleeping) wakeUp();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(goToSleep, IDLE_TIMEOUT);
+  }
+
+  // 监听文档级别的用户交互，重置闲置计时器
+  var idleEvents = ['mousemove', 'mousedown', 'click', 'touchstart', 'scroll', 'keydown'];
+  idleEvents.forEach(function(evt) {
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+
+  // 猫自己的交互也会重置计时器（点击/拖拽已有事件，额外补充）
+  cat.addEventListener('mouseenter', resetIdleTimer);
+
+  // 初始启动闲置计时器
+  resetIdleTimer();
 });

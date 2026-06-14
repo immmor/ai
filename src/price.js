@@ -47,15 +47,12 @@ function showPricePlanPopup() {
                         </li>
                     </ul>
                     <button onclick="buyVipMonthly()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium">
-                        Select Monthly Plan
+                        Monthly Plan
                     </button>
                 </div>
                 
                 <!-- 年度计划 -->
                 <div class="border-2 border-blue-500 rounded-lg p-5 shadow-lg bg-gradient-to-br from-blue-50 to-white">
-                    <div class="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
-                        Recommended
-                    </div>
                     <h3 class="text-lg font-semibold text-blue-600 mb-2">Annual Membership</h3>
                     <div class="flex items-baseline mb-4">
                         <span class="text-3xl font-bold text-gray-900">¥${PRICE_YEARLY}</span>
@@ -84,7 +81,7 @@ function showPricePlanPopup() {
                         </li>
                     </ul>
                     <button onclick="buyVipYearly()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors font-medium">
-                        Select Annual Plan
+                        Annual Plan
                     </button>
                 </div>
             </div>

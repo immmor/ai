@@ -663,6 +663,69 @@ class LevelStyles {
         levelEl.classList.add('level-divine');
     }
 
+    // 显示等级介绍窗口
+    showLevelInfoModal() {
+        // 如果已经存在则移除
+        const existingModal = document.getElementById('level-info-modal');
+        if (existingModal) {
+            existingModal.remove();
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'level-info-modal';
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        
+        // 构建等级列表
+        const levelsHtml = Object.entries(this.levelConfigs).map(([level, config]) => {
+            const isCurrent = parseInt(level) === this.currentLevel;
+            const currentClass = isCurrent ? 'ring-2 ring-blue-400 shadow-sm bg-blue-50 border-blue-300' : 'hover:bg-gray-50 border-gray-200';
+            const badgeBg = config.badgeBg || 'from-gray-300 to-gray-500';
+            
+            return `
+                <div class="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${currentClass} ${isCurrent ? '' : 'hover:border-gray-300'}">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br ${badgeBg} flex items-center justify-center text-base flex-shrink-0 shadow-sm">
+                        ${config.icon}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-800 font-bold text-sm">Lv.${level}</span>
+                            <span class="text-gray-700 font-medium text-sm">${config.name}</span>
+                            ${isCurrent ? '<span class="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 font-medium">当前</span>' : ''}
+                        </div>
+                        <p class="text-gray-400 text-xs mt-0.5">${config.description}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const popup = document.createElement('div');
+        popup.className = 'bg-white rounded-lg shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto';
+        popup.innerHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">
+                        <span class="mr-1">🏆</span> 等级大全
+                    </h2>
+                    <button class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+                <div class="space-y-1.5">
+                    ${levelsHtml}
+                </div>
+            </div>
+        `;
+
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+
+        // 关闭事件
+        const closeBtn = popup.querySelector('button');
+        closeBtn.addEventListener('click', () => overlay.remove());
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
     // 创建彩带效果 - 参考learn.html中的createConfettiEffect
     createConfettiEffect() {
         for (let i = 0; i < 100; i++) {
@@ -833,3 +896,14 @@ class LevelStyles {
 
 // 创建全局实例
 window.levelStyles = new LevelStyles();
+
+// 等级点击事件 - 显示等级介绍窗口
+document.addEventListener('DOMContentLoaded', () => {
+    const levelEl = document.getElementById('level');
+    if (levelEl) {
+        levelEl.style.cursor = 'pointer';
+        levelEl.addEventListener('click', () => {
+            window.levelStyles.showLevelInfoModal();
+        });
+    }
+});
