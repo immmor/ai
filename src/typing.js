@@ -917,32 +917,33 @@ function addStage2InputEventListener(input, index) {
     input.addEventListener('compositionend', function(e) {
         // console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
         input.dataset.composing = 'false';
-        // 立即阻止 input 事件重复处理，防止手机端双重点确认播放两次音效
-        input.dataset.preventInput = 'true';
         
         // 检查是否已经被空格键处理过
         if (input.dataset.spaceProcessed === 'true') {
             // console.log('已经被空格键处理过，跳过compositionend处理');
             input.dataset.spaceProcessed = 'false'; // 重置标记
-            input.dataset.preventInput = 'false';
             return;
         }
         
-        // 延迟处理，确保输入框值已更新
+        // 延迟处理，确保输入框值已更新（增加延迟时间）
         setTimeout(() => {
             const value = input.value;
+            // console.log('compositionend延迟检查，输入框值:', value);
             
             // 检查是否是多个字符（中文输入法候选词选择）
             if (value.length > 1) {
+                // console.log('检测到多字符候选词选择:', value);
                 // 获取所有第二阶段输入框
                 const inputs = document.querySelectorAll('#full-sentence-blanks input');
                 
                 // 检查是否是有效的中文字符
                 const isChineseText = /[\u4e00-\u9fff]/.test(value);
+                // console.log('是否中文字符:', isChineseText);
                 
                 if (isChineseText) {
                     // 将输入的内容按字符分割
                     const chars = value.split('');
+                    // console.log('分割字符:', chars);
                     
                     // 修复：确保当前输入框只保留第一个字符
                     input.value = chars[0];
@@ -952,6 +953,7 @@ function addStage2InputEventListener(input, index) {
                     for (let i = 1; i < chars.length; i++) {
                         const targetIndex = index + i;
                         if (targetIndex < inputs.length) {
+                            // console.log('填充到输入框', targetIndex, ':', chars[i]);
                             inputs[targetIndex].value = chars[i];
                             
                             // 更新输入框样式
@@ -975,8 +977,7 @@ function addStage2InputEventListener(input, index) {
                         focusStage2NextInput(index + chars.length);
                     }, 10);
                     
-                    // 恢复 input 事件处理
-                    input.dataset.preventInput = 'false';
+                    // console.log('中文候选词处理完成');
                     return;
                 }
             }
@@ -984,11 +985,12 @@ function addStage2InputEventListener(input, index) {
             // 如果没有检测到多字符，或者不是中文字符，正常处理
             // 但需要检查输入框是否已经被清空（多字符处理已完成）
             if (input.value.trim() !== '') {
-                // 正常处理单字符输入
+                // console.log('正常处理单字符输入');
                 handleStage2Input(e, index);
+            } else {
+                // console.log('输入框已被清空，跳过处理');
             }
-            input.dataset.preventInput = 'false';
-        }, 100);
+        }, 100); // 增加延迟到100ms，确保输入框值已更新
     });
 }
 

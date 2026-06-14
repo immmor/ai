@@ -1421,18 +1421,15 @@ function loadQuestion(index) {
             input.addEventListener('compositionend', function(e) {
                 console.log('compositionend: 中文输入结束，输入框:', index, '值:', input.value);
                 input.dataset.composing = 'false';
-                // 立即阻止 input 事件重复处理，防止手机端双重点确认播放两次音效
-                input.dataset.preventInput = 'true';
                 
                 // 检查是否已经被空格键处理过
                 if (input.dataset.spaceProcessed === 'true') {
                     console.log('已经被空格键处理过，跳过compositionend处理');
                     input.dataset.spaceProcessed = 'false'; // 重置标记
-                    input.dataset.preventInput = 'false';
                     return;
                 }
                 
-                // 延迟处理，确保输入框值已更新
+                // 延迟处理，确保输入框值已更新（增加延迟时间）
                 setTimeout(() => {
                     const value = input.value;
                     console.log('compositionend延迟检查，输入框值:', value);
@@ -1469,13 +1466,17 @@ function loadQuestion(index) {
                                 }
                             }
                             
+                            // 修复：移除清空逻辑，当前输入框已经正确设置为第一个字符
+                            // if (index > 0) {
+                            //     input.value = '';
+                            // }
+                            
                             // 聚焦到下一个未填充的输入框
                             setTimeout(() => {
                                 focusNextEmptyInput(index + chars.length);
                             }, 10);
                             
                             console.log('中文候选词处理完成');
-                            input.dataset.preventInput = 'false';
                             return;
                         }
                     }
@@ -1485,9 +1486,10 @@ function loadQuestion(index) {
                     if (input.value.trim() !== '') {
                         console.log('正常处理单字符输入');
                         handleSentenceInput(e, index);
+                    } else {
+                        console.log('输入框已被清空，跳过处理');
                     }
-                    input.dataset.preventInput = 'false';
-                }, 100);
+                }, 100); // 增加延迟到100ms，确保输入框值已更新
             });
         }
         
