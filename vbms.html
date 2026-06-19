@@ -1011,7 +1011,7 @@
 
     <!-- 比赛编辑模态框 -->
     <div id="matchModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
             <div class="modal-header">
                 <h3 id="matchModalTitle">新增比赛</h3>
                 <button class="close-btn" onclick="closeMatchModal()">&times;</button>
@@ -2453,8 +2453,12 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 // 保存比赛数据
                 await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
                 // 调用结算接口派奖
-                const res = await newApiRequest('/api/football/settle', 'POST', { matchId: parseInt(id), result, score });
-                alert(res.code === 200 ? (res.message || '结算完成！') : (res.msg || '结算失败'));
+                const res = await newApiRequest('/api/football/settle', 'POST', {
+                    username: currentUserInfo?.username || '',
+                    password: currentUserInfo?.password || '',
+                    matchId: parseInt(id), result, score
+                });
+                alert(res.success ? (res.message || '结算完成！') : (res.msg || res.message || '结算失败'));
                 await loadFootballMatches();
                 await loadFootballBets();
             } catch (err) { alert('结算失败：' + err.message); }
