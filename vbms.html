@@ -1178,9 +1178,9 @@
                     alert('此后台系统只允许管理员账号登录');
                     return;
                 }
-                currentUserInfo = result.userInfo;
+                currentUserInfo = { ...result.userInfo, username, password };
                 // 保存登录状态
-                saveLoginStatus(result.userInfo);
+                saveLoginStatus(currentUserInfo);
                 
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('mainPage').style.display = 'flex';
