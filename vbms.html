@@ -530,6 +530,7 @@
                 <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
+                <a href="#football" class="menu-item" onclick="showPage('football')">世界杯竞猜</a>
             </nav>
         </aside>
 
@@ -877,6 +878,52 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 世界杯竞猜管理页面 -->
+                <div id="footballPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>比赛管理</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="add-btn" onclick="openMatchModal()">+ 新增比赛</button>
+                                <button class="add-btn" onclick="loadFootballMatches()" style="background-color: #667eea;">刷新</button>
+                            </div>
+                        </div>
+                        <table id="footballTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>A队</th>
+                                    <th>B队</th>
+                                    <th>A赔率</th>
+                                    <th>平局</th>
+                                    <th>B赔率</th>
+                                    <th>状态</th>
+                                    <th>比分/结果</th>
+                                    <th>比赛时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="footballTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 下注记录查看 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>下注记录</h3>
+                            <select id="fbBetFilterMatch" onchange="loadFootballBets()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                <option value="">全部比赛</option>
+                            </select>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th>用户</th><th>比赛</th><th>选择</th><th>金额</th><th>赔率</th><th>状态</th><th>派奖</th><th>时间</th></tr>
+                            </thead>
+                            <tbody id="footballBetBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -960,6 +1007,78 @@
         </div>
     </div>
 
+    </div>
+
+    <!-- 比赛编辑模态框 -->
+    <div id="matchModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="matchModalTitle">新增比赛</h3>
+                <button class="close-btn" onclick="closeMatchModal()">&times;</button>
+            </div>
+            <form id="matchForm" onsubmit="saveMatch(event)">
+                <input type="hidden" id="matchEditId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>A队名称</label>
+                        <input type="text" id="matchTeamA" required placeholder="如：英格兰">
+                    </div>
+                    <div class="form-group">
+                        <label>B队名称</label>
+                        <input type="text" id="matchTeamB" required placeholder="如：阿根廷">
+                    </div>
+                    <div class="form-group">
+                        <label>A队旗帜</label>
+                        <input type="text" id="matchFlagA" placeholder="如：🏴">
+                    </div>
+                    <div class="form-group">
+                        <label>B队旗帜</label>
+                        <input type="text" id="matchFlagB" placeholder="如：🇦🇷">
+                    </div>
+                    <div class="form-group">
+                        <label>A赢赔率</label>
+                        <input type="number" step="0.1" id="matchOddsA" required placeholder="2.5">
+                    </div>
+                    <div class="form-group">
+                        <label>平局赔率</label>
+                        <input type="number" step="0.1" id="matchOddsDraw" required placeholder="3.0">
+                    </div>
+                    <div class="form-group">
+                        <label>B赢赔率</label>
+                        <input type="number" step="0.1" id="matchOddsB" required placeholder="2.8">
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="matchStatus">
+                            <option value="open">开放下注</option>
+                            <option value="closed">已关闭</option>
+                            <option value="settled">已结算</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>比分（结算时填）</label>
+                        <input type="text" id="matchScore" placeholder="如：2:1">
+                    </div>
+                    <div class="form-group">
+                        <label>结果（结算时选）</label>
+                        <select id="matchResult">
+                            <option value="">未设置</option>
+                            <option value="a">A赢</option>
+                            <option value="draw">平局</option>
+                            <option value="b">B赢</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>比赛时间</label>
+                        <input type="text" id="matchTime" placeholder="如：2026-06-20 21:00">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="action-btn edit-btn" onclick="closeMatchModal()">取消</button>
+                    <button type="submit" class="btn" style="width: auto;">保存</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -1207,7 +1326,8 @@
                 'traffic': '流量管理',
                 'nodes': '节点管理',
                 'settings': '系统设置',
-                'messages': '消息管理'
+                'messages': '消息管理',
+                'football': '世界杯竞猜'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
@@ -1228,6 +1348,9 @@
                 await loadLinks();
             } else if (pageName === 'messages') {
                 // 消息管理页面不需要加载数据
+            } else if (pageName === 'football') {
+                await loadFootballMatches();
+                await loadFootballBets();
             }
         }
 
@@ -2187,12 +2310,190 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
 
+        // ==================== 世界杯竞猜管理 ====================
+
+        let footballMatches = [];
+
+        async function loadFootballMatches() {
+            try {
+                const res = await newApiRequest('/api/football/match', 'GET');
+                if (res.code === 200) {
+                    footballMatches = res.matches || [];
+                    renderFootballTable();
+                    // 更新下注记录筛选下拉
+                    const sel = document.getElementById('fbBetFilterMatch');
+                    sel.innerHTML = '<option value="">全部比赛</option>' +
+                        footballMatches.map(m => `<option value="${m.id}">${m.teamA} vs ${m.teamB}</option>`).join('');
+                }
+            } catch (e) { console.error('加载比赛失败:', e); }
+        }
+
+        function renderFootballTable() {
+            const statusMap = { open: '<span style="color:#48bb78">开放</span>', closed: '<span style="color:#ed8936">关闭</span>', settled: '<span style="color:#e53e3e">已结算</span>' };
+            const resultMap = { a: 'A赢', draw: '平局', b: 'B赢' };
+            const tbody = document.getElementById('footballTableBody');
+            if (!footballMatches.length) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">暂无比赛，点击上方新增</td></tr>';
+                return;
+            }
+            tbody.innerHTML = footballMatches.map(m => `
+                <tr>
+                    <td>${m.id}</td>
+                    <td>${m.flagA || ''} ${m.teamA}</td>
+                    <td>${m.flagB || ''} ${m.teamB}</td>
+                    <td>${m.oddsA || '-'}</td>
+                    <td>${m.oddsDraw || '-'}</td>
+                    <td>${m.oddsB || '-'}</td>
+                    <td>${statusMap[m.status] || m.status}</td>
+                    <td>${m.score ? m.score + (m.result ? '(' + resultMap[m.result] + ')' : '') : '-'}</td>
+                    <td>${m.matchTime || '-'}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editMatch(${m.id})">编辑</button>
+                        ${m.status !== 'settled' ? `<button class="action-btn edit-btn" onclick="settleMatch(${m.id})" style="background-color:#e53e3e;">结算</button>` : ''}
+                        <button class="action-btn delete-btn" onclick="deleteMatch(${m.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openMatchModal(id) {
+            document.getElementById('matchModalTitle').textContent = id ? '编辑比赛' : '新增比赛';
+            document.getElementById('matchEditId').value = id || '';
+            document.getElementById('matchForm').reset();
+            if (id) {
+                const m = footballMatches.find(x => x.id == id);
+                if (!m) return;
+                document.getElementById('matchTeamA').value = m.teamA || '';
+                document.getElementById('matchTeamB').value = m.teamB || '';
+                document.getElementById('matchFlagA').value = m.flagA || '';
+                document.getElementById('matchFlagB').value = m.flagB || '';
+                document.getElementById('matchOddsA').value = m.oddsA || '';
+                document.getElementById('matchOddsDraw').value = m.oddsDraw || '';
+                document.getElementById('matchOddsB').value = m.oddsB || '';
+                document.getElementById('matchStatus').value = m.status || 'open';
+                document.getElementById('matchScore').value = m.score || '';
+                document.getElementById('matchResult').value = m.result || '';
+                document.getElementById('matchTime').value = m.matchTime || '';
+            }
+            document.getElementById('matchModal').style.display = 'block';
+        }
+
+        function closeMatchModal() {
+            document.getElementById('matchModal').style.display = 'none';
+        }
+
+        async function saveMatch(e) {
+            e.preventDefault();
+            const id = document.getElementById('matchEditId').value;
+            const matchData = {
+                teamA: document.getElementById('matchTeamA').value.trim(),
+                teamB: document.getElementById('matchTeamB').value.trim(),
+                flagA: document.getElementById('matchFlagA').value.trim(),
+                flagB: document.getElementById('matchFlagB').value.trim(),
+                oddsA: parseFloat(document.getElementById('matchOddsA').value),
+                oddsDraw: parseFloat(document.getElementById('matchOddsDraw').value),
+                oddsB: parseFloat(document.getElementById('matchOddsB').value),
+                status: document.getElementById('matchStatus').value,
+                score: document.getElementById('matchScore').value.trim(),
+                result: document.getElementById('matchResult').value,
+                matchTime: document.getElementById('matchTime').value.trim()
+            };
+
+            // 读取当前所有比赛，更新或新增
+            const matches = [...footballMatches];
+            if (id) {
+                const idx = matches.findIndex(m => m.id == id);
+                if (idx >= 0) matches[idx] = { ...matches[idx], ...matchData };
+            } else {
+                matchData.id = matches.length ? Math.max(...matches.map(m => m.id)) + 1 : 1;
+                matches.push(matchData);
+            }
+
+            try {
+                const res = await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                if (res.code === 200) {
+                    alert('保存成功');
+                    closeMatchModal();
+                    await loadFootballMatches();
+                } else {
+                    alert(res.msg || '保存失败');
+                }
+            } catch (err) { alert('保存失败：' + err.message); }
+        }
+
+        function editMatch(id) { openMatchModal(id); }
+
+        async function deleteMatch(id) {
+            if (!confirm('确定删除这场比赛吗？')) return;
+            const matches = footballMatches.filter(m => m.id != id);
+            try {
+                const res = await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                if (res.code === 200) {
+                    alert('删除成功');
+                    await loadFootballMatches();
+                } else { alert(res.msg || '删除失败'); }
+            } catch (err) { alert('删除失败：' + err.message); }
+        }
+
+        async function settleMatch(id) {
+            const result = prompt('请输入结算结果：\na = A赢\ndraw = 平局\nb = B赢');
+            if (!result || !['a','draw','b'].includes(result)) return;
+            const score = prompt('请输入比分（可选，如 2:1）：') || '';
+
+            // 先更新比赛数据中的 score 和 result
+            const matches = [...footballMatches];
+            const idx = matches.findIndex(m => m.id == id);
+            if (idx >= 0) {
+                matches[idx].score = score;
+                matches[idx].result = result;
+                matches[idx].status = 'settled';
+            }
+
+            try {
+                // 保存比赛数据
+                await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                // 调用结算接口派奖
+                const res = await newApiRequest('/api/football/settle', 'POST', { matchId: parseInt(id), result, score });
+                alert(res.code === 200 ? (res.message || '结算完成！') : (res.msg || '结算失败'));
+                await loadFootballMatches();
+                await loadFootballBets();
+            } catch (err) { alert('结算失败：' + err.message); }
+        }
+
+        async function loadFootballBets() {
+            try {
+                const matchId = document.getElementById('fbBetFilterMatch').value;
+                const body = {};
+                if (matchId) body.matchId = parseInt(matchId);
+                const res = await newApiRequest('/api/football/history', 'POST', body);
+                const tbody = document.getElementById('footballBetBody');
+                if (res.code === 200 && res.bets && res.bets.length) {
+                    const choiceMap = { a: 'A赢', draw: '平局', b: 'B赢' };
+                    const statusMap = { pending: '<span style="color:#ed8936">待定</span>', win: '<span style="color:#48bb78">赢</span>', lose: '<span style="color:#e53e3e">输</span>' };
+                    tbody.innerHTML = res.bets.map(b => `
+                        <tr>
+                            <td>${b.username}</td>
+                            <td>${b.matchInfo ? b.matchInfo.teamA + ' vs ' + b.matchInfo.teamB : ('#' + b.match_id)}</td>
+                            <td>${choiceMap[b.choice] || b.choice}</td>
+                            <td>¥${b.amount}</td>
+                            <td>${b.odds}x</td>
+                            <td>${statusMap[b.status] || b.status}</td>
+                            <td>¥${b.payout || 0}</td>
+                            <td>${b.created_at || ''}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">暂无下注记录</td></tr>';
+                }
+            } catch (e) { console.error('加载下注记录失败:', e); }
+        }
+
         // 点击模态框外部关闭
         window.onclick = function(event) {
             const userModal = document.getElementById('userModal');
-            if (event.target === userModal) {
-                closeUserModal();
-            }
+            const matchModal = document.getElementById('matchModal');
+            if (event.target === userModal) closeUserModal();
+            if (event.target === matchModal) closeMatchModal();
         }
 
         // 初始化页面
