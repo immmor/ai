@@ -94,8 +94,8 @@ export default {
           }
 
           const result = await env.DB
-            .prepare('INSERT INTO user (username, password, balance) VALUES (?, ?, 0)')
-            .bind(username, password)
+            .prepare('INSERT INTO user (username, password, balance, vorders) VALUES (?, ?, 0, ?)')
+            .bind(username, password, '[]')
             .run();
 
           if (result.success) {
@@ -144,7 +144,7 @@ export default {
 
         try {
           const user = await env.DB
-            .prepare('SELECT rowid, username, balance, not_trusted FROM user WHERE username = ? AND password = ?')
+            .prepare('SELECT rowid, username, balance, not_trusted, vorders FROM user WHERE username = ? AND password = ?')
             .bind(username, password)
             .first();
 
@@ -152,7 +152,7 @@ export default {
             return new Response(JSON.stringify({ 
               success: true, 
               message: '登录成功！', 
-              userInfo: { id: user.rowid, username: user.username, balance: user.balance, not_trusted: user.not_trusted || '' } 
+              userInfo: { id: user.rowid, username: user.username, balance: user.balance, not_trusted: user.not_trusted || '', vorders: user.vorders } 
             }), {
               headers: { 'Content-Type': 'application/json' }
             });
@@ -870,7 +870,7 @@ export default {
           
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, auto_rewn FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, auto_rewn, vorders FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
             .bind(limit, offset)
             .all();
           
