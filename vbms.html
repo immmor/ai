@@ -259,6 +259,10 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
+        .data-table.collapsed > :not(.table-header) {
+            display: none !important;
+        }
+
         .table-header {
             padding: 1.5rem;
             background-color: #f7fafc;
@@ -266,45 +270,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .table-header:hover {
-            background-color: #edf2f7;
-        }
-
-        .table-header::after {
-            content: '▼';
-            position: absolute;
-            right: 1.5rem;
-            font-size: 12px;
-            color: #9ca3af;
-            transition: transform 0.2s ease;
-        }
-
-        .table-header.collapsed::after {
-            transform: rotate(-90deg);
         }
 
         .table-header h3 {
             color: #4a5568;
-            flex: 1;
-        }
-
-        .table-header > div {
-            position: relative;
-            z-index: 1;
-        }
-
-        .table-content {
-            max-height: 2000px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .table-content.collapsed {
-            max-height: 0;
         }
 
         .add-btn {
@@ -2530,28 +2499,6 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             } catch (e) { console.error('加载下注记录失败:', e); }
         }
 
-        // 表格折叠功能
-        function initTableCollapse() {
-            const headers = document.querySelectorAll('.table-header');
-            headers.forEach(header => {
-                const content = header.nextElementSibling;
-                if (content && !content.classList.contains('table-content')) {
-                    content.classList.add('table-content');
-                }
-                header.addEventListener('click', function(e) {
-                    // 防止点击按钮或输入框时触发折叠
-                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
-                        return;
-                    }
-                    const content = this.nextElementSibling;
-                    if (content) {
-                        content.classList.toggle('collapsed');
-                        this.classList.toggle('collapsed');
-                    }
-                });
-            });
-        }
-
         // 点击模态框外部关闭
         window.onclick = function(event) {
             const userModal = document.getElementById('userModal');
@@ -2568,8 +2515,16 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             document.getElementById('userSearchInput').addEventListener('keydown', e => {
                 if (e.key === 'Enter') filterUsers();
             });
-            // 初始化表格折叠功能
-            initTableCollapse();
+
+            document.querySelectorAll('.data-table > .table-header').forEach(header => {
+                header.addEventListener('click', (e) => {
+                    const interactive = e.target.closest('input, button, select, textarea, a, label');
+                    if (interactive) return;
+                    const container = header.closest('.data-table');
+                    if (!container) return;
+                    container.classList.toggle('collapsed');
+                });
+            });
         }
     </script>
 </body>
