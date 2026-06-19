@@ -2410,7 +2410,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
 
             try {
-                const res = await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                const res = await newApiRequest('/api/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
                 if (res.success) {
                     alert('保存成功');
                     closeMatchModal();
@@ -2427,7 +2427,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             if (!confirm('确定删除这场比赛吗？')) return;
             const matches = footballMatches.filter(m => m.id != id);
             try {
-                const res = await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                const res = await newApiRequest('/api/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
                 if (res.success) {
                     alert('删除成功');
                     await loadFootballMatches();
@@ -2451,7 +2451,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
             try {
                 // 保存比赛数据
-                await newApiRequest('/api/admin/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
+                await newApiRequest('/api/link/update', 'POST', { key: 'fb_match', value: JSON.stringify(matches) });
                 // 调用结算接口派奖
                 const res = await newApiRequest('/api/football/settle', 'POST', {
                     username: currentUserInfo?.username || '',
