@@ -5,6 +5,11 @@ const t = (d) => JSON.stringify(Object.fromEntries(LK.map(k => [k, d[k] ?? '']))
 const NP = { cn:'[系统通知]', en:'[System Notification]', jp:'[システム通知]', kr:'[시스템 알림]', es:'[Notificación del Sistema]', vi:'[Thông báo Hệ thống]', ar:'[إشعار النظام]', ru:'[Системное уведомление]' };
 const nt = (d) => t(Object.fromEntries(LK.map(k => [k, `${NP[k]} ${d[k] ?? ''}`])));
 
+function fbChoiceLabel(_match, choice) {
+  const map = { a: '主胜', draw: '平局', b: '客胜' };
+  return map[choice] || choice;
+}
+
 // 自动续费单个用户的函数
 async function autoRenewUser(DB, user) {
   const now = new Date();
@@ -12,7 +17,7 @@ async function autoRenewUser(DB, user) {
   const isVipValid = expireDate && expireDate > now;
   
   // 计算还有多久过期（毫秒）
-  const timeUntilExpire = expireDate ? expireDate - now : Infinity;
+  const timeUntilExpire = expireDate ? expireDate.getTime() - now.getTime() : Infinity;
   const oneDayInMs = 24 * 60 * 60 * 1000;
   
   // 如果未开启自动续费，直接返回
@@ -113,16 +118,6 @@ export default {
           return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
         }
 
-        // 检查用户名是否已存在
-        const existingUser = await DB
-          .prepare('SELECT * FROM user WHERE username = ?')
-          .bind(username)
-          .first();
-
-        if (existingUser) {
-          return resJson({ success: false, message: '用户名已存在！' }, 409);
-        }
-
         // 生成唯一的6位邀请码（字母+数字）
         const generateInviteCode = () => {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -137,13 +132,13 @@ export default {
         let userInviteCode = generateInviteCode();
         let isUnique = false;
         let attempts = 0;
-        
+
         while (!isUnique && attempts < 10) {
           const existingInvite = await DB
             .prepare('SELECT * FROM user WHERE invite_code = ?')
             .bind(userInviteCode)
             .first();
-          
+
           if (!existingInvite) {
             isUnique = true;
           } else {
@@ -166,20 +161,20 @@ export default {
             .prepare('SELECT * FROM user WHERE invite_code = ?')
             .bind(inviteCode)
             .first();
-          
+
           if (inviterUser) {
             inviterUsername = inviterUser.username;
             // 被邀请人奖励2元
             finalBalance = 2;
-            
+
             // 邀请人奖励2元
             await DB
               .prepare('UPDATE user SET balance = balance + 2 WHERE username = ?')
               .bind(inviterUser.username)
               .run();
-            
+
             const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            
+
             // 给被邀请人发送奖励通知
             await DB
               .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
@@ -237,7 +232,7 @@ export default {
           'f4': { monthly_original: 50, monthly_discount: 40, annual_original: 600, annual_discount: 450, annual_savings: 150 },
           'f': { monthly_original: 62.5, monthly_discount: 50, annual_original: 750, annual_discount: 550, annual_savings: 200 }
         };
-        
+
         let pricePlanStr;
         if (priceParam && pricePlans[priceParam]) {
           pricePlanStr = JSON.stringify(pricePlans[priceParam]);
@@ -248,13 +243,25 @@ export default {
           pricePlanStr = JSON.stringify(defaultPrice);
         }
 
-        // 根据URL参数决定not_trusted值：nt=n时设为空字符串（信任）
-        const notTrustedValue = url.searchParams.get('nt') === 'n' ? '' : 'yes';
+        // 根据前端传入的nt参数决定not_trusted值：nt=n时设为空字符串（信任）
+        const notTrustedValue = params.nt === 'n' ? '' : 'yes';
 
-        const result = await DB
-          .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)')
-          .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue)
-          .run();
+        // 原子插入：利用数据库 UNIQUE 约束防止并发重复注册
+        // 不再单独 SELECT 检查，直接 INSERT，由数据库保证原子性
+        let result;
+        try {
+          result = await DB
+            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)')
+            .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue, '[]')
+            .run();
+        } catch (e) {
+          // 捕获 UNIQUE 约束冲突 → 用户名已存在（并发注册竞争时触发）
+          if (e.message && (e.message.includes('UNIQUE') || e.message.includes('constraint') || e.message.includes('duplicate'))) {
+            return resJson({ success: false, message: '用户名已存在！' }, 409);
+          }
+          console.error('注册插入失败:', e);
+          return resJson({ success: false, message: '注册失败，请重试！' }, 500);
+        }
 
         if (result.success) {
           const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -350,7 +357,7 @@ export default {
         }
 
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link FROM user WHERE username = ? AND password = ?')
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ? AND password = ?')
           .bind(username, password)
           .first();
 
@@ -371,7 +378,7 @@ export default {
 
           const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
 
-          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '' }, pricePlan });
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
         } else {
           return resJson({ success: false, message: '用户名或密码错误' }, 401);
         }
@@ -513,13 +520,12 @@ export default {
         return resJson({ success: true, message: '密码重置成功' });
       }
 
-      // ========== 按用户名查询（测试kkk专用） ==========
       if (path === '/api/get-user' && request.method === 'GET') {
         const name = url.searchParams.get('name');
         if (!name) return resJson({ code: 400, msg: '请传入name参数，例：?name=kkk' }, 400);
         
         const result = await DB
-          .prepare('SELECT * FROM user WHERE username = ?')
+          .prepare('SELECT rowid as id, username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, invite_code, vorders FROM user WHERE username = ?')
           .bind(name)
           .first();
         
@@ -564,7 +570,7 @@ export default {
           });
           
           const user = await DB
-            .prepare('SELECT balance, v_expire_date, v_token, v_link_clash, v_link_v2ray FROM user WHERE username = ?')
+            .prepare('SELECT balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, vorders FROM user WHERE username = ?')
             .bind(username)
             .first();
           
@@ -594,13 +600,34 @@ export default {
           const vLinkClash = user.v_link_clash || (isYearly ? config.clash_yearly : config.clash_monthly);
           const vLinkV2ray = user.v_link_v2ray || (isYearly ? config.v2ray_yearly : config.v2ray_monthly);
           
+          // 更新购买记录
+          let vorders = [];
+          try {
+            vorders = JSON.parse(user.vorders || '[]');
+          } catch (e) {
+            vorders = [];
+          }
+          
+          const newOrder = {
+            type: 'vip',
+            duration: duration,
+            price: vipPrice,
+            created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            method: 'balance',
+            status: 'success'
+          };
+          
+          vorders.unshift(newOrder);
+          if (vorders.length > 50) vorders = vorders.slice(0, 50);
+          const vordersStr = JSON.stringify(vorders);
+          
           const result = await DB
-            .prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_token = ?, v_link_clash = ?, v_link_v2ray = ? WHERE username = ?')
-            .bind(vipPrice, newExpireDate.toISOString().slice(0, 19).replace('T', ' '), vToken, vLinkClash, vLinkV2ray, username)
+            .prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_token = ?, v_link_clash = ?, v_link_v2ray = ?, vorders = ? WHERE username = ?')
+            .bind(vipPrice, newExpireDate.toISOString().slice(0, 19).replace('T', ' '), vToken, vLinkClash, vLinkV2ray, vordersStr, username)
             .run();
           
           if (result.success && result.meta.changes > 0) {
-            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
             const msg = nt({
               cn: `用户 ${username} 开通VIP成功！金额：${vipPrice}元，天数：${duration}天`,
               en: `User ${username} activated VIP successfully! Amount: ¥${vipPrice}, Days: ${duration}`,
@@ -614,11 +641,11 @@ export default {
 
             await DB
               .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-              .bind('immmor', msg, now)
+              .bind('immmor', msg, nowTime)
               .run();
             
             const updatedUser = await DB
-              .prepare('SELECT username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray FROM user WHERE username = ?')
+              .prepare('SELECT username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, vorders FROM user WHERE username = ?')
               .bind(username)
               .first();
             
@@ -632,7 +659,8 @@ export default {
                 v_token: updatedUser.v_token,
                 v_link_clash: updatedUser.v_link_clash,
                 v_link_v2ray: updatedUser.v_link_v2ray,
-                duration: duration
+                duration: duration,
+                vorders: updatedUser.vorders
               }
             });
           } else {
@@ -797,7 +825,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -858,6 +886,22 @@ export default {
           if (login_info !== undefined) {
             updates.push('login_info = ?');
             values.push(login_info);
+          }
+          if (vorders !== undefined) {
+            updates.push('vorders = ?');
+            values.push(vorders);
+          }
+          if (fetch_link !== undefined) {
+            updates.push('fetch_link = ?');
+            values.push(fetch_link);
+          }
+          if (security_answer !== undefined) {
+            updates.push('security_answer = ?');
+            values.push(security_answer);
+          }
+          if (auto_rewn !== undefined) {
+            updates.push('auto_rewn = ?');
+            values.push(auto_rewn);
           }
           
           if (updates.length === 0) {
@@ -1743,6 +1787,192 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           return resJson({ code: 200, msg: '删除成功' });
         } catch (err) {
           return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 世界杯竞猜：获取比赛列表 ==========
+      if (path === '/api/football/match' && request.method === 'GET') {
+        try {
+          const row = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
+          const matches = row?.value ? JSON.parse(row.value) : [];
+          return resJson({ success: true, matches });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 世界杯竞猜：下注 ==========
+      if (path === '/api/football/bet' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, password, choice, amount, matchId } = params;
+
+          if (!username || !password || !choice || !amount || matchId === undefined) {
+            return resJson({ success: false, message: '参数不完整' }, 400);
+          }
+          if (!['a', 'draw', 'b'].includes(choice)) {
+            return resJson({ success: false, message: '无效的选择' }, 400);
+          }
+          if (amount < 1) return resJson({ success: false, message: '下注金额至少1元' }, 400);
+
+          // 验证用户
+          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ? AND password = ?')
+            .bind(username, password).first();
+          if (!user) return resJson({ success: false, message: '用户名或密码错误' }, 401);
+
+          // 查找指定比赛
+          const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
+          const matches = fbRow?.value ? JSON.parse(fbRow.value) : [];
+          const matchData = matches.find(m => m.id == matchId);
+          if (!matchData) return resJson({ success: false, message: '比赛不存在' }, 404);
+          if (matchData.status !== 'open') return resJson({ success: false, message: '该比赛不在下注时间' }, 400);
+
+          // 获取赔率
+          const oddsMap = { a: 'oddsA', draw: 'oddsDraw', b: 'oddsB' };
+          const odds = parseFloat(matchData[oddsMap[choice]] || '1');
+
+          // 检查余额
+          const amt = parseFloat(amount);
+          if (user.balance < amt) return resJson({ success: false, message: '余额不足' }, 400);
+
+          // 扣款 + 记录下注
+          await DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amt, username).run();
+
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('INSERT INTO football_bet (username, match_id, choice, amount, odds, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            .bind(username, matchId, choice, amt, odds, 'pending', now).run();
+
+          return resJson({ success: true, message: `下注成功！${matchData.teamA} vs ${matchData.teamB} - ${fbChoiceLabel(matchData, choice)}，金额：${amount}，赔率：${odds}x` });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 世界杯竞猜：获取我的下注记录 ==========
+      if (path === '/api/football/history' && request.method === 'POST') {
+        try {
+          const { username, password } = await request.json();
+          if (!username || !password) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const user = await DB.prepare('SELECT rowid FROM user WHERE username = ? AND password = ?')
+            .bind(username, password).first();
+          if (!user) return resJson({ success: false, message: '用户名或密码错误' }, 401);
+
+          // 管理员查看所有下注记录，普通用户只看自己的
+          let bets;
+          if (username === 'immmor') {
+            bets = await DB.prepare('SELECT * FROM football_bet ORDER BY id DESC LIMIT 200').all();
+          } else {
+            bets = await DB.prepare('SELECT * FROM football_bet WHERE username = ? ORDER BY id DESC LIMIT 50')
+              .bind(username).all();
+          }
+
+          // 附带比赛信息
+          const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
+          const allMatches = fbRow?.value ? JSON.parse(fbRow.value) : [];
+          const matchMap = {};
+          allMatches.forEach(m => { matchMap[m.id] = m; });
+
+          const enrichedBets = (bets.results || []).map(b => ({
+            ...b,
+            matchInfo: matchMap[b.match_id] || null
+          }));
+
+          return resJson({ success: true, bets: enrichedBets });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 世界杯竞猜：管理员设置结果（开奖） ==========
+      if (path === '/api/football/settle' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { username, password, result, matchId } = params;
+          if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
+          if (!['a', 'draw', 'b'].includes(result)) return resJson({ success: false, message: '无效的结果' }, 400);
+          if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
+
+          // 读取并更新指定比赛
+          const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
+          let matches = fbRow?.value ? JSON.parse(fbRow.value) : [];
+          const idx = matches.findIndex(m => m.id == matchId);
+          if (idx === -1) return resJson({ success: false, message: '比赛不存在' }, 404);
+
+          matches[idx].status = 'settled';
+          matches[idx].result = result;
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('UPDATE link SET value = ? WHERE key = ?')
+            .bind(JSON.stringify(matches), 'fb_match').run();
+
+          // 处理该比赛的 pending 下注
+          const pendingBets = await DB.prepare("SELECT * FROM football_bet WHERE status = 'pending' AND match_id = ?")
+            .bind(matchId).all();
+          let totalPayout = 0;
+          let winCount = 0;
+
+          for (const bet of pendingBets.results || []) {
+            const isWin = bet.choice === result;
+            const payout = isWin ? Math.floor(bet.amount * bet.odds) : 0;
+            const newStatus = isWin ? 'win' : 'lose';
+
+            await DB.prepare('UPDATE football_bet SET status = ?, payout = ? WHERE id = ?')
+              .bind(newStatus, payout, bet.id).run();
+
+            if (isWin) {
+              await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+                .bind(payout, bet.username).run();
+              totalPayout += payout;
+              winCount++;
+
+              await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+                .bind(bet.username, nt({
+                  cn: `🎉 世界杯竞猜中奖！${matches[idx].teamA} vs ${matches[idx].teamB} - 您猜对了，获得 ¥${payout} 奖励`,
+                  en: `🎉 World Cup bet won! ${matches[idx].teamA} vs ${matches[idx].teamB} - You guessed correctly and won ¥${payout}`,
+                  jp: `🎉 ワールドカップ予想的中！${matches[idx].teamA} vs ${matches[idx].teamB} - 正解で ¥${payout} を獲得`,
+                  kr: `🎉 월드컵 베팅 당첨! ${matches[idx].teamA} vs ${matches[idx].teamB} - 맞춰서 ¥${payout} 획득`,
+                  es: `🎉 ¡Apuesta del Mundial ganada! ${matches[idx].teamA} vs ${matches[idx].teamB} - Acertaste y ganaste ¥${payout}`,
+                  vi: `🎉 Dự đoán World Cup trúng thưởng! ${matches[idx].teamA} vs ${matches[idx].teamB} - Bạn đoán đúng và nhận được ¥${payout}`,
+                  ar: `🎉 ربح الرهان على كأس العالم! ${matches[idx].teamA} vs ${matches[idx].teamB} - خمنت بشكل صحيح وفزت بـ ¥${payout}`,
+                  ru: `🎉 Ставка на ЧМ выиграна! ${matches[idx].teamA} vs ${matches[idx].teamB} - Вы угадали и получили ¥${payout}`
+                }), now).run();
+            }
+          }
+
+          const resultLabel = fbChoiceLabel(matches[idx], result);
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+            .bind('immmor', `⚽ 竞猜开奖！${matches[idx].teamA} vs ${matches[idx].teamB} → 结果：${resultLabel}，派奖 ¥${totalPayout}，中奖 ${winCount} 人`, now).run();
+
+          return resJson({
+            success: true,
+            message: `开奖完成！${matches[idx].teamA} vs ${matches[idx].teamB} 结果：${resultLabel}，中奖 ${winCount} 人，总派奖 ¥${totalPayout}`
+          });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 世界杯竞猜：管理员重置比赛（新一轮） ==========
+      if (path === '/api/football/reset' && request.method === 'POST') {
+        try {
+          const { username, password, matchId } = await request.json();
+          if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
+          if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
+
+          const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
+          let matches = fbRow?.value ? JSON.parse(fbRow.value) : [];
+          const idx = matches.findIndex(m => m.id == matchId);
+          if (idx === -1) return resJson({ success: false, message: '比赛不存在' }, 404);
+
+          matches[idx].status = 'open';
+          matches[idx].result = '';
+          matches[idx].score = '';
+          await DB.prepare('UPDATE link SET value = ? WHERE key = ?')
+            .bind(JSON.stringify(matches), 'fb_match').run();
+
+          return resJson({ success: true, message: `${matches[idx].teamA} vs ${matches[idx].teamB} 已重置` });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
         }
       }
 
