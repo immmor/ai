@@ -95,6 +95,16 @@ function getCurrentQuestions() {
         return questionsgerman;
     } else if (currentQuestionBank === 'questionsroutine') {
         return questionsroutine;
+    } else if (currentQuestionBank === 'questionsaigenerate') {
+        return (window.questionsaigenerate && window.questionsaigenerate.length > 0)
+            ? window.questionsaigenerate
+            : [];
+    } else if (currentQuestionBank && currentQuestionBank.startsWith('aigen:')) {
+        // AI生成的主题题库
+        if (window.aiQuestionGenerator) {
+            return window.aiQuestionGenerator.getQuestionsForBankId(currentQuestionBank);
+        }
+        return [];
     } else {
         return questions;
     }
@@ -191,6 +201,14 @@ function getBankDisplayName(bankName) {
         bankDisplayName = '德语学习';
     } else if (bankName === 'questionsroutine') {
         bankDisplayName = '多语学习';
+    } else if (bankName === 'questionsaigenerate') {
+        bankDisplayName = 'AI生成题库';
+    } else if (bankName && bankName.startsWith('aigen:')) {
+        // AI按主题生成的题库：显示用户输入的主题名
+        if (window.aiQuestionGenerator) {
+            const topic = window.aiQuestionGenerator.getTopicFromBankId(bankName);
+            if (topic) bankDisplayName = topic;
+        }
     }
     return bankDisplayName;
 }

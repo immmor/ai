@@ -54,6 +54,7 @@
     <script src="src/login.js"></script>
     <!-- <script src="src/tree.js"></script> -->
     <script src="src/ai.js"></script>
+    <script src="src/aigeneratequestions.js"></script>
     <script src="src/festival.js"></script>
     
     <script>
@@ -457,7 +458,7 @@
                     </button>
                     <!-- 题库下拉菜单 -->
                     <div id="question-bank-menu" class="absolute top-full -right-1 mt-2.5 w-auto min-w-[80px] bg-white rounded-md shadow-lg border border-gray-200 z-20 hidden">
-                        <div class="py-1 max-h-[165px] overflow-y-auto">
+                        <div class="max-h-[165px] overflow-y-auto">
                             <button class="question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100" data-bank="questionswrong">
                                 <span>错题笔记</span>
                             </button>
@@ -593,6 +594,12 @@
             <button id="community-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-orange-100/50">
                 <i class="fas fa-users text-orange-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
                 <span class="text-gray-800 text-xs font-medium">学习社区</span>
+
+            <!-- AI生成题库 -->
+            <button id="ai-generate-panel-btn" class="w-full flex items-center justify-start p-3 bg-gradient-to-r from-indigo-50 to-purple-100 hover:from-indigo-100 hover:to-purple-200 rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-md border border-indigo-100/50">
+                <i class="fas fa-robot text-indigo-600 w-4 h-4 mr-2 flex items-center justify-center"></i>
+                <span class="text-gray-800 text-xs font-medium">AI生成题库</span>
+            </button>
             </button>
         </div>
     </div>
