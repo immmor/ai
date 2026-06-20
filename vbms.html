@@ -498,6 +498,58 @@
                 min-width: 120px;
             }
         }
+
+        /* 用户编辑弹窗 - 响应式适配 */
+        #userModal .modal-content {
+            max-width: 680px;
+        }
+
+        .user-form-grid {
+            gap: 15px;
+        }
+
+        @media (max-width: 900px) {
+            .modal-content {
+                width: 95%;
+                margin: 3% auto;
+                padding: 1.5rem;
+            }
+            .user-form-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .user-form-grid .form-group[style*="span 2"] {
+                grid-column: span 1 !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 98%;
+                margin: 2% auto;
+                padding: 1rem;
+                border-radius: 8px;
+            }
+            .modal-header h3 {
+                font-size: 1rem;
+            }
+            .user-form-grid {
+                gap: 10px;
+            }
+            .form-group {
+                margin-bottom: 0.8rem;
+            }
+            .form-group label {
+                font-size: 0.85rem;
+            }
+            .form-group input,
+            .form-group select {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+            .form-group textarea {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -935,14 +987,14 @@
 
     <!-- 用户编辑模态框 -->
     <div id="userModal" class="modal">
-        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column;">
+        <div class="modal-content" style="max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h3 id="userModalTitle">修改用户</h3>
                 <button class="close-btn" onclick="closeUserModal()">&times;</button>
             </div>
             <form id="userForm">
                 <input type="hidden" id="editUsername" name="editUsername">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: calc(80vh - 150px); overflow-y: auto;">
+                <div class="user-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: calc(85vh - 150px); overflow-y: auto;">
                     <div class="form-group">
                         <label for="userPassword">密码</label>
                         <input type="text" id="userPassword" name="userPassword">
