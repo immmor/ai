@@ -95,10 +95,10 @@ class AIQuestionGenerator {
         for (const topic of Object.keys(this.topics)) {
             const bankId = this.getBankIdForTopic(topic);
             const btn = document.createElement('button');
-            btn.className = 'question-bank-option w-full text-left px-3 py-2 text-xs hover:bg-gray-100';
+            btn.className = 'question-bank-option w-full text-center px-3 py-2 text-xs hover:bg-gray-100';
             btn.dataset.bank = bankId;
             const count = (this.topics[topic] || []).length;
-            btn.innerHTML = `<span>🤖 ${this._escapeHtml(topic)} <span class="text-gray-400">(${count})</span></span>`;
+            btn.innerHTML = `<span>🤖 ${this._escapeHtml(topic)}</span>`;
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.setActiveTopic(topic);
@@ -111,7 +111,7 @@ class AIQuestionGenerator {
         }
         // 顶部"新建AI题库"入口
         const newBtn = document.createElement('button');
-        newBtn.className = 'w-full text-left px-3 py-2 text-xs hover:bg-gray-100 border-t border-gray-200 text-indigo-600 font-medium';
+        newBtn.className = 'w-full text-center px-3 py-2 text-xs hover:bg-gray-100 border-t border-gray-200 text-indigo-600 font-medium';
         newBtn.dataset.bank = 'ai-generate-new';
         newBtn.innerHTML = '<span>✨AI生成</span>';
         newBtn.addEventListener('click', (e) => {
@@ -206,6 +206,7 @@ class AIQuestionGenerator {
                             <select id="ai-qg-type">
                                 <option value="select" selected>选择题</option>
                                 <option value="fill">填空题</option>
+                                <option value="sentence">句子题</option>
                                 <option value="mixed">混合</option>
                             </select>
                         </div>
@@ -390,17 +391,26 @@ class AIQuestionGenerator {
         const typeMap = {
             select: '每题都是"选择题"（type="select"），提供4个选项（options数组），并用correct字段（0-3）给出正确答案。',
             fill: '每题都是"填空题"（type="fill"），question中用一个【____】标记空缺位置，并在answer字段给出该空应填的词语或短语。',
-            mixed: '题型可以混合，包含至少1道选择题和至少1道填空题。'
+            sentence: '每题都是"句子记忆题"（type="sentence"），question中用【】包裹需要填空的关键词（可以有多个），并提供一个blanks对象（键为填空序号，值为该空的答案），以及一个fullSentence字段给出完整的句子。',
+            mixed: '题型可以混合，包含至少1道选择题、1道填空题、1道句子题。'
         };
+        const typeHint = qtype === 'select' ? 'type（填select）'
+            : qtype === 'fill' ? 'type（填fill）'
+            : qtype === 'sentence' ? 'type（填sentence）'
+            : 'type（填select/fill/sentence）';
+        const extraFields = qtype === 'select' ? 'options（字符串数组，4项）、correct（0-3的整数）。'
+            : qtype === 'fill' ? 'answer（字符串，question中【____】处的答案）。'
+            : qtype === 'sentence' ? 'blanks（对象，键为"1"/"2"/…，值为每个【】内词语的答案）、fullSentence（完整句子）。'
+            : '选择题：options、correct；填空题：answer；句子题：blanks、fullSentence。';
         return `你是一名严谨的出题专家。请围绕主题"${topic}"，生成${count}道${difficulty}难度的练习题。${typeMap[qtype]}
 
 要求：
 1. 题目内容准确，事实清晰，避免争议。
 2. 选择题的干扰项要有迷惑性但明显错误。
 3. 填空题答案尽量是关键词或短语。
-4. 每道题必须包含：title（题目标题，简短）、question（完整题干）、type（fill或select）、hint（解题提示）、explanation（详细解释）。
-5. 选择题额外字段：options（字符串数组，4项）、correct（0-3的整数）。
-6. 填空题额外字段：answer（字符串，question中【____】处的答案）。
+4. 句子题的question中用【词语】包裹需要填空的关键词，支持多个填空。
+5. 每道题必须包含：title（题目标题，简短）、question（完整题干）、type、hint（解题提示）、explanation（详细解释）。
+6. 额外字段：${extraFields}
 ${extra ? '7. 额外要求：' + extra : ''}
 
 严格按以下JSON数组格式返回，不要包含任何其他文字、Markdown代码块或解释：
@@ -517,11 +527,15 @@ ${extra ? '7. 额外要求：' + extra : ''}
             let t = null;
             if (['select', 'choice', 'multiple', 'choicequestion', '选择题'].includes(rawType)) t = 'select';
             else if (['fill', 'blank', 'fillblank', 'cloze', '填空题'].includes(rawType)) t = 'fill';
+            else if (['sentence', 'sentencequestion', '句子', '句子题', '句子记忆', '记忆题'].includes(rawType)) t = 'sentence';
             else if (rawType.includes('select') || rawType.includes('choice')) t = 'select';
             else if (rawType.includes('fill') || rawType.includes('blank')) t = 'fill';
-            // 如果没有type但有 options/correct，推断为 select；如果没有 options/correct 但有 answer，推断为 fill
+            else if (rawType.includes('sentence')) t = 'sentence';
+            // 如果没有type，根据字段推断
             if (!t) {
                 if (item.options && item.correct !== undefined) t = 'select';
+                else if (item.blanks || item.fullSentence) t = 'sentence';
+                else if (Array.isArray(item.answer) && item.answer.length > 1) t = 'sentence';
                 else if (item.answer !== undefined && item.answer !== '') t = 'fill';
             }
             if (!t) continue;
@@ -529,7 +543,7 @@ ${extra ? '7. 额外要求：' + extra : ''}
             const questionText = item.question || item.stem || item.text || '';
             if (!questionText) continue;
             // title 兼容
-            const title = item.title || item.topic || item.subject || (t === 'select' ? '选择题' : '填空题');
+            const title = item.title || item.topic || item.subject || (t === 'select' ? '选择题' : t === 'fill' ? '填空题' : '句子题');
             const hint = item.hint || item.tip || '';
             const explanation = item.explanation || item.analysis || item.reason || '';
             if (t === 'select') {
@@ -585,6 +599,56 @@ ${extra ? '7. 额外要求：' + extra : ''}
                     instruction: `请补全【${title}】中的空缺`,
                     hint: String(hint),
                     explanation: String(explanation)
+                });
+            } else if (t === 'sentence') {
+                let blanks = item.blanks || {};
+                let blankList = [];
+                let html = this._escapeHtml(questionText);
+                const bracketRegex = /【([^】]+)】/;
+                if (bracketRegex.test(questionText)) {
+                    html = this._escapeHtml(questionText);
+                    let idx = 0;
+                    html = html.replace(/【([^】]+)】/g, (whole, inside) => {
+                        idx++;
+                        const answer = blanks[String(idx)] || blanks[idx] || inside.trim();
+                        const id = 'sen_' + Math.random().toString(36).slice(2, 8) + '-' + idx;
+                        blankList.push(answer);
+                        return `<span class="code-blank" data-id="${id}" data-answer="${this._escapeAttr(answer)}"></span>`;
+                    });
+                } else {
+                    let idx = 0;
+                    let answers = item.answer;
+                    if (typeof answers === 'string') answers = [answers];
+                    if (!Array.isArray(answers)) answers = Object.values(blanks);
+                    html = html.replace(/_{2,}/g, () => {
+                        idx++;
+                        const answer = answers[idx - 1] || blanks[String(idx)] || '';
+                        const id = 'sen_' + Math.random().toString(36).slice(2, 8) + '-' + idx;
+                        blankList.push(answer);
+                        return `<span class="code-blank" data-id="${id}" data-answer="${this._escapeAttr(answer)}"></span>`;
+                    });
+                }
+                if (blankList.length === 0) continue;
+                const finalContent = `<div class="p-4 font-mono text-sm"><div>${html}</div></div>`;
+                let fullSentence = item.fullSentence || '';
+                if (!fullSentence) {
+                    let fs = questionText;
+                    let bi = 0;
+                    fs = fs.replace(/【[^】]+】|_{2,}/g, () => {
+                        const ans = blankList[bi] || '';
+                        bi++;
+                        return ans;
+                    });
+                    fullSentence = fs;
+                }
+                result.push({
+                    type: 'sentence',
+                    title: String(title),
+                    content: finalContent,
+                    instruction: '请填写句子中的空白处',
+                    hint: String(hint),
+                    explanation: String(explanation),
+                    fullSentence: String(fullSentence)
                 });
             }
         }
