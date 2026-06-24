@@ -750,6 +750,7 @@ export default {
           
           // 计算新的VIP过期时间
           const now = new Date();
+          const nowUtc = new Date(now.toISOString());
           let newExpireDate;
           
           // 如果用户已有VIP且未过期，则在原基础上续期
@@ -780,12 +781,12 @@ export default {
               .bind(username)
               .first();
             
-            // 格式化VIP过期时间
+            // 格式化VIP过期时间（使用UTC时间）
             const expireDate = new Date(updatedUser.learn_vip_expire_date);
-            const formattedExpireDate = `${expireDate.getFullYear()}-${String(expireDate.getMonth() + 1).padStart(2, '0')}-${String(expireDate.getDate()).padStart(2, '0')} ${String(expireDate.getHours()).padStart(2, '0')}:${String(expireDate.getMinutes()).padStart(2, '0')}:${String(expireDate.getSeconds()).padStart(2, '0')}`;
+            const formattedExpireDate = `${expireDate.getUTCFullYear()}-${String(expireDate.getUTCMonth() + 1).padStart(2, '0')}-${String(expireDate.getUTCDate()).padStart(2, '0')}T${String(expireDate.getUTCHours()).padStart(2, '0')}:${String(expireDate.getUTCMinutes()).padStart(2, '0')}:${String(expireDate.getUTCSeconds()).padStart(2, '0')}Z`;
             
-            // 计算剩余天数
-            const remainingDays = Math.ceil((expireDate - now) / (24 * 60 * 60 * 1000));
+            // 计算剩余天数（使用UTC时间）
+            const remainingDays = Math.ceil((expireDate.getTime() - nowUtc.getTime()) / (24 * 60 * 60 * 1000));
             
             return jsonResponse({
               code: 200, 
@@ -823,22 +824,25 @@ export default {
           }
           
           const now = new Date();
+          const nowUtc = new Date(now.toISOString());
           let isVip = false;
           let remainingDays = 0;
           
           if (user.learn_vip_expire_date) {
+            // 解析存储的UTC时间字符串
             const expireDate = new Date(user.learn_vip_expire_date);
-            if (expireDate > now) {
+            // 统一使用UTC时间戳进行比较
+            if (expireDate.getTime() > nowUtc.getTime()) {
               isVip = true;
-              remainingDays = Math.ceil((expireDate - now) / (24 * 60 * 60 * 1000));
+              remainingDays = Math.ceil((expireDate.getTime() - nowUtc.getTime()) / (24 * 60 * 60 * 1000));
             }
           }
           
-          // 格式化VIP过期时间
+          // 格式化VIP过期时间（使用UTC时间）
           let formattedExpireDate = null;
           if (user.learn_vip_expire_date) {
             const expireDate = new Date(user.learn_vip_expire_date);
-            formattedExpireDate = `${expireDate.getFullYear()}-${String(expireDate.getMonth() + 1).padStart(2, '0')}-${String(expireDate.getDate()).padStart(2, '0')} ${String(expireDate.getHours()).padStart(2, '0')}:${String(expireDate.getMinutes()).padStart(2, '0')}:${String(expireDate.getSeconds()).padStart(2, '0')}`;
+            formattedExpireDate = `${expireDate.getUTCFullYear()}-${String(expireDate.getUTCMonth() + 1).padStart(2, '0')}-${String(expireDate.getUTCDate()).padStart(2, '0')}T${String(expireDate.getUTCHours()).padStart(2, '0')}:${String(expireDate.getUTCMinutes()).padStart(2, '0')}:${String(expireDate.getUTCSeconds()).padStart(2, '0')}Z`;
           }
           
           return jsonResponse({
