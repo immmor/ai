@@ -1095,7 +1095,7 @@
         }
         
         // 静态支付功能
-        const getNowFormat = () => new Date().toJSON().replace(/[-:T]/g,'').slice(0,14);
+        const getNowFormat = () => new Date().toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/[\/\s:]/g,'');
         
         function showStaticPayment(paymentType, amount) {
             const paymentName = paymentType === 'wechat_static' ? t('orders.wxpay') : t('orders.alipay');
