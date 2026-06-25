@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流光英语打字练习</title>
+    <style>
+        :root {
+            --bg-color: #0d0e15;
+            --text-muted: #4a4d6b;
+            --text-correct: #00f2fe;
+            --text-wrong: #ff4a5a;
+            --accent: #4facfe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(125deg, #0d0e15, #1a1c2e, #0d0e15);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* 翻译提示 */
+        .translation {
+            font-size: 1.5rem;
+            color: #a0aec0;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-weight: 300;
+        }
+
+        /* 炫酷打字区 */
+        .word-area {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+            min-height: 80px;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .char {
+            color: var(--text-muted);
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .char.correct {
+            color: var(--text-correct);
+            text-shadow: 0 0 10px var(--text-correct), 0 0 20px var(--accent);
+            animation: pop 0.15s ease-out;
+        }
+
+        .char.wrong {
+            color: var(--text-wrong);
+            text-shadow: 0 0 10px var(--text-wrong);
+            background: rgba(255, 74, 90, 0.2);
+            border-radius: 4px;
+        }
+
+        .char.current {
+            color: #fff;
+            border-bottom: 4px solid var(--accent);
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes blink {
+            50% { border-bottom-color: transparent; }
+        }
+
+        /* 隐藏的真实输入框 */
+        #hidden-input {
+            position: absolute;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        /* 底部提示 */
+        .footer-tips {
+            color: #4a4d6b;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            line-height: 1.6;
+        }
+
+        .footer-tips span {
+            color: var(--accent);
+            background: rgba(79, 172, 254, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 4px;
+        }
+
+        /* 粒子特效画布 */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="container" onclick="focusInput()">
+        <div class="translation" id="translation">点击页面任意位置开始输入</div>
+        <div class="word-area" id="word-area"></div>
+        <div class="footer-tips">
+            直接敲击键盘输入 | <span>Shift + R</span> 听句子发音 | <span>Enter 回车键</span> 跳过
+        </div>
+    </div>
+
+    <input type="text" id="hidden-input" autocomplete="off" autofocus>
+
+    <script>
+        // 语料库
+        const sentences = [
+            { en: "Practice makes perfect.", zh: "熟能生巧。" },
+            { en: "Believe in yourself.", zh: "相信你自己。" },
+            { en: "Stay hungry, stay foolish.", zh: "求知若饥，虚心若愚。" },
+            { en: "Life is a journey, not a destination.", zh: "生命是一段旅程，而不是终点。" },
+            { en: "No pain, no gain.", zh: "一分耕耘，一分收获。" },
+            { en: "Follow your heart.", zh: "追随你的内心。" }
+        ];
+
+        let currentIndex = 0;
+        let currentLetterIndex = 0;
+        let currentSentence = "";
+        
+        const translationEl = document.getElementById('translation');
+        const wordAreaEl = document.getElementById('word-area');
+        const hiddenInput = document.getElementById('hidden-input');
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- 语音朗读功能 (Web Speech API) ---
+        function speakSentence() {
+            window.speechSynthesis.cancel(); // 停止当前正在朗读的声音
+            const utterance = new SpeechSynthesisUtterance(currentSentence);
+            utterance.lang = 'en-US'; 
+            utterance.rate = 0.9;     
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- 音效生成器 (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playKeySound(isCorrect) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isCorrect) {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            }
+        }
+
+        function playSuccessSound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50]; 
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.08);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + index * 0.08);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.08 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.08);
+                osc.stop(audioCtx.currentTime + index * 0.08 + 0.3);
+            });
+        }
+
+        // --- 粒子特效系统 ---
+        let particles = [];
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = (Math.random() - 0.5) * 8;
+                this.speedY = (Math.random() - 0.5) * 8 - 3;
+                this.color = color;
+                this.alpha = 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha -= 0.03;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createExplosion(el) {
+            const rect = el.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            const color = el.classList.contains('wrong') ? '#ff4a5a' : '#00f2fe';
+            for (let i = 0; i < 12; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // --- 核心逻辑 ---
+        function initSentence() {
+            const item = sentences[currentIndex];
+            translationEl.textContent = item.zh;
+            currentSentence = item.en;
+            currentLetterIndex = 0;
+            hiddenInput.value = "";
+
+            wordAreaEl.innerHTML = currentSentence.split('').map((char, index) => {
+                if (index === 0) return `<span class="char current">${char}</span>`;
+                return `<span class="char">${char}</span>`;
+            }).join('');
+            
+            // 切换到新句子时自动朗读一次
+            speakSentence();
+        }
+
+        function focusInput() {
+            hiddenInput.focus();
+        }
+
+        hiddenInput.addEventListener('input', (e) => {
+            const spans = wordAreaEl.querySelectorAll('.char');
+            const inputValue = hiddenInput.value;
+            
+            const targetChar = currentSentence[currentLetterIndex];
+            const typedChar = inputValue[inputValue.length - 1];
+
+            if (!typedChar) return;
+
+            // 判断输入正误
+            if (typedChar === targetChar) {
+                spans[currentLetterIndex].className = 'char correct';
+                createExplosion(spans[currentLetterIndex]);
+                playKeySound(true);
+                currentLetterIndex++;
+            } else {
+                spans[currentLetterIndex].className = 'char wrong';
+                createExplosion(spans[currentLetterIndex]);
+                playKeySound(false);
+                setTimeout(() => {
+                    if(spans[currentLetterIndex] && currentLetterIndex < currentSentence.length) {
+                         spans[currentLetterIndex].className = 'char current';
+                    }
+                }, 150);
+            }
+
+            hiddenInput.value = "";
+
+            if (currentLetterIndex < currentSentence.length) {
+                spans[currentLetterIndex].className = 'char current';
+            } else {
+                playSuccessSound();
+                currentIndex = (currentIndex + 1) % sentences.length;
+                setTimeout(initSentence, 600);
+            }
+        });
+
+        // 快捷键监听
+        window.addEventListener('keydown', (e) => {
+            // 检测是否同时按下了 Shift 和 R (大小写 R 均适配)
+            if (e.shiftKey && (e.key === 'R' || e.key === 'r')) {
+                e.preventDefault(); 
+                speakSentence();    // 触发朗读
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % sentences.length;
+                initSentence();     // 跳过句子
+            }
+            focusInput();
+        });
+
+        window.onload = () => {
+            initSentence();
+            focusInput();
+            document.body.addEventListener('click', focusInput);
+        };
+    </script>
+</body>
+</html>

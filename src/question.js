@@ -110,16 +110,35 @@ function getCurrentQuestions() {
     }
 }
 
-// 设置题库选择功能
+function hasAccessToAllBanks() {
+    const username = localStorage.getItem('username');
+    return username === 'immmor';
+}
+
+function filterQuestionBankOptions() {
+    const bankOptions = document.querySelectorAll('.question-bank-option');
+    const canAccessAll = hasAccessToAllBanks();
+    bankOptions.forEach(option => {
+        const bankName = option.dataset.bank;
+        if (canAccessAll || bankName === 'questionsenglish') {
+            option.classList.remove('hidden');
+        } else {
+            option.classList.add('hidden');
+        }
+    });
+}
+
 function setupQuestionBankToggle() {
     const bankBtn = document.getElementById('question-bank-btn');
     const bankMenu = document.getElementById('question-bank-menu');
     const bankOptions = document.querySelectorAll('.question-bank-option');
     
-    // 点击题库按钮显示/隐藏下拉菜单
     bankBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         bankMenu.classList.toggle('hidden');
+        if (!bankMenu.classList.contains('hidden')) {
+            filterQuestionBankOptions();
+        }
     });
     
     // 点击题库选项
@@ -244,7 +263,9 @@ window.setCurrentQuestionBank = function(bank) {
     console.log('设置当前题库:', bank);
 };
 
-// 获取题目答题统计
+window.filterQuestionBankOptions = filterQuestionBankOptions;
+window.switchQuestionBank = switchQuestionBank;
+
 window.getQuestionStats = function(questionIndex) {
     try {
         const bank = window.getCurrentQuestionBank();

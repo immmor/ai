@@ -178,18 +178,20 @@ function handleLogin() {
     }).then(async (res) => {
         const data = await res.json(); // 强制解析JSON
         if (data.success) {
-            // 登录成功
-            isLoggedIn = true;
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('username', username);
-            updateLoginButton();
-            hideLoginModal();
-            // 登录成功后获取一次余额
-            fetchUserBalance();
-            errorMsg.textContent = '登录成功！';
-            errorMsg.className = 'mb-4 text-sm text-green-500';
-            setTimeout(() => errorMsg.classList.add('hidden'), 2000);
-        } else {
+                isLoggedIn = true;
+                localStorage.setItem('userLoggedIn', 'true');
+                localStorage.setItem('username', username);
+                updateLoginButton();
+                hideLoginModal();
+                fetchUserBalance();
+                if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
+                if (username !== 'immmor') {
+                    if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
+                }
+                errorMsg.textContent = '登录成功！';
+                errorMsg.className = 'mb-4 text-sm text-green-500';
+                setTimeout(() => errorMsg.classList.add('hidden'), 2000);
+            } else {
             // 登录失败
             errorMsg.textContent = data.message || '用户名或密码错误';
             errorMsg.className = 'mb-4 text-sm text-red-500';
@@ -229,16 +231,19 @@ function handleRegister() {
     }).then(async (res) => {
         const data = await res.json(); // 强制解析JSON
         if (data.success) {
-            // 注册成功，自动登录
-            isLoggedIn = true;
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('username', username);
-            updateLoginButton();
-            hideLoginModal();
-            errorMsg.textContent = '注册成功！';
-            errorMsg.className = 'mb-4 text-sm text-green-500';
-            setTimeout(() => errorMsg.classList.add('hidden'), 2000);
-        } else {
+                isLoggedIn = true;
+                localStorage.setItem('userLoggedIn', 'true');
+                localStorage.setItem('username', username);
+                updateLoginButton();
+                hideLoginModal();
+                if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
+                if (username !== 'immmor') {
+                    if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
+                }
+                errorMsg.textContent = '注册成功！';
+                errorMsg.className = 'mb-4 text-sm text-green-500';
+                setTimeout(() => errorMsg.classList.add('hidden'), 2000);
+            } else {
             // 注册失败
             errorMsg.textContent = data.message || '注册失败，请重试！';
             errorMsg.className = 'mb-4 text-sm text-red-500';
@@ -352,6 +357,8 @@ function showUserMenu() {
         localStorage.removeItem('username');
         updateLoginButton();
         menu.remove();
+        if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
+        if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
     });
     menu.appendChild(logoutBtn);
     document.getElementById('login-btn').parentElement.appendChild(menu);

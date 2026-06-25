@@ -11,7 +11,11 @@ let lastCorrectTime = 0; // 上次答对时间戳
 const COMBO_TIME_LIMIT = 5000; // 5秒时间限制
 let randomQuestions = []; // 随机题目数组
 let currentRandomIndex = 0; // 当前随机题目索引
-let currentQuestionBank = 'questions'; // 当前题库，默认使用questions.js
+let currentQuestionBank = 'questions';
+const username = localStorage.getItem('username');
+if (username !== 'immmor') {
+    currentQuestionBank = 'questionsenglish';
+}
 
 // 游戏化状态
 let xp = 0;
@@ -121,6 +125,7 @@ if (document.readyState === 'loading') {
     startSessionTimer();
     setupBadgeToggle();
     setupQuestionBankToggle();
+    if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
     
     // 初始化音频上下文（需要用户交互）
     document.addEventListener('click', function initAudio() {
