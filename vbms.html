@@ -117,8 +117,24 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .sidebar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: left;
+                padding: 0.75rem 1rem;
+            }
+        }
+
         .sidebar-header h2 {
             font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-header h2 {
+                font-size: 1rem;
+            }
         }
 
         .sidebar-menu {
@@ -433,17 +449,6 @@
                 z-index: 100;
             }
 
-            .sidebar-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.75rem 1rem;
-            }
-
-            .sidebar-header h2 {
-                font-size: 1rem;
-            }
-
             .sidebar-menu {
                 display: flex;
                 overflow-x: auto;
@@ -609,6 +614,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>后台管理</h2>
+                <button class="logout-btn" onclick="logout()" style="margin-left: 0.5rem;">退出</button>
             </div>
             <nav class="sidebar-menu">
                 <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
