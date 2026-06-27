@@ -142,6 +142,12 @@
             padding: 1rem 0;
         }
 
+        @media (max-width: 768px) {
+            .sidebar-menu {
+                padding: 0;
+            }
+        }
+
         .menu-item {
             display: block;
             padding: 1rem 1.5rem;
@@ -993,7 +999,7 @@
                             <div style="display: flex; gap: 10px;">
                                 <button class="add-btn" onclick="openMatchModal()">+ 新增比赛</button>
                                 <button class="add-btn" onclick="loadFootballMatches()" style="background-color: #667eea;">刷新</button>
-                                <button class="add-btn" onclick="toggleFixedColumns('footballTable')" style="background-color: #667eea;">固定列设置</button>
+                                <button class="add-btn" onclick="toggleFixedColumns('footballTable')" style="background-color: #667eea;">固定</button>
                             </div>
                         </div>
                         <table id="footballTable">
@@ -1323,7 +1329,10 @@
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
                 document.getElementById('totalRevenue').textContent = '¥' + (data.totalRevenue || 0);
                 
-                renderCharts(data);
+                // 延迟渲染图表，确保DOM已准备就绪
+                setTimeout(() => {
+                    renderCharts(data);
+                }, 100);
             } else {
                 console.error('加载统计数据失败:', result.msg);
             }
