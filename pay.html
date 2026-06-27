@@ -264,12 +264,99 @@
             50% { opacity: 0.6; }
         }
 
+        @keyframes loginSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 全屏加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-logo-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #000;
+            font-weight: bold;
+            animation: logoPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 40px rgba(255, 0, 255, 0.6);
+            }
+        }
+
+        .loading-text {
+            margin-top: 30px;
+            color: var(--neon-blue);
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            animation: textFade 1s ease-in-out infinite;
+        }
+
+        @keyframes textFade {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
         /* 按钮 */
         .glitch-btn {
             width: 100%;
             height: 50px;
             background: var(--neon-blue);
             border: none;
+            border-radius: 8px;
             color: #000;
             font-weight: bold;
             text-transform: uppercase;
@@ -1111,22 +1198,90 @@
 
             if (!username || !password) return alert(t('alert.emptyUsernamePassword'));
 
-            try {
-                const data = await (await fetch('https://api.immmor.com/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                })).json();
-                
-                if (data.success) {
-                    localStorage.setItem('currentUser', JSON.stringify(data.userInfo));
-                    localStorage.setItem('loginTime', Date.now().toString());
-                    location.reload();
-                } else {
-                    alert(t('alert.loginFailed', { message: data.message }));
+            const overlay = document.getElementById('loading-overlay');
+            const progressBar = document.getElementById('loading-progress-bar');
+            const loadingText = document.getElementById('loading-text');
+
+            const messages = [
+                'INITIALIZING...',
+                'CONNECTING TO SERVER...',
+                'VERIFYING IDENTITY...',
+                'LOADING WALLET...',
+                'WELCOME!'
+            ];
+
+            // 显示加载层
+            overlay.classList.add('show');
+            overlay.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            loadingText.textContent = messages[0];
+
+            // 等待动画完整走完
+            const animationDone = new Promise(resolve => {
+                let progress = 0;
+                let msgIdx = 0;
+
+                const updateLoading = () => {
+                    progress += Math.random() * 25;
+                    if (progress > 100) progress = 100;
+
+                    progressBar.style.width = progress + '%';
+
+                    if (progress > 20 && msgIdx < 1) { msgIdx = 1; loadingText.textContent = messages[1]; }
+                    if (progress > 45 && msgIdx < 2) { msgIdx = 2; loadingText.textContent = messages[2]; }
+                    if (progress > 75 && msgIdx < 3) { msgIdx = 3; loadingText.textContent = messages[3]; }
+                    if (progress >= 100) {
+                        msgIdx = 4;
+                        loadingText.textContent = messages[4];
+                        resolve();
+                        return;
+                    }
+                    setTimeout(updateLoading, Math.random() * 400 + 150);
+                };
+
+                updateLoading();
+            });
+
+            // API 请求与动画并行
+            let apiResult = null;
+            let apiError = null;
+            const apiDone = (async () => {
+                try {
+                    const data = await (await fetch('https://api.immmor.com/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    })).json();
+                    apiResult = data;
+                } catch (error) {
+                    apiError = error;
                 }
-            } catch (error) {
-                alert(t('alert.networkError'));
+            })();
+
+            // 等待动画和 API 都完成
+            await Promise.all([animationDone, apiDone]);
+
+            // 动画走完后，根据结果处理
+            if (apiResult && apiResult.success) {
+                await new Promise(r => setTimeout(r, 600));
+                localStorage.setItem('currentUser', JSON.stringify(apiResult.userInfo));
+                localStorage.setItem('loginTime', Date.now().toString());
+                location.reload();
+            } else {
+                // 失败时短暂显示结果后再隐藏
+                loadingText.textContent = apiError ? 'NETWORK ERROR' : 'AUTH FAILED';
+                progressBar.style.background = 'linear-gradient(90deg, #ff4444, #ff0066)';
+                await new Promise(r => setTimeout(r, 1200));
+                overlay.classList.add('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('show');
+                    progressBar.style.background = '';
+                }, 800);
+                if (apiError) {
+                    alert(t('alert.networkError'));
+                } else {
+                    alert(t('alert.loginFailed', { message: apiResult.message }));
+                }
             }
         }
         
@@ -2166,7 +2321,12 @@
             if (username.includes('@')) {
                 username = username.split('@')[0];
             }
-            document.getElementById('card-holder-name').textContent = username.toUpperCase();
+            username = username.toUpperCase();
+            // 最多显示9位，超出用*表示
+            if (username.length > 9) {
+                username = username.slice(0, 9) + '*';
+            }
+            document.getElementById('card-holder-name').textContent = username;
 
             // 生成有效期（当前月份 + 3-5年）
             const now = new Date();
@@ -2175,6 +2335,15 @@
             document.getElementById('card-expiry').textContent = `${month}/${year}`;
         }
     </script>
+
+    <!-- 全屏加载动画 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-logo-circle">¥</div>
+        <div id="loading-text" class="loading-text">INITIALIZING...</div>
+        <div class="loading-progress">
+            <div id="loading-progress-bar" class="loading-progress-bar"></div>
+        </div>
+    </div>
 
 </body>
 </html>
