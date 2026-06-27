@@ -650,8 +650,8 @@
         <div class="content">
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
-                <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
                 <h1 id="pageTitle">仪表盘</h1>
+                <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
             </nav>
 
             <!-- 页面内容 -->
@@ -1261,7 +1261,6 @@
                     currentUserInfo = userInfo;
                     document.getElementById('loginPage').style.display = 'none';
                     document.getElementById('mainPage').style.display = 'flex';
-                    document.getElementById('currentUser').textContent = userInfo.username;
                     loadDashboardData();
                     return true;
                 } catch (e) {
