@@ -5,6 +5,31 @@ const t = (d) => JSON.stringify(Object.fromEntries(LK.map(k => [k, d[k] ?? '']))
 const NP = { cn:'[系统通知]', en:'[System Notification]', jp:'[システム通知]', kr:'[시스템 알림]', es:'[Notificación del Sistema]', vi:'[Thông báo Hệ thống]', ar:'[إشعار النظام]', ru:'[Системное уведомление]' };
 const nt = (d) => t(Object.fromEntries(LK.map(k => [k, `${NP[k]} ${d[k] ?? ''}`])));
 
+// 密码加密工具函数（SHA-256 + 随机 Salt）
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)).reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+  const encoder = new TextEncoder();
+  const data = encoder.encode(salt + password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${salt}:${hashHex}`;
+}
+
+async function verifyPassword(password, storedHash) {
+  if (!storedHash || !storedHash.includes(':')) {
+    // 兼容旧明文密码
+    return password === storedHash;
+  }
+  const [salt, hash] = storedHash.split(':');
+  const encoder = new TextEncoder();
+  const data = encoder.encode(salt + password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hash === hashHex;
+}
+
 function fbChoiceLabel(_match, choice) {
   const map = { a: '主胜', draw: '平局', b: '客胜' };
   return map[choice] || choice;
@@ -109,13 +134,162 @@ export default {
         }, 500);
       }
 
+      // ========== 发送邮箱验证码接口 ==========
+      if (path === '/api/send-verify-code' && request.method === 'POST') {
+        const params = await request.json();
+        const { email } = params;
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return resJson({ success: false, message: '请输入有效的邮箱地址！' }, 400);
+        }
+
+        // 检查频率限制：同一邮箱60秒内只能发送一次
+        const lastSent = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_time_${email}`).first();
+        if (lastSent) {
+          const elapsed = Date.now() - parseInt(lastSent.value);
+          if (elapsed < 60000) {
+            const remaining = Math.ceil((60000 - elapsed) / 1000);
+            return resJson({ success: false, message: `请 ${remaining} 秒后再试！` }, 429);
+          }
+        }
+
+        // 生成6位数字验证码
+        const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = Date.now().toString();
+
+        // 存储验证码和时间戳（5分钟有效）
+        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_code_${email}`, verifyCode).run();
+        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_code_time_${email}`, now).run();
+
+        // 通过 Resend 发送验证码
+        const RESEND_API_KEY = env.RESEND_API_KEY;
+        if (!RESEND_API_KEY) {
+          return resJson({ success: false, message: '邮件服务未配置，请联系管理员！' }, 500);
+        }
+
+        const emailSubject = 'PHANTOM VPN - 邮箱验证码';
+        const emailHtml = `
+          <div style="font-family: monospace; background: #050505; color: #00ff41; padding: 20px; max-width: 500px;">
+            <h2 style="color: #00ff41; border-bottom: 1px solid #333; padding-bottom: 10px;">PHANTOM VPN</h2>
+            <p style="color: #fff;">您的邮箱验证码是：</p>
+            <div style="background: #111; border: 1px solid #00ff41; padding: 15px; text-align: center; margin: 20px 0;">
+              <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #00ff41;">${verifyCode}</span>
+            </div>
+            <p style="color: #888; font-size: 12px;">此验证码有效期为 5 分钟，请勿泄露给他人。</p>
+            <p style="color: #888; font-size: 12px;">如果您没有请求此验证码，请忽略此邮件。</p>
+          </div>
+        `;
+
+        try {
+          const resendResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'PHANTOM VPN <noreply@phantom.immmor.com>',
+              to: [email],
+              subject: emailSubject,
+              html: emailHtml
+            })
+          });
+
+          if (!resendResponse.ok) {
+            const errorData = await resendResponse.json().catch(() => ({}));
+            console.error('Resend API 错误:', errorData);
+            return resJson({ success: false, message: '邮件发送失败，请稍后重试！' }, 500);
+          }
+
+          const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${email} 点击了获取验证码`, nowStr).run();
+
+          return resJson({ success: true, message: '验证码已发送到您的邮箱！' });
+        } catch (e) {
+          console.error('发送邮件异常:', e);
+          return resJson({ success: false, message: '邮件发送失败，请稍后重试！' }, 500);
+        }
+      }
+
+      // ========== 验证邮箱验证码接口 ==========
+      if (path === '/api/verify-code' && request.method === 'POST') {
+        const params = await request.json();
+        const { email, code } = params;
+
+        if (!email || !code) {
+          return resJson({ success: false, message: '邮箱和验证码不能为空！' }, 400);
+        }
+
+        const storedCode = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_${email}`).first();
+
+        if (!storedCode) {
+          return resJson({ success: false, message: '请先获取验证码！' }, 400);
+        }
+
+        // 检查验证码是否过期（5分钟）
+        const timeRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_time_${email}`).first();
+        if (timeRow) {
+          const elapsed = Date.now() - parseInt(timeRow.value);
+          if (elapsed > 5 * 60 * 1000) {
+            // 验证码已过期，清理
+            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_${email}`).run();
+            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_time_${email}`).run();
+            return resJson({ success: false, message: '验证码已过期，请重新获取！' }, 400);
+          }
+        }
+
+        if (storedCode.value !== code) {
+          return resJson({ success: false, message: '验证码错误！' }, 400);
+        }
+
+        // 验证成功：清理验证码，存储 verified 标记（5分钟有效，用于注册时校验）
+        await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_${email}`).run();
+        await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_time_${email}`).run();
+        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_passed_${email}`, String(Date.now())).run();
+
+        return resJson({ success: true, message: '验证成功！' });
+      }
+
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
       if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
-        const { username, password, inviteCode, securityAnswer, source, priceParam } = params;
+        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, web3Address } = params;
+        
+        // 统一用小写处理 web3 地址
+        const web3AddressLower = web3Address ? web3Address.toLowerCase() : '';
         
         if (!username || !password) {
           return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
+        }
+
+        // 校验邮箱格式：只能包含一个 @，且 @ 前后必须有内容
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(username)) {
+          return resJson({ success: false, message: '邮箱格式不正确！' }, 400);
+        }
+
+        // 校验验证码：必须完成邮箱验证后才能注册（谷歌登录跳过此检查）
+        if (!fromGoogle) {
+          const verifyPassed = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_passed_${username}`).first();
+          if (!verifyPassed) {
+            return resJson({ success: false, message: '请先完成邮箱验证！' }, 400);
+          }
+          // 检查验证标记是否过期（5分钟）
+          const verifyPassedTime = parseInt(verifyPassed.value);
+          if (Date.now() - verifyPassedTime > 5 * 60 * 1000) {
+            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_passed_${username}`).run();
+            return resJson({ success: false, message: '验证已过期，请重新验证邮箱！' }, 400);
+          }
+        }
+
+        // 检查用户是否已存在
+        const existingUser = await DB
+          .prepare('SELECT username FROM user WHERE username = ?')
+          .bind(username)
+          .first();
+
+        if (existingUser) {
+          return resJson({ success: false, message: '该邮箱已注册！' }, 409);
         }
 
         // 生成唯一的6位邀请码（字母+数字）
@@ -246,13 +420,19 @@ export default {
         // 根据前端传入的nt参数决定not_trusted值：nt=n时设为空字符串（信任）
         const notTrustedValue = params.nt === 'n' ? '' : 'yes';
 
+        // 密码加密存储
+        const hashedPassword = await hashPassword(password);
+
+        // 密保答案加密存储
+        const hashedSecurityAnswer = securityAnswer ? await hashPassword(securityAnswer) : '';
+
         // 原子插入：利用数据库 UNIQUE 约束防止并发重复注册
         // 不再单独 SELECT 检查，直接 INSERT，由数据库保证原子性
         let result;
         try {
           result = await DB
-            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)')
-            .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue, '[]')
+            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders, web3_address) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)')
+            .bind(username, hashedPassword, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', hashedSecurityAnswer, '[]', source || '', notTrustedValue, '[]', web3AddressLower || '')
             .run();
         } catch (e) {
           // 捕获 UNIQUE 约束冲突 → 用户名已存在（并发注册竞争时触发）
@@ -264,6 +444,9 @@ export default {
         }
 
         if (result.success) {
+          // 注册成功，清理验证标记
+          await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_passed_${username}`).run();
+
           const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
           const msg = nt({
             cn: `用户 ${username} 注册成功！`,
@@ -357,15 +540,55 @@ export default {
         }
 
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ? AND password = ?')
-          .bind(username, password)
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, password FROM user WHERE username = ?')
+          .bind(username)
+          .first();
+
+        if (!user || !(await verifyPassword(password, user.password))) {
+          return resJson({ success: false, message: '用户名或密码错误！' }, 401);
+        }
+
+        const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+        const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+
+        const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
+        let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+        if (loginInfo?.login_info) {
+          try {
+            const existingInfo = JSON.parse(loginInfo.login_info);
+            existingInfo.unshift(loginInfoEntry);
+            updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
+          } catch (e) {}
+        }
+        await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
+
+        const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+
+        return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
+      }
+
+      // ========== Web3钱包登录接口 ==========
+      if (path === '/api/web3-login' && request.method === 'POST') {
+        const params = await request.json();
+        const { address } = params;
+
+        if (!address) {
+          return resJson({ success: false, message: '请提供钱包地址！' }, 400);
+        }
+
+        // 统一用小写处理，避免大小写不匹配问题
+        const addressLower = address.toLowerCase();
+
+        const user = await DB
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ? OR web3_address = ?')
+          .bind(addressLower, addressLower)
           .first();
 
         if (user) {
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
 
-          const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
+          const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE rowid = ?').bind(user.rowid).first();
           let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
           if (loginInfo?.login_info) {
             try {
@@ -374,13 +597,71 @@ export default {
               updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
             } catch (e) {}
           }
-          await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
+          await DB.prepare('UPDATE user SET login_info = ? WHERE rowid = ?').bind(updatedLoginInfo, user.rowid).run();
 
           const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
 
           return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
         } else {
-          return resJson({ success: false, message: '用户名或密码错误' }, 401);
+          return resJson({ success: true, needRegister: true, address: address, message: '该钱包地址未注册，请完成注册！' });
+        }
+      }
+
+      // ========== 谷歌快捷登录接口 ==========
+      if (path === '/api/google-login' && request.method === 'POST') {
+        const params = await request.json();
+        const { token } = params;
+
+        if (!token) {
+          return resJson({ success: false, message: '请提供谷歌登录token！' }, 400);
+        }
+
+        try {
+          const googleRes = await fetch('https://oauth2.googleapis.com/tokeninfo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `access_token=${token}`
+          });
+
+          if (!googleRes.ok) {
+            return resJson({ success: false, message: '谷歌token验证失败！' }, 401);
+          }
+
+          const googleData = await googleRes.json();
+          const email = googleData.email;
+
+          if (!email) {
+            return resJson({ success: false, message: '无法获取谷歌账号邮箱！' }, 401);
+          }
+
+          const user = await DB
+            .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ?')
+            .bind(email)
+            .first();
+
+          if (user) {
+            const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+
+            const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(email).first();
+            let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+            if (loginInfo?.login_info) {
+              try {
+                const existingInfo = JSON.parse(loginInfo.login_info);
+                existingInfo.unshift(loginInfoEntry);
+                updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
+              } catch (e) {}
+            }
+            await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, email).run();
+
+            const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+
+            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
+          } else {
+            return resJson({ success: true, needRegister: true, email: email, message: '该谷歌账号未注册，请完成注册！' });
+          }
+        } catch (err) {
+          return resJson({ success: false, message: '谷歌登录验证失败：' + err.message }, 500);
         }
       }
 
@@ -515,8 +796,9 @@ export default {
         if (!username || !securityAnswer || !newPassword) return resJson({ success: false, message: '参数不完整' }, 400);
         const user = await DB.prepare('SELECT security_answer FROM user WHERE username = ?').bind(username).first();
         if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
-        if (user.security_answer !== securityAnswer) return resJson({ success: false, message: '密保答案错误' }, 401);
-        await DB.prepare('UPDATE user SET password = ? WHERE username = ?').bind(newPassword, username).run();
+        if (!user.security_answer || !(await verifyPassword(securityAnswer, user.security_answer))) return resJson({ success: false, message: '密保答案错误' }, 401);
+        const hashedNewPassword = await hashPassword(newPassword);
+        await DB.prepare('UPDATE user SET password = ? WHERE username = ?').bind(hashedNewPassword, username).run();
         return resJson({ success: true, message: '密码重置成功' });
       }
 
@@ -845,7 +1127,7 @@ export default {
           
           if (password !== undefined && password !== null && password !== '') {
             updates.push('password = ?');
-            values.push(password);
+            values.push(await hashPassword(password));
           }
           if (balance !== undefined && balance !== null) {
             updates.push('balance = ?');
@@ -897,7 +1179,7 @@ export default {
           }
           if (security_answer !== undefined) {
             updates.push('security_answer = ?');
-            values.push(security_answer);
+            values.push(security_answer ? await hashPassword(security_answer) : '');
           }
           if (auto_rewn !== undefined) {
             updates.push('auto_rewn = ?');
@@ -1004,11 +1286,13 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            // VIP 已过期，重定向到免费节点接口
-            const freeUrl = `/free/clash?username=${encodeURIComponent(user.username)}`;
-            return new Response(null, {
-              status: 307,
-              headers: { 'Location': freeUrl }
+            // VIP 已过期，返回空链接文件
+            return new Response('', {
+              headers: {
+                'Content-Type': 'text/yaml; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Content-Disposition': `attachment; filename="phantom-expired.yaml"`
+              }
             });
           }
           
@@ -1068,11 +1352,13 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            // VIP 已过期，重定向到免费节点接口
-            const freeUrl = `/free/v2ray?username=${encodeURIComponent(user.username)}`;
-            return new Response(null, {
-              status: 307,
-              headers: { 'Location': freeUrl }
+            // VIP 已过期，返回空链接文件
+            return new Response('', {
+              headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Content-Disposition': `attachment; filename="phantom-expired.txt"`
+              }
             });
           }
           
@@ -1805,9 +2091,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/football/bet' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, choice, amount, matchId } = params;
+          const { username, choice, amount, matchId } = params;
 
-          if (!username || !password || !choice || !amount || matchId === undefined) {
+          if (!username || !choice || !amount || matchId === undefined) {
             return resJson({ success: false, message: '参数不完整' }, 400);
           }
           if (!['a', 'draw', 'b'].includes(choice)) {
@@ -1816,9 +2102,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (amount < 1) return resJson({ success: false, message: '下注金额至少1元' }, 400);
 
           // 验证用户
-          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ? AND password = ?')
-            .bind(username, password).first();
-          if (!user) return resJson({ success: false, message: '用户名或密码错误' }, 401);
+          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?')
+            .bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 401);
 
           // 查找指定比赛
           const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
@@ -1851,16 +2137,16 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 世界杯竞猜：获取我的下注记录 ==========
       if (path === '/api/football/history' && request.method === 'POST') {
         try {
-          const { username, password } = await request.json();
-          if (!username || !password) return resJson({ success: false, message: '请先登录' }, 401);
+          const { username, all } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
 
-          const user = await DB.prepare('SELECT rowid FROM user WHERE username = ? AND password = ?')
-            .bind(username, password).first();
-          if (!user) return resJson({ success: false, message: '用户名或密码错误' }, 401);
+          const user = await DB.prepare('SELECT rowid FROM user WHERE username = ?')
+            .bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 401);
 
-          // 管理员查看所有下注记录，普通用户只看自己的
+          // 管理后台显式传 all=true 时查看全部，前台只返回当前用户记录
           let bets;
-          if (username === 'immmor') {
+          if (all && username === 'immmor') {
             bets = await DB.prepare('SELECT * FROM football_bet ORDER BY id DESC LIMIT 200').all();
           } else {
             bets = await DB.prepare('SELECT * FROM football_bet WHERE username = ? ORDER BY id DESC LIMIT 50')
@@ -1888,7 +2174,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/football/settle' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, result, matchId } = params;
+          const { username, result, matchId } = params;
           if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
           if (!['a', 'draw', 'b'].includes(result)) return resJson({ success: false, message: '无效的结果' }, 400);
           if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
@@ -1913,7 +2199,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
 
           for (const bet of pendingBets.results || []) {
             const isWin = bet.choice === result;
-            const payout = isWin ? Math.floor(bet.amount * bet.odds) : 0;
+            const payout = isWin ? parseFloat((bet.amount * bet.odds).toFixed(2)) : 0;
             const newStatus = isWin ? 'win' : 'lose';
 
             await DB.prepare('UPDATE football_bet SET status = ?, payout = ? WHERE id = ?')
@@ -1955,7 +2241,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 世界杯竞猜：管理员重置比赛（新一轮） ==========
       if (path === '/api/football/reset' && request.method === 'POST') {
         try {
-          const { username, password, matchId } = await request.json();
+          const { username, matchId } = await request.json();
           if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
           if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
 
