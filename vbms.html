@@ -725,7 +725,7 @@
                         <div class="table-header">
                             <h3>订单列表</h3>
                             <div style="display: flex; gap: 10px;">
-                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('ordersTable')">固定列设置</button>
+                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('ordersTable')">固定</button>
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
                                 <button class="delete-btn" onclick="deleteAllPendingOrders()">删除待支付</button>
@@ -2614,7 +2614,13 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
             const headers = Array.from(headerRow.querySelectorAll('th'));
             const fixedCols = fixedColumns[tableId] || [];
-
+            const fixedRightCols = fixedColumns[tableId + '_right'] || [];
+            const fixedRightIndices = new Set(fixedRightCols);
+            
+            // 将所有列分为三组：左边固定、中间、右边固定
+            const leftFixed = fixedCols.filter(idx => idx < headers.length && !fixedRightIndices.has(idx));
+            const rightFixed = fixedRightCols.filter(idx => idx < headers.length);
+            
             // 创建设置面板
             const panel = document.createElement('div');
             panel.id = 'fixedColumnsPanel';
@@ -2627,8 +2633,8 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.2);
                 padding: 15px;
                 z-index: 100;
-                min-width: 200px;
-                max-height: 300px;
+                min-width: 250px;
+                max-height: 400px;
                 overflow-y: auto;
                 border: 1px solid #e2e8f0;
             `;
@@ -2636,26 +2642,55 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             panel.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h4 style="margin: 0; color: #4a5568;">固定列设置</h4>
-                    ${fixedCols.length > 0 ? '<button onclick="clearFixedColumns(\'' + tableId + '\')" style="background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 0.85rem;">清除固定</button>' : ''}
+                    <div style="display: flex; gap: 8px;">
+                        ${fixedCols.length > 0 || fixedRightCols.length > 0 ? '<button onclick="clearFixedColumns(\'' + tableId + '\')" style="background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 0.85rem;">清除固定</button>' : ''}
+                    </div>
                 </div>
-                <div style="max-height: 200px; overflow-y: auto;">
-                    ${headers.map((th, index) => {
-                        const text = th.textContent.replace(/[▲▼]/g, '').trim();
-                        const isFixed = fixedCols.includes(index);
-                        return `
-                            <div style="padding: 8px; border-bottom: 1px solid #e2e8f0;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" 
-                                           data-index="${index}"
-                                           ${isFixed ? 'checked' : ''}
-                                           style="margin-right: 8px;">
-                                    ${text}
-                                </label>
-                            </div>
-                        `;
-                    }).join('')}
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1; min-width: 80px;">
+                        <div style="font-size: 0.85rem; color: #667eea; margin-bottom: 8px; text-align: center;">左侧固定</div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${headers.map((th, index) => {
+                                const text = th.textContent.replace(/[▲▼]/g, '').trim();
+                                const isFixed = leftFixed.includes(index);
+                                return `
+                                    <div style="padding: 6px; border-bottom: 1px solid #e2e8f0;">
+                                        <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.85rem;">
+                                            <input type="checkbox" 
+                                                   data-index="${index}"
+                                                   data-side="left"
+                                                   ${isFixed ? 'checked' : ''}
+                                                   style="margin-right: 6px;">
+                                            ${text}
+                                        </label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 80px;">
+                        <div style="font-size: 0.85rem; color: #e53e3e; margin-bottom: 8px; text-align: center;">右侧固定</div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${headers.map((th, index) => {
+                                const text = th.textContent.replace(/[▲▼]/g, '').trim();
+                                const isFixed = rightFixed.includes(index);
+                                return `
+                                    <div style="padding: 6px; border-bottom: 1px solid #e2e8f0;">
+                                        <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.85rem;">
+                                            <input type="checkbox" 
+                                                   data-index="${index}"
+                                                   data-side="right"
+                                                   ${isFixed ? 'checked' : ''}
+                                                   style="margin-right: 6px;">
+                                            ${text}
+                                        </label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
                 </div>
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
                     <button class="add-btn" onclick="saveFixedColumns('${tableId}')">保存</button>
                     <button class="btn" style="background-color: #e53e3e;" onclick="cancelFixedColumns('${tableId}')">取消</button>
                 </div>
@@ -2679,9 +2714,12 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         // 保存固定列设置
         function saveFixedColumns(tableId) {
             const panel = document.getElementById('fixedColumnsPanel');
-            const checkboxes = panel.querySelectorAll('input[type="checkbox"]:checked');
-            const fixedCols = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
-            fixedColumns[tableId] = fixedCols;
+            const leftCheckboxes = panel.querySelectorAll('input[data-side="left"]:checked');
+            const rightCheckboxes = panel.querySelectorAll('input[data-side="right"]:checked');
+            const leftFixed = Array.from(leftCheckboxes).map(cb => parseInt(cb.dataset.index));
+            const rightFixed = Array.from(rightCheckboxes).map(cb => parseInt(cb.dataset.index));
+            fixedColumns[tableId] = leftFixed;
+            fixedColumns[tableId + '_right'] = rightFixed;
 
             // 应用固定列样式
             applyFixedColumns(tableId);
@@ -2698,6 +2736,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         // 清除所有固定列
         function clearFixedColumns(tableId) {
             fixedColumns[tableId] = [];
+            fixedColumns[tableId + '_right'] = [];
             applyFixedColumns(tableId);
             const panel = document.getElementById('fixedColumnsPanel');
             if (panel) panel.remove();
@@ -2709,7 +2748,10 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             if (!table) return;
 
             const headers = Array.from(table.querySelectorAll('thead th'));
-            const fixedCols = fixedColumns[tableId] || [];
+            const leftFixed = fixedColumns[tableId] || [];
+            const rightFixed = fixedColumns[tableId + '_right'] || [];
+            const rightFixedSet = new Set(rightFixed);
+            const totalColumns = headers.length;
 
             // 清除现有的固定列样式
             headers.forEach((th, index) => {
@@ -2722,16 +2764,26 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 th.style.backgroundColor = '';
 
                 // 只有被选中的列才固定
-                if (fixedCols.includes(index)) {
+                if (leftFixed.includes(index)) {
                     // 计算左侧固定列的累积宽度
-                    const leftWidth = fixedCols
-                        .filter(idx => idx < index && fixedCols.includes(idx))
+                    const leftWidth = leftFixed
+                        .filter(idx => idx < index && leftFixed.includes(idx))
                         .reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
                     
                     th.style.position = 'sticky';
                     th.style.left = leftWidth + 'px';
                     th.style.zIndex = '2';
                     th.style.boxShadow = '2px 0 5px rgba(0,0,0,0.05)';
+                    th.style.backgroundColor = '#f7fafc';
+                } else if (rightFixedSet.has(index)) {
+                    // 计算右侧固定列的累积宽度（从右往左）
+                    const rightIndices = rightFixed.filter(idx => idx > index && rightFixedSet.has(idx));
+                    const rightWidth = rightIndices.reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
+                    
+                    th.style.position = 'sticky';
+                    th.style.right = rightWidth + 'px';
+                    th.style.zIndex = '2';
+                    th.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.05)';
                     th.style.backgroundColor = '#f7fafc';
                 }
             });
@@ -2750,16 +2802,26 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     cell.style.backgroundColor = '';
 
                     // 只有被选中的列才固定
-                    if (fixedCols.includes(index)) {
+                    if (leftFixed.includes(index)) {
                         // 计算左侧固定列的累积宽度
-                        const leftWidth = fixedCols
-                            .filter(idx => idx < index && fixedCols.includes(idx))
+                        const leftWidth = leftFixed
+                            .filter(idx => idx < index && leftFixed.includes(idx))
                             .reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
                         
                         cell.style.position = 'sticky';
                         cell.style.left = leftWidth + 'px';
                         cell.style.zIndex = '2';
                         cell.style.boxShadow = '2px 0 5px rgba(0,0,0,0.05)';
+                        cell.style.backgroundColor = '#f7fafc';
+                    } else if (rightFixedSet.has(index)) {
+                        // 计算右侧固定列的累积宽度（从右往左）
+                        const rightIndices = rightFixed.filter(idx => idx > index && rightFixedSet.has(idx));
+                        const rightWidth = rightIndices.reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
+                        
+                        cell.style.position = 'sticky';
+                        cell.style.right = rightWidth + 'px';
+                        cell.style.zIndex = '2';
+                        cell.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.05)';
                         cell.style.backgroundColor = '#f7fafc';
                     }
                 });
