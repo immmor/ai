@@ -495,194 +495,6 @@
             z-index: 3;
         }
 
-        /* 固定列样式 - 用户管理表格 */
-        #usersTable {
-            position: relative;
-        }
-
-        #usersTable th:first-child,
-        #usersTable td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 60px;
-            width: 60px;
-        }
-
-        #usersTable th:nth-child(2),
-        #usersTable td:nth-child(2) {
-            position: sticky;
-            left: 60px; /* ID列的宽度 */
-            z-index: 2;
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 120px;
-            width: 120px;
-        }
-
-        #usersTable th:last-child,
-        #usersTable td:last-child {
-            position: sticky;
-            right: 0;
-            z-index: 2;
-            background-color: #f7fafc;
-            border-left: 1px solid #e2e8f0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 200px;
-            width: 200px;
-        }
-
-        #usersTable tbody tr:hover {
-            background-color: #f7fafc;
-        }
-
-        #usersTable tbody tr:hover td:first-child,
-        #usersTable tbody tr:hover td:nth-child(2),
-        #usersTable tbody tr:hover td:last-child {
-            background-color: #edf2f7;
-        }
-
-        /* 订单管理表格固定列 */
-        #ordersTable {
-            position: relative;
-        }
-
-        #ordersTable th:first-child,
-        #ordersTable td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 60px;
-            width: 60px;
-        }
-
-        #ordersTable th:nth-child(2),
-        #ordersTable td:nth-child(2) {
-            position: sticky;
-            left: 60px; /* ID列的宽度 */
-            z-index: 2;
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 150px;
-            width: 150px;
-        }
-
-        #ordersTable th:nth-child(3),
-        #ordersTable td:nth-child(3) {
-            position: sticky;
-            left: 210px; /* ID + 订单号列的宽度 */
-            z-index: 2;
-            background-color: #f7fafc;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 120px;
-            width: 120px;
-        }
-
-        #ordersTable th:last-child,
-        #ordersTable td:last-child {
-            position: sticky;
-            right: 0;
-            z-index: 2;
-            background-color: #f7fafc;
-            border-left: 1px solid #e2e8f0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 250px;
-            width: 250px;
-        }
-
-        #ordersTable tbody tr:hover {
-            background-color: #f7fafc;
-        }
-
-        #ordersTable tbody tr:hover td:first-child,
-        #ordersTable tbody tr:hover td:nth-child(2),
-        #ordersTable tbody tr:hover td:nth-child(3),
-        #ordersTable tbody tr:hover td:last-child {
-            background-color: #edf2f7;
-        }
-
-        /* 其他表格的固定列 */
-        #trafficTable th:first-child,
-        #trafficTable td:first-child,
-        #trafficTable th:last-child,
-        #trafficTable td:last-child {
-            position: sticky;
-            z-index: 2;
-            background-color: #f7fafc;
-        }
-
-        #trafficTable th:first-child,
-        #trafficTable td:first-child {
-            left: 0;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 120px;
-            width: 120px;
-        }
-
-        #trafficTable th:last-child,
-        #trafficTable td:last-child {
-            right: 0;
-            border-left: 1px solid #e2e8f0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 100px;
-            width: 100px;
-        }
-
-        #footballTable th:first-child,
-        #footballTable td:first-child,
-        #footballTable th:last-child,
-        #footballTable td:last-child {
-            position: sticky;
-            z-index: 2;
-            background-color: #f7fafc;
-        }
-
-        #footballTable th:first-child,
-        #footballTable td:first-child {
-            left: 0;
-            border-right: 1px solid #e2e8f0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 60px;
-            width: 60px;
-        }
-
-        #footballTable th:last-child,
-        #footballTable td:last-child {
-            right: 0;
-            border-left: 1px solid #e2e8f0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-            min-width: 150px;
-            width: 150px;
-        }
-
-        #trafficTable tbody tr:hover {
-            background-color: #f7fafc;
-        }
-
-        #trafficTable tbody tr:hover td:first-child,
-        #trafficTable tbody tr:hover td:last-child {
-            background-color: #edf2f7;
-        }
-
-        #footballTable tbody tr:hover {
-            background-color: #f7fafc;
-        }
-
-        #footballTable tbody tr:hover td:first-child,
-        #footballTable tbody tr:hover td:last-child {
-            background-color: #edf2f7;
-        }
-
         /* 表格头部在小屏幕上的响应式处理 */
         @media (max-width: 768px) {
             .table-header {
@@ -866,6 +678,7 @@
                         <div class="table-header">
                             <h3>用户列表</h3>
                             <div style="display: flex; gap: 10px; align-items: center;">
+                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('usersTable')">固定列设置</button>
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
                                 <span id="searchResultInfo" style="color: #666;"></span>
@@ -912,6 +725,7 @@
                         <div class="table-header">
                             <h3>订单列表</h3>
                             <div style="display: flex; gap: 10px;">
+                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('ordersTable')">固定列设置</button>
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
                                 <button class="delete-btn" onclick="deleteAllPendingOrders()">删除待支付</button>
@@ -2779,6 +2593,179 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         // 初始化页面
+        // 固定列设置
+        let fixedColumns = {
+            usersTable: [],
+            ordersTable: []
+        };
+
+        // 切换固定列设置面板
+        function toggleFixedColumns(tableId) {
+            // 创建固定列设置面板
+            let settingsPanel = document.getElementById('fixedColumnsPanel');
+            if (settingsPanel) {
+                settingsPanel.remove();
+                return;
+            }
+
+            const table = document.getElementById(tableId);
+            const headerRow = table.querySelector('thead tr');
+            if (!headerRow) return;
+
+            const headers = Array.from(headerRow.querySelectorAll('th'));
+            const fixedCols = fixedColumns[tableId] || [];
+
+            // 创建设置面板
+            const panel = document.createElement('div');
+            panel.id = 'fixedColumnsPanel';
+            panel.style.cssText = `
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                padding: 15px;
+                z-index: 100;
+                min-width: 200px;
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #e2e8f0;
+            `;
+
+            panel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #4a5568;">固定列设置</h4>
+                    ${fixedCols.length > 0 ? '<button onclick="clearFixedColumns(\'' + tableId + '\')" style="background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 0.85rem;">清除固定</button>' : ''}
+                </div>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    ${headers.map((th, index) => {
+                        const text = th.textContent.replace(/[▲▼]/g, '').trim();
+                        const isFixed = fixedCols.includes(index);
+                        return `
+                            <div style="padding: 8px; border-bottom: 1px solid #e2e8f0;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           data-index="${index}"
+                                           ${isFixed ? 'checked' : ''}
+                                           style="margin-right: 8px;">
+                                    ${text}
+                                </label>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="add-btn" onclick="saveFixedColumns('${tableId}')">保存</button>
+                    <button class="btn" style="background-color: #e53e3e;" onclick="cancelFixedColumns('${tableId}')">取消</button>
+                </div>
+            `;
+
+            // 将面板添加到表头
+            const tableHeader = table.parentElement.querySelector('.table-header');
+            tableHeader.appendChild(panel);
+
+            // 点击面板外部关闭
+            setTimeout(() => {
+                document.addEventListener('click', function closePanel(e) {
+                    if (!panel.contains(e.target) && e.target !== tableHeader && !tableHeader.contains(e.target)) {
+                        panel.remove();
+                        document.removeEventListener('click', closePanel);
+                    }
+                });
+            }, 10);
+        }
+
+        // 保存固定列设置
+        function saveFixedColumns(tableId) {
+            const panel = document.getElementById('fixedColumnsPanel');
+            const checkboxes = panel.querySelectorAll('input[type="checkbox"]:checked');
+            const fixedCols = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
+            fixedColumns[tableId] = fixedCols;
+
+            // 应用固定列样式
+            applyFixedColumns(tableId);
+
+            panel.remove();
+        }
+
+        // 取消固定列设置
+        function cancelFixedColumns(tableId) {
+            const panel = document.getElementById('fixedColumnsPanel');
+            panel.remove();
+        }
+
+        // 清除所有固定列
+        function clearFixedColumns(tableId) {
+            fixedColumns[tableId] = [];
+            applyFixedColumns(tableId);
+            const panel = document.getElementById('fixedColumnsPanel');
+            if (panel) panel.remove();
+        }
+
+        // 应用固定列样式
+        function applyFixedColumns(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            const fixedCols = fixedColumns[tableId] || [];
+
+            // 清除现有的固定列样式
+            headers.forEach((th, index) => {
+                // 重置为默认样式
+                th.style.position = '';
+                th.style.left = '';
+                th.style.right = '';
+                th.style.zIndex = '';
+                th.style.boxShadow = '';
+                th.style.backgroundColor = '';
+
+                // 只有被选中的列才固定
+                if (fixedCols.includes(index)) {
+                    // 计算左侧固定列的累积宽度
+                    const leftWidth = fixedCols
+                        .filter(idx => idx < index && fixedCols.includes(idx))
+                        .reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
+                    
+                    th.style.position = 'sticky';
+                    th.style.left = leftWidth + 'px';
+                    th.style.zIndex = '2';
+                    th.style.boxShadow = '2px 0 5px rgba(0,0,0,0.05)';
+                    th.style.backgroundColor = '#f7fafc';
+                }
+            });
+
+            // 对于tbody行也应用固定列样式
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                cells.forEach((cell, index) => {
+                    // 重置为默认样式
+                    cell.style.position = '';
+                    cell.style.left = '';
+                    cell.style.right = '';
+                    cell.style.zIndex = '';
+                    cell.style.boxShadow = '';
+                    cell.style.backgroundColor = '';
+
+                    // 只有被选中的列才固定
+                    if (fixedCols.includes(index)) {
+                        // 计算左侧固定列的累积宽度
+                        const leftWidth = fixedCols
+                            .filter(idx => idx < index && fixedCols.includes(idx))
+                            .reduce((sum, idx) => sum + (headers[idx]?.offsetWidth || 0), 0);
+                        
+                        cell.style.position = 'sticky';
+                        cell.style.left = leftWidth + 'px';
+                        cell.style.zIndex = '2';
+                        cell.style.boxShadow = '2px 0 5px rgba(0,0,0,0.05)';
+                        cell.style.backgroundColor = '#f7fafc';
+                    }
+                });
+            });
+        }
+
         window.onload = function() {
             // 检查是否已登录
             checkLoginStatus();
