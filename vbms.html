@@ -125,28 +125,16 @@
                 text-align: left;
                 padding: 0.75rem 1rem;
             }
-            .sidebar-header h2 {
-                font-size: 1rem;
-                margin: 0;
-            }
-            .sidebar-header .logout-btn {
-                margin-left: 0.5rem;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.85rem;
-                background-color: #e53e3e;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            .sidebar-header .logout-btn:hover {
-                background-color: #c53030;
-            }
         }
 
         .sidebar-header h2 {
             font-size: 1.25rem;
-            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-header h2 {
+                font-size: 1rem;
+            }
         }
 
         .sidebar-menu {
@@ -221,9 +209,14 @@
             background-color: #c53030;
         }
 
-        /* 小屏幕隐藏顶部的退出按钮 */
         @media (max-width: 768px) {
-            .top-nav .top-logout {
+            .top-nav-logout {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar-logout {
                 display: none;
             }
         }
@@ -651,7 +644,7 @@
         <div class="content">
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
-                <button class="logout-btn top-logout" onclick="logout()">退出登录</button>
+                <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
                 <h1 id="pageTitle">仪表盘</h1>
             </nav>
 
