@@ -1,29 +1,4 @@
 // _worker.js
-
-// 密码加密工具函数（SHA-256 + 随机 Salt）
-async function hashPassword(password) {
-  const salt = crypto.getRandomValues(new Uint8Array(16)).reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${salt}:${hashHex}`;
-}
-
-async function verifyPassword(password, storedHash) {
-  if (!storedHash || !storedHash.includes(':')) {
-    return password === storedHash;
-  }
-  const [salt, hash] = storedHash.split(':');
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hash === hashHex;
-}
-
 export default {
   // fetch 事件是核心，拦截所有进入 Pages 的请求
   async fetch(request, env, ctx) {
@@ -169,11 +144,11 @@ export default {
 
         try {
           const user = await env.DB
-            .prepare('SELECT rowid, username, balance, not_trusted, vorders, password FROM user WHERE username = ?')
-            .bind(username)
+            .prepare('SELECT rowid, username, balance, not_trusted, vorders FROM user WHERE username = ? AND password = ?')
+            .bind(username, password)
             .first();
 
-          if (user && await verifyPassword(password, user.password)) {
+          if (user) {
             return new Response(JSON.stringify({ 
               success: true, 
               message: '登录成功！', 
