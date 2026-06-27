@@ -156,7 +156,7 @@
         .top-nav {
             background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
+            padding: 0.75rem 1.5rem;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
@@ -165,7 +165,7 @@
         }
 
         .top-nav h1 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             color: #4a5568;
         }
 
@@ -459,14 +459,18 @@
             }
 
             .top-nav {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
                 gap: 1rem;
             }
 
-            .user-info {
-                width: 100%;
-                justify-content: space-between;
+            .top-nav h1 {
+                display: none;
+            }
+
+            .logout-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.875rem;
             }
 
             /* 表格响应式处理 */
@@ -611,11 +615,8 @@
         <div class="content">
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
+                <button class="logout-btn" onclick="logout()">退出登录</button>
                 <h1 id="pageTitle">仪表盘</h1>
-                <div class="user-info">
-                    <span id="currentUser">管理员</span>
-                    <button class="logout-btn" onclick="logout()">退出登录</button>
-                </div>
             </nav>
 
             <!-- 页面内容 -->
@@ -678,7 +679,7 @@
                         <div class="table-header">
                             <h3>用户列表</h3>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('usersTable')">固定列设置</button>
+                                <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('usersTable')">固定</button>
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
                                 <span id="searchResultInfo" style="color: #666;"></span>
@@ -963,6 +964,7 @@
                             <div style="display: flex; gap: 10px;">
                                 <button class="add-btn" onclick="openMatchModal()">+ 新增比赛</button>
                                 <button class="add-btn" onclick="loadFootballMatches()" style="background-color: #667eea;">刷新</button>
+                                <button class="add-btn" onclick="toggleFixedColumns('footballTable')" style="background-color: #667eea;">固定列设置</button>
                             </div>
                         </div>
                         <table id="footballTable">
@@ -2596,7 +2598,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         // 固定列设置
         let fixedColumns = {
             usersTable: [],
-            ordersTable: []
+            usersTable_right: [],
+            ordersTable: [],
+            ordersTable_right: [],
+            footballTable: [],
+            footballTable_right: []
         };
 
         // 切换固定列设置面板
