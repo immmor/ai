@@ -690,36 +690,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
-        .card-circuit {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            pointer-events: none;
-            opacity: 0.1;
-        }
-
-        .card-circuit::before {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 0;
-            width: 30%;
-            height: 1px;
-            background: var(--neon-blue);
-        }
-
-        .card-circuit::after {
-            content: '';
-            position: absolute;
-            bottom: 20%;
-            right: 0;
-            width: 40%;
-            height: 1px;
-            background: var(--neon-pink);
-        }
     </style>
 </head>
 <body>
@@ -909,7 +879,6 @@
                     <div class="card-expiry-date" id="card-expiry">**/**</div>
                 </div>
             </div>
-            <div class="card-circuit"></div>
         </div>
     </div>
 
