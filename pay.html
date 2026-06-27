@@ -486,6 +486,240 @@
         .dropdown-item:hover {
             background: rgba(255, 71, 87, 0.1);
         }
+
+        /* 卡片查看按钮 */
+        .card-view-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 0, 255, 0.1);
+            border: none;
+            color: var(--neon-pink);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-view-btn:hover {
+            background: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* 卡片模态框 */
+        .card-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .card-modal.show {
+            display: flex;
+        }
+
+        .cyber-card {
+            width: 350px;
+            max-width: 90vw;
+            height: 250px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 30px rgba(0, 242, 255, 0.3),
+                0 0 60px rgba(255, 0, 255, 0.2),
+                inset 0 0 60px rgba(0, 242, 255, 0.1),
+                0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            animation: cardPulse 3s ease-in-out infinite;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 全息光泽效果 */
+        .cyber-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.1) 25%,
+                rgba(0, 242, 255, 0.15) 50%,
+                rgba(255, 0, 255, 0.15) 75%,
+                transparent 100%
+            );
+            animation: holographic 5s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes holographic {
+            0% { transform: translateX(-33%); }
+            100% { transform: translateX(33%); }
+        }
+
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-green), var(--neon-blue));
+            background-size: 400% 400%;
+            border-radius: 22px;
+            z-index: -1;
+            animation: borderGlow 8s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes cardPulse {
+            0%, 100% {
+                box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2),
+                            inset 0 0 60px rgba(0, 242, 255, 0.1), 0 20px 40px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(0, 242, 255, 0.5), 0 0 80px rgba(255, 0, 255, 0.4),
+                            inset 0 0 80px rgba(0, 242, 255, 0.15), 0 25px 50px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+
+
+        .card-number {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            color: #fff;
+            letter-spacing: 3px;
+            margin-top: 60px;
+            margin-bottom: 25px;
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.5),
+                0 0 20px rgba(0, 242, 255, 0.3),
+                0 2px 3px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .card-number span {
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-holder {
+            flex: 1;
+        }
+
+        .card-holder-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .card-holder-name {
+            font-size: 16px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-expiry {
+            text-align: right;
+        }
+
+        .card-expiry-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .card-expiry-date {
+            font-size: 16px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-logo {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            width: 50px;
+            height: 45px;
+        }
+
+        .card-text {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-circuit {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            pointer-events: none;
+            opacity: 0.1;
+        }
+
+        .card-circuit::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 0;
+            width: 30%;
+            height: 1px;
+            background: var(--neon-blue);
+        }
+
+        .card-circuit::after {
+            content: '';
+            position: absolute;
+            bottom: 20%;
+            right: 0;
+            width: 40%;
+            height: 1px;
+            background: var(--neon-pink);
+        }
     </style>
 </head>
 <body>
@@ -565,9 +799,14 @@
         
         <!-- 支付界面 -->
         <div id="pay-interface">
-            <div class="balance-display">
-                <div class="balance-label" data-i18n="balance.available">可用余额</div>
-                <div class="balance-val">0.00</div>
+            <div style="display: flex; align-items: center; margin-bottom: 30px; background: rgba(255, 0, 255, 0.05); border-left: 4px solid var(--neon-pink); border-radius: 5px;">
+                <div class="balance-display" style="flex: 1; margin-bottom: 0; border-left: none; padding-left: 15px; padding-right: 20px; background: transparent;">
+                    <div class="balance-label" data-i18n="balance.available">可用余额</div>
+                    <div class="balance-val">0.00</div>
+                </div>
+                <button class="card-view-btn" onclick="showCardModal()" style="background: transparent; border-radius: 0;">
+                    <i class="fas fa-credit-card"></i>
+                </button>
             </div>
 
             <div class="amount-grid">
@@ -631,6 +870,46 @@
                 <span id="page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
                 <button id="next-page" class="page-btn" onclick="changePage(1)" disabled data-i18n="orders.nextPage">下一页</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 卡片模态框 -->
+    <div id="card-modal" class="card-modal" onclick="closeCardModal()">
+        <div class="cyber-card" onclick="event.stopPropagation()">
+            <div class="card-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="100%" height="100%">
+                  <path 
+                    d="M 110,20 
+                       C 100,50 80,90 50,140
+                       C 20,180 35,200 70,190
+                       C 110,180 160,175 155,210
+                       C 150,245 120,250 100,280" 
+                    fill="none" 
+                    stroke="white" 
+                    stroke-width="12" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round"
+                  />
+                </svg>
+            </div>
+            <div class="card-text">immmor</div>
+            <div class="card-number">
+                <span>5266</span>
+                <span>8899</span>
+                <span>3344</span>
+                <span id="card-last4">7788</span>
+            </div>
+            <div class="card-info">
+                <div class="card-holder">
+                    <div class="card-holder-label">Card Holder</div>
+                    <div class="card-holder-name" id="card-holder-name">USER</div>
+                </div>
+                <div class="card-expiry">
+                    <div class="card-expiry-label">Valid Thru</div>
+                    <div class="card-expiry-date" id="card-expiry">**/**</div>
+                </div>
+            </div>
+            <div class="card-circuit"></div>
         </div>
     </div>
 
@@ -1871,6 +2150,45 @@
                 loadOrders();
             }
         }, 30000);
+
+        // 显示卡片模态框
+        function showCardModal() {
+            const modal = document.getElementById('card-modal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            // 动态生成卡片信息
+            generateCardInfo();
+        }
+
+        // 关闭卡片模态框
+        function closeCardModal() {
+            const modal = document.getElementById('card-modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // 生成卡片信息
+        function generateCardInfo() {
+            // 生成随机卡号后四位
+            const last4 = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('card-last4').textContent = last4;
+
+            // 获取用户名
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            let username = currentUser.username || 'USER';
+            // 如果是邮箱，只取@前面的部分
+            if (username.includes('@')) {
+                username = username.split('@')[0];
+            }
+            document.getElementById('card-holder-name').textContent = username.toUpperCase();
+
+            // 生成有效期（当前月份 + 3-5年）
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear() + Math.floor(Math.random() * 3) + 3).slice(-2);
+            document.getElementById('card-expiry').textContent = `${month}/${year}`;
+        }
     </script>
 
 </body>
