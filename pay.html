@@ -534,7 +534,7 @@
             height: 250px;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             border-radius: 20px;
-            padding: 30px;
+            padding: 20px 30px;
             position: relative;
             overflow: hidden;
             box-shadow:
@@ -546,6 +546,10 @@
             animation: cardPulse 3s ease-in-out infinite;
             box-sizing: border-box;
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
         }
 
         /* 全息光泽效果 */
@@ -604,35 +608,50 @@
             }
         }
 
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .card-section-top {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .card-number {
             font-family: 'Courier New', monospace;
             font-size: 24px;
             color: #fff;
             letter-spacing: 3px;
-            margin-top: 60px;
-            margin-bottom: 25px;
             text-shadow:
                 0 0 10px rgba(255, 255, 255, 0.5),
                 0 0 20px rgba(0, 242, 255, 0.3),
                 0 2px 3px rgba(0, 0, 0, 0.5);
             display: flex;
-            justify-content: space-between;
-            position: relative;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
         }
 
         .card-number span {
             display: inline-block;
             min-width: 60px;
+            text-align: center;
         }
 
         .card-info {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            width: 100%;
         }
 
         .card-holder {
-            flex: 1;
+            text-align: left;
         }
 
         .card-holder-label {
@@ -644,14 +663,28 @@
         }
 
         .card-holder-name {
-            font-size: 16px;
+            font-size: 14px;
             color: #fff;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
+        .card-logo {
+            width: 50px;
+            height: 45px;
+        }
+
+        .card-text {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .card-expiry {
-            text-align: right;
+            text-align: center;
         }
 
         .card-expiry-label {
@@ -663,29 +696,9 @@
         }
 
         .card-expiry-date {
-            font-size: 16px;
+            font-size: 18px;
             color: #fff;
             font-family: 'Courier New', monospace;
-        }
-
-        .card-logo {
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            width: 50px;
-            height: 45px;
-        }
-
-        .card-text {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 28px;
-            font-weight: bold;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
     </style>
 </head>
@@ -843,37 +856,43 @@
     <!-- 卡片模态框 -->
     <div id="card-modal" class="card-modal" onclick="closeCardModal()">
         <div class="cyber-card" onclick="event.stopPropagation()">
-            <div class="card-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="100%" height="100%">
-                  <path 
-                    d="M 110,20 
-                       C 100,50 80,90 50,140
-                       C 20,180 35,200 70,190
-                       C 110,180 160,175 155,210
-                       C 150,245 120,250 100,280" 
-                    fill="none" 
-                    stroke="white" 
-                    stroke-width="12" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round"
-                  />
-                </svg>
-            </div>
-            <div class="card-text">immmor</div>
-            <div class="card-number">
-                <span>5266</span>
-                <span>8899</span>
-                <span>3344</span>
-                <span id="card-last4">7788</span>
-            </div>
-            <div class="card-info">
-                <div class="card-holder">
-                    <div class="card-holder-label">Card Holder</div>
-                    <div class="card-holder-name" id="card-holder-name">USER</div>
+            <div class="card-section card-section-top">
+                <div class="card-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="100%" height="100%">
+                      <path 
+                        d="M 110,20 
+                           C 100,50 80,90 50,140
+                           C 20,180 35,200 70,190
+                           C 110,180 160,175 155,210
+                           C 150,245 120,250 100,280" 
+                        fill="none" 
+                        stroke="white" 
+                        stroke-width="12" 
+                        stroke-linecap="round" 
+                        stroke-linejoin="round"
+                      />
+                    </svg>
                 </div>
-                <div class="card-expiry">
-                    <div class="card-expiry-label">Valid Thru</div>
-                    <div class="card-expiry-date" id="card-expiry">**/**</div>
+                <div class="card-text">immmor</div>
+            </div>
+            <div class="card-section">
+                <div class="card-number">
+                    <span>5266</span>
+                    <span>8899</span>
+                    <span>3344</span>
+                    <span id="card-last4">7788</span>
+                </div>
+            </div>
+            <div class="card-section">
+                <div class="card-info">
+                    <div class="card-holder">
+                        <div class="card-holder-label">Card Holder</div>
+                        <div class="card-holder-name" id="card-holder-name">USER</div>
+                    </div>
+                    <div class="card-expiry">
+                        <div class="card-expiry-label">Valid Thru</div>
+                        <div class="card-expiry-date" id="card-expiry">**/**</div>
+                    </div>
                 </div>
             </div>
         </div>
