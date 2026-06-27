@@ -433,17 +433,28 @@
                 z-index: 100;
             }
 
+            .sidebar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 1rem;
+            }
+
+            .sidebar-header h2 {
+                font-size: 1rem;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
             .main-container {
                 flex-direction: column;
             }
 
             .page-content {
                 padding: 0;
-            }
-
-            .sidebar-menu {
-                display: flex;
-                overflow-x: auto;
             }
 
             .menu-item {
@@ -2697,8 +2708,8 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     </div>
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="add-btn" onclick="saveFixedColumns('${tableId}')">保存</button>
-                    <button class="btn" style="background-color: #e53e3e;" onclick="cancelFixedColumns('${tableId}')">取消</button>
+                    <button class="add-btn" onclick="saveFixedColumns('${tableId}')" style="width: 80px;">保存</button>
+                    <button class="add-btn" onclick="cancelFixedColumns('${tableId}')" style="width: 80px; background-color: #e53e3e;">取消</button>
                 </div>
             `;
 
