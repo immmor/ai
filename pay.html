@@ -1216,8 +1216,8 @@
             progressBar.style.width = '0%';
             loadingText.textContent = messages[0];
 
-            // 等待动画完整走完
-            const animationDone = new Promise(resolve => {
+            // 开启动画（不等待，立即开始）
+            const animationPromise = new Promise(resolve => {
                 let progress = 0;
                 let msgIdx = 0;
 
@@ -1242,10 +1242,10 @@
                 updateLoading();
             });
 
-            // API 请求与动画并行
+            // API 请求（不等待，立即开始）
             let apiResult = null;
             let apiError = null;
-            const apiDone = (async () => {
+            const apiPromise = (async () => {
                 try {
                     const data = await (await fetch('https://api.immmor.com/api/login', {
                         method: 'POST',
@@ -1258,10 +1258,17 @@
                 }
             })();
 
-            // 等待动画和 API 都完成
-            await Promise.all([animationDone, apiDone]);
+            // 动画和API同时开始执行
+            animationPromise;
+            apiPromise;
 
-            // 动画走完后，根据结果处理
+            // 先等待动画完成
+            await animationPromise;
+
+            // 动画完成后，继续等待API完成（如果还没完成的话）
+            await apiPromise;
+
+            // 根据结果处理
             if (apiResult && apiResult.success) {
                 await new Promise(r => setTimeout(r, 600));
                 localStorage.setItem('currentUser', JSON.stringify(apiResult.userInfo));
