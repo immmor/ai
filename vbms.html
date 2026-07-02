@@ -1024,7 +1024,7 @@
                     <!-- 下注记录查看 -->
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
-                            <h3>下注记录</h3>
+                            <h3>足球下注记录</h3>
                             <select id="fbBetFilterMatch" onchange="loadFootballBets()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <option value="">全部比赛</option>
                             </select>
@@ -1034,6 +1034,69 @@
                                 <tr><th>用户</th><th>比赛</th><th>选择</th><th>金额</th><th>赔率</th><th>状态</th><th>派奖</th><th>时间</th></tr>
                             </thead>
                             <tbody id="footballBetBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 幸运转盘记录 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>幸运转盘记录</h3>
+                            <button class="add-btn" onclick="loadWheelBets()" style="background-color: #667eea;">刷新</button>
+                        </div>
+                        <table id="wheelTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortWheelBets('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortWheelBets('username')" style="cursor:pointer;">用户 <span class="sort-indicator" data-col="username"></span></th>
+                                    <th onclick="sortWheelBets('cost')" style="cursor:pointer;">花费 <span class="sort-indicator" data-col="cost"></span></th>
+                                    <th onclick="sortWheelBets('prize')" style="cursor:pointer;">中奖金额 <span class="sort-indicator" data-col="prize"></span></th>
+                                    <th onclick="sortWheelBets('result')" style="cursor:pointer;">结果 <span class="sort-indicator" data-col="result"></span></th>
+                                    <th onclick="sortWheelBets('created_at')" style="cursor:pointer;">时间 <span class="sort-indicator" data-col="created_at"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="wheelBetBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 老虎机记录 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>老虎机记录</h3>
+                            <button class="add-btn" onclick="loadSlotBets()" style="background-color: #667eea;">刷新</button>
+                        </div>
+                        <table id="slotTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortSlotBets('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortSlotBets('username')" style="cursor:pointer;">用户 <span class="sort-indicator" data-col="username"></span></th>
+                                    <th onclick="sortSlotBets('cost')" style="cursor:pointer;">花费 <span class="sort-indicator" data-col="cost"></span></th>
+                                    <th onclick="sortSlotBets('prize')" style="cursor:pointer;">中奖金额 <span class="sort-indicator" data-col="prize"></span></th>
+                                    <th onclick="sortSlotBets('result')" style="cursor:pointer;">结果 <span class="sort-indicator" data-col="result"></span></th>
+                                    <th onclick="sortSlotBets('created_at')" style="cursor:pointer;">时间 <span class="sort-indicator" data-col="created_at"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="slotBetBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 刮刮乐记录 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>刮刮乐记录</h3>
+                            <button class="add-btn" onclick="loadScratchBets()" style="background-color: #667eea;">刷新</button>
+                        </div>
+                        <table id="scratchTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortScratchBets('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortScratchBets('username')" style="cursor:pointer;">用户 <span class="sort-indicator" data-col="username"></span></th>
+                                    <th onclick="sortScratchBets('cost')" style="cursor:pointer;">花费 <span class="sort-indicator" data-col="cost"></span></th>
+                                    <th onclick="sortScratchBets('prize')" style="cursor:pointer;">中奖金额 <span class="sort-indicator" data-col="prize"></span></th>
+                                    <th onclick="sortScratchBets('result')" style="cursor:pointer;">结果 <span class="sort-indicator" data-col="result"></span></th>
+                                    <th onclick="sortScratchBets('created_at')" style="cursor:pointer;">时间 <span class="sort-indicator" data-col="created_at"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="scratchBetBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1468,9 +1531,12 @@
             } else if (pageName === 'messages') {
                 // 消息管理页面不需要加载数据
             } else if (pageName === 'football') {
-                await loadFootballMatches();
-                await loadFootballBets();
-            }
+                    await loadFootballMatches();
+                    await loadFootballBets();
+                    await loadWheelBets();
+                    await loadSlotBets();
+                    await loadScratchBets();
+                }
         }
 
         async function loadPricePlan() {
@@ -2621,6 +2687,212 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">暂无下注记录</td></tr>';
                 }
             } catch (e) { console.error('加载下注记录失败:', e); }
+        }
+
+        // ==================== 游戏记录管理 ====================
+
+        let wheelBetsData = [];
+        let wheelSortCol = '';
+        let wheelSortDir = 'asc';
+
+        let slotBetsData = [];
+        let slotSortCol = '';
+        let slotSortDir = 'asc';
+
+        let scratchBetsData = [];
+        let scratchSortCol = '';
+        let scratchSortDir = 'asc';
+
+        async function loadWheelBets() {
+            try {
+                const res = await newApiRequest('/api/game/history', 'POST', {
+                    username: currentUserInfo?.username || '',
+                    gameType: 'wheel',
+                    all: true
+                });
+                const tbody = document.getElementById('wheelBetBody');
+                if (res.success && res.history && res.history.length) {
+                    wheelBetsData = res.history;
+                    renderWheelBets();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无幸运转盘记录</td></tr>';
+                    wheelBetsData = [];
+                }
+            } catch (e) { console.error('加载幸运转盘记录失败:', e); }
+        }
+
+        function sortWheelBets(col) {
+            if (wheelSortCol === col) {
+                wheelSortDir = wheelSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                wheelSortCol = col;
+                wheelSortDir = 'asc';
+            }
+            document.querySelectorAll('#wheelTable .sort-indicator').forEach(el => el.className = 'sort-indicator');
+            const indicator = document.querySelector(`#wheelTable .sort-indicator[data-col="${col}"]`);
+            if (indicator) indicator.classList.add(wheelSortDir);
+            renderWheelBets();
+        }
+
+        function renderWheelBets() {
+            const tbody = document.getElementById('wheelBetBody');
+            if (!wheelBetsData.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无幸运转盘记录</td></tr>';
+                return;
+            }
+            const sorted = [...wheelBetsData].sort((a, b) => {
+                let valA = a[wheelSortCol] || '';
+                let valB = b[wheelSortCol] || '';
+                if (['cost', 'prize', 'id'].includes(wheelSortCol)) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return wheelSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                if (wheelSortCol === 'created_at') {
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                    return wheelSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                return wheelSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+            });
+            tbody.innerHTML = sorted.map(b => `
+                <tr>
+                    <td>${b.id}</td>
+                    <td>${b.username}</td>
+                    <td>¥${b.cost}</td>
+                    <td>${b.prize > 0 ? '<span style="color:#48bb78;">¥' + b.prize + '</span>' : '<span style="color:#e53e3e;">¥0</span>'}</td>
+                    <td>${b.result || '-'}</td>
+                    <td>${b.created_at || ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadSlotBets() {
+            try {
+                const res = await newApiRequest('/api/game/history', 'POST', {
+                    username: currentUserInfo?.username || '',
+                    gameType: 'slot',
+                    all: true
+                });
+                const tbody = document.getElementById('slotBetBody');
+                if (res.success && res.history && res.history.length) {
+                    slotBetsData = res.history;
+                    renderSlotBets();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无老虎机记录</td></tr>';
+                    slotBetsData = [];
+                }
+            } catch (e) { console.error('加载老虎机记录失败:', e); }
+        }
+
+        function sortSlotBets(col) {
+            if (slotSortCol === col) {
+                slotSortDir = slotSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                slotSortCol = col;
+                slotSortDir = 'asc';
+            }
+            document.querySelectorAll('#slotTable .sort-indicator').forEach(el => el.className = 'sort-indicator');
+            const indicator = document.querySelector(`#slotTable .sort-indicator[data-col="${col}"]`);
+            if (indicator) indicator.classList.add(slotSortDir);
+            renderSlotBets();
+        }
+
+        function renderSlotBets() {
+            const tbody = document.getElementById('slotBetBody');
+            if (!slotBetsData.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无老虎机记录</td></tr>';
+                return;
+            }
+            const sorted = [...slotBetsData].sort((a, b) => {
+                let valA = a[slotSortCol] || '';
+                let valB = b[slotSortCol] || '';
+                if (['cost', 'prize', 'id'].includes(slotSortCol)) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return slotSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                if (slotSortCol === 'created_at') {
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                    return slotSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                return slotSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+            });
+            tbody.innerHTML = sorted.map(b => `
+                <tr>
+                    <td>${b.id}</td>
+                    <td>${b.username}</td>
+                    <td>¥${b.cost}</td>
+                    <td>${b.prize > 0 ? '<span style="color:#48bb78;">¥' + b.prize + '</span>' : '<span style="color:#e53e3e;">¥0</span>'}</td>
+                    <td>${b.result || '-'}</td>
+                    <td>${b.created_at || ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadScratchBets() {
+            try {
+                const res = await newApiRequest('/api/game/history', 'POST', {
+                    username: currentUserInfo?.username || '',
+                    gameType: 'scratch',
+                    all: true
+                });
+                const tbody = document.getElementById('scratchBetBody');
+                if (res.success && res.history && res.history.length) {
+                    scratchBetsData = res.history;
+                    renderScratchBets();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无刮刮乐记录</td></tr>';
+                    scratchBetsData = [];
+                }
+            } catch (e) { console.error('加载刮刮乐记录失败:', e); }
+        }
+
+        function sortScratchBets(col) {
+            if (scratchSortCol === col) {
+                scratchSortDir = scratchSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                scratchSortCol = col;
+                scratchSortDir = 'asc';
+            }
+            document.querySelectorAll('#scratchTable .sort-indicator').forEach(el => el.className = 'sort-indicator');
+            const indicator = document.querySelector(`#scratchTable .sort-indicator[data-col="${col}"]`);
+            if (indicator) indicator.classList.add(scratchSortDir);
+            renderScratchBets();
+        }
+
+        function renderScratchBets() {
+            const tbody = document.getElementById('scratchBetBody');
+            if (!scratchBetsData.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无刮刮乐记录</td></tr>';
+                return;
+            }
+            const sorted = [...scratchBetsData].sort((a, b) => {
+                let valA = a[scratchSortCol] || '';
+                let valB = b[scratchSortCol] || '';
+                if (['cost', 'prize', 'id'].includes(scratchSortCol)) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return scratchSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                if (scratchSortCol === 'created_at') {
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                    return scratchSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+                return scratchSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+            });
+            tbody.innerHTML = sorted.map(b => `
+                <tr>
+                    <td>${b.id}</td>
+                    <td>${b.username}</td>
+                    <td>¥${b.cost}</td>
+                    <td>${b.prize > 0 ? '<span style="color:#48bb78;">¥' + b.prize + '</span>' : '<span style="color:#e53e3e;">¥0</span>'}</td>
+                    <td>${b.result || '-'}</td>
+                    <td>${b.created_at || ''}</td>
+                </tr>
+            `).join('');
         }
 
         // 点击模态框外部关闭
