@@ -337,10 +337,6 @@
             min-width: 1000px;
         }
 
-        #trafficTable {
-            min-width: 800px;
-        }
-
         #footballTable {
             min-width: 1200px;
         }
@@ -638,7 +634,6 @@
                 <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
-                <a href="#traffic" class="menu-item" onclick="showPage('traffic')">流量管理</a>
                 <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
@@ -787,36 +782,6 @@
                     </div>
                 </div>
 
-                <!-- 流量管理页面 -->
-                <div id="trafficPage" class="page-section" style="display: none;">
-                    <div class="data-table">
-                        <div class="table-header">
-                            <h3>流量使用情况</h3>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="trafficSearchInput" placeholder="输入用户名查询流量" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <button class="add-btn" onclick="queryUserTraffic(document.getElementById('trafficSearchInput').value)" style="background-color: #667eea;">查询流量</button>
-                                <button class="add-btn" onclick="checkAllClashLinks()" style="background-color:#e53e3e;">检测Clash链接</button>
-                            </div>
-                        </div>
-                        <table id="trafficTable">
-                            <thead>
-                                <tr>
-                                    <th>用户名</th>
-                                    <th>VIP状态</th>
-                                    <th>月流量限制</th>
-                                    <th>已用流量</th>
-                                    <th>剩余流量</th>
-                                    <th>重置日期</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="trafficTableBody">
-                                <!-- 流量数据将通过JavaScript动态生成 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <!-- 节点订阅页面 -->
                 <div id="nodesPage" class="page-section" style="display: none;">
                     <div class="data-table">
@@ -825,6 +790,7 @@
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="nodeSearchInput" placeholder="输入用户名生成订阅链接" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="generateNodeLink(document.getElementById('nodeSearchInput').value)" style="background-color: #667eea;">生成链接</button>
+                                <button class="add-btn" onclick="checkAllClashLinks()" style="background-color:#e53e3e;">检测Clash链接</button>
                             </div>
                         </div>
                         <div style="padding: 1.5rem;">
@@ -836,6 +802,17 @@
                                 <div style="display: flex; gap: 10px;">
                                     <button class="add-btn" onclick="copyToClipboard('nodeLinkDisplay')">复制链接</button>
                                     <button class="add-btn" onclick="openNodeLink()" style="background-color: #48bb78;">打开链接</button>
+                                </div>
+                            </div>
+                            <div id="clashLinkResult" style="display: none; margin-top: 1rem;">
+                                <h4 style="color: #4a5568; margin-bottom: 1rem;">Clash链接检测结果：</h4>
+                                <div style="background-color: #f7fafc; padding: 1rem; border-radius: 8px; overflow-x: auto;">
+                                    <table id="clashLinksTable" style="width: 100%;">
+                                        <thead>
+                                            <tr><th>用户名</th><th>检测信息</th><th>链接</th></tr>
+                                        </thead>
+                                        <tbody id="clashLinksTableBody"></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -1535,7 +1512,6 @@
                 'dashboard': '仪表盘',
                 'users': '用户管理',
                 'orders': '订单管理',
-                'traffic': '流量管理',
                 'nodes': '节点管理',
                 'settings': '系统设置',
                 'messages': '消息管理',
@@ -1550,8 +1526,6 @@
                 await loadUsers();
             } else if (pageName === 'orders') {
                 await loadOrders();
-            } else if (pageName === 'traffic') {
-                await loadTraffic();
             } else if (pageName === 'settings') {
                 // 系统设置页面
             } else if (pageName === 'nodes') {
@@ -1625,12 +1599,6 @@
             showPage('orders');
         }
         
-        // 加载流量数据
-        async function loadTraffic() {
-            const tbody = document.getElementById('trafficTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">点击"查询流量"按钮查询用户流量</td></tr>';
-        }
-
         // 用户数据存储
         let usersData = [];
         let ordersData = [];
@@ -2186,47 +2154,18 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
         
-        // 查询用户流量
-        async function queryUserTraffic(username) {
-            if (!username) {
-                alert('请输入用户名');
-                return;
-            }
-            
-            const tbody = document.getElementById('trafficTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">加载中...</td></tr>';
-            
-            const result = await apiRequest(`/api/quota?username=${encodeURIComponent(username)}`, 'GET');
-            
-            if (result.code === 200) {
-                const data = result.data;
-                tbody.innerHTML = '';
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${data.username || username}</td>
-                    <td>${data.is_vip ? '<span style="color:#48bb78;">VIP</span>' : '普通用户'}</td>
-                    <td>${data.monthly_quota || 307200} MB</td>
-                    <td>${data.used_quota || 0} MB</td>
-                    <td>${data.remaining_quota || 0} MB</td>
-                    <td>${data.quota_reset_date || '-'}</td>
-                    <td>
-                        <button class="action-btn edit-btn" onclick="resetUserTraffic('${data.username || username}')">重置</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            } else {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:red;">${result.msg || '查询失败'}</td></tr>`;
-            }
-        }
-        
         async function checkAllClashLinks() {
-            const tbody = document.getElementById('trafficTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">检测中...</td></tr>';
+            const resultDiv = document.getElementById('clashLinkResult');
+            const tbody = document.getElementById('clashLinksTableBody');
+            
+            document.getElementById('nodeLinkResult').style.display = 'none';
+            resultDiv.style.display = 'block';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">检测中...</td></tr>';
             
             const result = await newApiRequest('/api/clash-links', 'GET');
             
             if (result.code !== 200 || !result.data?.length) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">无Clash链接可检测</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">无Clash链接可检测</td></tr>`;
                 return;
             }
 
@@ -2243,7 +2182,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 } else {
                     infoText = `<span style="color:#e53e3e;">${u.error || '请求失败'}</span>`;
                 }
-                html += `<tr><td>${u.username}</td><td colspan="5">${infoText}</td><td>${u.link?.substring(0, 30)}...</td></tr>`;
+                html += `<tr><td>${u.username}</td><td>${infoText}</td><td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${u.link || '-'}">${u.link?.substring(0, 30)}...</td></tr>`;
             }
             tbody.innerHTML = html;
         }
@@ -2262,26 +2201,6 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             alert(`${username} 检测失败: ${result.msg || '链接无效或请求失败'}`);
         }
 
-        // 重置用户流量
-        async function resetUserTraffic(username) {
-            if (!username) {
-                alert('请输入用户名');
-                return;
-            }
-            
-            if (!confirm(`确定要重置用户 ${username} 的流量吗？`)) {
-                return;
-            }
-            
-            const result = await apiRequest('/api/quota/reset', 'POST', { username });
-            
-            if (result.code === 200) {
-                alert(`流量已重置！当前剩余流量: ${result.data.remaining_quota || 0} MB`);
-            } else {
-                alert(result.msg || '重置失败');
-            }
-        }
-        
         // 生成节点订阅链接
         async function generateNodeLink(username) {
             if (!username) {
