@@ -184,6 +184,8 @@ function handleLogin() {
                 updateLoginButton();
                 hideLoginModal();
                 fetchUserBalance();
+                // 登录成功后查询数据库更新VIP状态
+                if (typeof updateVipStatusAsync === 'function') updateVipStatusAsync();
                 if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
                 if (username !== 'immmor') {
                     if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
@@ -236,6 +238,8 @@ function handleRegister() {
                 localStorage.setItem('username', username);
                 updateLoginButton();
                 hideLoginModal();
+                // 注册成功后查询数据库更新VIP状态
+                if (typeof updateVipStatusAsync === 'function') updateVipStatusAsync();
                 if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
                 if (username !== 'immmor') {
                     if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
@@ -357,6 +361,8 @@ function showUserMenu() {
         localStorage.removeItem('username');
         updateLoginButton();
         menu.remove();
+        // 退出登录时重置VIP状态
+        if (typeof resetVipStatus === 'function') resetVipStatus();
         if (window.filterQuestionBankOptions) window.filterQuestionBankOptions();
         if (window.switchQuestionBank) window.switchQuestionBank('questionsenglish');
     });

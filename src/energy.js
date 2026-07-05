@@ -108,6 +108,15 @@ async function updateVipStatusAsync() {
 
 // 保存会员状态函数已废弃，VIP状态完全由后端管理
 
+// 重置VIP状态（退出登录时调用）
+function resetVipStatus() {
+    isVip = false;
+    vipExpiryTime = 0;
+    updateEnergyDisplay();
+    updateVipStatusDisplay();
+    console.log('VIP状态已重置');
+}
+
 // 激活会员
 function activateVip(vipData) {
     // 使用后端返回的VIP数据
