@@ -72,7 +72,7 @@ async function updateVipStatusAsync() {
         
         if (username) {
             try {
-                const response = await fetch(`https://api.immmor.com/api/learn/vip/status?username=${encodeURIComponent(username)}`);
+                const response = await fetch(`https://immmor.com/api/learn/vip/status?username=${encodeURIComponent(username)}`);
                 const result = await response.json();
                 console.log('VIP状态API返回:', result);
                 
