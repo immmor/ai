@@ -740,6 +740,7 @@
                                     <th onclick="sortUsers('source')" style="cursor:pointer; min-width: 100px;">来源 <span class="sort-indicator" data-col="source"></span></th>
                                     <th onclick="sortUsers('auto_rewn')" style="cursor:pointer; min-width: 100px;">自动续费 <span class="sort-indicator" data-col="auto_rewn"></span></th>
                                     <th onclick="sortUsers('vorders')" style="cursor:pointer; min-width: 150px;">购买记录 <span class="sort-indicator" data-col="vorders"></span></th>
+                                    <th onclick="sortUsers('remark')" style="cursor:pointer; min-width: 120px;">备注 <span class="sort-indicator" data-col="remark"></span></th>
                                     <th style="min-width: 100px;">操作</th>
                                 </tr>
                             </thead>
@@ -1194,6 +1195,10 @@
                             <option value="0">否</option>
                             <option value="1">是</option>
                         </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label for="userRemark">备注</label>
+                        <textarea id="userRemark" name="userRemark" rows="4" style="width: 100%; resize: vertical; font-family: monospace;"></textarea>
                     </div>
                 </div>
                 <button type="submit" class="btn" style="margin-top: 15px; flex-shrink: 0;">保存</button>
@@ -1740,6 +1745,7 @@
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
                     </td>
+                    <td>${user.remark || '-'}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                         <button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button>
@@ -1899,6 +1905,7 @@
             document.getElementById('userFetchLink').value = user.fetch_link || '';
             document.getElementById('userSecurityAnswer').value = user.security_answer || '';
             document.getElementById('userAutoRewn').value = (user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true) ? '1' : '0';
+            document.getElementById('userRemark').value = user.remark || '';
             
             document.getElementById('userModal').style.display = 'flex';
         }
@@ -1920,6 +1927,7 @@
             const fetch_link = document.getElementById('userFetchLink').value;
             const security_answer = document.getElementById('userSecurityAnswer').value;
             const auto_rewn = document.getElementById('userAutoRewn').value;
+            const remark = document.getElementById('userRemark').value;
             
             try {
                 const result = await newApiRequest('/api/user/edit', 'POST', {
@@ -1938,7 +1946,8 @@
                     vorders: vorders || '',
                     fetch_link: fetch_link || '',
                     security_answer: security_answer || '',
-                    auto_rewn: auto_rewn
+                    auto_rewn: auto_rewn,
+                    remark: remark || ''
                 });
                 
                 if (result.code === 200) {
@@ -2016,6 +2025,7 @@
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
                     </td>
+                    <td>${user.remark || '-'}</td>
                     <td style="min-width: 200px;">
                         <button class="action-btn edit-btn" onclick="editUser('${user.username}')">修改</button>
                         <button class="action-btn" onclick="checkUserClashLink('${user.username}')">检测</button>
