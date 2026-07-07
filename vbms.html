@@ -1622,7 +1622,7 @@
         // 加载用户列表
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">加载中...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;">加载中...</td></tr>';
             
             const result = await apiRequest('/api/users?page=1&limit=9999', 'GET');
             
@@ -1630,7 +1630,7 @@
                 usersData = result.data.users || [];
                 renderUsers();
             } else {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
             }
         }
         
@@ -1712,7 +1712,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (usersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="22" style="text-align:center;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="23" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
             applyUserSort(usersData).forEach(user => {
@@ -1992,7 +1992,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;">未找到匹配的用户</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
             applyUserSort(data).forEach(user => {
