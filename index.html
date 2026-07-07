@@ -399,12 +399,92 @@
                     font-size: 7px;
                 }
             }
+            
+            /* 大屏幕时扩大做题区域内容 */
+            @media (min-width: 640px) {
+                #question-container {
+                    padding: 0;
+                }
+                #question-container .bg-gray-50 {
+                    padding-left: 1.5rem;
+                    padding-right: 1.5rem;
+                    padding-top: 0.75rem;
+                    padding-bottom: 0.75rem;
+                }
+                #question-container .bg-gray-50 span {
+                    font-size: 0.875rem;
+                }
+                #question-container .text-xs {
+                    font-size: 0.875rem;
+                }
+                #question-container .text-sm {
+                    font-size: 1rem;
+                }
+                #question-container > div:not(.bg-gray-50) {
+                    padding-left: 1.5rem;
+                    padding-right: 1.5rem;
+                    padding-top: 0.75rem;
+                    padding-bottom: 0.75rem;
+                }
+                #answer-container .text-xs {
+                    font-size: 0.875rem;
+                }
+                #answer-container .text-sm {
+                    font-size: 1rem;
+                }
+                #answer-container .p-3 {
+                    padding: 1rem;
+                }
+                #answer-container .border p {
+                    font-size: 1rem;
+                }
+            }
+            
+            /* 更大屏幕时进一步扩大内容 */
+            @media (min-width: 1024px) {
+                #question-container {
+                    padding: 0;
+                }
+                #question-container .bg-gray-50 {
+                    padding-left: 2rem;
+                    padding-right: 2rem;
+                    padding-top: 1rem;
+                    padding-bottom: 1rem;
+                }
+                #question-container .bg-gray-50 span {
+                    font-size: 1rem;
+                }
+                #question-container .text-xs {
+                    font-size: 1rem;
+                }
+                #question-container .text-sm {
+                    font-size: 1.125rem;
+                }
+                #question-container > div:not(.bg-gray-50) {
+                    padding-left: 2rem;
+                    padding-right: 2rem;
+                    padding-top: 1rem;
+                    padding-bottom: 1rem;
+                }
+                #answer-container .text-xs {
+                    font-size: 1rem;
+                }
+                #answer-container .text-sm {
+                    font-size: 1.125rem;
+                }
+                #answer-container .p-3 {
+                    padding: 1.5rem;
+                }
+                #answer-container .border p {
+                    font-size: 1.125rem;
+                }
+            }
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 py-2 z-20" id="level-header">
-        <div class="container mx-auto px-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 sm:px-6 md:px-8 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl xl:max-w-4xl flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <div class="w-6 h-6 flex items-center justify-center relative">
                     <!-- 主茎 -->
@@ -508,24 +588,24 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-6 max-w-md min-h-[calc(100vh-120px)] mt-8">
+    <main class="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl xl:max-w-4xl min-h-[calc(100vh-120px)] mt-8">
         <!-- 题目容器 -->
-        <div class="bg-white rounded border border-gray-200 mb-1 overflow-hidden" id="question-container">
+        <div class="bg-white rounded border border-gray-200 mb-1 sm:mb-2 overflow-hidden" id="question-container">
             <!-- 题目会动态加载 -->
         </div>
         
         <!-- 答题区域 -->
-        <div id="answer-container" class="mb-6 break-words">
+        <div id="answer-container" class="mb-6 sm:mb-8 break-words">
             <!-- 答题区域会动态加载 -->
         </div>
         
         <!-- 反馈区域 -->
-        <div id="feedback" class="mb-6 text-xs hidden"></div>
+        <div id="feedback" class="mb-6 sm:mb-8 text-xs sm:text-sm hidden"></div>
     </main>
     
     <!-- 底部导航按钮 -->
     <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-10">
-        <div class="container mx-auto px-4 max-w-md">
+        <div class="container mx-auto px-4 sm:px-6 md:px-8 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl xl:max-w-4xl">
             <div class="flex justify-between text-xs">
                 <div class="flex space-x-2">
                     <button id="hint-btn" class="text-gray-500 hover:text-primary flex items-center" title="快捷键: H键">

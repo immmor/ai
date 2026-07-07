@@ -5,31 +5,6 @@ const t = (d) => JSON.stringify(Object.fromEntries(LK.map(k => [k, d[k] ?? '']))
 const NP = { cn:'[系统通知]', en:'[System Notification]', jp:'[システム通知]', kr:'[시스템 알림]', es:'[Notificación del Sistema]', vi:'[Thông báo Hệ thống]', ar:'[إشعار النظام]', ru:'[Системное уведомление]' };
 const nt = (d) => t(Object.fromEntries(LK.map(k => [k, `${NP[k]} ${d[k] ?? ''}`])));
 
-// 密码加密工具函数（SHA-256 + 随机 Salt）
-async function hashPassword(password) {
-  const salt = crypto.getRandomValues(new Uint8Array(16)).reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${salt}:${hashHex}`;
-}
-
-async function verifyPassword(password, storedHash) {
-  if (!storedHash || !storedHash.includes(':')) {
-    // 兼容旧明文密码
-    return password === storedHash;
-  }
-  const [salt, hash] = storedHash.split(':');
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hash === hashHex;
-}
-
 function fbChoiceLabel(_match, choice) {
   const map = { a: '主胜', draw: '平局', b: '客胜' };
   return map[choice] || choice;
@@ -253,7 +228,7 @@ export default {
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
       if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
-        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, web3Address } = params;
+        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, fromGithub, web3Address } = params;
         
         // 统一用小写处理 web3 地址
         const web3AddressLower = web3Address ? web3Address.toLowerCase() : '';
@@ -268,8 +243,8 @@ export default {
           return resJson({ success: false, message: '邮箱格式不正确！' }, 400);
         }
 
-        // 校验验证码：必须完成邮箱验证后才能注册（谷歌登录跳过此检查）
-        if (!fromGoogle) {
+        // 校验验证码：必须完成邮箱验证后才能注册（谷歌/GitHub 登录跳过此检查）
+        if (!fromGoogle && !fromGithub) {
           const verifyPassed = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_passed_${username}`).first();
           if (!verifyPassed) {
             return resJson({ success: false, message: '请先完成邮箱验证！' }, 400);
@@ -420,19 +395,13 @@ export default {
         // 根据前端传入的nt参数决定not_trusted值：nt=n时设为空字符串（信任）
         const notTrustedValue = params.nt === 'n' ? '' : 'yes';
 
-        // 密码加密存储
-        const hashedPassword = await hashPassword(password);
-
-        // 密保答案加密存储
-        const hashedSecurityAnswer = securityAnswer ? await hashPassword(securityAnswer) : '';
-
         // 原子插入：利用数据库 UNIQUE 约束防止并发重复注册
         // 不再单独 SELECT 检查，直接 INSERT，由数据库保证原子性
         let result;
         try {
           result = await DB
             .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders, web3_address) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)')
-            .bind(username, hashedPassword, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', hashedSecurityAnswer, '[]', source || '', notTrustedValue, '[]', web3AddressLower || '')
+            .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue, '[]', web3AddressLower || '')
             .run();
         } catch (e) {
           // 捕获 UNIQUE 约束冲突 → 用户名已存在（并发注册竞争时触发）
@@ -540,31 +509,31 @@ export default {
         }
 
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, password FROM user WHERE username = ?')
-          .bind(username)
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ? AND password = ?')
+          .bind(username, password)
           .first();
 
-        if (!user || !(await verifyPassword(password, user.password))) {
-          return resJson({ success: false, message: '用户名或密码错误！' }, 401);
+        if (user) {
+          const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+
+          const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
+          let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+          if (loginInfo?.login_info) {
+            try {
+              const existingInfo = JSON.parse(loginInfo.login_info);
+              existingInfo.unshift(loginInfoEntry);
+              updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
+            } catch (e) {}
+          }
+          await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
+
+          const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
+        } else {
+          return resJson({ success: false, message: '用户名或密码错误' }, 401);
         }
-
-        const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-        const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
-
-        const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
-        let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
-        if (loginInfo?.login_info) {
-          try {
-            const existingInfo = JSON.parse(loginInfo.login_info);
-            existingInfo.unshift(loginInfoEntry);
-            updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
-          } catch (e) {}
-        }
-        await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
-
-        const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
-
-        return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
       }
 
       // ========== Web3钱包登录接口 ==========
@@ -662,6 +631,103 @@ export default {
           }
         } catch (err) {
           return resJson({ success: false, message: '谷歌登录验证失败：' + err.message }, 500);
+        }
+      }
+
+      // ========== GitHub OAuth Client ID 接口 ==========
+      if (path === '/api/github-client-id' && request.method === 'GET') {
+        const clientId = env.GITHUB_CLIENT_ID;
+        if (!clientId) {
+          return resJson({ success: false, message: 'GitHub登录未配置！' }, 500);
+        }
+        return resJson({ success: true, clientId });
+      }
+
+      // ========== GitHub 快捷登录接口 ==========
+      if (path === '/api/github-login' && request.method === 'POST') {
+        const params = await request.json();
+        const { code, redirectUri } = params;
+
+        if (!code || !redirectUri) {
+          return resJson({ success: false, message: '请提供 GitHub 授权信息！' }, 400);
+        }
+
+        const clientId = env.GITHUB_CLIENT_ID;
+        const clientSecret = env.GITHUB_CLIENT_SECRET;
+        if (!clientId || !clientSecret) {
+          return resJson({ success: false, message: 'GitHub登录未配置！' }, 500);
+        }
+
+        try {
+          const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri
+            })
+          });
+
+          const tokenData = await tokenRes.json();
+          if (tokenData.error || !tokenData.access_token) {
+            return resJson({ success: false, message: 'GitHub token验证失败！' }, 401);
+          }
+
+          const emailsRes = await fetch('https://api.github.com/user/emails', {
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+              'Accept': 'application/vnd.github+json',
+              'User-Agent': 'PHANTOM-VPN'
+            }
+          });
+
+          if (!emailsRes.ok) {
+            return resJson({ success: false, message: '无法获取 GitHub 账号邮箱！' }, 401);
+          }
+
+          const emails = await emailsRes.json();
+          const primaryEmail = emails.find(e => e.primary && e.verified)?.email
+            || emails.find(e => e.verified)?.email;
+
+          if (!primaryEmail) {
+            return resJson({ success: false, message: '无法获取已验证的 GitHub 邮箱！' }, 401);
+          }
+
+          const email = primaryEmail;
+
+          const user = await DB
+            .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders FROM user WHERE username = ?')
+            .bind(email)
+            .first();
+
+          if (user) {
+            const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+
+            const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(email).first();
+            let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
+            if (loginInfo?.login_info) {
+              try {
+                const existingInfo = JSON.parse(loginInfo.login_info);
+                existingInfo.unshift(loginInfoEntry);
+                updatedLoginInfo = JSON.stringify(existingInfo.slice(0, 10));
+              } catch (e) {}
+            }
+            await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, email).run();
+
+            const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+
+            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders }, pricePlan });
+          } else {
+            return resJson({ success: true, needRegister: true, email, message: '该 GitHub 账号未注册，请完成注册！' });
+          }
+        } catch (err) {
+          return resJson({ success: false, message: 'GitHub登录验证失败：' + err.message }, 500);
         }
       }
 
@@ -796,9 +862,8 @@ export default {
         if (!username || !securityAnswer || !newPassword) return resJson({ success: false, message: '参数不完整' }, 400);
         const user = await DB.prepare('SELECT security_answer FROM user WHERE username = ?').bind(username).first();
         if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
-        if (!user.security_answer || !(await verifyPassword(securityAnswer, user.security_answer))) return resJson({ success: false, message: '密保答案错误' }, 401);
-        const hashedNewPassword = await hashPassword(newPassword);
-        await DB.prepare('UPDATE user SET password = ? WHERE username = ?').bind(hashedNewPassword, username).run();
+        if (user.security_answer !== securityAnswer) return resJson({ success: false, message: '密保答案错误' }, 401);
+        await DB.prepare('UPDATE user SET password = ? WHERE username = ?').bind(newPassword, username).run();
         return resJson({ success: true, message: '密码重置成功' });
       }
 
@@ -1107,7 +1172,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn, remark } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -1127,7 +1192,7 @@ export default {
           
           if (password !== undefined && password !== null && password !== '') {
             updates.push('password = ?');
-            values.push(await hashPassword(password));
+            values.push(password);
           }
           if (balance !== undefined && balance !== null) {
             updates.push('balance = ?');
@@ -1179,11 +1244,15 @@ export default {
           }
           if (security_answer !== undefined) {
             updates.push('security_answer = ?');
-            values.push(security_answer ? await hashPassword(security_answer) : '');
+            values.push(security_answer);
           }
           if (auto_rewn !== undefined) {
             updates.push('auto_rewn = ?');
             values.push(auto_rewn);
+          }
+          if (remark !== undefined) {
+            updates.push('remark = ?');
+            values.push(remark);
           }
           
           if (updates.length === 0) {
@@ -1863,34 +1932,81 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/messages' && request.method === 'GET') {
         try {
           const username = url.searchParams.get('username');
+          const all = url.searchParams.get('all');
           
           if (!username) {
             return resJson({ code: 400, msg: '请传入username参数' }, 400);
           }
           
-          // 获取用户消息列表
-          const messages = await DB
-            .prepare('SELECT * FROM messages WHERE username = ? ORDER BY created_at DESC LIMIT 50')
-            .bind(username)
-            .all();
+          let messages;
+          let unreadCount = 0;
           
-          // 获取未读消息数量
-          const unreadCount = await DB
-            .prepare('SELECT COUNT(*) as count FROM messages WHERE username = ? AND is_read = 0')
-            .bind(username)
-            .first();
+          if (all === 'true') {
+            const targetUser = url.searchParams.get('targetUser');
+            if (targetUser) {
+              messages = await DB
+                .prepare('SELECT * FROM messages WHERE username = ? ORDER BY created_at DESC LIMIT 100')
+                .bind(targetUser)
+                .all();
+              const unread = await DB
+                .prepare('SELECT COUNT(*) as count FROM messages WHERE username = ? AND is_read = 0')
+                .bind(targetUser)
+                .first();
+              unreadCount = unread?.count || 0;
+            } else {
+              messages = await DB
+                .prepare('SELECT * FROM messages ORDER BY created_at DESC LIMIT 100')
+                .all();
+            }
+          } else {
+            messages = await DB
+              .prepare('SELECT * FROM messages WHERE username = ? ORDER BY created_at DESC LIMIT 50')
+              .bind(username)
+              .all();
+            
+            const unread = await DB
+              .prepare('SELECT COUNT(*) as count FROM messages WHERE username = ? AND is_read = 0')
+              .bind(username)
+              .first();
+            unreadCount = unread?.count || 0;
+          }
           
           return resJson({
             code: 200,
             msg: '查询成功',
             data: {
               messages: messages.results || [],
-              unreadCount: unreadCount?.count || 0
+              unreadCount: unreadCount
             }
           });
         } catch (err) {
           console.error('获取消息错误:', err);
           return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      if (path === '/api/messages' && request.method === 'DELETE') {
+        try {
+          const params = await request.json();
+          const { messageId } = params;
+          
+          if (!messageId) {
+            return resJson({ code: 400, msg: '缺少必要参数' }, 400);
+          }
+          
+          const result = await DB
+            .prepare('DELETE FROM messages WHERE id = ?')
+            .bind(messageId)
+            .run();
+          
+          if (result.success) {
+            return resJson({ code: 200, msg: '删除成功' });
+          } else {
+            return resJson({ code: 500, msg: '删除失败' }, 500);
+          }
+        } catch (err) {
+          console.error('删除消息错误:', err);
+          return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
         }
       }
 
@@ -2091,7 +2207,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/football/bet' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, choice, amount, matchId } = params;
+          const { username, password, choice, amount, matchId } = params;
 
           if (!username || !choice || !amount || matchId === undefined) {
             return resJson({ success: false, message: '参数不完整' }, 400);
@@ -2101,10 +2217,10 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           }
           if (amount < 1) return resJson({ success: false, message: '下注金额至少1元' }, 400);
 
-          // 验证用户
+          // 验证用户是否存在
           const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?')
             .bind(username).first();
-          if (!user) return resJson({ success: false, message: '用户不存在' }, 401);
+          if (!user) return resJson({ success: false, message: '请先登录' }, 401);
 
           // 查找指定比赛
           const fbRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('fb_match').first();
@@ -2137,12 +2253,12 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 世界杯竞猜：获取我的下注记录 ==========
       if (path === '/api/football/history' && request.method === 'POST') {
         try {
-          const { username, all } = await request.json();
+          const { username, password, all } = await request.json();
           if (!username) return resJson({ success: false, message: '请先登录' }, 401);
 
           const user = await DB.prepare('SELECT rowid FROM user WHERE username = ?')
             .bind(username).first();
-          if (!user) return resJson({ success: false, message: '用户不存在' }, 401);
+          if (!user) return resJson({ success: false, message: '请先登录' }, 401);
 
           // 管理后台显式传 all=true 时查看全部，前台只返回当前用户记录
           let bets;
@@ -2174,7 +2290,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/football/settle' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, result, matchId } = params;
+          const { username, password, result, matchId } = params;
           if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
           if (!['a', 'draw', 'b'].includes(result)) return resJson({ success: false, message: '无效的结果' }, 400);
           if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
@@ -2241,7 +2357,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 世界杯竞猜：管理员重置比赛（新一轮） ==========
       if (path === '/api/football/reset' && request.method === 'POST') {
         try {
-          const { username, matchId } = await request.json();
+          const { username, password, matchId } = await request.json();
           if (username !== 'immmor') return resJson({ success: false, message: '无权限' }, 403);
           if (matchId === undefined) return resJson({ success: false, message: '缺少 matchId' }, 400);
 
@@ -2257,6 +2373,151 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             .bind(JSON.stringify(matches), 'fb_match').run();
 
           return resJson({ success: true, message: `${matches[idx].teamA} vs ${matches[idx].teamB} 已重置` });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 游戏中心：幸运转盘 ==========
+      if (path === '/api/game/wheel' && request.method === 'POST') {
+        try {
+          const { username } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+
+          const cost = 10;
+          if (user.balance < cost) return resJson({ success: false, message: '余额不足' }, 400);
+
+          const prizes = [3, 5, 5, 10, 10, 20, 50, 200];
+          const weights = [0.25, 0.25, 0.18, 0.15, 0.08, 0.05, 0.03, 0.01];
+          let r = Math.random();
+          let prizeIndex = 0;
+          for (let i = 0; i < weights.length; i++) {
+            r -= weights[i];
+            if (r <= 0) { prizeIndex = i; break; }
+          }
+          const prize = prizes[prizeIndex];
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+            .bind(username, 'wheel', cost, prize, `¥${prize}`, now).run();
+
+          return resJson({ success: true, prize, balance: user.balance - cost + prize });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 游戏中心：老虎机 ==========
+      if (path === '/api/game/slot' && request.method === 'POST') {
+        try {
+          const { username } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+
+          const cost = 20;
+          if (user.balance < cost) return resJson({ success: false, message: '余额不足' }, 400);
+
+          const symbols = ['🍒', '🍊', '🍋', '⭐', '💎', '7️⃣', '🔔'];
+          const s1 = symbols[Math.floor(Math.random() * 7)];
+          const s2 = symbols[Math.floor(Math.random() * 7)];
+          const s3 = symbols[Math.floor(Math.random() * 7)];
+          let prize = 0;
+
+          if (s1 === s2 && s2 === s3) {
+            if (s1 === '7️⃣') prize = 200;
+            else if (s1 === '💎') prize = 100;
+            else if (s1 === '⭐') prize = 50;
+            else prize = 30;
+          } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+            const pairSymbol = s1 === s2 ? s1 : (s2 === s3 ? s2 : s1);
+            if (pairSymbol === '7️⃣') prize = 100;
+            else if (pairSymbol === '💎') prize = 50;
+            else if (pairSymbol === '⭐') prize = 25;
+            else prize = 15;
+          }
+
+          const resultStr = (s1 === s2 && s2 === s3) ? `${s1}${s2}${s3}` : `${s1} ${s2} ${s3}`;
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+            .bind(username, 'slot', cost, prize, resultStr, now).run();
+
+          return resJson({ success: true, prize, symbols: [s1, s2, s3], balance: user.balance - cost + prize });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 游戏中心：刮刮乐 ==========
+      if (path === '/api/game/scratch' && request.method === 'POST') {
+        try {
+          const { username } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+
+          const cost = 15;
+          if (user.balance < cost) return resJson({ success: false, message: '余额不足' }, 400);
+
+          const prizes = [5, 10, 20, 50, 100, 200];
+          const weights = [0.3, 0.25, 0.2, 0.15, 0.08, 0.02];
+          let random = Math.random();
+          let prize = 0;
+          for (let i = 0; i < prizes.length; i++) {
+            random -= weights[i];
+            if (random <= 0) { prize = prizes[i]; break; }
+          }
+
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+            .bind(username, 'scratch', cost, prize, `¥${prize}`, now).run();
+
+          return resJson({ success: true, prize, balance: user.balance - cost + prize });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 游戏中心：获取游戏历史记录 ==========
+      if (path === '/api/game/history' && request.method === 'POST') {
+        try {
+          const { username, gameType, all } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const user = await DB.prepare('SELECT rowid FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+
+          let query = 'SELECT * FROM game_bet';
+          let params = [];
+          if (all) {
+            if (gameType) {
+              query = 'SELECT * FROM game_bet WHERE game_type = ? ORDER BY id DESC LIMIT 100';
+              params = [gameType];
+            } else {
+              query = 'SELECT * FROM game_bet ORDER BY id DESC LIMIT 100';
+            }
+          } else {
+            if (gameType) {
+              query = 'SELECT * FROM game_bet WHERE username = ? AND game_type = ? ORDER BY id DESC LIMIT 50';
+              params = [username, gameType];
+            } else {
+              query = 'SELECT * FROM game_bet WHERE username = ? ORDER BY id DESC LIMIT 50';
+              params = [username];
+            }
+          }
+
+          const result = await DB.prepare(query).bind(...params).all();
+          return resJson({ success: true, history: result.results || [] });
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
         }
