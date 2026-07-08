@@ -2309,7 +2309,19 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                         </div>
                         <div style="padding: 1rem;">
                             <div id="recommendMessage" style="margin-bottom: 1rem; padding: 0.75rem; background-color: #fff3cd; border-radius: 4px; font-size: 0.9rem;"></div>
-                            <div id="recommendLinksList" style="max-height: 300px; overflow-y: auto;"></div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #4a5568;">Clash 链接</div>
+                                    <div id="recommendClashList" style="max-height: 250px; overflow-y: auto;"></div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #4a5568;">V2Ray 链接</div>
+                                    <div id="recommendV2rayList" style="max-height: 250px; overflow-y: auto;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <button class="add-btn" onclick="applyRecommendLink()" style="padding: 0.5rem 1.5rem;">确认替换</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2317,27 +2329,38 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
             
             const messageEl = document.getElementById('recommendMessage');
-            const linksEl = document.getElementById('recommendLinksList');
+            const clashEl = document.getElementById('recommendClashList');
+            const v2rayEl = document.getElementById('recommendV2rayList');
+            
+            window._recommendUsername = username;
             
             if (needsRecommendation) {
-                messageEl.innerHTML = `<strong>⚠️ 警告：</strong>用户 ${username} 的VIP还没到期，但当前链接即将到期，请选择一个新链接进行替换。`;
+                messageEl.innerHTML = `<strong>⚠️ 警告：</strong>用户 ${username} 的VIP还没到期，但当前链接即将到期，请选择新链接进行替换。`;
             } else {
-                messageEl.innerHTML = `<strong>💡 推荐：</strong>为用户 ${username} 选择一个可用的链接进行替换（使用人数小于4人）。`;
+                messageEl.innerHTML = `<strong>💡 推荐：</strong>为用户 ${username} 分别选择 Clash 和 V2Ray 链接（使用人数小于4人）。`;
             }
             
-            let html = '';
-            links.forEach((link, index) => {
-                html += `
-                    <div style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <div style="font-weight: 500; color: #4a5568;">${link.key}</div>
-                            <div style="font-size: 0.85rem; word-break: break-all; color: #667eea;">${link.value}</div>
-                        </div>
-                        <button class="add-btn" onclick="applyRecommendLink('${username}', '${link.value.replace(/'/g, "\\'")}', '${link.key}')" style="margin-left: 1rem;">应用</button>
-                    </div>
-                `;
-            });
-            linksEl.innerHTML = html;
+            const renderLinkList = (type, container) => {
+                let html = '';
+                links.forEach((link, index) => {
+                    const radioId = `${type}_${index}`;
+                    html += `
+                        <label for="${radioId}" style="display: block; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer;">
+                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <input type="radio" name="${type}_link" id="${radioId}" value="${link.value.replace(/"/g, '&quot;')}" data-key="${link.key.replace(/"/g, '&quot;')}" style="margin-top: 0.25rem;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">${link.key}</div>
+                                    <div style="font-size: 0.8rem; word-break: break-all; color: #667eea;">${link.value}</div>
+                                </div>
+                            </div>
+                        </label>
+                    `;
+                });
+                container.innerHTML = html;
+            };
+            
+            renderLinkList('clash', clashEl);
+            renderLinkList('v2ray', v2rayEl);
             
             modal.style.display = 'flex';
         }
@@ -2347,15 +2370,33 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             if (modal) modal.style.display = 'none';
         }
 
-        async function applyRecommendLink(username, linkValue, linkKey) {
-            if (!confirm(`确定要将用户 ${username} 的链接替换为 "${linkKey}" 吗？`)) {
+        async function applyRecommendLink() {
+            const username = window._recommendUsername;
+            const clashChecked = document.querySelector('input[name="clash_link"]:checked');
+            const v2rayChecked = document.querySelector('input[name="v2ray_link"]:checked');
+            
+            if (!clashChecked) {
+                alert('请选择 Clash 链接');
+                return;
+            }
+            if (!v2rayChecked) {
+                alert('请选择 V2Ray 链接');
+                return;
+            }
+            
+            const clashValue = clashChecked.value;
+            const clashKey = clashChecked.dataset.key;
+            const v2rayValue = v2rayChecked.value;
+            const v2rayKey = v2rayChecked.dataset.key;
+            
+            if (!confirm(`确定要将用户 ${username} 的链接替换为：\nClash: ${clashKey}\nV2Ray: ${v2rayKey} 吗？`)) {
                 return;
             }
             
             const result = await newApiRequest('/api/user/edit', 'POST', {
                 username: username,
-                v_link_clash: linkValue,
-                v_link_v2ray: linkValue
+                v_link_clash: clashValue,
+                v_link_v2ray: v2rayValue
             });
             
             if (result.code === 200) {
