@@ -1280,13 +1280,9 @@ function loadQuestion(index) {
                 </div>
                 <div id="sentence-recording" class="hidden">
                     <div class="text-center mb-4">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
-                            <i class="fa fa-microphone text-blue-500 text-2xl"></i>
-                        </div>
                         <div class="text-sm text-gray-600 font-medium">现在请朗读完整句子</div>
                     </div>
                     <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
-                        <div class="text-xs text-gray-500 mb-2 text-center">完整句子</div>
                         <div id="sentence-recording-content" class="text-sm leading-relaxed text-center font-medium text-gray-800">
                             <!-- 完整句子将在这里显示 -->
                         </div>
@@ -1932,13 +1928,13 @@ function handleRecording() {
             
             // 在第三阶段显示完整句子
             if (sentenceRecordingContent) {
-                sentenceRecordingContent.innerHTML = `<div class="text-green-600 font-medium mb-2">完整句子：</div><div>${question.fullSentence}</div>`;
+                sentenceRecordingContent.innerHTML = `<div>${question.fullSentence}</div>`;
             }
             
             if (recognitionResultEl) {
                 recognitionResultEl.classList.remove('hidden');
                 recognitionResultEl.classList.add('bg-blue-50', 'text-blue-700');
-                recognitionResultEl.innerHTML = '<div class="font-medium">🎤 点击下方按钮录音朗读完整句子</div>';
+                recognitionResultEl.innerHTML = '<div class="font-medium">🎤 点击上方按钮录音朗读完整句子</div>';
             }
             
             // 启用下一题按钮，让用户手动控制跳转
