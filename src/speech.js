@@ -370,6 +370,194 @@ function updateSpeechButtonState(state) {
     });
 }
 
+// 语音识别相关变量
+let recognition = null;
+let isRecording = false;
+let recognitionResult = '';
+let onRecognitionResult = null;
+
+// 初始化语音识别
+function initSpeechRecognition() {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        
+        recognition.onstart = function() {
+            isRecording = true;
+            updateRecordButtonState('recording');
+        };
+        
+        recognition.onend = function() {
+            isRecording = false;
+            updateRecordButtonState('stopped');
+        };
+        
+        recognition.onresult = function(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            
+            recognitionResult = finalTranscript || interimTranscript;
+            
+            if (onRecognitionResult) {
+                onRecognitionResult(recognitionResult, !!finalTranscript);
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('语音识别错误:', event.error);
+            isRecording = false;
+            updateRecordButtonState('stopped');
+            
+            let errorMsg = '语音识别失败';
+            switch(event.error) {
+                case 'not-allowed':
+                    errorMsg = '请允许麦克风权限';
+                    break;
+                case 'no-speech':
+                    errorMsg = '未检测到语音';
+                    break;
+                case 'network':
+                    errorMsg = '网络错误，请检查网络连接';
+                    break;
+                case 'service-not-allowed':
+                    errorMsg = '语音服务不可用';
+                    break;
+            }
+            
+            if (onRecognitionResult) {
+                onRecognitionResult(null, false, errorMsg);
+            }
+        };
+        
+        return true;
+    }
+    return false;
+}
+
+// 更新录音按钮状态
+function updateRecordButtonState(state) {
+    const recordBtn = document.getElementById('record-btn');
+    if (!recordBtn) return;
+    
+    switch(state) {
+        case 'recording':
+            recordBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'shadow-lg', 'shadow-blue-500/30');
+            recordBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'animate-pulse', 'shadow-lg', 'shadow-red-500/30');
+            recordBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i> 停止录音';
+            break;
+        case 'stopped':
+        default:
+            recordBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'animate-pulse', 'shadow-lg', 'shadow-red-500/30');
+            recordBtn.classList.add('bg-blue-500', 'hover:bg-blue-600', 'shadow-lg', 'shadow-blue-500/30');
+            recordBtn.innerHTML = '<i class="fa fa-microphone mr-2"></i> 开始录音';
+            break;
+    }
+}
+
+// 文本相似度比对（Levenshtein距离）
+function calculateSimilarity(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix = [];
+    
+    for (let i = 0; i <= len1; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+        matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j - 1] + cost
+            );
+        }
+    }
+    
+    const distance = matrix[len1][len2];
+    const maxLen = Math.max(len1, len2);
+    return maxLen === 0 ? 1 : 1 - distance / maxLen;
+}
+
+// 开始/停止录音
+function toggleRecording(callback) {
+    if (!recognition && !initSpeechRecognition()) {
+        showFeedback('您的浏览器不支持语音识别功能', 'error');
+        return;
+    }
+    
+    onRecognitionResult = callback;
+    
+    if (isRecording) {
+        recognition.stop();
+    } else {
+        recognitionResult = '';
+        const questionIndex = randomQuestions[currentRandomIndex];
+        const currentQuestions = getCurrentQuestions();
+        const question = currentQuestions[questionIndex];
+        
+        if (question.type === "sentence" && question.fullSentence) {
+            const detectedLang = detectLanguage(question.fullSentence);
+            recognition.lang = detectedLang;
+            recognition.start();
+        }
+    }
+}
+
+// 比较识别结果与原文
+function compareRecognitionWithOriginal(recognizedText, originalText) {
+    if (!recognizedText) {
+        return {
+            isCorrect: false,
+            similarity: 0,
+            message: '未识别到语音',
+            recognizedText: '',
+            originalText: originalText
+        };
+    }
+    
+    const cleanRecognized = recognizedText.trim().toLowerCase();
+    const cleanOriginal = originalText.trim().toLowerCase();
+    
+    const similarity = calculateSimilarity(cleanRecognized, cleanOriginal);
+    const isCorrect = similarity >= 0.8;
+    
+    let message = '';
+    if (isCorrect) {
+        message = `朗读正确！相似度: ${Math.round(similarity * 100)}%`;
+    } else {
+        message = `朗读不准确，相似度: ${Math.round(similarity * 100)}%`;
+    }
+    
+    return {
+        isCorrect: isCorrect,
+        similarity: similarity,
+        message: message,
+        recognizedText: recognizedText,
+        originalText: originalText
+    };
+}
+
+// 导出函数供外部使用
+window.toggleRecording = toggleRecording;
+window.compareRecognitionWithOriginal = compareRecognitionWithOriginal;
+window.initSpeechRecognition = initSpeechRecognition;
+
 // 语音播报功能
 function speakSentence() {
     const questionIndex = randomQuestions[currentRandomIndex];

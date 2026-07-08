@@ -1252,29 +1252,51 @@ function loadQuestion(index) {
     else if (question.type === "sentence") {
         // 句子记忆题：直接在句子中填空
         answerContainer.innerHTML = `
-            <div class="space-y-2">
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <div id="sentence-content" class="text-sm leading-relaxed">
-                        ${question.content}
+            <div class="space-y-4">
+                <div id="sentence-fill-stage">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div id="sentence-content" class="text-sm leading-relaxed">
+                            ${question.content}
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-3">
+                        <button id="fill-submit-btn" class="bg-primary text-white px-5 py-2 rounded hover:bg-primary/90 text-sm">
+                            检查填空
+                        </button>
                     </div>
                 </div>
-                <div class="flex justify-end">
-                    <button id="fill-submit-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm">
-                        检查填空
-                    </button>
-                </div>
                 <div id="sentence-review" class="hidden">
-                    <div class="text-sm text-gray-700 mb-1 ml-4">现在请重新输入完整句子以加强记忆</div>
-                    <div class="p-3 bg-gray-50 rounded-lg mb-4">
+                    <div class="text-sm text-gray-600 mb-3 ml-2">现在请重新输入完整句子以加强记忆</div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
                         <div id="sentence-review-content" class="text-sm leading-relaxed">
                             <!-- 第二阶段打散句子格子将在这里动态生成 -->
                         </div>
                     </div>
-                    <div class="flex justify-end">
-                        <button id="sentence-submit-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm">
+                    <div class="flex justify-end mt-3">
+                        <button id="sentence-submit-btn" class="bg-primary text-white px-5 py-2 rounded hover:bg-primary/90 text-sm">
                             提交
                         </button>
                     </div>
+                </div>
+                <div id="sentence-recording" class="hidden">
+                    <div class="text-center mb-4">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-3">
+                            <i class="fa fa-microphone text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="text-sm text-gray-600 font-medium">现在请朗读完整句子</div>
+                    </div>
+                    <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
+                        <div class="text-xs text-gray-500 mb-2 text-center">完整句子</div>
+                        <div id="sentence-recording-content" class="text-sm leading-relaxed text-center font-medium text-gray-800">
+                            <!-- 完整句子将在这里显示 -->
+                        </div>
+                    </div>
+                    <div class="flex justify-center mt-4">
+                        <button id="record-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full flex items-center transition-all duration-300 select-none shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40" title="录音朗读">
+                            <i class="fa fa-microphone mr-2"></i> 开始录音
+                        </button>
+                    </div>
+                    <div id="recognition-result" class="hidden mt-4 p-4 rounded-xl text-sm"></div>
                 </div>
             </div>
         `;
@@ -1287,6 +1309,14 @@ function loadQuestion(index) {
         const titleSpeechBtn = document.getElementById('title-speech-btn');
         if (titleSpeechBtn) {
             titleSpeechBtn.addEventListener('click', speakSentence);
+        }
+        
+        // 为录音按钮添加事件监听器
+        const recordBtn = document.getElementById('record-btn');
+        if (recordBtn) {
+            recordBtn.addEventListener('click', function() {
+                handleRecording();
+            });
         }
         
         allBlanks.forEach((blank, blankIndex) => {
@@ -1552,6 +1582,64 @@ function loadQuestion(index) {
         }, 1000);
 }
 
+// 处理录音朗读功能
+function handleRecording() {
+    const questionIndex = randomQuestions[currentRandomIndex];
+    const currentQuestions = getCurrentQuestions();
+    const question = currentQuestions[questionIndex];
+    
+    if (question.type !== "sentence" || !question.fullSentence) {
+        showFeedback('该题型不支持录音朗读', 'error');
+        return;
+    }
+    
+    const recognitionResultEl = document.getElementById('recognition-result');
+    
+    window.toggleRecording(function(recognizedText, isFinal, errorMsg) {
+        if (errorMsg) {
+            recognitionResultEl.classList.remove('hidden', 'bg-green-50', 'text-green-700');
+            recognitionResultEl.classList.add('bg-red-50', 'text-red-700');
+            recognitionResultEl.innerHTML = `<div class="font-medium mb-1">错误</div><div>${errorMsg}</div>`;
+            recognitionResultEl.classList.remove('hidden');
+            return;
+        }
+        
+        if (isFinal && recognizedText) {
+            const result = window.compareRecognitionWithOriginal(recognizedText, question.fullSentence);
+            
+            recognitionResultEl.classList.remove('hidden', 'bg-red-50', 'text-red-700');
+            
+            if (result.isCorrect) {
+                recognitionResultEl.classList.add('bg-green-50', 'text-green-700');
+                playCorrectSound();
+                createGreenCheckEffect();
+                
+                const bonusXP = 5;
+                addXP(bonusXP, '朗读正确');
+                
+                recognitionResultEl.innerHTML = `
+                    <div class="font-medium mb-1">${result.message}</div>
+                    <div class="text-xs opacity-80">原文: ${result.originalText}</div>
+                    <div class="text-xs opacity-80">识别: ${result.recognizedText}</div>
+                `;
+            } else {
+                recognitionResultEl.classList.add('bg-yellow-50', 'text-yellow-700');
+                recognitionResultEl.innerHTML = `
+                    <div class="font-medium mb-1">${result.message}</div>
+                    <div class="text-xs opacity-80">原文: ${result.originalText}</div>
+                    <div class="text-xs opacity-80">识别: ${result.recognizedText}</div>
+                `;
+            }
+            
+            recognitionResultEl.classList.remove('hidden');
+        } else if (recognizedText) {
+            recognitionResultEl.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'bg-red-50', 'text-red-700');
+            recognitionResultEl.classList.add('bg-blue-50', 'text-blue-700');
+            recognitionResultEl.innerHTML = `<div class="font-medium">正在识别...</div><div>${recognizedText}</div>`;
+        }
+    });
+}
+
 // 检查答案
     function checkAnswer(answer) {
         // 清除计时器
@@ -1623,28 +1711,11 @@ function loadQuestion(index) {
                 window.sentenceStage = 'review';
                 document.getElementById('sentence-review').classList.remove('hidden');
                 
-                // 隐藏填空部分（句子内容、填空输入框和检查按钮）
-                const sentenceContent = document.getElementById('sentence-content');
-                const fillSubmitBtn = document.getElementById('fill-submit-btn');
-                
-                if (sentenceContent) {
-                    sentenceContent.style.display = 'none';
+                // 隐藏第一阶段内容
+                const sentenceFillStage = document.getElementById('sentence-fill-stage');
+                if (sentenceFillStage) {
+                    sentenceFillStage.classList.add('hidden');
                 }
-                if (fillSubmitBtn) {
-                    fillSubmitBtn.style.display = 'none';
-                }
-                
-                // 隐藏包含句子内容的灰色背景容器
-                const sentenceContainer = document.querySelector('.p-3.bg-gray-50.rounded-lg');
-                if (sentenceContainer) {
-                    sentenceContainer.style.display = 'none';
-                }
-                
-                // 隐藏所有填空输入框
-                const fillInputs = document.querySelectorAll('.code-blank input');
-                fillInputs.forEach(input => {
-                    input.style.display = 'none';
-                });
                 
                 document.getElementById('fill-submit-btn').disabled = true;
                 document.getElementById('fill-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
@@ -1841,8 +1912,34 @@ function loadQuestion(index) {
             document.getElementById('sentence-submit-btn').disabled = true;
             document.getElementById('sentence-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
             
-            // 重置sentence阶段
-            window.sentenceStage = null;
+            // 进入第三阶段：录音朗读
+            window.sentenceStage = 'recording';
+            
+            // 隐藏第二阶段内容
+            const sentenceReview = document.getElementById('sentence-review');
+            if (sentenceReview) {
+                sentenceReview.classList.add('hidden');
+            }
+            
+            // 显示第三阶段内容
+            const sentenceRecording = document.getElementById('sentence-recording');
+            const sentenceRecordingContent = document.getElementById('sentence-recording-content');
+            const recognitionResultEl = document.getElementById('recognition-result');
+            
+            if (sentenceRecording) {
+                sentenceRecording.classList.remove('hidden');
+            }
+            
+            // 在第三阶段显示完整句子
+            if (sentenceRecordingContent) {
+                sentenceRecordingContent.innerHTML = `<div class="text-green-600 font-medium mb-2">完整句子：</div><div>${question.fullSentence}</div>`;
+            }
+            
+            if (recognitionResultEl) {
+                recognitionResultEl.classList.remove('hidden');
+                recognitionResultEl.classList.add('bg-blue-50', 'text-blue-700');
+                recognitionResultEl.innerHTML = '<div class="font-medium">🎤 点击下方按钮录音朗读完整句子</div>';
+            }
             
             // 启用下一题按钮，让用户手动控制跳转
             updateButtons();
