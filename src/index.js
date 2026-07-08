@@ -1910,6 +1910,8 @@ function handleRecording() {
             
             // 进入第三阶段：录音朗读
             window.sentenceStage = 'recording';
+            feedbackEl.textContent = '';
+            feedbackEl.classList.add('hidden');
             
             // 隐藏第二阶段内容
             const sentenceReview = document.getElementById('sentence-review');
