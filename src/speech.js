@@ -1,4 +1,16 @@
-// 检测文本语言（中文、英文、德语、阿拉伯语、日语、韩语、俄语、西班牙语、法语、意大利语、葡萄牙语、荷兰语、瑞典语、越南语、缅甸语或希伯来语）
+let currentSpeechLang = 'auto';
+
+function getCurrentSpeechLang() {
+    return currentSpeechLang;
+}
+
+function setCurrentSpeechLang(lang) {
+    currentSpeechLang = lang;
+}
+
+window.getCurrentSpeechLang = getCurrentSpeechLang;
+window.setCurrentSpeechLang = setCurrentSpeechLang;
+
 function detectLanguage(text) {
     // 统计中文字符数量
     const chineseChars = text.match(/[\u4e00-\u9fff]/g) || [];
@@ -512,8 +524,11 @@ function toggleRecording(callback) {
         const question = currentQuestions[questionIndex];
         
         if (question.type === "sentence" && question.fullSentence) {
-            const detectedLang = detectLanguage(question.fullSentence);
-            recognition.lang = detectedLang;
+            let langToUse = currentSpeechLang;
+            if (langToUse === 'auto') {
+                langToUse = detectLanguage(question.fullSentence);
+            }
+            recognition.lang = langToUse;
             recognition.start();
         }
     }
@@ -592,12 +607,13 @@ function speakSentence() {
             window.speechSynthesis.cancel();
             isPaused = false;
             
-            // 检测语言
-            const detectedLang = detectLanguage(question.fullSentence);
+            let langToUse = currentSpeechLang;
+            if (langToUse === 'auto') {
+                langToUse = detectLanguage(question.fullSentence);
+            }
             
-            // 创建新的语音播报
             currentUtterance = new SpeechSynthesisUtterance(question.fullSentence);
-            currentUtterance.lang = detectedLang; // 根据检测结果设置语言
+            currentUtterance.lang = langToUse;
             currentUtterance.rate = 0.9; // 稍微慢一点，便于听清
             currentUtterance.pitch = 1.0; // 正常音调
             currentUtterance.volume = 1.0; // 最大音量

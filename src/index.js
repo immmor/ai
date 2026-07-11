@@ -1175,13 +1175,13 @@ function loadQuestion(index) {
     
     // 更新题目内容
     questionContainer.innerHTML = `
-        <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs text-gray-500 flex justify-between items-center">
+        <div class="bg-gray-50 px-4 h-12 border-b border-gray-200 text-xs text-gray-500 flex justify-between items-center">
             <span>${getBankDisplayName(currentQuestionBank)} ${index + 1}/${randomQuestions.length}: ${question.title}</span>
             <div class="flex items-center">
                 <span id="question-timer" class="mr-2 text-gray-600 font-medium">0秒</span>
                 <span id="question-correct-count" class="mr-1 text-xs text-green-600 font-medium">0</span>
                 <span id="question-wrong-count" class="text-xs text-red-600 font-medium">0</span>
-                ${question.type === "sentence" ? '<button id="title-speech-btn" class="ml-3 text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none" title="语音播报 (快捷键: Ctrl+B/Command+B)"><i class="fa fa-volume-up mr-1 text-purple-500"></i></button>' : ''}
+                ${question.type === "sentence" ? '<button id="speech-lang-btn" class="ml-1 text-gray-400 hover:text-purple-500 transition-colors p-1" title="选择播报语言"><i class="fa fa-globe text-xxs"></i></button><button id="title-speech-btn" class="ml-1 text-gray-500 hover:text-purple-500 flex items-center transition-all duration-300 select-none" title="语音播报 (快捷键: Ctrl+B/Command+B)"><i class="fa fa-volume-up mr-2 text-purple-500"></i></button>' : ''}
             </div>
         </div>
         ${question.type === "sentence" ? '' : question.content}
@@ -1305,6 +1305,15 @@ function loadQuestion(index) {
         const titleSpeechBtn = document.getElementById('title-speech-btn');
         if (titleSpeechBtn) {
             titleSpeechBtn.addEventListener('click', speakSentence);
+        }
+        
+        // 为语音语言按钮添加事件监听器
+        const speechLangBtn = document.getElementById('speech-lang-btn');
+        if (speechLangBtn && window.getCurrentSpeechLang) {
+            speechLangBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showLangSelectModal();
+            });
         }
         
         // 为录音按钮添加事件监听器
@@ -2612,6 +2621,53 @@ closeAnswerBtn.addEventListener('click', closeAnswer);
     // 上一题/下一题
     prevBtn.addEventListener('click', goPrev);
     nextBtn.addEventListener('click', goNext);
+}
+
+function showLangSelectModal() {
+    const currentLang = window.getCurrentSpeechLang ? window.getCurrentSpeechLang() : 'auto';
+    
+    const langModal = document.createElement('div');
+    langModal.id = 'lang-select-modal';
+    langModal.className = 'fixed inset-0 flex items-center justify-center z-[100] bg-black/50';
+    langModal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-2xl p-4 w-[240px]">
+            <div class="text-sm font-medium text-gray-700 mb-3 text-center">选择播报语言</div>
+            <div class="grid grid-cols-2 gap-2">
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'auto' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="auto">自动</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'zh-CN' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="zh-CN">中文</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'en-US' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="en-US">英语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'ja-JP' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="ja-JP">日语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'ko-KR' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="ko-KR">韩语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'de-DE' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="de-DE">德语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'fr-FR' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="fr-FR">法语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'es-ES' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="es-ES">西语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'ru-RU' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="ru-RU">俄语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'pt-PT' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="pt-PT">葡语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'it-IT' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="it-IT">意语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'nl-NL' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="nl-NL">荷兰语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'sv-SE' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="sv-SE">瑞典语</button>
+                <button class="lang-option px-3 py-2 text-xs rounded border ${currentLang === 'vi-VN' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'text-gray-600 hover:bg-gray-50 border-gray-100'}" data-lang="vi-VN">越南语</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(langModal);
+    
+    langModal.addEventListener('click', function(e) {
+        if (e.target === langModal) {
+            langModal.remove();
+        }
+    });
+    
+    langModal.querySelectorAll('.lang-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lang = this.dataset.lang;
+            if (window.setCurrentSpeechLang) {
+                window.setCurrentSpeechLang(lang);
+            }
+            langModal.remove();
+        });
+    });
 }
 
 // 初始化
