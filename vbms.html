@@ -858,19 +858,18 @@
                     <div class="data-table" style="margin-top: 1rem;">
                         <div class="table-header">
                             <h3>节点链接管理</h3>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="newLinkKey" placeholder="链接名称" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <input type="text" id="newLinkValue" placeholder="链接地址" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; width: 300px;">
-                                <button class="add-btn" onclick="addLink()" style="background-color: #48bb78;">添加链接</button>
-                            </div>
+                            <button class="add-btn" onclick="openNodeModal()" style="background-color: #48bb78;">添加节点</button>
                         </div>
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>名称</th>
-                                    <th>链接</th>
-                                    <th>更新时间</th>
+                                    <th>邮箱</th>
+                                    <th>密码</th>
+                                    <th>类型</th>
+                                    <th>Clash链接</th>
+                                    <th>V2Ray链接</th>
+                                    <th>到期时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -1206,6 +1205,47 @@
         </div>
     </div>
 
+    </div>
+
+    <!-- 节点编辑模态框 -->
+    <div id="nodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="nodeModalTitle">添加节点</h3>
+                <button class="close-btn" onclick="closeNodeModal()">&times;</button>
+            </div>
+            <form id="nodeForm" onsubmit="saveNode(event)">
+                <input type="hidden" id="nodeEditId">
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="text" id="nodeEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="text" id="nodePassword" required>
+                </div>
+                <div class="form-group">
+                    <label>类型</label>
+                    <select id="nodeType" required>
+                        <option value="month">month</option>
+                        <option value="year">year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Clash链接</label>
+                    <input type="text" id="nodeClashLink" required>
+                </div>
+                <div class="form-group">
+                    <label>V2Ray链接</label>
+                    <input type="text" id="nodeV2rayLink" required>
+                </div>
+                <div class="form-group">
+                    <label>到期时间</label>
+                    <input type="date" id="nodeExpireDate">
+                </div>
+                <button type="submit" class="btn" style="margin-top: 15px;">保存</button>
+            </form>
+        </div>
     </div>
 
     <!-- 比赛编辑模态框 -->
@@ -2554,39 +2594,82 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         async function loadLinks() {
-            const result = await newApiRequest('/api/links', 'GET');
+            const result = await newApiRequest('/api/node', 'GET');
             const tbody = document.getElementById('linksTableBody');
             if (result.code === 200 && result.data.length > 0) {
-                tbody.innerHTML = result.data.map(link => `
+                tbody.innerHTML = result.data.map(node => `
                     <tr>
-                        <td>${link.id}</td>
-                        <td>${link.key}</td>
-                        <td>${link.value}</td>
-                        <td>${link.updated_at || link.created_at}</td>
-                        <td><button class="action-btn delete-btn" onclick="deleteLink('${link.key}')">删除</button></td>
+                        <td>${node.id}</td>
+                        <td>${node.email}</td>
+                        <td>${node.password}</td>
+                        <td>${node.type}</td>
+                        <td style="max-width: 200px; word-break: break-all;">${node.clash_link || '-'}</td>
+                        <td style="max-width: 200px; word-break: break-all;">${node.v2ray_link || '-'}</td>
+                        <td>${node.expire_date || '-'}</td>
+                        <td>
+                            <button class="action-btn edit-btn" onclick="editNode(${node.id})">编辑</button>
+                            <button class="action-btn delete-btn" onclick="deleteNode(${node.id})">删除</button>
+                        </td>
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">暂无链接数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">暂无节点数据</td></tr>';
             }
         }
 
-        async function addLink() {
-            const key = document.getElementById('newLinkKey').value.trim();
-            const value = document.getElementById('newLinkValue').value.trim();
-            if (!key || !value) { alert('请填写链接名称和地址'); return; }
-            const result = await newApiRequest('/api/links', 'POST', { key, value });
-            if (result.code === 200) {
-                document.getElementById('newLinkKey').value = '';
-                document.getElementById('newLinkValue').value = '';
-                loadLinks();
-                alert('添加成功');
-            } else { alert(result.msg || '添加失败'); }
+        function openNodeModal(id) {
+            document.getElementById('nodeModalTitle').textContent = id ? '编辑节点' : '添加节点';
+            document.getElementById('nodeEditId').value = id || '';
+            document.getElementById('nodeForm').reset();
+            document.getElementById('nodeModal').style.display = 'flex';
         }
 
-        async function deleteLink(key) {
-            if (!confirm('确定删除该链接？')) return;
-            const result = await newApiRequest('/api/links', 'DELETE', { key });
+        function closeNodeModal() {
+            document.getElementById('nodeModal').style.display = 'none';
+        }
+
+        async function editNode(id) {
+            const result = await newApiRequest('/api/node', 'GET');
+            if (result.code !== 200) { alert('获取失败'); return; }
+            const node = result.data.find(n => n.id === id);
+            if (!node) { alert('节点不存在'); return; }
+            document.getElementById('nodeModalTitle').textContent = '编辑节点';
+            document.getElementById('nodeEditId').value = node.id;
+            document.getElementById('nodeEmail').value = node.email;
+            document.getElementById('nodePassword').value = node.password;
+            document.getElementById('nodeType').value = node.type;
+            document.getElementById('nodeClashLink').value = node.clash_link;
+            document.getElementById('nodeV2rayLink').value = node.v2ray_link;
+            document.getElementById('nodeExpireDate').value = node.expire_date ? node.expire_date.split(' ')[0] : '';
+            document.getElementById('nodeModal').style.display = 'flex';
+        }
+
+        async function saveNode(e) {
+            e.preventDefault();
+            const id = document.getElementById('nodeEditId').value;
+            const data = {
+                email: document.getElementById('nodeEmail').value.trim(),
+                password: document.getElementById('nodePassword').value.trim(),
+                type: document.getElementById('nodeType').value,
+                clash_link: document.getElementById('nodeClashLink').value.trim(),
+                v2ray_link: document.getElementById('nodeV2rayLink').value.trim(),
+                expire_date: document.getElementById('nodeExpireDate').value
+            };
+            const method = id ? 'PUT' : 'POST';
+            if (id) data.id = parseInt(id);
+            const result = await newApiRequest('/api/node', method, data);
+            if (result.code === 200) {
+                alert(method === 'POST' ? '添加成功' : '更新成功');
+                closeNodeModal();
+                loadLinks();
+            } else {
+                alert(result.msg || '操作失败');
+            }
+        }
+
+        async function deleteNode(id) {
+            if (!confirm('确定删除该节点？')) return;
+            const result = await newApiRequest('/api/node', 'DELETE', { id });
             if (result.code === 200) { loadLinks(); alert('删除成功'); }
             else { alert(result.msg || '删除失败'); }
         }

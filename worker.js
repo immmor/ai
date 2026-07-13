@@ -1355,8 +1355,34 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            // VIP 已过期，返回空链接文件
-            return new Response('', {
+            const expiredConfig = `mixed-port: 7890
+allow-lan: false
+bind-address: "*"
+mode: rule
+log-level: info
+dns:
+  enable: true
+  nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+proxies:
+  - name: "VIP-Expired-Server"
+    type: vmess
+    server: expired.phantom.immmor.com
+    port: 443
+    uuid: ${crypto.randomUUID()}
+    alterId: 0
+    cipher: auto
+    tls: true
+    servername: expired.phantom.immmor.com
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "VIP-Expired-Server"
+rules:
+  - MATCH,PROXY`;
+            return new Response(expiredConfig, {
               headers: {
                 'Content-Type': 'text/yaml; charset=utf-8',
                 'Access-Control-Allow-Origin': '*',
@@ -1421,8 +1447,22 @@ export default {
           const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
           
           if (!expireDate || expireDate < now) {
-            // VIP 已过期，返回空链接文件
-            return new Response('', {
+            const v2rayConfig = JSON.stringify({
+              v: '2',
+              ps: 'VIP-Expired-Server',
+              add: 'expired.phantom.immmor.com',
+              port: '443',
+              id: crypto.randomUUID(),
+              aid: '0',
+              net: 'ws',
+              type: 'none',
+              host: '',
+              path: '',
+              tls: 'tls',
+              sni: 'expired.phantom.immmor.com'
+            });
+            const expiredConfig = 'vmess://' + btoa(v2rayConfig);
+            return new Response(expiredConfig, {
               headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
                 'Access-Control-Allow-Origin': '*',
@@ -2186,6 +2226,55 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           const { key } = await request.json();
           if (!key) return resJson({ code: 400, msg: '缺少key参数' }, 400);
           await DB.prepare('DELETE FROM link WHERE key = ?').bind(key).run();
+          return resJson({ code: 200, msg: '删除成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== node 表接口 ==========
+      if (path === '/api/node' && request.method === 'GET') {
+        try {
+          const nodes = await DB.prepare('SELECT * FROM node ORDER BY id DESC').all();
+          return resJson({ code: 200, data: nodes.results || [] });
+        } catch (err) {
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      if (path === '/api/node' && request.method === 'POST') {
+        try {
+          const { email, password, type, clash_link, v2ray_link, expire_date } = await request.json();
+          if (!email || !password || !type || !clash_link || !v2ray_link) {
+            return resJson({ code: 400, msg: '缺少必要参数' }, 400);
+          }
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('INSERT INTO node (email, password, type, clash_link, v2ray_link, expire_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(email, password, type, clash_link, v2ray_link, expire_date || '', now, now).run();
+          return resJson({ code: 200, msg: '添加成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '添加失败', error: err.message }, 500);
+        }
+      }
+
+      if (path === '/api/node' && request.method === 'PUT') {
+        try {
+          const { id, email, password, type, clash_link, v2ray_link, expire_date } = await request.json();
+          if (!id) return resJson({ code: 400, msg: '缺少id参数' }, 400);
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('UPDATE node SET email = ?, password = ?, type = ?, clash_link = ?, v2ray_link = ?, expire_date = ?, updated_at = ? WHERE id = ?')
+            .bind(email, password, type, clash_link, v2ray_link, expire_date || '', now, id).run();
+          return resJson({ code: 200, msg: '更新成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
+        }
+      }
+
+      if (path === '/api/node' && request.method === 'DELETE') {
+        try {
+          const { id } = await request.json();
+          if (!id) return resJson({ code: 400, msg: '缺少id参数' }, 400);
+          await DB.prepare('DELETE FROM node WHERE id = ?').bind(id).run();
           return resJson({ code: 200, msg: '删除成功' });
         } catch (err) {
           return resJson({ code: 500, msg: '删除失败', error: err.message }, 500);
