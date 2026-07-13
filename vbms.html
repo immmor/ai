@@ -2266,9 +2266,17 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 const isLinkExpiring = linkExpireDate && userInfo?.v_expire_date;
                 const vipExpireMs = new Date(userInfo.v_expire_date).getTime();
                 const isTrafficOverLimit = totalTrafficGB >= 300;
+                const isVipExpired = userInfo?.v_expire_date && new Date().getTime() > vipExpireMs;
                 const needsRecommendation = (isLinkExpiring && vipExpireMs > linkExpireDate) || isTrafficOverLimit;
                 
-                html += `<tr ${needsRecommendation ? 'style="background-color: #fff3cd;"' : ''}>
+                let bgColor = '';
+                if (isVipExpired) {
+                    bgColor = 'background-color: #fed7d7;';
+                } else if (needsRecommendation) {
+                    bgColor = 'background-color: #fff3cd;';
+                }
+                
+                html += `<tr ${bgColor ? `style="${bgColor}"` : ''}>
                     <td>${u.username}</td>
                     <td>${vipExpireDate}</td>
                     <td style="max-width: 400px; word-break: break-all; font-size: 0.85rem;">${u.link || '-'}</td>
@@ -2396,6 +2404,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 links.forEach((node, index) => {
                     const radioId = `${type}_${index}`;
                     const linkValue = type === 'clash' ? node.clash_link : node.v2ray_link;
+                    const expireText = node.expire_date ? `到期: ${node.expire_date}` : '未设置';
                     html += `
                         <label for="${radioId}" style="display: block; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer;">
                             <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
@@ -2403,6 +2412,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                                 <div style="flex: 1; min-width: 0;">
                                     <div style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">${node.email}</div>
                                     <div style="font-size: 0.8rem; word-break: break-all; color: #667eea;">${linkValue}</div>
+                                    <div style="font-size: 0.75rem; color: #718096; margin-top: 0.25rem;">${expireText}</div>
                                 </div>
                             </div>
                         </label>
