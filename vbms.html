@@ -867,10 +867,10 @@
                                     <th>邮箱</th>
                                     <th>密码</th>
                                     <th>类型</th>
-                                    <th>Clash链接</th>
-                                    <th>V2Ray链接</th>
+                                    <th style="min-width: 250px;">Clash链接</th>
+                                    <th style="min-width: 250px;">V2Ray链接</th>
                                     <th>到期时间</th>
-                                    <th>操作</th>
+                                    <th style="min-width: 160px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="linksTableBody"></tbody>
@@ -2644,12 +2644,12 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                         <td>${node.email}</td>
                         <td>${node.password}</td>
                         <td>${node.type}</td>
-                        <td style="max-width: 200px; word-break: break-all;">${node.clash_link || '-'}</td>
-                        <td style="max-width: 200px; word-break: break-all;">${node.v2ray_link || '-'}</td>
+                        <td style="max-width: 300px; word-break: break-all; font-size: 0.85rem;">${node.clash_link || '-'}</td>
+                        <td style="max-width: 300px; word-break: break-all; font-size: 0.85rem;">${node.v2ray_link || '-'}</td>
                         <td>${node.expire_date || '-'}</td>
-                        <td>
-                            <button class="action-btn edit-btn" onclick="editNode(${node.id})">编辑</button>
-                            <button class="action-btn delete-btn" onclick="deleteNode(${node.id})">删除</button>
+                        <td style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 0.5rem 0;">
+                            <button class="action-btn edit-btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="editNode(${node.id})">编辑</button>
+                            <button class="action-btn delete-btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="deleteNode(${node.id})">删除</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'month')">替换月链接</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'year')">替换年链接</button>
                         </td>
