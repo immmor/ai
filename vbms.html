@@ -2615,18 +2615,22 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             } catch (err) { alert('保存失败'); }
         }
 
-        async function replaceDefaultLink(clashLink, v2rayLink) {
+        async function replaceDefaultLink(clashLink, v2rayLink, type) {
             if (!clashLink || !v2rayLink) {
                 alert('该节点链接不完整，无法替换配置');
                 return;
             }
-            if (!confirm('确定要用此节点的链接替换默认订阅链接配置吗？\n\n月度和年度链接将使用相同的节点链接。')) {
+            const label = type === 'month' ? '月度' : '年度';
+            if (!confirm(`确定要用此节点的链接替换默认${label}订阅链接配置吗？`)) {
                 return;
             }
-            document.getElementById('linkClashMonthly').value = clashLink;
-            document.getElementById('linkClashYearly').value = clashLink;
-            document.getElementById('linkV2rayMonthly').value = v2rayLink;
-            document.getElementById('linkV2rayYearly').value = v2rayLink;
+            if (type === 'month') {
+                document.getElementById('linkClashMonthly').value = clashLink;
+                document.getElementById('linkV2rayMonthly').value = v2rayLink;
+            } else {
+                document.getElementById('linkClashYearly').value = clashLink;
+                document.getElementById('linkV2rayYearly').value = v2rayLink;
+            }
             await saveLinkConfig();
         }
 
@@ -2646,7 +2650,8 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                         <td>
                             <button class="action-btn edit-btn" onclick="editNode(${node.id})">编辑</button>
                             <button class="action-btn delete-btn" onclick="deleteNode(${node.id})">删除</button>
-                            <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}')">替换配置</button>
+                            <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'month')">替换月链接</button>
+                            <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'year')">替换年链接</button>
                         </td>
                     </tr>
                 `).join('');
