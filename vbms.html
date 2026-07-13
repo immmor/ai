@@ -2303,9 +2303,9 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         async function recommendLink(username, needsRecommendation) {
-            const result = await newApiRequest('/api/links', 'GET');
+            const result = await newApiRequest('/api/node', 'GET');
             if (result.code !== 200 || !result.data?.length) {
-                alert('⚠️ 暂无可用的链接配置，请购买新的链接！');
+                alert('⚠️ 暂无可用的节点配置，请添加新的节点！');
                 return;
             }
             
@@ -2322,13 +2322,24 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 });
             }
             
-            const availableLinks = result.data.filter(link => {
-                const count = linkCountMap[link.value] || 0;
-                return count < 4;
+            const availableLinks = [];
+            result.data.forEach(node => {
+                const clashCount = linkCountMap[node.clash_link] || 0;
+                const v2rayCount = linkCountMap[node.v2ray_link] || 0;
+                if (clashCount < 4 || v2rayCount < 4) {
+                    availableLinks.push({
+                        id: node.id,
+                        email: node.email,
+                        clash_link: node.clash_link,
+                        v2ray_link: node.v2ray_link,
+                        type: node.type,
+                        expire_date: node.expire_date
+                    });
+                }
             });
             
             if (!availableLinks.length) {
-                alert('⚠️ 没有可用的链接（所有链接使用人数均≥4人），请购买新的链接！');
+                alert('⚠️ 没有可用的节点（所有节点使用人数均≥4人），请添加新的节点！');
                 return;
             }
             
@@ -2382,15 +2393,16 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             
             const renderLinkList = (type, container) => {
                 let html = '';
-                links.forEach((link, index) => {
+                links.forEach((node, index) => {
                     const radioId = `${type}_${index}`;
+                    const linkValue = type === 'clash' ? node.clash_link : node.v2ray_link;
                     html += `
                         <label for="${radioId}" style="display: block; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer;">
                             <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <input type="radio" name="${type}_link" id="${radioId}" value="${link.value.replace(/"/g, '&quot;')}" data-key="${link.key.replace(/"/g, '&quot;')}" style="margin-top: 0.25rem;">
+                                <input type="radio" name="${type}_link" id="${radioId}" value="${linkValue.replace(/"/g, '&quot;')}" data-id="${node.id}" style="margin-top: 0.25rem;">
                                 <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">${link.key}</div>
-                                    <div style="font-size: 0.8rem; word-break: break-all; color: #667eea;">${link.value}</div>
+                                    <div style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">${node.email}</div>
+                                    <div style="font-size: 0.8rem; word-break: break-all; color: #667eea;">${linkValue}</div>
                                 </div>
                             </div>
                         </label>
