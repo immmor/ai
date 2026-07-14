@@ -1657,8 +1657,8 @@
 
         function isSupportMessageForUser(message, username) {
             if (!message || !username) return false;
-            if (message.username === username) return true;
-            return message.content?.includes(`[用户留言] ${username}:`);
+            if (message.content?.includes(`[用户留言] ${username}:`)) return true;
+            return message.username === username && message.content?.includes('[客服回复] ');
         }
 
         function stopSupportPolling() {
@@ -1777,7 +1777,9 @@
                     }
                     container.innerHTML = messages.map(m => {
                         const isSupport = m.username === 'immmor';
-                        const content = m.content?.replace('[用户留言] ' + username + ': ', '');
+                        const content = m.content
+                            ?.replace('[用户留言] ' + username + ': ', '')
+                            .replace('[客服回复] ', '');
                         return `
                             <div style="display: flex; gap: 1rem; margin-bottom: 1rem; ${isSupport ? 'justify-content: flex-end;' : ''}">
                                 <div style="${isSupport ? 'order: 2;' : ''}">
@@ -1801,10 +1803,10 @@
             if (!content || !currentSupportUser) return;
 
             try {
-                const res = await fetch(NEW_API_BASE + '/api/send-message', {
+                const res = await fetch(NEW_API_BASE + '/api/support/reply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ target: 'single', username: currentSupportUser, content })
+                    body: JSON.stringify({ username: currentSupportUser, content })
                 });
                 const data = await res.json();
                 if (data.code !== 200) {
