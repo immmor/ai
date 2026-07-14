@@ -1579,6 +1579,10 @@
 
         // 页面切换
         async function showPage(pageName) {
+            if (pageName !== 'support') {
+                stopSupportPolling();
+            }
+
             // 隐藏所有页面
             const pages = document.querySelectorAll('.page-section');
             pages.forEach(page => {
@@ -1634,6 +1638,7 @@
             } else if (pageName === 'support') {
                 await loadSupportMessages();
                 await checkSupportOnline();
+                startSupportPolling();
             } else if (pageName === 'football') {
                     await loadFootballMatches();
                     await loadFootballBets();
@@ -1644,6 +1649,37 @@
         }
 
         let currentSupportUser = null;
+        let supportRefreshTimer = null;
+
+        function getSupportMessageList(data) {
+            return Array.isArray(data?.data?.messages) ? data.data.messages : [];
+        }
+
+        function isSupportMessageForUser(message, username) {
+            if (!message || !username) return false;
+            if (message.username === username) return true;
+            return message.content?.includes(`[用户留言] ${username}:`);
+        }
+
+        function stopSupportPolling() {
+            if (supportRefreshTimer) {
+                clearInterval(supportRefreshTimer);
+                supportRefreshTimer = null;
+            }
+        }
+
+        function startSupportPolling() {
+            stopSupportPolling();
+            supportRefreshTimer = setInterval(async () => {
+                const supportPage = document.getElementById('supportPage');
+                if (!supportPage || supportPage.style.display === 'none') return;
+                await loadSupportMessages();
+                await checkSupportOnline();
+                if (currentSupportUser) {
+                    await loadSupportChat(currentSupportUser);
+                }
+            }, 5000);
+        }
 
         async function checkSupportOnline() {
             try {
@@ -1681,7 +1717,7 @@
                 const res = await fetch(NEW_API_BASE + '/api/messages?all=true');
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
-                    const messages = Array.isArray(data.data) ? data.data : [];
+                    const messages = getSupportMessageList(data);
                     const users = {};
                     messages.forEach(m => {
                         if (m.content?.includes('[用户留言]')) {
@@ -1728,10 +1764,12 @@
 
         async function loadSupportChat(username) {
             try {
-                const res = await fetch(NEW_API_BASE + '/api/messages?username=' + encodeURIComponent(username));
+                const res = await fetch(NEW_API_BASE + '/api/messages?all=true');
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
-                    const messages = data.data.filter(m => m.username === username || (m.content?.includes('[用户留言]') && m.content?.includes(username)));
+                    const messages = getSupportMessageList(data)
+                        .filter(m => isSupportMessageForUser(m, username))
+                        .sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || '')));
                     const container = document.getElementById('supportMessages');
                     if (messages.length === 0) {
                         container.innerHTML = '<div style="text-align: center; color: #718096; padding: 4rem;">暂无对话记录</div>';
@@ -1739,7 +1777,7 @@
                     }
                     container.innerHTML = messages.map(m => {
                         const isSupport = m.username === 'immmor';
-                        const content = m.content?.replace('[用户留言] ' + currentSupportUser + ': ', '');
+                        const content = m.content?.replace('[用户留言] ' + username + ': ', '');
                         return `
                             <div style="display: flex; gap: 1rem; margin-bottom: 1rem; ${isSupport ? 'justify-content: flex-end;' : ''}">
                                 <div style="${isSupport ? 'order: 2;' : ''}">
@@ -1761,31 +1799,24 @@
         async function sendSupportMessage() {
             const content = document.getElementById('supportInput').value.trim();
             if (!content || !currentSupportUser) return;
-            
-            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            const container = document.getElementById('supportMessages');
-            container.innerHTML += `
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; justify-content: flex-end;">
-                    <div style="order: 2;">
-                        <div style="max-width: 70%; padding: 0.75rem 1rem; border-radius: 8px; background-color: #667eea; color: white;">
-                            ${content}
-                        </div>
-                        <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 0.25rem; text-align: right;">
-                            ${now}
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.scrollTop = container.scrollHeight;
-            document.getElementById('supportInput').value = '';
 
             try {
-                await fetch(NEW_API_BASE + '/api/messages', {
+                const res = await fetch(NEW_API_BASE + '/api/send-message', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentSupportUser, content })
+                    body: JSON.stringify({ target: 'single', username: currentSupportUser, content })
                 });
-            } catch (err) { console.error('发送消息失败:', err); }
+                const data = await res.json();
+                if (data.code !== 200) {
+                    throw new Error(data.msg || '发送失败');
+                }
+                document.getElementById('supportInput').value = '';
+                await loadSupportChat(currentSupportUser);
+                await loadSupportMessages();
+            } catch (err) {
+                console.error('发送消息失败:', err);
+                alert('发送消息失败：' + err.message);
+            }
         }
 
         async function loadPricePlan() {
