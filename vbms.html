@@ -647,7 +647,10 @@
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
                 <h1 id="pageTitle">仪表盘</h1>
-                <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span id="currentUser" style="color: #4a5568; font-weight: 500;"></span>
+                    <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
+                </div>
             </nav>
 
             <!-- 页面内容 -->
@@ -1678,7 +1681,7 @@
                 const res = await fetch(NEW_API_BASE + '/api/messages?all=true');
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
-                    const messages = data.data;
+                    const messages = Array.isArray(data.data) ? data.data : [];
                     const users = {};
                     messages.forEach(m => {
                         if (m.content?.includes('[用户留言]')) {
