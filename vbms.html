@@ -738,6 +738,8 @@
                                     <th onclick="sortUsers('survey')" style="cursor:pointer; min-width: 100px;">问卷 <span class="sort-indicator" data-col="survey"></span></th>
                                     <th onclick="sortUsers('security_answer')" style="cursor:pointer; min-width: 120px;">密保答案 <span class="sort-indicator" data-col="security_answer"></span></th>
                                     <th onclick="sortUsers('source')" style="cursor:pointer; min-width: 100px;">来源 <span class="sort-indicator" data-col="source"></span></th>
+                                    <th onclick="sortUsers('free_expire_date')" style="cursor:pointer; min-width: 130px;">免费节点到期 <span class="sort-indicator" data-col="free_expire_date"></span></th>
+                                    <th onclick="sortUsers('last_checkin')" style="cursor:pointer; min-width: 130px;">最后签到 <span class="sort-indicator" data-col="last_checkin"></span></th>
                                     <th onclick="sortUsers('auto_rewn')" style="cursor:pointer; min-width: 100px;">自动续费 <span class="sort-indicator" data-col="auto_rewn"></span></th>
                                     <th onclick="sortUsers('vorders')" style="cursor:pointer; min-width: 150px;">购买记录 <span class="sort-indicator" data-col="vorders"></span></th>
                                     <th onclick="sortUsers('remark')" style="cursor:pointer; min-width: 120px;">备注 <span class="sort-indicator" data-col="remark"></span></th>
@@ -1187,6 +1189,14 @@
                     <div class="form-group">
                         <label for="userSecurityAnswer">密保答案</label>
                         <input type="text" id="userSecurityAnswer" name="userSecurityAnswer">
+                    </div>
+                    <div class="form-group">
+                        <label for="userFreeExpireDate">免费节点到期</label>
+                        <input type="date" id="userFreeExpireDate" name="userFreeExpireDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="userLastCheckin">最后签到</label>
+                        <input type="date" id="userLastCheckin" name="userLastCheckin">
                     </div>
                     <div class="form-group">
                         <label for="userAutoRewn">自动续费</label>
@@ -1781,6 +1791,8 @@
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
                     <td>${user.source || '-'}</td>
+                    <td>${user.free_expire_date || '-'}</td>
+                    <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
@@ -1944,6 +1956,8 @@
             document.getElementById('userVorders').value = user.vorders || '';
             document.getElementById('userFetchLink').value = user.fetch_link || '';
             document.getElementById('userSecurityAnswer').value = user.security_answer || '';
+            document.getElementById('userFreeExpireDate').value = user.free_expire_date || '';
+            document.getElementById('userLastCheckin').value = user.last_checkin || '';
             document.getElementById('userAutoRewn').value = (user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true) ? '1' : '0';
             document.getElementById('userRemark').value = user.remark || '';
             
@@ -1966,6 +1980,8 @@
             const vorders = document.getElementById('userVorders').value;
             const fetch_link = document.getElementById('userFetchLink').value;
             const security_answer = document.getElementById('userSecurityAnswer').value;
+            const free_expire_date = document.getElementById('userFreeExpireDate').value;
+            const last_checkin = document.getElementById('userLastCheckin').value;
             const auto_rewn = document.getElementById('userAutoRewn').value;
             const remark = document.getElementById('userRemark').value;
             
@@ -1986,6 +2002,8 @@
                     vorders: vorders || '',
                     fetch_link: fetch_link || '',
                     security_answer: security_answer || '',
+                    free_expire_date: free_expire_date || null,
+                    last_checkin: last_checkin || null,
                     auto_rewn: auto_rewn,
                     remark: remark || ''
                 });
@@ -2061,6 +2079,8 @@
                     <td>${user.survey || '-'}</td>
                     <td>${user.security_answer || '-'}</td>
                     <td>${user.source || '-'}</td>
+                    <td>${user.free_expire_date || '-'}</td>
+                    <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
