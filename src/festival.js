@@ -831,5 +831,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 100);
   });
   
-  document.getElementById('festival-controls').appendChild(restartButton);
+  const festivalControls = document.getElementById('festival-controls');
+  if (festivalControls) {
+    festivalControls.appendChild(restartButton);
+  }
 });

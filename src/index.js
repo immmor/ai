@@ -1200,6 +1200,11 @@ function loadQuestion(index) {
                     提交
                 </button>
             </div>
+            <div class="flex justify-center mt-3">
+                <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
+                    <i class="fas fa-robot mr-1"></i> AI解析
+                </button>
+            </div>
         `;
         
         // 高亮填空
@@ -1231,7 +1236,14 @@ function loadQuestion(index) {
             `;
         });
         
-        answerContainer.innerHTML = `<div class="mt-2">${optionsHtml}</div>`;
+        answerContainer.innerHTML = `
+            <div class="mt-2">${optionsHtml}</div>
+            <div class="flex justify-center mt-3">
+                <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
+                    <i class="fas fa-robot mr-1"></i> AI解析
+                </button>
+            </div>
+        `;
     }
     else if (question.type === "correct") {
         answerContainer.innerHTML = `
@@ -1240,6 +1252,11 @@ function loadQuestion(index) {
                 <input type="text" id="answer-input" class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" placeholder="输入修正后的内容...">
                 <button id="submit-btn" class="bg-primary text-white px-4 py-2 rounded-r hover:bg-primary/90 text-sm">
                     修正
+                </button>
+            </div>
+            <div class="flex justify-center mt-3">
+                <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
+                    <i class="fas fa-robot mr-1"></i> AI解析
                 </button>
             </div>
         `;
@@ -1293,6 +1310,11 @@ function loadQuestion(index) {
                         </button>
                     </div>
                     <div id="recognition-result" class="hidden mt-4 p-4 rounded-xl text-sm"></div>
+                </div>
+                <div class="flex justify-center mt-3">
+                    <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
+                        <i class="fas fa-robot mr-1"></i> AI解析
+                    </button>
                 </div>
             </div>
         `;
@@ -2106,6 +2128,138 @@ function handleRecording() {
     return isCorrect;
 }
 
+async function explainQuestionWithAI() {
+    const questionIndex = randomQuestions[currentRandomIndex];
+    const question = getCurrentQuestions()[questionIndex];
+    
+    const apiKey = localStorage.getItem('geminiApiKey') || '';
+    if (!apiKey) {
+        showFeedback('请先在AI助手中配置API Key', 'error');
+        return;
+    }
+    
+    const explainBtn = document.getElementById('ai-explain-btn');
+    if (!explainBtn) return;
+    
+    const originalText = explainBtn.innerHTML;
+    explainBtn.disabled = true;
+    explainBtn.innerHTML = '<span class="animate-spin mr-1">⏳</span> 解析中...';
+    
+    try {
+        let prompt = '';
+        
+        if (question.type === 'select') {
+            prompt = `你是一名专业的知识讲解专家。请详细解析以下选择题：
+
+题目：${question.title}
+题干：${question.content.replace(/<[^>]*>/g, '')}
+选项：
+${question.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')}
+正确答案：${String.fromCharCode(65 + question.correct)}
+
+请从以下几个方面进行解析：
+1. 题目所涉及的核心知识点
+2. 正确答案的详细解释（为什么正确）
+3. 错误选项的分析（为什么错误）
+4. 相关拓展知识或记忆技巧`;
+        } else if (question.type === 'fill') {
+            const answerEl = document.querySelector('.code-blank');
+            const answer = answerEl ? answerEl.dataset.answer : '';
+            prompt = `你是一名专业的知识讲解专家。请详细解析以下填空题：
+
+题目：${question.title}
+题干：${question.content.replace(/<[^>]*>/g, '')}
+正确答案：${answer}
+
+请从以下几个方面进行解析：
+1. 题目所涉及的核心知识点
+2. 答案的详细解释（为什么是这个答案）
+3. 相关拓展知识或记忆技巧`;
+        } else if (question.type === 'sentence') {
+            prompt = `你是一名专业的知识讲解专家。请详细解析以下句子记忆题：
+
+题目：${question.title}
+句子：${question.content.replace(/<[^>]*>/g, '')}
+完整句子：${question.fullSentence || ''}
+
+请从以下几个方面进行解析：
+1. 句子的语法结构分析
+2. 关键词汇的含义和用法
+3. 句子翻译和理解要点
+4. 记忆技巧和拓展知识`;
+        } else {
+            prompt = `你是一名专业的知识讲解专家。请详细解析以下题目：
+
+题目：${question.title}
+内容：${question.content.replace(/<[^>]*>/g, '')}
+
+请详细解释题目涉及的知识点、解题思路和相关拓展知识。`;
+        }
+        
+        let apiBaseUrl = localStorage.getItem('geminiApiBaseUrl') || 'https://mrok.dpdns.org/v1';
+        if (!apiBaseUrl.startsWith('http://') && !apiBaseUrl.startsWith('https://')) {
+            apiBaseUrl = `https://${apiBaseUrl}`;
+        }
+        
+        const messages = [
+            { role: 'system', content: '你是一名专业的知识讲解专家，善于用通俗易懂的语言解释复杂的概念。回答要详细、有条理，并且结构清晰。' },
+            { role: 'user', content: prompt }
+        ];
+        
+        const response = await fetch(`${apiBaseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gemini-flash-latest',
+                messages,
+                max_tokens: 2000,
+                temperature: 0.5
+            })
+        });
+        
+        if (!response.ok) {
+            const txt = await response.text().catch(() => '');
+            let errorMsg = `API错误: ${response.status}`;
+            try {
+                const errorData = JSON.parse(txt);
+                if (errorData.error?.message) {
+                    errorMsg = errorData.error.message;
+                }
+            } catch (e) {
+                if (txt) {
+                    errorMsg += ` - ${txt.slice(0, 100)}`;
+                }
+            }
+            throw new Error(errorMsg);
+        }
+        
+        const data = await response.json();
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+            throw new Error('API响应格式不正确');
+        }
+        
+        const explanation = data.choices[0].message.content;
+        
+        feedbackEl.innerHTML = `<div class="text-sm">${explanation.replace(/\n/g, '<br>')}</div>`;
+        feedbackEl.classList.remove('hidden', 'text-success', 'text-red-500', 'bg-green-50', 'bg-red-50');
+        feedbackEl.classList.add('text-gray-800', 'bg-indigo-50', 'p-3', 'rounded-lg', 'border', 'border-indigo-100');
+        
+    } catch (e) {
+        console.error('AI解析失败:', e);
+        let errorMsg = '解析失败: ' + (e.message || '未知错误');
+        if (errorMsg.includes('location is not supported')) {
+            errorMsg = '地理位置不支持，请更换API服务或使用代理';
+        }
+        showFeedback(errorMsg, 'error');
+    } finally {
+        explainBtn.disabled = false;
+        explainBtn.innerHTML = originalText;
+    }
+}
+
 // 显示反馈
 function showFeedback(text, type) {
     feedbackEl.textContent = text;
@@ -2378,6 +2532,11 @@ function setupEvents() {
         // 答案按钮
         if (e.target.id === 'answer-btn' || e.target.closest('#answer-btn')) {
             showAnswer();
+        }
+        
+        // AI解析按钮
+        if (e.target.id === 'ai-explain-btn' || e.target.closest('#ai-explain-btn')) {
+            explainQuestionWithAI();
         }
     });
     

@@ -377,7 +377,9 @@ class AIChatInterface {
 
         // 解释当前题目按钮
         const explainBtn = this.chatWindow.querySelector('#ai-explain-question');
-        explainBtn.addEventListener('click', () => this.explainCurrentQuestion());
+        if (explainBtn) {
+            explainBtn.addEventListener('click', () => this.explainCurrentQuestion());
+        }
     }
 
     loadApiKey() {
