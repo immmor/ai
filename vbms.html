@@ -1675,7 +1675,7 @@
 
         async function loadSupportMessages() {
             try {
-                const res = await fetch(NEW_API_BASE + '/api/messages');
+                const res = await fetch(NEW_API_BASE + '/api/messages?all=true');
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
                     const messages = data.data;
@@ -1725,7 +1725,7 @@
 
         async function loadSupportChat(username) {
             try {
-                const res = await fetch(NEW_API_BASE + '/api/messages');
+                const res = await fetch(NEW_API_BASE + '/api/messages?username=' + encodeURIComponent(username));
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
                     const messages = data.data.filter(m => m.username === username || (m.content?.includes('[用户留言]') && m.content?.includes(username)));
