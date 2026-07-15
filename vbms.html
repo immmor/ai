@@ -3372,7 +3372,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">加载中...</td></tr>';
             const status = document.getElementById('withdrawStatusFilter')?.value || '';
             const url = `/api/withdraw/list${status ? '?status=' + status : ''}`;
-            const res = await apiRequest(url, 'GET');
+            const res = await newApiRequest(url, 'GET');
             if (res.success && res.data) {
                 renderWithdrawals(res.data);
             } else {
@@ -3414,7 +3414,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         async function reviewWithdraw(id, action) {
             if (!confirm(action === 'approve' ? '确认通过此提现申请？' : '确认拒绝此提现申请？金额将退回用户')) return;
-            const res = await apiRequest('/api/withdraw/review', 'POST', {
+            const res = await newApiRequest('/api/withdraw/review', 'POST', {
                 id, action, operator: currentUserInfo?.username || 'admin'
             });
             if (res.success) {
