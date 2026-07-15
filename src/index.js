@@ -2631,8 +2631,8 @@ function setupEvents() {
             }
         }
         
-        // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC、Ctrl+U/Command+U和Ctrl+B/Command+B）
-        if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'u' || e.key === 'U') && (e.ctrlKey || e.metaKey)) && !((e.key === 'b' || e.key === 'B') && (e.ctrlKey || e.metaKey))) {
+        // 如果当前在输入框中，则忽略其他快捷键（除了Enter、ESC、Ctrl+U/Command+U、Ctrl+B/Command+B和Ctrl+N/Command+N）
+        if (isInInput && e.key !== 'Enter' && e.key !== 'Escape' && !((e.key === 'u' || e.key === 'U') && (e.ctrlKey || e.metaKey)) && !((e.key === 'b' || e.key === 'B') && (e.ctrlKey || e.metaKey)) && !((e.key === 'n' || e.key === 'N') && (e.ctrlKey || e.metaKey))) {
             return;
         }
         
@@ -2693,7 +2693,9 @@ function setupEvents() {
         }
         
         // 下一题快捷键：n键
-        if (e.key === 'n' || e.key === 'N') {
+        if ((e.key === 'n' || e.key === 'N' || e.code === 'KeyN') && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            e.stopPropagation();
             goNext();
         }
         
