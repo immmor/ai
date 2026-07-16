@@ -1276,9 +1276,12 @@ function loadQuestion(index) {
                             ${question.content}
                         </div>
                     </div>
-                    <div class="flex justify-end mt-3">
+                    <div class="flex justify-center items-center gap-4 mt-3">
                         <button id="fill-submit-btn" class="bg-primary text-white px-5 py-2 rounded hover:bg-primary/90 text-sm">
                             检查填空
+                        </button>
+                        <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
+                            <i class="fas fa-robot mr-1"></i> AI解析
                         </button>
                     </div>
                 </div>
@@ -1310,11 +1313,6 @@ function loadQuestion(index) {
                         </button>
                     </div>
                     <div id="recognition-result" class="hidden mt-4 p-4 rounded-xl text-sm"></div>
-                </div>
-                <div class="flex justify-center mt-3">
-                    <button id="ai-explain-btn" class="text-indigo-500 hover:text-indigo-600 flex items-center text-sm">
-                        <i class="fas fa-robot mr-1"></i> AI解析
-                    </button>
                 </div>
             </div>
         `;

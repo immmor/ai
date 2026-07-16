@@ -481,6 +481,26 @@
             }
         }
     </style>
+    
+    <style>
+        /* 句子题行间距响应式调整：最小屏幕保持不变，大屏幕增大行间距 */
+        @media (min-width: 640px) {
+            #sentence-content .code-blank,
+            #full-sentence-blanks input,
+            #full-sentence-blanks span {
+                margin-top: 0.3rem !important;
+                margin-bottom: 0.3rem !important;
+            }
+        }
+        @media (min-width: 1024px) {
+            #sentence-content .code-blank,
+            #full-sentence-blanks input,
+            #full-sentence-blanks span {
+                margin-top: 0.6rem !important;
+                margin-bottom: 0.6rem !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 py-2 z-20" id="level-header">
