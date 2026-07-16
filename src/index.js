@@ -1646,7 +1646,6 @@ function handleRecording() {
                 
                 recognitionResultEl.innerHTML = `
                     <div class="font-medium mb-1">${result.message}</div>
-                    <div class="text-xs opacity-80">原文: ${result.originalText}</div>
                     <div class="text-xs opacity-80">识别: ${result.recognizedText}</div>
                 `;
             } else {
