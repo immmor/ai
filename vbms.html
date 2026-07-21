@@ -3814,6 +3814,42 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
 
+        // 数字货币图标（品牌色 + 符号）与方式展示
+        const cryptoIconMap = {
+            crypto_usdt_trc20: { sym: '₮', color: '#26a17b', bg: 'rgba(38,161,123,.15)', label: 'USDT (TRC20)' },
+            crypto_usdt_erc20: { sym: '₮', color: '#26a17b', bg: 'rgba(38,161,123,.15)', label: 'USDT (ERC20)' },
+            crypto_usdc:       { sym: '$', color: '#2775ca', bg: 'rgba(39,117,202,.15)', label: 'USDC' },
+            crypto_btc:        { sym: '₿', color: '#f7931a', bg: 'rgba(247,147,26,.15)', label: 'BTC 比特币' },
+            crypto_eth:        { sym: 'Ξ', color: '#627eea', bg: 'rgba(98,126,234,.15)', label: 'ETH 以太坊' },
+            crypto_sol:        { sym: '◎', color: '#9945ff', bg: 'rgba(153,69,255,.15)', label: 'SOL 索拉纳' },
+        };
+        function methodDisplayHtml(method) {
+            if (method === 'wechat') return '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="color:#07c160;">●</span>微信</span>';
+            if (method === 'alipay') return '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="color:#1677ff;">●</span>支付宝</span>';
+            const c = cryptoIconMap[method];
+            if (c) return `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${c.bg};color:${c.color};font-weight:700;font-size:13px;">${c.sym}</span>${c.label}</span>`;
+            return method || '-';
+        }
+        function escHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+        }
+        function fallbackCopy(text, done) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+        function copyAddrBtn(btn) {
+            const text = btn.dataset.addr || '';
+            if (!text) return;
+            const done = () => { const o = btn.textContent; btn.textContent = '已复制'; setTimeout(() => btn.textContent = o, 1200); };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+            } else {
+                fallbackCopy(text, done);
+            }
+        }
         function renderWithdrawals(list) {
             const tbody = document.getElementById('withdrawTableBody');
             if (!list.length) {
@@ -3823,19 +3859,27 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const statusMap = { pending: '待处理', approved: '已通过', rejected: '已拒绝' };
             const statusColor = { pending: '#e53e3e', approved: '#48bb78', rejected: '#a0aec0' };
             const methodMap = { wechat: '微信', alipay: '支付宝' };
-            tbody.innerHTML = list.map(r => `
+            tbody.innerHTML = list.map(r => {
+                const isCrypto = (r.method || '').startsWith('crypto_');
+                const qrCell = r.qr_code
+                    ? (isCrypto
+                        ? `<div style="max-width:240px;word-break:break-all;font-family:monospace;font-size:12px;background:#f5f6f8;padding:6px 8px;border-radius:6px;color:#222;border:1px solid #e2e8f0;">${escHtml(r.qr_code)}</div><button style="margin-top:4px;padding:2px 8px;font-size:12px;cursor:pointer;border:1px solid #cbd5e0;background:#fff;border-radius:4px;" data-addr="${escHtml(r.qr_code)}" onclick="copyAddrBtn(this)">复制地址</button>`
+                        : `<img src="${r.qr_code}" style="width:120px;height:120px;object-fit:contain;" alt="收款码">`)
+                    : '-';
+                return `
                 <tr>
                     <td>${r.id}</td>
                     <td>${r.username}</td>
                     <td>¥${parseFloat(r.amount).toFixed(2)}</td>
-                    <td>${methodMap[r.method] || r.method}</td>
-                    <td>${r.qr_code ? `<img src="${r.qr_code}" style="width:150px;height:150px;object-fit:contain;" alt="收款码">` : '-'}</td>
+                    <td>${methodDisplayHtml(r.method)}</td>
+                    <td>${qrCell}</td>
                     <td style="color:${statusColor[r.status] || '#000'}">${statusMap[r.status] || r.status}</td>
                     <td>${r.created_at || ''}</td>
                     <td>${r.reviewed_at || '-'}</td>
                     <td>${r.status === 'pending' ? `<button class="add-btn" style="background:#48bb78;" onclick="reviewWithdraw(${r.id},'approve')">通过</button> <button class="delete-btn" onclick="reviewWithdraw(${r.id},'reject')">拒绝</button>` : '-'}</td>
                 </tr>
-            `).join('');
+            `;
+        }).join('');
             window._withdrawData = list;
         }
 
