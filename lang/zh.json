@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "自定义",
-        "yimoNote": "1元=1以墨币"
+        "yimoNote": "当前充值的金额以美元计价"
     },
     "payMethod": {
-        "creditCard": "信用卡(充20美元/100美元)",
+        "creditCard": "creem(支付宝/信用卡)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "支付宝(人工)",
         "wechatStatic": "微信支付(人工)"
