@@ -48,7 +48,12 @@
     <script src="src/question.js"></script>
     <script src="src/energy.js"></script>
     <script src="src/speech.js"></script>
-    <!-- <script src="src/price.js"></script> -->
+    <script>
+        // 当当前域名是 funbua.uk 时加载价格脚本
+        if (location.hostname === 'funbua.uk' || location.hostname === 'www.funbua.uk') {
+            document.write('<script src="src/price.js"><\/script>');
+        }
+    </script>
     <script src="src/pet.js"></script>
     <script src="src/music.js"></script>
     <script src="src/login.js"></script>
