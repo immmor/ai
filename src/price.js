@@ -3,7 +3,7 @@
 // Price constants
 const PRICE_MONTHLY = 10;
 const PRICE_YEARLY = 100;
-const SUPPORT_EMAIL = 'support@immmor.com';
+const SUPPORT_EMAIL = (location.hostname === 'funbua.uk' || location.hostname === 'www.funbua.uk') ? 'contact@funbua.uk' : 'support@immmor.com';
 
 // 显示价格计划弹窗
 function showPricePlanPopup() {
