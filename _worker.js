@@ -346,7 +346,13 @@ export default {
             return jsonResponse({ code: 500, msg: '支付服务未配置，请配置 CREEM_API_KEY 环境变量' }, 500);
           }
           
-          const product_id = usdAmount === 100 ? 'prod_oiAMIsdnuWoA7koBEP5jO' : 'prod_6SdsEpr0Bv5d3cyLUdcU6c';
+          const productIds = {
+            5: 'prod_1HErkKAY4RUPzqJEZdH1VH',  // 替换为 $5 产品的真实ID
+            10: 'prod_51alCVBX8cQLPkHsFCuxiu', // 替换为 $10 产品的真实ID
+            20: 'prod_6SdsEpr0Bv5d3cyLUdcU6c',
+            100: 'prod_oiAMIsdnuWoA7koBEP5jO'
+          };
+          const product_id = productIds[usdAmount] || productIds[20];
           
           const checkoutData = {
             product_id: product_id,

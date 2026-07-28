@@ -1376,7 +1376,15 @@
                     const creditCardInfo = document.createElement('div');
                     creditCardInfo.id = 'credit-card-info';
                     creditCardInfo.innerHTML = `
-                        <button class="amount-btn credit-card-option active" data-usd="20" onclick="selectCreditCardAmount(20)">
+                        <button class="amount-btn credit-card-option active" data-usd="5" onclick="selectCreditCardAmount(5)">
+                            <div style="font-size:14px;">$5</div>
+                            <div style="font-size:12px;color:#999;">=¥${5 * USD_TO_CNY_RATE}</div>
+                        </button>
+                        <button class="amount-btn credit-card-option" data-usd="10" onclick="selectCreditCardAmount(10)">
+                            <div style="font-size:14px;">$10</div>
+                            <div style="font-size:12px;color:#999;">=¥${10 * USD_TO_CNY_RATE}</div>
+                        </button>
+                        <button class="amount-btn credit-card-option" data-usd="20" onclick="selectCreditCardAmount(20)">
                             <div style="font-size:14px;">$20</div>
                             <div style="font-size:12px;color:#999;">=¥${20 * USD_TO_CNY_RATE}</div>
                         </button>
