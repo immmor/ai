@@ -1069,7 +1069,7 @@
         });
         let mode = 'credit_card';
         const USD_TO_CNY_RATE = 7;
-        let creditCardAmount = 20;
+        let creditCardAmount = 5;
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser) {
             const loginTime = localStorage.getItem('loginTime');
@@ -1362,7 +1362,7 @@
             mode = m;
             
             if (m === 'credit_card') {
-                creditCardAmount = 20;
+                creditCardAmount = 5;
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.classList.remove('active');
                     btn.style.display = 'none';
