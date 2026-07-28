@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "Tùy chỉnh",
-        "yimoNote": "1 yuan = 1 Yimo"
+        "yimoNote": "Số tiền nạp hiện tại được tính bằng USD. Cần sử dụng mạng Trung Quốc để nạp bằng Alipay"
     },
     "payMethod": {
-        "creditCard": "Thẻ tín dụng ($20/$100)",
+        "creditCard": "creem (Alipay/Thẻ tín dụng)",
         "usdt": "TRON USDT(>100 yuan)",
         "alipayStatic": "Alipay (Thủ công)",
         "wechatStatic": "WeChat Pay (Thủ công)"

@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "Другой",
-        "yimoNote": "1 юань = 1 Йимо"
+        "yimoNote": "Текущая сумма пополнения указана в долларах США. Для пополнения через Alipay требуется китайская сеть"
     },
     "payMethod": {
-        "creditCard": "Кредитная карта ($20/$100)",
+        "creditCard": "creem (Alipay/Кредитная карта)",
         "usdt": "TRON USDT (>100 юаней)",
         "alipayStatic": "Alipay (Ручной)",
         "wechatStatic": "WeChat Pay (Ручной)"

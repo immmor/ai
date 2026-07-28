@@ -26,7 +26,7 @@
     },
     "amount": {
         "custom": "自定义",
-        "yimoNote": "当前充值的金额以美元计价，使用国内网络才能使用支付宝充值"
+        "yimoNote": "当前充值的金额以美元计价，使用中国网络才能使用支付宝充值"
     },
     "payMethod": {
         "creditCard": "creem(支付宝/信用卡)",

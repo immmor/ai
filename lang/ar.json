@@ -26,13 +26,13 @@
     },
     "amount": {
         "custom": "مخصص",
-        "yimoNote": "1 يوان = 1 ييمو"
+        "yimoNote": "مبلغ الشحن الحالي بالدولار الأمريكي. يلزم استخدام شبكة صينية لاستخدام Alipay للشحن"
     },
     "payMethod": {
-        "creditCard": "بطاقة ائتمانية ($20/$100)",
-        "usdt": "TRON USDT (>100 يوان)",
+        "creditCard": "creem (عليpay/بطاقة ائتمانية)",
+        "usdt": "TRON USDT(>100 يوان)",
         "alipayStatic": "عليpay (يدوي)",
-        "wechatStatic": "ويipay (يدوي)"
+        "wechatStatic": "ويبات (يدوي)"
     },
     "button": {
         "confirmTrade": "تأكيد المعاملة",

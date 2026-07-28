@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "Personalizado",
-        "yimoNote": "1 yuan = 1 Yimo"
+        "yimoNote": "El monto de recarga actual está denominado en USD. Se requiere una red china para usar Alipay para recargar"
     },
     "payMethod": {
-        "creditCard": "Tarjeta de crédito ($20/$100)",
+        "creditCard": "creem (Alipay/Tarjeta de crédito)",
         "usdt": "TRON USDT (>100 yuan)",
         "alipayStatic": "Alipay (Manual)",
         "wechatStatic": "WeChat Pay (Manual)"

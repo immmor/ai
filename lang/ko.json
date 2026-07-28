@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "사용자 지정",
-        "yimoNote": "1위안 = 1이모코인"
+        "yimoNote": "현재 충전 금액은 미달러로 표시됩니다. 알리페이로 충전하려면 중국 네트워크를 사용해야 합니다"
     },
     "payMethod": {
-        "creditCard": "신용카드($20/$100)",
+        "creditCard": "creem(알리페이/신용카드)",
         "usdt": "TRON USDT(>100위안)",
         "alipayStatic": "알리페이(수동)",
         "wechatStatic": "위챗페이(수동)"

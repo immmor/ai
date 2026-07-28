@@ -26,10 +26,10 @@
     },
     "amount": {
         "custom": "Custom",
-        "yimoNote": "1 yuan = 1 Yimo Coin"
+        "yimoNote": "The current recharge amount is denominated in USD. A Chinese network is required to use Alipay for recharge"
     },
     "payMethod": {
-        "creditCard": "Credit Card ($20/$100)",
+        "creditCard": "creem (Alipay/Credit Card)",
         "usdt": "TRON USDT (>100 yuan)",
         "alipayStatic": "Alipay (Manual)",
         "wechatStatic": "WeChat Pay (Manual)"

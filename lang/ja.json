@@ -26,13 +26,13 @@
     },
     "amount": {
         "custom": "カスタム",
-        "yimoNote": "1元=1以墨コイン"
+        "yimoNote": "現在のチャージ金額は米ドル建てです。アリペイでチャージするには中国のネットワークを使用する必要があります"
     },
     "payMethod": {
-        "creditCard": "クレジットカード($20/$100)",
+        "creditCard": "creem(アリペイ/クレジットカード)",
         "usdt": "TRON USDT(>100元)",
         "alipayStatic": "アリペイ(手動)",
-        "wechatStatic": "ウィチャットpay(手動)"
+        "wechatStatic": "ウィチャットペイ(手動)"
     },
     "button": {
         "confirmTrade": "取引確認",
