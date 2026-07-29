@@ -203,8 +203,8 @@ export default {
             pid: pid,
             type: epayType,
             out_trade_no: finalOrderNo,
-            notify_url: `https://immmor.com/api/pay/notify?username=${encodeURIComponent(params.username || '')}`,
-            return_url: 'https://immmor.com/pay',
+            notify_url: `https://funbua.uk/api/pay/notify?username=${encodeURIComponent(params.username || '')}`,
+            return_url: 'https://funbua.uk/pay',
             name: description,
             money: amount.toFixed(2),
             sitename: '我的网站'
@@ -356,7 +356,7 @@ export default {
           
           const checkoutData = {
             product_id: product_id,
-            success_url: `https://immmor.com/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}&amount=${cnyAmount}`
+            success_url: `https://funbua.uk/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}&amount=${cnyAmount}`
           };
           
           const response = await fetch(creemBaseUrl, {
@@ -425,7 +425,7 @@ export default {
 
           if (order_no && username) {
             if (await isOrderProcessed(order_no)) {
-              return Response.redirect('https://immmor.com/pay', 302);
+              return Response.redirect('https://funbua.uk/pay', 302);
             }
 
             const amountCny = parseFloat(amount) || 140;
@@ -453,10 +453,10 @@ export default {
             console.log('缺少必要参数，无法更新');
           }
 
-          return Response.redirect('https://immmor.com/pay', 302);
+          return Response.redirect('https://funbua.uk/pay', 302);
         } catch (err) {
           console.error('Creem.io通知处理错误:', err);
-          return Response.redirect('https://immmor.com/pay', 302);
+          return Response.redirect('https://funbua.uk/pay', 302);
         }
       }
 
