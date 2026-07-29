@@ -347,10 +347,10 @@ export default {
           }
           
           const productIds = {
-            5: 'prod_1HErkKAY4RUPzqJEZdH1VH',  // 替换为 $5 产品的真实ID
-            10: 'prod_51alCVBX8cQLPkHsFCuxiu', // 替换为 $10 产品的真实ID
-            20: 'prod_6SdsEpr0Bv5d3cyLUdcU6c',
-            100: 'prod_oiAMIsdnuWoA7koBEP5jO'
+            5: 'prod_6lnHBXB70J5QrjZyrP2xnH',  // 替换为 $5 产品的真实ID
+            10: 'prod_2vOIqGclfU7th5LLRh7eC4', // 替换为 $10 产品的真实ID
+            20: 'prod_1I3N5DS5Q3ibzWYPr5OphH',
+            100: 'prod_1a666EWxt0Jzha7HjbTu2F'
           };
           const product_id = productIds[usdAmount] || productIds[20];
           
