@@ -640,7 +640,6 @@
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
                 <a href="#football" class="menu-item" onclick="showPage('football')">游戏管理</a>
                 <a href="#withdraw" class="menu-item" onclick="showPage('withdraw')">提现管理</a>
-                <a href="#rebate" class="menu-item" onclick="showPage('rebate')">返现审核</a>
             </nav>
         </aside>
 
@@ -1256,11 +1255,9 @@
                             <tbody id="withdrawTableBody"></tbody>
                         </table>
                     </div>
-                </div>
 
-                <!-- 返现审核页面 -->
-                <div id="rebatePage" class="page-section" style="display: none;">
-                    <div class="data-table">
+                    <!-- 邀请返现审核 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>邀请返现审核</h3>
                             <div style="display: flex; gap: 10px;">
@@ -2315,8 +2312,7 @@
                 'settings': '系统设置',
                 'messages': '消息管理',
                 'football': '游戏管理',
-                'withdraw': '提现管理',
-                'rebate': '返现审核'
+                'withdraw': '提现管理'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
@@ -2345,7 +2341,6 @@
                     await loadScratchBets();
                 } else if (pageName === 'withdraw') {
                     await loadWithdrawals();
-                } else if (pageName === 'rebate') {
                     await loadRebates();
                 }
         }
