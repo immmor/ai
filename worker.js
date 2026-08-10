@@ -3022,60 +3022,94 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         try {
           if (!DB) return resJson({ code: 500, msg: '数据库未绑定' }, 500);
 
-          // ---- 用户余额 & 价格套餐分布 ----
-          const usersResult = await DB.prepare('SELECT balance, price_plan, v_expire_date, is_admin, is_agent FROM user').all();
-          const users = usersResult.results || [];
+          // 每个数据源独立容错：某张表/列不存在只影响对应图表，不会整体 500
+          const safeQuery = async (sql) => {
+            try { return (await DB.prepare(sql).all()).results || []; }
+            catch (e) { console.error('[dashboard] 查询失败:', sql, e.message); return []; }
+          };
+          const dayLabels = () => {
+            const arr = [];
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(); d.setDate(d.getDate() - i);
+              arr.push({ ds: d.toISOString().slice(0, 10), label: `${d.getMonth() + 1}/${d.getDate()}` });
+            }
+            return arr;
+          };
+          const days = dayLabels();
+
+          // ---- 用户余额 & 价格套餐分布 & 代理 ----
+          const users = await safeQuery('SELECT balance, price_plan, v_expire_date, invite_code, last_checkin FROM user');
           const totalUsers = users.length;
           const totalBalance = users.reduce((s, u) => s + (parseFloat(u.balance) || 0), 0);
           const nowISO = new Date().toISOString();
           const vipUsers = users.filter(u => u.v_expire_date && u.v_expire_date > nowISO).length;
-          const agentUsers = users.filter(u => u.is_agent === 1).length;
+          const agentUsers = users.filter(u => u.invite_code).length;
           const planMap = {};
           users.forEach(u => { const k = u.price_plan || '免费'; planMap[k] = (planMap[k] || 0) + 1; });
           const planLabels = Object.keys(planMap);
           const planData = Object.values(planMap);
 
-          // ---- 游戏下注 & 派奖趋势（最近7天）----
-          const gameResult = await DB.prepare("SELECT created_at, bet_amount, payout_amount FROM game_bet WHERE created_at >= datetime('now','-6 days')").all();
-          const gameRows = gameResult.results || [];
-          const gameLabels = [], gameBetData = [], gameWinData = [];
-          for (let i = 6; i >= 0; i--) {
-            const d = new Date(); d.setDate(d.getDate() - i);
-            const ds = d.toISOString().slice(0, 10);
-            gameLabels.push(`${d.getMonth() + 1}/${d.getDate()}`);
-            const dayRows = gameRows.filter(r => (r.created_at || '').slice(0, 10) === ds);
-            gameBetData.push(dayRows.reduce((s, r) => s + (parseFloat(r.bet_amount) || 0), 0));
-            gameWinData.push(dayRows.reduce((s, r) => s + (parseFloat(r.payout_amount) || 0), 0));
-          }
-          const gameTotalBet = gameRows.reduce((s, r) => s + (parseFloat(r.bet_amount) || 0), 0);
-          const gameTotalWin = gameRows.reduce((s, r) => s + (parseFloat(r.payout_amount) || 0), 0);
+          // ---- 游戏下注 & 派奖（全量，按用户聚合用于智能运营）----
+          const gameRows = await safeQuery('SELECT username, game_type, cost, prize, created_at FROM game_bet');
+          const gameLabels = days.map(d => d.label);
+          const gameRecent = gameRows.filter(r => (r.created_at || '').slice(0, 10) >= days[0].ds);
+          const gameBetData = days.map(d => gameRecent.filter(r => (r.created_at || '').slice(0, 10) === d.ds).reduce((s, r) => s + (parseFloat(r.cost) || 0), 0));
+          const gameWinData = days.map(d => gameRecent.filter(r => (r.created_at || '').slice(0, 10) === d.ds).reduce((s, r) => s + (parseFloat(r.prize) || 0), 0));
+          const gameTotalBet = gameRecent.reduce((s, r) => s + (parseFloat(r.cost) || 0), 0);
+          const gameTotalWin = gameRecent.reduce((s, r) => s + (parseFloat(r.prize) || 0), 0);
+
+          // 按用户聚合游戏行为（供智能运营模块复用，无需独立接口）
+          const gameByUser = {};
+          const gameTypeMap = {};
+          gameRows.forEach(r => {
+            const u = r.username;
+            if (!gameByUser[u]) gameByUser[u] = { username: u, bet: 0, win: 0, plays: 0, lastPlay: null, types: {} };
+            const o = gameByUser[u];
+            o.bet += parseFloat(r.cost) || 0;
+            o.win += parseFloat(r.prize) || 0;
+            o.plays += 1;
+            const t = r.created_at ? new Date(r.created_at).getTime() : null;
+            if (t && (o.lastPlay === null || t > o.lastPlay)) o.lastPlay = t;
+            if (r.game_type) { o.types[r.game_type] = (o.types[r.game_type] || 0) + 1; gameTypeMap[r.game_type] = (gameTypeMap[r.game_type] || 0) + 1; }
+          });
+          const gameUserList = Object.values(gameByUser).map(o => ({
+            username: o.username,
+            bet: parseFloat(o.bet.toFixed(2)),
+            win: parseFloat(o.win.toFixed(2)),
+            net: parseFloat((o.win - o.bet).toFixed(2)),
+            plays: o.plays,
+            lastPlay: o.lastPlay ? new Date(o.lastPlay).toISOString() : null,
+            favType: Object.keys(o.types).sort((a, b) => o.types[b] - o.types[a])[0] || '-'
+          }));
+          const gameAllBet = gameUserList.reduce((s, u) => s + u.bet, 0);
+          const gameAllWin = gameUserList.reduce((s, u) => s + u.win, 0);
+          const gameOverview = {
+            players: gameUserList.length,
+            totalBet: parseFloat(gameAllBet.toFixed(2)),
+            totalWin: parseFloat(gameAllWin.toFixed(2)),
+            totalPlays: gameRows.length,
+            houseEdge: parseFloat((gameAllBet - gameAllWin).toFixed(2)),
+            typeLabels: Object.keys(gameTypeMap),
+            typeData: Object.values(gameTypeMap)
+          };
 
           // ---- 提现统计 & 审核漏斗 ----
-          const wResult = await DB.prepare('SELECT amount, status FROM withdraw').all();
-          const wRows = wResult.results || [];
+          const wRows = await safeQuery('SELECT amount, status FROM withdraw');
           const withdrawPending = wRows.filter(r => r.status === 'pending').length;
           const withdrawApproved = wRows.filter(r => r.status === 'approved').length;
           const withdrawRejected = wRows.filter(r => r.status === 'rejected').length;
           const withdrawTotal = wRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
 
           // ---- 竞猜下注分布（按状态）----
-          const fResult = await DB.prepare('SELECT status FROM football_bet').all();
-          const fRows = fResult.results || [];
+          const fRows = await safeQuery('SELECT status FROM football_bet');
           const fbStatusMap = {};
           fRows.forEach(r => { const k = r.status || 'unknown'; fbStatusMap[k] = (fbStatusMap[k] || 0) + 1; });
           const fbLabels = Object.keys(fbStatusMap);
           const fbData = Object.values(fbStatusMap);
 
-          // ---- 签到活跃（最近7天签到人数）----
-          const chkResult = await DB.prepare("SELECT username, created_at FROM checkin WHERE created_at >= datetime('now','-6 days')").all();
-          const chkRows = chkResult.results || [];
-          const checkinLabels = [], checkinData = [];
-          for (let i = 6; i >= 0; i--) {
-            const d = new Date(); d.setDate(d.getDate() - i);
-            const ds = d.toISOString().slice(0, 10);
-            checkinLabels.push(`${d.getMonth() + 1}/${d.getDate()}`);
-            checkinData.push(chkRows.filter(r => (r.created_at || '').slice(0, 10) === ds).length);
-          }
+          // ---- 签到活跃（最近7天，last_checkin 存于 user 表，格式 YYYY-MM-DD）----
+          const checkinLabels = days.map(d => d.label);
+          const checkinData = days.map(d => users.filter(u => (u.last_checkin || '').slice(0, 10) === d.ds).length);
 
           return resJson({
             code: 200,
@@ -3092,6 +3126,8 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               gameWinData,
               gameTotalBet: parseFloat(gameTotalBet.toFixed(2)),
               gameTotalWin: parseFloat(gameTotalWin.toFixed(2)),
+              gameByUser,
+              gameOverview,
               withdrawPending,
               withdrawApproved,
               withdrawRejected,
