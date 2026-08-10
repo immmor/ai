@@ -1082,15 +1082,38 @@
                         <div class="table-header">
                             <h3>🎁 赠送抽奖</h3>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 1rem;">
-                            <input type="text" id="giftUsername" placeholder="用户名" class="form-input" style="width: 150px;">
-                            <select id="giftGameType" class="form-input" style="width: 120px;" onchange="updateGiftPrizeOptions()">
-                                <option value="wheel">幸运转盘</option>
-                                <option value="slot">老虎机</option>
-                                <option value="scratch">刮刮乐</option>
-                            </select>
-                            <select id="giftPrize" class="form-input" style="width: 120px;"></select>
-                            <button class="add-btn" onclick="sendGiftBet()" style="background-color: #667eea;">赠送</button>
+                        <div style="padding: 1.5rem;">
+                            <div class="user-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 1.25rem;">
+                                <div class="form-group">
+                                    <label>接收对象</label>
+                                    <select id="giftTarget" class="form-input" onchange="toggleGiftUsernames()">
+                                        <option value="single">指定用户（可多人）</option>
+                                        <option value="all">全部用户</option>
+                                        <option value="vip">VIP 会员</option>
+                                        <option value="nonvip">非会员</option>
+                                        <option value="trusted">已信任用户</option>
+                                        <option value="untrusted">未信任用户</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="giftUsernamesGroup" style="grid-column: span 2;">
+                                    <label>用户名（多个用逗号、空格或换行分隔）</label>
+                                    <textarea id="giftUsernames" class="form-input" rows="2" placeholder="例如：alice, bob, charlie"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>抽奖类型</label>
+                                    <select id="giftGameType" class="form-input" onchange="updateGiftPrizeOptions()">
+                                        <option value="wheel">幸运转盘</option>
+                                        <option value="slot">老虎机</option>
+                                        <option value="scratch">刮刮乐</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>中奖金额 (¥)</label>
+                                    <select id="giftPrize" class="form-input"></select>
+                                </div>
+                            </div>
+                            <button class="add-btn" onclick="sendGiftBet()" style="background-color: #667eea;">确认赠送</button>
+                            <p style="font-size: 12px; color: #718096; margin-top: 0.75rem;">注：中奖金额由管理员设定，用户进入游戏即可领取。支持同时赠送给多人，或按分类（全部 / VIP / 会员 / 信任状态）批量发送。</p>
                         </div>
                     </div>
 
@@ -4167,17 +4190,46 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
         updateGiftPrizeOptions();
 
+        // 切换接收对象分类时，显隐“用户名”输入框
+        function toggleGiftUsernames() {
+            const target = document.getElementById('giftTarget').value;
+            const group = document.getElementById('giftUsernamesGroup');
+            const ta = document.getElementById('giftUsernames');
+            if (target === 'single') {
+                group.style.display = '';
+                ta.required = true;
+            } else {
+                group.style.display = 'none';
+                ta.required = false;
+            }
+        }
+        toggleGiftUsernames();
+
         async function sendGiftBet() {
-            const username = document.getElementById('giftUsername').value.trim();
+            const target = document.getElementById('giftTarget').value;
+            const usernamesRaw = document.getElementById('giftUsernames').value.trim();
             const game_type = document.getElementById('giftGameType').value;
             const prize = document.getElementById('giftPrize').value;
-            if (!username) { alert('请输入用户名'); return; }
             if (prize === '' || isNaN(prize)) { alert('请选择中奖金额'); return; }
-            if (!confirm(`确认赠送 ${username} 一次${document.getElementById('giftGameType').selectedOptions[0].text}，中奖 ¥${parseFloat(prize).toFixed(2)}？`)) return;
-            const res = await newApiRequest('/api/admin/gift-bet', 'POST', { username, game_type, prize: parseFloat(prize), operator: currentUserInfo?.username || 'admin' });
+
+            if (target === 'single') {
+                if (!usernamesRaw) { alert('请输入至少一个用户名'); return; }
+            }
+
+            const body = { game_type, prize: parseFloat(prize), operator: currentUserInfo?.username || 'admin' };
+            if (target === 'single') {
+                body.usernames = usernamesRaw;
+            } else {
+                body.target = target;
+            }
+
+            const label = target === 'single' ? usernamesRaw : document.getElementById('giftTarget').selectedOptions[0].text;
+            if (!confirm(`确认赠送「${label}」一次${document.getElementById('giftGameType').selectedOptions[0].text}，中奖 ¥${parseFloat(prize).toFixed(2)}？`)) return;
+
+            const res = await newApiRequest('/api/admin/gift-bet', 'POST', body);
             if (res.success) {
                 alert(res.message);
-                document.getElementById('giftUsername').value = '';
+                document.getElementById('giftUsernames').value = '';
             } else {
                 alert(res.message || '赠送失败');
             }

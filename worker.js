@@ -2918,18 +2918,43 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         }
       }
 
-      // ========== 赠送抽奖（管理员指定结果） ==========
+      // ========== 赠送抽奖（管理员指定结果，支持批量/分类） ==========
       if (path === '/api/admin/gift-bet' && request.method === 'POST') {
         try {
-          const { username, game_type, prize, operator } = await request.json();
-          if (!username || !['wheel', 'slot', 'scratch'].includes(game_type) || prize == null) {
+          const { username, usernames, target, game_type, prize, operator } = await request.json();
+          if (!['wheel', 'slot', 'scratch'].includes(game_type) || prize == null) {
             return resJson({ success: false, message: '参数错误' }, 400);
           }
           const prizeVal = parseFloat(prize);
           if (isNaN(prizeVal) || prizeVal < 0) return resJson({ success: false, message: '金额无效' }, 400);
 
-          const user = await DB.prepare('SELECT username FROM user WHERE username = ?').bind(username).first();
-          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+          // 解析接收用户：分类(target) 或 显式名单(usernames)
+          const targetSql = {
+            all: 'SELECT username FROM user',
+            vip: "SELECT username FROM user WHERE v_expire_date IS NOT NULL AND v_expire_date > ?",
+            nonvip: "SELECT username FROM user WHERE v_expire_date IS NULL OR v_expire_date <= ?",
+            trusted: "SELECT username FROM user WHERE COALESCE(not_trusted, '') = ''",
+            untrusted: "SELECT username FROM user WHERE not_trusted = 'yes'"
+          };
+
+          let resolved = [];
+          if (target && target !== 'single') {
+            const q = targetSql[target];
+            if (!q) return resJson({ success: false, message: '无效的分类目标' }, 400);
+            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const stmt = q.includes('?') ? DB.prepare(q).bind(now) : DB.prepare(q);
+            const rows = await stmt.all();
+            resolved = (rows.results || []).map(r => r.username);
+          } else {
+            // single / 显式名单：支持字符串(逗号/空格/换行分隔)或数组
+            let list = [];
+            if (Array.isArray(usernames)) list = usernames;
+            else if (typeof usernames === 'string') list = usernames.split(/[\s,，、]+/).filter(Boolean);
+            else if (username) list = [username];
+            resolved = [...new Set(list.map(s => s.trim()).filter(Boolean))];
+          }
+
+          if (resolved.length === 0) return resJson({ success: false, message: '未指定任何接收用户' }, 400);
 
           try { await DB.prepare('CREATE TABLE IF NOT EXISTS gift_bet (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, game_type TEXT, prize REAL, status TEXT DEFAULT "pending", created_at TEXT)').run(); } catch(e) {}
 
@@ -2937,12 +2962,23 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
           const gameNames = { wheel: '幸运转盘', slot: '老虎机', scratch: '刮刮乐' };
 
-          await DB.prepare('INSERT INTO gift_bet (username, game_type, prize, status, created_at) VALUES (?, ?, ?, "pending", ?)')
-            .bind(username, game_type, prizeVal, now).run();
-          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-            .bind(username, `🎁 Phantom赠送您一次${gameNames[game_type]}，请进入游戏领取|${game_type}`, msgNow).run();
+          let successCount = 0;
+          let failedNames = [];
+          for (const u of resolved) {
+            try {
+              const user = await DB.prepare('SELECT username FROM user WHERE username = ?').bind(u).first();
+              if (!user) { failedNames.push(u); continue; }
+              await DB.prepare('INSERT INTO gift_bet (username, game_type, prize, status, created_at) VALUES (?, ?, ?, "pending", ?)')
+                .bind(u, game_type, prizeVal, now).run();
+              await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+                .bind(u, `🎁 Phantom赠送您一次${gameNames[game_type]}，请进入游戏领取|${game_type}`, msgNow).run();
+              successCount++;
+            } catch (e) { failedNames.push(u); }
+          }
 
-          return resJson({ success: true, message: `已赠送 ${username} ${gameNames[game_type]} ¥${prizeVal.toFixed(2)}，等待用户领取` });
+          if (successCount === 0) return resJson({ success: false, message: `赠送失败，用户均不存在：${failedNames.join(', ')}` }, 404);
+          const msg = `已成功赠送 ${successCount} 人 ${gameNames[game_type]} ¥${prizeVal.toFixed(2)}` + (failedNames.length ? `；跳过不存在用户：${failedNames.join(', ')}` : '');
+          return resJson({ success: true, message: msg, data: { total: successCount, failed: failedNames } });
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
         }
