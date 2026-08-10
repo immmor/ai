@@ -1601,10 +1601,10 @@
         
         // 加载仪表盘数据
         async function loadDashboardData() {
-            // 同时调用两个统计接口（核心指标 + 业务聚合）
+            // 同时调用两个统计接口（核心指标来自 API_BASE，业务聚合来自 NEW_API_BASE）
             const [mainRes, dashRes] = await Promise.all([
                 apiRequest('/api/stats', 'GET'),
-                apiRequest('/api/stats/dashboard', 'GET').catch(err => ({ code: 500, msg: String(err) }))
+                newApiRequest('/api/stats/dashboard', 'GET').catch(err => ({ code: 500, msg: String(err) }))
             ]);
             
             if (mainRes.code === 200) {

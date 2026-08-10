@@ -3017,6 +3017,96 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         return resJson({ code: 200, data: summary, info, total });
       }
 
+      // ========== 仪表盘聚合统计接口（首页图表调用，部署于 NEW_API_BASE）==========
+      if (path === '/api/stats/dashboard' && request.method === 'GET') {
+        try {
+          if (!DB) return resJson({ code: 500, msg: '数据库未绑定' }, 500);
+
+          // ---- 用户余额 & 价格套餐分布 ----
+          const usersResult = await DB.prepare('SELECT balance, price_plan, v_expire_date, is_admin, is_agent FROM user').all();
+          const users = usersResult.results || [];
+          const totalUsers = users.length;
+          const totalBalance = users.reduce((s, u) => s + (parseFloat(u.balance) || 0), 0);
+          const nowISO = new Date().toISOString();
+          const vipUsers = users.filter(u => u.v_expire_date && u.v_expire_date > nowISO).length;
+          const agentUsers = users.filter(u => u.is_agent === 1).length;
+          const planMap = {};
+          users.forEach(u => { const k = u.price_plan || '免费'; planMap[k] = (planMap[k] || 0) + 1; });
+          const planLabels = Object.keys(planMap);
+          const planData = Object.values(planMap);
+
+          // ---- 游戏下注 & 派奖趋势（最近7天）----
+          const gameResult = await DB.prepare("SELECT created_at, bet_amount, payout_amount FROM game_bet WHERE created_at >= datetime('now','-6 days')").all();
+          const gameRows = gameResult.results || [];
+          const gameLabels = [], gameBetData = [], gameWinData = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const ds = d.toISOString().slice(0, 10);
+            gameLabels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+            const dayRows = gameRows.filter(r => (r.created_at || '').slice(0, 10) === ds);
+            gameBetData.push(dayRows.reduce((s, r) => s + (parseFloat(r.bet_amount) || 0), 0));
+            gameWinData.push(dayRows.reduce((s, r) => s + (parseFloat(r.payout_amount) || 0), 0));
+          }
+          const gameTotalBet = gameRows.reduce((s, r) => s + (parseFloat(r.bet_amount) || 0), 0);
+          const gameTotalWin = gameRows.reduce((s, r) => s + (parseFloat(r.payout_amount) || 0), 0);
+
+          // ---- 提现统计 & 审核漏斗 ----
+          const wResult = await DB.prepare('SELECT amount, status FROM withdraw').all();
+          const wRows = wResult.results || [];
+          const withdrawPending = wRows.filter(r => r.status === 'pending').length;
+          const withdrawApproved = wRows.filter(r => r.status === 'approved').length;
+          const withdrawRejected = wRows.filter(r => r.status === 'rejected').length;
+          const withdrawTotal = wRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+
+          // ---- 竞猜下注分布（按状态）----
+          const fResult = await DB.prepare('SELECT status FROM football_bet').all();
+          const fRows = fResult.results || [];
+          const fbStatusMap = {};
+          fRows.forEach(r => { const k = r.status || 'unknown'; fbStatusMap[k] = (fbStatusMap[k] || 0) + 1; });
+          const fbLabels = Object.keys(fbStatusMap);
+          const fbData = Object.values(fbStatusMap);
+
+          // ---- 签到活跃（最近7天签到人数）----
+          const chkResult = await DB.prepare("SELECT username, created_at FROM checkin WHERE created_at >= datetime('now','-6 days')").all();
+          const chkRows = chkResult.results || [];
+          const checkinLabels = [], checkinData = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const ds = d.toISOString().slice(0, 10);
+            checkinLabels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+            checkinData.push(chkRows.filter(r => (r.created_at || '').slice(0, 10) === ds).length);
+          }
+
+          return resJson({
+            code: 200,
+            msg: '查询成功',
+            data: {
+              totalUsers,
+              totalBalance: parseFloat(totalBalance.toFixed(2)),
+              vipUsers,
+              agentUsers,
+              planLabels,
+              planData,
+              gameLabels,
+              gameBetData,
+              gameWinData,
+              gameTotalBet: parseFloat(gameTotalBet.toFixed(2)),
+              gameTotalWin: parseFloat(gameTotalWin.toFixed(2)),
+              withdrawPending,
+              withdrawApproved,
+              withdrawRejected,
+              withdrawTotal: parseFloat(withdrawTotal.toFixed(2)),
+              fbLabels,
+              fbData,
+              checkinLabels,
+              checkinData
+            }
+          });
+        } catch (err) {
+          return resJson({ code: 500, msg: '查询失败', error: String(err) }, 500);
+        }
+      }
+
       // ========== 默认接口提示 ==========
       return resJson({
         code: 200,
