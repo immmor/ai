@@ -1082,40 +1082,35 @@
                         <div class="table-header">
                             <h3>🎁 赠送抽奖</h3>
                         </div>
-                        <div style="padding: 1.5rem 1.5rem 1.75rem;">
-                            <div class="user-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem;">
-                                <div class="form-group">
-                                    <label>接收对象</label>
-                                    <select id="giftTarget" class="form-input" onchange="toggleGiftUsernames()">
-                                        <option value="single">指定用户（可多人）</option>
-                                        <option value="all">全部用户</option>
-                                        <option value="vip">VIP 会员</option>
-                                        <option value="nonvip">非会员</option>
-                                        <option value="trusted">已信任用户</option>
-                                        <option value="untrusted">未信任用户</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" id="giftUsernamesGroup" style="grid-column: span 2;">
-                                    <label>用户名（多个用逗号、空格或换行分隔）</label>
-                                    <textarea id="giftUsernames" class="form-input" rows="2" placeholder="例如：alice, bob, charlie"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>抽奖类型</label>
-                                    <select id="giftGameType" class="form-input" onchange="updateGiftPrizeOptions()">
-                                        <option value="wheel">幸运转盘</option>
-                                        <option value="slot">老虎机</option>
-                                        <option value="scratch">刮刮乐</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>中奖金额 (¥)</label>
-                                    <select id="giftPrize" class="form-input"></select>
-                                </div>
+                        <div style="padding: 1.5rem;">
+                            <div class="form-group">
+                                <label for="giftTarget">接收对象</label>
+                                <select id="giftTarget" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;" onchange="toggleGiftUsernames()">
+                                    <option value="single">指定用户（可多人）</option>
+                                    <option value="all">所有用户</option>
+                                    <option value="vip">VIP 会员</option>
+                                    <option value="nonvip">非会员</option>
+                                    <option value="trusted">已信任用户</option>
+                                    <option value="untrusted">未信任用户</option>
+                                </select>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                                <button class="add-btn" onclick="sendGiftBet()" style="background-color: #667eea;">确认赠送</button>
-                                <span style="font-size: 12px; color: #a0aec0; line-height: 1.5;">中奖金额由管理员设定，用户进入游戏即可领取；支持多人或按分类（全部 / VIP / 会员 / 信任状态）批量赠送。</span>
+                            <div class="form-group" id="giftUsernamesGroup" style="display: none;">
+                                <label for="giftUsernames">用户名（多个用逗号、空格或换行分隔）</label>
+                                <textarea id="giftUsernames" rows="2" placeholder="例如：alice, bob, charlie" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; resize: vertical;"></textarea>
                             </div>
+                            <div class="form-group">
+                                <label for="giftGameType">抽奖类型</label>
+                                <select id="giftGameType" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;" onchange="updateGiftPrizeOptions()">
+                                    <option value="wheel">幸运转盘</option>
+                                    <option value="slot">老虎机</option>
+                                    <option value="scratch">刮刮乐</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="giftPrize">中奖金额 (¥)</label>
+                                <select id="giftPrize" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;"></select>
+                            </div>
+                            <button type="button" class="btn" onclick="sendGiftBet()" style="width: auto;">确认赠送</button>
                         </div>
                     </div>
 
