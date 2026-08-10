@@ -163,7 +163,7 @@ export default {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              from: 'PHANTOM VPN <noreply@phantom.immmor.com>',
+              from: 'PHANTOM VPN <noreply@phantom.funbua.uk>',
               to: [email],
               subject: emailSubject,
               html: emailHtml
@@ -465,6 +465,8 @@ export default {
             type: 'register',
             time: now,
             ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+            location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown',
+            domain: request.url,
             device: request.headers.get('User-Agent') || 'unknown',
             acceptLanguage: request.headers.get('Accept-Language') || 'unknown',
             country: request.headers.get('CF-IPCountry') || 'unknown'
@@ -515,7 +517,7 @@ export default {
 
         if (user) {
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: request.url, device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown', referer: request.headers.get('Referer') || 'unknown' };
 
           const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(username).first();
           let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
@@ -555,7 +557,7 @@ export default {
 
         if (user) {
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+          const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: request.url, device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown', referer: request.headers.get('Referer') || 'unknown' };
 
           const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE rowid = ?').bind(user.rowid).first();
           let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
@@ -610,7 +612,7 @@ export default {
 
           if (user) {
             const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: request.url, device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown', referer: request.headers.get('Referer') || 'unknown' };
 
             const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(email).first();
             let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
@@ -707,7 +709,7 @@ export default {
 
           if (user) {
             const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown' };
+            const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: request.url, device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown', referer: request.headers.get('Referer') || 'unknown' };
 
             const loginInfo = await DB.prepare('SELECT login_info FROM user WHERE username = ?').bind(email).first();
             let updatedLoginInfo = JSON.stringify([loginInfoEntry]);
@@ -872,7 +874,7 @@ export default {
         if (!name) return resJson({ code: 400, msg: '请传入name参数，例：?name=kkk' }, 400);
         
         const result = await DB
-          .prepare('SELECT rowid as id, username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, invite_code, vorders FROM user WHERE username = ?')
+          .prepare('SELECT rowid as id, username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, invite_code, source, vorders, free_expire_date, last_checkin, game_winnings FROM user WHERE username = ?')
           .bind(name)
           .first();
         
@@ -892,7 +894,7 @@ export default {
       };
 
       // ========== 开通VIP接口 ==========
-      if (path === '/api/open-vip' && request.method === 'POST') {
+      if (path === '/api/open-vip' && request.method === 'PUT') {
         try {
           const params = await request.json();
           const { username, duration = 30, price = 10.00 } = params;
@@ -1043,6 +1045,21 @@ export default {
         }
       }
 
+      // ========== 更新用户来源接口 ==========
+      if (path === '/api/update-source' && request.method === 'PUT') {
+        try {
+          const { username, source } = await request.json();
+          if (!username || !source) return resJson({ code: 400, msg: '缺少参数' }, 400);
+          const user = await DB.prepare('SELECT source FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+          if (user.source) return resJson({ code: 400, msg: '来源已设置' }, 400);
+          await DB.prepare('UPDATE user SET source = ? WHERE username = ?').bind(source, username).run();
+          return resJson({ code: 200, msg: '提交成功' });
+        } catch (err) {
+          return resJson({ code: 500, msg: '提交失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 查询用户VIP状态接口 ==========
       if (path === '/api/vip-status' && request.method === 'GET') {
         try {
@@ -1089,7 +1106,7 @@ export default {
       }
 
       // ========== 自动续费开关接口 ==========
-      if (path === '/api/toggle-auto-renew' && request.method === 'POST') {
+      if (path === '/api/toggle-auto-renew' && request.method === 'PUT') {
         try {
           const { username, enabled } = await request.json();
           if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -1172,7 +1189,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn, remark } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn, remark, free_expire_date, last_checkin } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -1245,6 +1262,14 @@ export default {
           if (security_answer !== undefined) {
             updates.push('security_answer = ?');
             values.push(security_answer);
+          }
+          if (free_expire_date !== undefined) {
+            updates.push('free_expire_date = ?');
+            values.push(free_expire_date);
+          }
+          if (last_checkin !== undefined) {
+            updates.push('last_checkin = ?');
+            values.push(last_checkin);
           }
           if (auto_rewn !== undefined) {
             updates.push('auto_rewn = ?');
@@ -1409,7 +1434,7 @@ rules:
           // 记录用户调用
           const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
-          fetchLink.unshift({ type: 'vip', protocol: 'clash', fetchTime: beijingTime });
+          fetchLink.unshift({ type: 'vip', protocol: 'clash', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname });
           if (fetchLink.length > 50) fetchLink.pop();
           await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), user.username).run();
           
@@ -1487,7 +1512,7 @@ rules:
           // 记录用户调用
           const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
-          fetchLink.unshift({ type: 'vip', protocol: 'v2ray', fetchTime: beijingTime });
+          fetchLink.unshift({ type: 'vip', protocol: 'v2ray', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname });
           if (fetchLink.length > 50) fetchLink.pop();
           await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), user.username).run();
           
@@ -1500,6 +1525,37 @@ rules:
           });
         } catch (err) {
           return resJson({ code: 500, msg: '获取VIP节点配置失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 签到接口 ==========
+      if (path === '/api/checkin' && request.method === 'POST') {
+        try {
+          const { username, timezoneOffset } = await request.json();
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+
+          const user = await DB.prepare('SELECT last_checkin, free_expire_date FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+
+          const offset = typeof timezoneOffset === 'number' ? timezoneOffset : 0;
+          const now = new Date();
+          const localDate = new Date(now.getTime() - offset * 60 * 1000);
+          const todayStr = localDate.toISOString().slice(0, 10);
+
+          if (user.last_checkin === todayStr) {
+            return resJson({ code: 200, msg: '今日已签到', free_expire_date: user.free_expire_date });
+          }
+
+          const localEndOfDay = new Date(now.getTime() - offset * 60 * 1000);
+          localEndOfDay.setUTCHours(23, 59, 59, 999);
+          const expireDate = new Date(localEndOfDay.getTime() + offset * 60 * 1000);
+
+          await DB.prepare('UPDATE user SET last_checkin = ?, free_expire_date = ? WHERE username = ?')
+            .bind(todayStr, expireDate.toISOString(), username).run();
+
+          return resJson({ code: 200, msg: '签到成功，免费节点有效期至今日23:59', free_expire_date: expireDate.toISOString() });
+        } catch (err) {
+          return resJson({ code: 500, msg: '签到失败', error: err.message }, 500);
         }
       }
 
@@ -1519,14 +1575,51 @@ rules:
             // 如果解码失败，使用原始值
           }
           
-          // 验证用户是否存在
-          const user = await DB.prepare('SELECT fetch_link FROM user WHERE username = ?').bind(username).first();
+          // 验证用户是否存在并检查免费节点有效期
+          const user = await DB.prepare('SELECT fetch_link, free_expire_date FROM user WHERE username = ?').bind(username).first();
           if (!user) {
             return resJson({ code: 404, msg: '用户不存在' }, 404);
           }
           
-          // 根据当前日期生成链接（获取昨天的配置文件）
+          // 检查免费节点是否过期
           const now = new Date();
+          if (!user.free_expire_date || new Date(user.free_expire_date) < now) {
+            const mockConfig = `mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+dns:
+  servers:
+    - 8.8.8.8
+    - 1.1.1.1
+proxies:
+  - name: "FREE_EXPIRED_SIGNIN_REQUIRED"
+    type: vmess
+    server: expired.freenode.local
+    port: 8080
+    uuid: 00000000-0000-0000-0000-000000000000
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+proxy-groups:
+  - name: "🚀 免费节点已到期"
+    type: select
+    proxies:
+      - FREE_EXPIRED_SIGNIN_REQUIRED
+rules:
+  - MATCH,🚀 免费节点已到期
+`;
+            return new Response(mockConfig, {
+              headers: {
+                'Content-Type': 'text/yaml; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Content-Disposition': 'attachment; filename="phantom-free.yaml"'
+              }
+            });
+          }
+          
+          // 根据当前日期生成链接（获取昨天的配置文件）
           // 减去1天获取昨天的日期
           const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
           const year = yesterday.getFullYear();
@@ -1547,7 +1640,7 @@ rules:
           // 记录用户调用
           const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
-          fetchLink.unshift({ type: 'free', protocol: 'clash', fetchTime: beijingTime });
+          fetchLink.unshift({ type: 'free', protocol: 'clash', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname });
           if (fetchLink.length > 50) fetchLink.pop();
           await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), username).run();
           
@@ -1578,14 +1671,38 @@ rules:
             // 如果解码失败，使用原始值
           }
           
-          // 验证用户是否存在
-          const user = await DB.prepare('SELECT fetch_link FROM user WHERE username = ?').bind(username).first();
+          // 验证用户是否存在并检查免费节点有效期
+          const user = await DB.prepare('SELECT fetch_link, free_expire_date FROM user WHERE username = ?').bind(username).first();
           if (!user) {
             return resJson({ code: 404, msg: '用户不存在' }, 404);
           }
           
-          // 根据当前日期生成链接（获取昨天的配置文件）
+          // 检查免费节点是否过期
           const now = new Date();
+          if (!user.free_expire_date || new Date(user.free_expire_date) < now) {
+            const mockConfig = `{
+  "v": "2",
+  "ps": "🚀 免费节点已到期",
+  "add": "expired.freenode.local",
+  "port": "8080",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "aid": "0",
+  "net": "tcp",
+  "type": "none",
+  "host": "",
+  "path": "",
+  "tls": ""
+}`;
+            return new Response(mockConfig, {
+              headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Content-Disposition': 'attachment; filename="phantom-free.txt"'
+              }
+            });
+          }
+          
+          // 根据当前日期生成链接（获取昨天的配置文件）
           // 减去 1 天获取昨天的日期
           const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
           const year = yesterday.getFullYear();
@@ -1606,7 +1723,7 @@ rules:
           // 记录用户调用
           const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
-          fetchLink.unshift({ type: 'free', protocol: 'v2ray', fetchTime: beijingTime });
+          fetchLink.unshift({ type: 'free', protocol: 'v2ray', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname });
           if (fetchLink.length > 50) fetchLink.pop();
           await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), username).run();
           
@@ -1814,7 +1931,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       }
 
       // ========== 重置VIP Token接口 ==========
-      if (path === '/api/reset-vtoken' && request.method === 'POST') {
+      if (path === '/api/reset-vtoken' && request.method === 'PUT') {
         try {
           const params = await request.json();
           const { username } = params;
@@ -1897,40 +2014,15 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           
           const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
           
-          if (target === 'all') {
-            const users = await DB
-              .prepare('SELECT username FROM user')
-              .all();
+          const targetSql = {
+            all: '',
+            vip: " WHERE v_expire_date IS NOT NULL AND v_expire_date > ?",
+            nonvip: " WHERE v_expire_date IS NULL OR v_expire_date <= ?",
+            trusted: " WHERE COALESCE(not_trusted, '') = ''",
+            untrusted: " WHERE not_trusted = 'yes'"
+          };
 
-            if (!users.results || users.results.length === 0) {
-              return resJson({ code: 404, msg: '暂无用户' }, 404);
-            }
-
-            const BATCH_SIZE = 30;
-            let totalInserted = 0;
-
-            for (let i = 0; i < users.results.length; i += BATCH_SIZE) {
-              const batch = users.results.slice(i, i + BATCH_SIZE);
-              const placeholders = batch.map(() => '(?, ?, ?, 0)').join(', ');
-              const values = batch.flatMap(user => [user.username, content, now]);
-              
-              await DB
-                .prepare(`INSERT INTO messages (username, content, created_at, is_read) VALUES ${placeholders}`)
-                .bind(...values)
-                .run();
-              
-              totalInserted += batch.length;
-            }
-
-            return resJson({
-              code: 200,
-              msg: '发送成功',
-              data: {
-                total: totalInserted,
-                content
-              }
-            });
-          } else if (target === 'single') {
+          if (target === 'single') {
             // 检查用户是否存在
             const existingUser = await DB
               .prepare('SELECT * FROM user WHERE username = ?')
@@ -1960,7 +2052,36 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               return resJson({ code: 500, msg: '发送失败，请重试' }, 500);
             }
           } else {
-            return resJson({ code: 400, msg: '无效的发送目标' }, 400);
+            const where = targetSql[target];
+            if (!where && target !== 'all') {
+              return resJson({ code: 400, msg: '无效的发送目标' }, 400);
+            }
+
+            const query = 'SELECT username FROM user' + where;
+            const stmt = where.includes('?') ? DB.prepare(query).bind(now) : DB.prepare(query);
+            const users = await stmt.all();
+
+            if (!users.results || users.results.length === 0) {
+              return resJson({ code: 404, msg: '暂无符合条件的用户' }, 404);
+            }
+
+            const BATCH_SIZE = 30;
+            let totalInserted = 0;
+
+            for (let i = 0; i < users.results.length; i += BATCH_SIZE) {
+              const batch = users.results.slice(i, i + BATCH_SIZE);
+              const placeholders = batch.map(() => '(?, ?, ?, 0)').join(', ');
+              const values = batch.flatMap(user => [user.username, content, now]);
+
+              await DB
+                .prepare(`INSERT INTO messages (username, content, created_at, is_read) VALUES ${placeholders}`)
+                .bind(...values)
+                .run();
+
+              totalInserted += batch.length;
+            }
+
+            return resJson({ code: 200, msg: '发送成功', data: { total: totalInserted, content, target } });
           }
         } catch (err) {
           console.error('发送消息错误:', err);
@@ -2411,8 +2532,8 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               .bind(newStatus, payout, bet.id).run();
 
             if (isWin) {
-              await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-                .bind(payout, bet.username).run();
+              await DB.prepare('UPDATE user SET balance = balance + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?')
+                .bind(payout, payout, bet.username).run();
               totalPayout += payout;
               winCount++;
 
@@ -2480,7 +2601,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (user.balance < cost) return resJson({ success: false, message: '余额不足' }, 400);
 
           const prizes = [3, 5, 5, 10, 10, 20, 50, 200];
-          const weights = [0.25, 0.25, 0.18, 0.15, 0.08, 0.05, 0.03, 0.01];
+          const weights = [0.35, 0.22, 0.18, 0.10, 0.08, 0.04, 0.02, 0.01];
           let r = Math.random();
           let prizeIndex = 0;
           for (let i = 0; i < weights.length; i++) {
@@ -2488,9 +2609,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             if (r <= 0) { prizeIndex = i; break; }
           }
           const prize = prizes[prizeIndex];
-          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
-          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'wheel', cost, prize, `¥${prize}`, now).run();
 
@@ -2532,9 +2653,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           }
 
           const resultStr = (s1 === s2 && s2 === s3) ? `${s1}${s2}${s3}` : `${s1} ${s2} ${s3}`;
-          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
-          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'slot', cost, prize, resultStr, now).run();
 
@@ -2557,7 +2678,8 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (user.balance < cost) return resJson({ success: false, message: '余额不足' }, 400);
 
           const prizes = [5, 10, 20, 50, 100, 200];
-          const weights = [0.3, 0.25, 0.2, 0.15, 0.08, 0.02];
+          // 50/100/200 权重进一步大幅压低，剩余概率补给 5/10/20
+          const weights = [0.60, 0.26, 0.12, 0.018, 0.0018, 0.0002];
           let random = Math.random();
           let prize = 0;
           for (let i = 0; i < prizes.length; i++) {
@@ -2565,9 +2687,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             if (random <= 0) { prize = prizes[i]; break; }
           }
 
-          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
-          await DB.prepare('UPDATE user SET balance = balance - ? + ? WHERE username = ?').bind(cost, prize, username).run();
+          await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'scratch', cost, prize, `¥${prize}`, now).run();
 
@@ -2610,6 +2732,289 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
         }
+      }
+
+      // ========== 提现：保存收款码 ==========
+      // ========== 提现：获取已保存的收款码 ==========
+      if (path === '/api/withdraw/get-qr' && request.method === 'POST') {
+        try {
+          const { username } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const wechatRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`withdraw_qr_${username}_wechat`).first();
+          const alipayRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`withdraw_qr_${username}_alipay`).first();
+          const cryptoRows = await DB.prepare('SELECT key, value FROM link WHERE key LIKE ?').bind(`withdraw_account_${username}_%`).all();
+          const accounts = {};
+          for (const row of cryptoRows.results || []) {
+            accounts[row.key.replace(`withdraw_account_${username}_`, '')] = row.value;
+          }
+          return resJson({ success: true, qrCodes: { wechat: wechatRow?.value || '', alipay: alipayRow?.value || '' }, accounts });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 提现：提交提现申请 ==========
+      if (path === '/api/withdraw' && request.method === 'POST') {
+        try {
+          const { username, amount, method, qrCode, account } = await request.json();
+          if (!username) return resJson({ success: false, key: 'withdraw_err_login', message: '请先登录' }, 401);
+          if (!amount || amount <= 0) return resJson({ success: false, key: 'withdraw_err_amount', message: '请输入有效金额' }, 400);
+          if (!method) return resJson({ success: false, key: 'withdraw_err_method', message: '请选择收款方式' }, 400);
+          if (method !== 'wechat' && method !== 'alipay' && !method.startsWith('crypto_')) return resJson({ success: false, key: 'withdraw_err_method', message: '请选择收款方式' }, 400);
+
+          let finalQrCode = null;
+          if (method.startsWith('crypto_')) {
+            // 数字货币通过收款账号提现，无需二维码
+            const acc = (account || '').trim();
+            if (!acc) return resJson({ success: false, key: 'withdraw_err_qr', message: '请填写收款账号' }, 400);
+            finalQrCode = acc;
+          } else {
+            // 收款码若客户端未上传（复用已存），则从服务端取用，避免重复传输图片
+            finalQrCode = qrCode;
+            if (!finalQrCode) {
+              const linkRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`withdraw_qr_${username}_${method}`).first();
+              finalQrCode = linkRow?.value || null;
+              if (!finalQrCode) {
+                const histRow = await DB.prepare('SELECT qr_code FROM withdraw WHERE username = ? AND method = ? AND qr_code IS NOT NULL ORDER BY rowid DESC LIMIT 1').bind(username, method).first();
+                finalQrCode = histRow?.qr_code || null;
+              }
+            }
+            if (!finalQrCode) return resJson({ success: false, key: 'withdraw_err_qr', message: '请上传收款码' }, 400);
+          }
+
+          const user = await DB.prepare('SELECT balance, game_winnings FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, key: 'withdraw_err_user', message: '用户不存在' }, 404);
+
+          const withdrawAmount = parseFloat(amount);
+          const balance = parseFloat(user.balance || 0);
+          const gameWinnings = parseFloat(user.game_winnings || 0);
+          const maxWithdrawable = Math.min(balance, gameWinnings);
+
+          if (withdrawAmount < 50) return resJson({ success: false, key: 'withdraw_err_min', message: '最低提现金额为50元' }, 400);
+          if (withdrawAmount > maxWithdrawable) return resJson({ success: false, key: 'withdraw_err_balance', maxAmount: maxWithdrawable.toFixed(2), message: `可提现金额不足，最多可提现 ¥${maxWithdrawable.toFixed(2)}` }, 400);
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          await DB.prepare('UPDATE user SET game_winnings = game_winnings - ?, balance = balance - ? WHERE username = ?')
+            .bind(withdrawAmount, withdrawAmount, username).run();
+
+          await DB.prepare('INSERT INTO withdraw (username, amount, method, qr_code, status, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+            .bind(username, withdrawAmount, method, finalQrCode, 'pending', now).run();
+
+          const cryptoLabelMap = { crypto_usdt_trc20: 'USDT(TRC20)', crypto_usdt_erc20: 'USDT(ERC20)', crypto_btc: 'BTC', crypto_eth: 'ETH', crypto_sol: 'SOL', crypto_usdc: 'USDC' };
+          const methodLabel = method === 'wechat' ? '微信' : (method === 'alipay' ? '支付宝' : (cryptoLabelMap[method] || '数字货币'));
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+            .bind('immmor', `💰 新的提现申请！用户 ${username} 申请提现 ¥${withdrawAmount.toFixed(2)}（${methodLabel}）`, msgNow).run();
+
+          // 持久化收款码/账号，供下次提现自动填充（避免每次都要重新上传）
+          try {
+            if (method.startsWith('crypto_')) {
+              await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)')
+                .bind(`withdraw_account_${username}_${method}`, finalQrCode).run();
+            } else {
+              await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)')
+                .bind(`withdraw_qr_${username}_${method}`, finalQrCode).run();
+            }
+          } catch {}
+
+          return resJson({ success: true, key: 'withdraw_submitted', message: '提现申请已提交，我们会尽快处理' });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 提现：获取提现记录 ==========
+      if (path === '/api/withdraw/history' && request.method === 'POST') {
+        try {
+          const { username } = await request.json();
+          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
+
+          const result = await DB.prepare('SELECT * FROM withdraw WHERE username = ? ORDER BY id DESC LIMIT 50').bind(username).all();
+          return resJson({ success: true, history: result.results || [] });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 提现：后台获取所有提现申请 ==========
+      if (path === '/api/withdraw/list' && request.method === 'GET') {
+        try {
+          const status = url.searchParams.get('status') || '';
+          let query = 'SELECT * FROM withdraw';
+          let params = [];
+          if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+            query += ' WHERE status = ?';
+            params.push(status);
+          }
+          query += ' ORDER BY id DESC LIMIT 500';
+          const result = params.length ? await DB.prepare(query).bind(...params).all() : await DB.prepare(query).all();
+          return resJson({ success: true, data: result.results || [] });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 提现：后台审核（通过/拒绝） ==========
+      if (path === '/api/withdraw/review' && request.method === 'POST') {
+        try {
+          const { id, action, operator, reject_reason } = await request.json();
+          if (!id || !['approve', 'reject'].includes(action)) return resJson({ success: false, message: '参数错误' }, 400);
+
+          const record = await DB.prepare('SELECT * FROM withdraw WHERE id = ?').bind(id).first();
+          if (!record) return resJson({ success: false, message: '提现记录不存在' }, 404);
+          if (record.status !== 'pending') return resJson({ success: false, message: '该申请已处理' }, 400);
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          if (action === 'approve') {
+            await DB.prepare('UPDATE withdraw SET status = ?, reviewed_at = ?, reviewer = ? WHERE id = ?')
+              .bind('approved', now, operator || 'admin', id).run();
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(record.username, `✅ 您的提现申请 ¥${parseFloat(record.amount).toFixed(2)} 已通过审核，请注意查收`, msgNow).run();
+          } else {
+            const reason = (reject_reason || '').toString().trim();
+            await DB.prepare('UPDATE withdraw SET status = ?, reviewed_at = ?, reviewer = ?, reject_reason = ? WHERE id = ?')
+              .bind('rejected', now, operator || 'admin', reason, id).run();
+            await DB.prepare('UPDATE user SET balance = balance + ?, game_winnings = game_winnings + ? WHERE username = ?')
+              .bind(record.amount, record.amount, record.username).run();
+            const reasonLine = reason ? `（原因：${reason}）` : '';
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(record.username, `❌ 您的提现申请 ¥${parseFloat(record.amount).toFixed(2)} 已被拒绝，金额已退回${reasonLine}`, msgNow).run();
+          }
+
+          return resJson({ success: true, message: action === 'approve' ? '已通过' : '已拒绝' });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 提现：用户主动取消 ==========
+      if (path === '/api/withdraw/cancel' && request.method === 'POST') {
+        try {
+          const { id, username } = await request.json();
+          if (!id || !username) return resJson({ success: false, message: '参数错误' }, 400);
+
+          const record = await DB.prepare('SELECT * FROM withdraw WHERE id = ?').bind(id).first();
+          if (!record) return resJson({ success: false, message: '提现记录不存在' }, 404);
+          if (record.username !== username) return resJson({ success: false, message: '无权操作此申请' }, 403);
+          if (record.status !== 'pending') return resJson({ success: false, message: '仅待处理申请可取消' }, 400);
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          await DB.prepare('UPDATE withdraw SET status = ?, reviewed_at = ?, reviewer = ?, reject_reason = ? WHERE id = ?')
+            .bind('cancelled', now, username, '用户主动取消', id).run();
+          await DB.prepare('UPDATE user SET balance = balance + ?, game_winnings = game_winnings + ? WHERE username = ?')
+            .bind(record.amount, record.amount, record.username).run();
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+            .bind(record.username, `↩️ 您已取消提现申请 ¥${parseFloat(record.amount).toFixed(2)}，金额已退回账户`, msgNow).run();
+
+          return resJson({ success: true, message: '已取消' });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 赠送抽奖（管理员指定结果） ==========
+      if (path === '/api/admin/gift-bet' && request.method === 'POST') {
+        try {
+          const { username, game_type, prize, operator } = await request.json();
+          if (!username || !['wheel', 'slot', 'scratch'].includes(game_type) || prize == null) {
+            return resJson({ success: false, message: '参数错误' }, 400);
+          }
+          const prizeVal = parseFloat(prize);
+          if (isNaN(prizeVal) || prizeVal < 0) return resJson({ success: false, message: '金额无效' }, 400);
+
+          const user = await DB.prepare('SELECT username FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
+
+          try { await DB.prepare('CREATE TABLE IF NOT EXISTS gift_bet (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, game_type TEXT, prize REAL, status TEXT DEFAULT "pending", created_at TEXT)').run(); } catch(e) {}
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const gameNames = { wheel: '幸运转盘', slot: '老虎机', scratch: '刮刮乐' };
+
+          await DB.prepare('INSERT INTO gift_bet (username, game_type, prize, status, created_at) VALUES (?, ?, ?, "pending", ?)')
+            .bind(username, game_type, prizeVal, now).run();
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+            .bind(username, `🎁 Phantom赠送您一次${gameNames[game_type]}，请进入游戏领取|${game_type}`, msgNow).run();
+
+          return resJson({ success: true, message: `已赠送 ${username} ${gameNames[game_type]} ¥${prizeVal.toFixed(2)}，等待用户领取` });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 领取赠送抽奖 ==========
+      if (path === '/api/game/claim-gift' && request.method === 'POST') {
+        try {
+          const { username, game_type } = await request.json();
+          if (!username || !['wheel', 'slot', 'scratch'].includes(game_type)) {
+            return resJson({ success: false, message: '参数错误' }, 400);
+          }
+          const gift = await DB.prepare('SELECT * FROM gift_bet WHERE username = ? AND game_type = ? AND status = "pending" ORDER BY id ASC LIMIT 1').bind(username, game_type).first();
+          if (!gift) return resJson({ success: false, gift: false });
+
+          await DB.prepare('UPDATE gift_bet SET status = "claimed" WHERE id = ?').bind(gift.id).run();
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, 0, ?, ?, ?)')
+            .bind(username, game_type, gift.prize, '🎁 赠送', now).run();
+          if (gift.prize > 0) {
+            await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+              .bind(gift.prize, username).run();
+          }
+          const user = await DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+          const resp = { success: true, gift: true, prize: gift.prize, balance: user.balance };
+          if (game_type === 'slot') {
+            const symMap = { 200: '7️⃣', 100: '💎', 50: '⭐', 30: '🍒', 25: '⭐', 15: '🍒' };
+            const s = symMap[gift.prize] || '🍒';
+            resp.symbols = (gift.prize >= 30 && [200,100,50,30].includes(gift.prize)) ? [s, s, s] : [s, s, '🍋'];
+            await DB.prepare('UPDATE game_bet SET result = ? WHERE id = last_insert_rowid()').bind(resp.symbols.join(' ')).run();
+          }
+          return resJson(resp);
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 广告点击统计接口（数据存于 user 表） ==========
+      if (path === '/api/ad-click') {
+        try { await DB.prepare('ALTER TABLE user ADD COLUMN ad_clicks TEXT').run(); } catch (e) {}
+        // 记录点击：POST /api/ad-click  body { ad_id, username, content? }
+        if (request.method === 'POST') {
+          try {
+            const { ad_id, username, content } = await request.json();
+            if (!ad_id) return resJson({ code: 400, msg: '缺少 ad_id' }, 400);
+            if (!username) return resJson({ code: 200, msg: '匿名点击不记录' });
+            const user = await DB.prepare('SELECT ad_clicks FROM user WHERE username = ?').bind(username).first();
+            if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+            const clicks = user.ad_clicks ? JSON.parse(user.ad_clicks) : {};
+            const cur = clicks[ad_id] || { count: 0 };
+            cur.count = (cur.count || 0) + 1;
+            if (content) cur.content = content;
+            clicks[ad_id] = cur;
+            await DB.prepare('UPDATE user SET ad_clicks = ? WHERE username = ?').bind(JSON.stringify(clicks), username).run();
+            return resJson({ code: 200, msg: '记录成功', count: cur.count });
+          } catch (err) {
+            return resJson({ code: 500, msg: '记录失败', error: err.message }, 500);
+          }
+        }
+        // 查询统计：汇总所有用户的广告点击
+        const rows = await DB.prepare('SELECT ad_clicks FROM user WHERE ad_clicks IS NOT NULL AND ad_clicks != "{}"').all();
+        const summary = {}, info = {};
+        rows.results.forEach(r => {
+          const c = JSON.parse(r.ad_clicks || '{}');
+          for (const [k, v] of Object.entries(c)) {
+            summary[k] = (summary[k] || 0) + (v.count || 0);
+            if (v.content) info[k] = v.content;
+          }
+        });
+        const total = Object.values(summary).reduce((a, b) => a + b, 0);
+        return resJson({ code: 200, data: summary, info, total });
       }
 
       // ========== 默认接口提示 ==========

@@ -703,6 +703,39 @@
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
+
+                    <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">🎮 游戏下注 / 派奖趋势（近7天）</h3>
+                            <canvas id="gameChart"></canvas>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">📦 价格套餐分布</h3>
+                            <canvas id="planChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">💸 提现审核漏斗</h3>
+                            <canvas id="withdrawChart"></canvas>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">⚽ 竞猜下注分布</h3>
+                            <canvas id="footballChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">📅 签到活跃（近7天）</h3>
+                            <canvas id="checkinChart"></canvas>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="margin-bottom: 1rem; color: #4a5568;">💰 余额概览</h3>
+                            <div id="balanceOverview" style="display:flex; flex-direction:column; gap:12px; padding-top:8px;"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 智能运营页面 -->
@@ -1568,10 +1601,14 @@
         
         // 加载仪表盘数据
         async function loadDashboardData() {
-            const result = await apiRequest('/api/stats', 'GET');
+            // 同时调用两个统计接口（核心指标 + 业务聚合）
+            const [mainRes, dashRes] = await Promise.all([
+                apiRequest('/api/stats', 'GET'),
+                apiRequest('/api/stats/dashboard', 'GET').catch(err => ({ code: 500, msg: String(err) }))
+            ]);
             
-            if (result.code === 200) {
-                const data = result.data;
+            if (mainRes.code === 200) {
+                const data = mainRes.data;
                 document.getElementById('totalUsers').textContent = data.totalUsers || 0;
                 document.getElementById('totalOrders').textContent = data.totalOrders || 0;
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
@@ -1582,7 +1619,15 @@
                     renderCharts(data);
                 }, 100);
             } else {
-                console.error('加载统计数据失败:', result.msg);
+                console.error('加载统计数据失败:', mainRes.msg);
+            }
+            
+            if (dashRes.code === 200) {
+                setTimeout(() => {
+                    renderDashboardCharts(dashRes.data || {});
+                }, 120);
+            } else {
+                console.error('加载聚合统计数据失败:', dashRes.msg);
             }
         }
         
@@ -1658,6 +1703,107 @@
                     }
                 }
             });
+        }
+
+        // 渲染首页业务聚合图表（来自 /api/stats/dashboard）
+        function renderDashboardCharts(d) {
+            const COLORS = ['#667eea', '#48bb78', '#ed8936', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181', '#9f7aea', '#38b2ac'];
+
+            // ---- 游戏下注 / 派奖趋势（折线）----
+            const gctx = document.getElementById('gameChart');
+            if (gctx) {
+                if (charts.game) charts.game.destroy();
+                charts.game = new Chart(gctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: d.gameLabels || [],
+                        datasets: [
+                            { label: '下注金额', data: d.gameBetData || [], borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', tension: 0.4, fill: true },
+                            { label: '派奖金额', data: d.gameWinData || [], borderColor: '#48bb78', backgroundColor: 'rgba(72,187,120,0.1)', tension: 0.4, fill: true }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            // ---- 价格套餐分布（环形）----
+            const pctx = document.getElementById('planChart');
+            if (pctx) {
+                if (charts.plan) charts.plan.destroy();
+                charts.plan = new Chart(pctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: d.planLabels || [],
+                        datasets: [{ data: d.planData || [], backgroundColor: COLORS }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // ---- 提现审核漏斗（柱状）----
+            const wctx = document.getElementById('withdrawChart');
+            if (wctx) {
+                if (charts.withdraw) charts.withdraw.destroy();
+                charts.withdraw = new Chart(wctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['待审核', '已通过', '已拒绝'],
+                        datasets: [{
+                            label: '笔数',
+                            data: [d.withdrawPending || 0, d.withdrawApproved || 0, d.withdrawRejected || 0],
+                            backgroundColor: ['#ed8936', '#48bb78', '#fc8181']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            // ---- 竞猜下注分布（环形）----
+            const fctx = document.getElementById('footballChart');
+            if (fctx) {
+                if (charts.football) charts.football.destroy();
+                charts.football = new Chart(fctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: d.fbLabels || [],
+                        datasets: [{ data: d.fbData || [], backgroundColor: COLORS }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // ---- 签到活跃趋势（折线）----
+            const cctx = document.getElementById('checkinChart');
+            if (cctx) {
+                if (charts.checkin) charts.checkin.destroy();
+                charts.checkin = new Chart(cctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: d.checkinLabels || [],
+                        datasets: [{ label: '签到人数', data: d.checkinData || [], borderColor: '#9f7aea', backgroundColor: 'rgba(159,122,234,0.1)', tension: 0.4, fill: true }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            // ---- 余额概览（文字卡片）----
+            const box = document.getElementById('balanceOverview');
+            if (box) {
+                const rows = [
+                    { label: '平台总余额', value: '¥' + (d.totalBalance || 0), color: '#667eea' },
+                    { label: 'VIP 人数', value: d.vipUsers || 0, color: '#48bb78' },
+                    { label: '代理人数', value: d.agentUsers || 0, color: '#ed8936' },
+                    { label: '游戏总下注', value: '¥' + (d.gameTotalBet || 0), color: '#f6ad55' },
+                    { label: '游戏总派奖', value: '¥' + (d.gameTotalWin || 0), color: '#68d391' },
+                    { label: '提现总额', value: '¥' + (d.withdrawTotal || 0), color: '#fc8181' }
+                ];
+                box.innerHTML = rows.map(r =>
+                    `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #edf2f7;">
+                        <span style="color:#718096; font-size:0.9rem;">${r.label}</span>
+                        <span style="font-weight:600; color:${r.color}; font-size:1.05rem;">${r.value}</span>
+                    </div>`
+                ).join('');
+            }
         }
 
         // ==================== 智能运营分析 ====================
