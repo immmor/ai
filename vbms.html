@@ -2417,34 +2417,6 @@
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
-            // 根据页面加载对应数据
-            if (pageName === 'dashboard') {
-                await loadDashboardData();
-            } else if (pageName === 'insights') {
-                await loadInsights();
-            } else if (pageName === 'users') {
-                await loadUsers();
-            } else if (pageName === 'orders') {
-                await loadOrders();
-            } else if (pageName === 'settings') {
-                // 系统设置页面
-            } else if (pageName === 'nodes') {
-                await loadLinkConfig();
-                await loadPricePlan();
-                await loadLinks();
-            } else if (pageName === 'messages') {
-                // 消息管理页面不需要加载数据
-            } else if (pageName === 'football') {
-                await loadFootballMatches();
-                await loadFootballBets();
-                await loadWheelBets();
-                await loadSlotBets();
-                await loadScratchBets();
-                await loadPredictTopics();
-            } else if (pageName === 'withdraw') {
-                    await loadWithdrawals();
-                    await loadRebates();
-                }
         }
 
         async function loadPricePlan() {
