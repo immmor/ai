@@ -4151,7 +4151,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         async function loadPredictTopics() {
             const tbody = document.getElementById('predictTopicBody');
             try {
-                const data = await newApiRequest('/api/predict/admin/list', {});
+                const data = await newApiRequest('/api/predict/admin/list', 'POST', {});
                 if (!data.success) throw new Error(data.message);
                 const topics = data.topics || [];
                 tbody.innerHTML = topics.length === 0
@@ -4189,7 +4189,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const label = document.getElementById('predictBetTopicLabel');
             label.textContent = topicId ? `(话题 #${topicId})` : '';
             try {
-                const data = await newApiRequest('/api/predict/admin/bets', { topicId: topicId || null });
+                const data = await newApiRequest('/api/predict/admin/bets', 'POST', { topicId: topicId || null });
                 if (!data.success) throw new Error(data.message);
                 const bets = data.bets || [];
                 tbody.innerHTML = bets.length === 0
@@ -4227,7 +4227,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         function editPredictTopic(id) {
             // 需要从后端重新获取数据
-            newApiRequest('/api/predict/admin/list', {}).then(data => {
+            newApiRequest('/api/predict/admin/list', 'POST', {}).then(data => {
                 if (data.success) {
                     const t = data.topics.find(x => x.id == id);
                     if (t) {
@@ -4257,9 +4257,9 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             try {
                 let data;
                 if (id) {
-                    data = await newApiRequest('/api/predict/admin/update', { id: parseInt(id), question, options, end_time: endTime });
+                    data = await newApiRequest('/api/predict/admin/update', 'POST', { id: parseInt(id), question, options, end_time: endTime });
                 } else {
-                    data = await newApiRequest('/api/predict/admin/create', { question, options, end_time: endTime });
+                    data = await newApiRequest('/api/predict/admin/create', 'POST', { question, options, end_time: endTime });
                 }
                 if (data.success) {
                     alert('保存成功');
@@ -4275,7 +4275,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         async function deletePredictTopic(id) {
             if (!confirm('确定删除该话题？已有的投注记录仍然保留。')) return;
-            const data = await newApiRequest('/api/predict/admin/delete', { id });
+            const data = await newApiRequest('/api/predict/admin/delete', 'POST', { id });
             if (data.success) {
                 alert('已删除');
                 await loadPredictTopics();
@@ -4285,7 +4285,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function openPredictResolve(id) {
-            newApiRequest('/api/predict/admin/list', {}).then(data => {
+            newApiRequest('/api/predict/admin/list', 'POST', {}).then(data => {
                 if (data.success) {
                     const t = data.topics.find(x => x.id == id);
                     if (t) {
@@ -4313,7 +4313,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const winner = document.querySelector('input[name="predictWinner"]:checked');
             if (!winner || !confirm('确认结算？将会给中奖用户派发奖金。')) return;
             try {
-                const data = await newApiRequest('/api/predict/admin/resolve', { id, winner: parseInt(winner.value) });
+                const data = await newApiRequest('/api/predict/admin/resolve', 'POST', { id, winner: parseInt(winner.value) });
                 if (data.success) {
                     alert(`结算完成！总奖池 ${data.totalPool}，中奖 ${data.winCount} 人`);
                     closePredictResolveModal();
