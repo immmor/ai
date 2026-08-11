@@ -655,6 +655,9 @@
             <main class="page-content">
                 <!-- 仪表盘页面 -->
                 <div id="dashboardPage" class="page-section">
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+                        <button class="add-btn" onclick="loadDashboardData()" style="background-color:#667eea;">刷新</button>
+                    </div>
                     <div class="dashboard-grid">
                         <div class="stat-card">
                             <div class="stat-info">
@@ -1735,9 +1738,6 @@
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('mainPage').style.display = 'flex';
                 document.getElementById('currentUser').textContent = username;
-                
-                // 加载仪表盘数据
-                await loadDashboardData();
             } else {
                 alert(result.message || '用户名或密码错误');
             }
