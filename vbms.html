@@ -758,6 +758,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>🎯 智能用户分群</h3>
+                            <button class="add-btn" onclick="loadInsights()" style="background-color: #4299e1;">刷新</button>
                             <div id="insightTabs" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
                         </div>
                         <div id="insightSegmentBar" style="padding: 1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"></div>
@@ -779,6 +780,7 @@
                                 <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('usersTable')">固定</button>
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
+                                <button class="add-btn" onclick="document.getElementById('userSearchInput').value=''; loadUsers();" style="background-color: #4299e1;">刷新</button>
                                 <span id="searchResultInfo" style="color: #666;"></span>
                             </div>
                         </div>
@@ -830,6 +832,7 @@
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
                                 <button class="delete-btn" onclick="deleteAllPendingOrders()">删除待支付</button>
+                                <button class="add-btn" onclick="document.getElementById('orderSearchInput').value=''; loadOrders();" style="background-color: #4299e1;">刷新</button>
                             </div>
                         </div>
                         <table id="ordersTable">
@@ -898,6 +901,7 @@
                     <div class="data-table" style="margin-top: 1rem;">
                         <div class="table-header">
                             <h3>默认订阅链接配置</h3>
+                            <button class="add-btn" onclick="loadLinkConfig()" style="background-color: #4299e1;">刷新</button>
                         </div>
                         <div style="padding: 1.5rem;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="link-config-grid">
@@ -927,6 +931,7 @@
                     <div class="data-table" style="margin-top: 1rem;">
                         <div class="table-header">
                             <h3>节点链接管理</h3>
+                            <button class="add-btn" onclick="loadLinks()" style="background-color: #4299e1;">刷新</button>
                             <button class="add-btn" onclick="openNodeModal()" style="background-color: #48bb78;">添加节点</button>
                         </div>
                         <table>
@@ -949,6 +954,7 @@
                     <div class="data-table" style="margin-top: 1rem;">
                         <div class="table-header">
                             <h3>价格配置（新用户默认价格）</h3>
+                            <button class="add-btn" onclick="loadPricePlan()" style="background-color: #4299e1;">刷新</button>
                         </div>
                         <div style="padding: 1.5rem;">
                             <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
@@ -1264,6 +1270,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>足球下注记录</h3>
+                            <button class="add-btn" onclick="loadFootballBets()" style="background-color: #4299e1;">刷新</button>
                             <select id="fbBetFilterMatch" onchange="loadFootballBets()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <option value="">全部比赛</option>
                             </select>
