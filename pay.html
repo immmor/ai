@@ -1157,6 +1157,7 @@
                         };
                         localStorage.setItem('currentUser', JSON.stringify(userToSave));
                         localStorage.setItem('pricePlan', JSON.stringify(data.pricePlan || null));
+                        localStorage.setItem('loginTime', Date.now().toString());
                         // 清除地址栏里的免密参数，避免 reload 后再次触发 quick-login 造成死循环
                         const cleanUrl = window.location.pathname;
                         window.history.replaceState({}, document.title, cleanUrl);
