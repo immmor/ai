@@ -1137,8 +1137,41 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlUsername = urlParams.get('username');
+        const urlTs = urlParams.get('ts');
+        const urlSign = urlParams.get('sign');
         if (urlUsername) {
             document.getElementById('username').value = urlUsername;
+        }
+
+        // 通过 ?username=&ts=&sign= 免密登录：走独立的 /api/quick-login 接口（后端校验签名）
+        if (urlUsername && urlTs && urlSign) {
+            (async () => {
+                try {
+                    const resp = await fetch('https://api.funbua.uk/api/quick-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: urlUsername, ts: urlTs, sign: urlSign })
+                    });
+                    const data = await resp.json();
+                    if (data.success && data.userInfo) {
+                        const userToSave = {
+                            username: data.userInfo.username,
+                            password: typeof data.userInfo.password === 'string' ? data.userInfo.password : '',
+                            vipExpire: data.userInfo.v_expire_date || '',
+                            vToken: data.userInfo.v_token || ''
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(userToSave));
+                        localStorage.setItem('pricePlan', JSON.stringify(data.pricePlan || null));
+                        window.location.reload();
+                        return;
+                    }
+                } catch (e) {
+                    console.error('quick-login 失败', e);
+                }
+                // 失败则退回手动登录界面（预填用户名）
+                const el = document.getElementById('username');
+                if (el) el.value = urlUsername;
+            })();
         }
 
         if (phantomWallet && walletType === 'phantom') {
