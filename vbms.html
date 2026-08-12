@@ -2728,7 +2728,7 @@
                     <td>¥${parseFloat(order.amount).toFixed(2)}</td>
                     <td>${paymentTypeMap[order.payment_type] || order.payment_type || '-'}</td>
                     <td style="min-width: 120px;">${statusMap[order.status] || order.status}</td>
-                    <td style="min-width: 250px;">${new Date(new Date(order.created_at).getTime() + 8 * 60 * 60 * 1000).toLocaleString()}</td>
+                    <td style="min-width: 250px;">${formatDateTime(order.created_at)}</td>
                     <td style="min-width: 250px;">
                         ${order.status === 'pending' ? `<button class="action-btn edit-btn" onclick="confirmOrder('${order.order_no}', '${order.username}', ${order.amount}, '${order.payment_type}')">确认收款</button>` : ''}
                         <button class="action-btn delete-btn" onclick="deleteOrder('${order.order_no}')">删除</button>
