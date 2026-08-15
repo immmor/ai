@@ -4173,12 +4173,17 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 tbody.innerHTML = topics.length === 0
                     ? '<tr><td colspan="8" style="text-align:center;color:#999;">暂无预测话题，请新增</td></tr>'
                     : topics.map(t => {
-                        const optionNames = t.options.join(' / ');
+                        const opts = Array.isArray(t.options)
+                            ? t.options
+                            : (typeof t.options === 'string' && t.options
+                                ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean)
+                                : []);
+                        const optionNames = opts.join(' / ');
                         const statusBadge = t.status === 'active'
                             ? '<span style="color:#27ae60;font-weight:bold;">进行中</span>'
                             : '<span style="color:#e74c3c;font-weight:bold;">已结算</span>';
                         const pool = (t.total_pool || 0).toLocaleString();
-                        const winnerText = t.winner != null && t.winner >= 0 ? t.options[t.winner] || '未知' : '-';
+                        const winnerText = t.winner != null && t.winner >= 0 ? opts[t.winner] || '未知' : '-';
                         const btns = t.status === 'active'
                             ? `<button class="btn" onclick="editPredictTopic(${t.id})">编辑</button>
                                <button class="btn" style="background:#e74c3c;" onclick="openPredictResolve(${t.id})">结算</button>
@@ -4250,7 +4255,10 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                         document.getElementById('predictTopicModalTitle').textContent = '编辑话题';
                         document.getElementById('predictTopicEditId').value = id;
                         document.getElementById('predictTopicQuestion').value = t.question;
-                        document.getElementById('predictTopicOptions').value = t.options.join('\n');
+                        const opts = Array.isArray(t.options)
+                            ? t.options
+                            : (typeof t.options === 'string' && t.options ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean) : []);
+                        document.getElementById('predictTopicOptions').value = opts.join('\n');
                         const d = new Date(t.end_time);
                         document.getElementById('predictTopicEndTime').value = d.toISOString().slice(0, 16);
                         document.getElementById('predictTopicModal').style.display = 'flex';
@@ -4308,7 +4316,10 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                         document.getElementById('predictResolveId').value = id;
                         document.getElementById('predictResolveQuestion').textContent = t.question;
                         const optsDiv = document.getElementById('predictResolveOptions');
-                        optsDiv.innerHTML = t.options.map((o, i) =>
+                        const opts = Array.isArray(t.options)
+                            ? t.options
+                            : (typeof t.options === 'string' && t.options ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean) : []);
+                        optsDiv.innerHTML = opts.map((o, i) =>
                             `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border:1px solid #ddd;border-radius:4px;">
                                 <input type="radio" name="predictWinner" value="${i}" required> ${escHtml(o)}
                             </label>`
