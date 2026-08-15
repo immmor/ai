@@ -1505,7 +1505,7 @@
                 <button class="close-btn" onclick="closeReplaceLinkModal()">&times;</button>
             </div>
             <div style="margin-bottom: 1rem;">
-                <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#4a5568;">源链接（使用该链接的所有用户都将被替换）</label>
+                <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#4a5568;">源链接（users 表中所有使用此链接的用户都将被替换）</label>
                 <div id="replaceLinkSourceText" style="word-break: break-all; font-size:0.8rem; background:#f7fafc; padding:0.5rem; border-radius:4px; color:#718096;"></div>
                 <div id="replaceLinkCount" style="margin-top:0.5rem; font-weight:600; color:#9f7aea;"></div>
                 <div id="replaceLinkUsers" style="margin-top:0.5rem; line-height:1.8;"></div>
@@ -3517,8 +3517,9 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             await saveLinkConfig();
         }
 
-        // 打开"替换所有使用该链接的用户"弹窗；根据行 id 从已加载列表取真实链接
-        function openReplaceLinkUsers(nodeId) {
+        // 打开"替换所有使用该链接的用户"弹窗
+        // 源链接来自当前行（node 表），但"使用该链接的用户"要去 users 表里找
+        async function openReplaceLinkUsers(nodeId) {
             if (!window.currentNodeList || !window.currentNodeList.length) {
                 alert('请先点击"刷新"加载节点数据');
                 return;
@@ -3535,17 +3536,26 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 return;
             }
             window.replaceLinkSource = { clash: sourceClash, v2ray: sourceV2ray };
-            // 打开弹窗时即预计算匹配的用户，便于确认是否选中了多个用户
-            const matched = window.currentNodeList.filter(n =>
-                (sourceClash && (n.clash_link || '').trim() === sourceClash) ||
-                (sourceV2ray && (n.v2ray_link || '').trim() === sourceV2ray)
-            );
+
+            // 去 users 表找出所有 v_link_clash / v_link_v2ray 等于源链接的用户
+            const usersResult = await apiRequest('/api/users?page=1&limit=9999', 'GET');
+            let matchedUsernames = [];
+            if (usersResult.code === 200 && usersResult.data?.users) {
+                matchedUsernames = usersResult.data.users
+                    .filter(u =>
+                        (sourceClash && (u.v_link_clash || '').trim() === sourceClash) ||
+                        (sourceV2ray && (u.v_link_v2ray || '').trim() === sourceV2ray)
+                    )
+                    .map(u => u.username);
+            }
+            window.replaceLinkMatchedUsers = matchedUsernames;
+
             document.getElementById('replaceLinkSourceText').textContent =
                 sourceClash || sourceV2ray || '(空)';
             document.getElementById('replaceLinkCount').textContent =
-                `当前将影响 ${matched.length} 个使用该链接的用户节点`;
-            document.getElementById('replaceLinkUsers').innerHTML = matched.length
-                ? matched.map(n => `<span style="display:inline-block; background:#edf2f7; color:#2d3748; font-size:0.78rem; padding:0.2rem 0.5rem; border-radius:4px; margin:0.2rem;">${n.email || '(无邮箱)'}</span>`).join('')
+                `当前将影响 ${matchedUsernames.length} 个使用该链接的用户`;
+            document.getElementById('replaceLinkUsers').innerHTML = matchedUsernames.length
+                ? matchedUsernames.map(name => `<span style="display:inline-block; background:#edf2f7; color:#2d3748; font-size:0.78rem; padding:0.2rem 0.5rem; border-radius:4px; margin:0.2rem;">${name}</span>`).join('')
                 : '<span style="color:#e53e3e;">未匹配到任何用户</span>';
             document.getElementById('newReplaceClash').value = '';
             document.getElementById('newReplaceV2ray').value = '';
@@ -3558,41 +3568,29 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         async function confirmReplaceLinkUsers() {
-            if (!window.currentNodeList || window.currentNodeList.length === 0) {
-                alert('请先点击"刷新"加载节点数据');
+            const usernames = window.replaceLinkMatchedUsers || [];
+            if (usernames.length === 0) {
+                alert('没有匹配到使用该链接的用户');
                 return;
             }
-            const src = window.replaceLinkSource || {};
             const newClash = document.getElementById('newReplaceClash').value.trim();
             const newV2ray = document.getElementById('newReplaceV2ray').value.trim();
             if (!newClash || !newV2ray) {
                 alert('新的 Clash 链接和 V2Ray 链接都必须填写');
                 return;
             }
-            // 找出所有 clash_link 或 v2ray_link 等于源链接的节点（即"使用该链接的所有用户"）
-            const matched = window.currentNodeList.filter(node =>
-                (src.clash && (node.clash_link || '').trim() === src.clash) ||
-                (src.v2ray && (node.v2ray_link || '').trim() === src.v2ray)
-            );
-            if (matched.length === 0) {
-                alert('没有找到使用该链接的用户节点');
-                return;
-            }
-            if (!confirm(`确定要将 ${matched.length} 个使用该链接的用户节点替换为新链接吗？`)) {
+            if (!confirm(`确定要将 ${usernames.length} 个使用该链接的用户替换为新链接吗？`)) {
                 return;
             }
             const hint = document.getElementById('replaceLinkHint');
             let done = 0, failed = 0;
-            for (const node of matched) {
-                hint.textContent = `替换中... ${done + failed}/${matched.length}`;
-                const result = await newApiRequest('/api/node', 'PUT', {
-                    id: node.id,
-                    email: node.email,
-                    password: node.password,
-                    type: node.type,
-                    clash_link: newClash,
-                    v2ray_link: newV2ray,
-                    expire_date: node.expire_date || ''
+            for (const username of usernames) {
+                hint.textContent = `替换中... ${done + failed}/${usernames.length}`;
+                // 参考检查链接里的替换逻辑：POST /api/user/edit 更新用户链接
+                const result = await newApiRequest('/api/user/edit', 'POST', {
+                    username: username,
+                    v_link_clash: newClash,
+                    v_link_v2ray: newV2ray
                 });
                 if (result.code === 200) done++;
                 else failed++;
@@ -3600,7 +3598,6 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             hint.textContent = `完成：成功 ${done} 个，失败 ${failed} 个`;
             alert(`批量替换完成：成功 ${done} 个，失败 ${failed} 个`);
             closeReplaceLinkModal();
-            loadLinks();
         }
 
         async function loadLinks() {
