@@ -4167,32 +4167,38 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         async function loadPredictTopics() {
             const tbody = document.getElementById('predictTopicBody');
             try {
-                const data = await newApiRequest('/api/predict/admin/list', 'POST', {});
+                const data = await fetch('https://api.funbua.uk/api/predict/admin/list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                }).then(r => r.json());
                 if (!data.success) throw new Error(data.message);
                 const topics = data.topics || [];
                 tbody.innerHTML = topics.length === 0
                     ? '<tr><td colspan="8" style="text-align:center;color:#999;">暂无预测话题，请新增</td></tr>'
                     : topics.map(t => {
-                        const opts = Array.isArray(t.options)
-                            ? t.options
-                            : (typeof t.options === 'string' && t.options
-                                ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean)
+                        const question = t.question || t.title || t.topic || '-';
+                        const rawOpts = t.options || t.choices || t.option_list;
+                        const opts = Array.isArray(rawOpts)
+                            ? rawOpts
+                            : (typeof rawOpts === 'string' && rawOpts
+                                ? rawOpts.split(/[,\n]/).map(s => s.trim()).filter(Boolean)
                                 : []);
-                        const optionNames = opts.join(' / ');
+                        const optionNames = opts.length ? opts.join(' / ') : '-';
                         const statusBadge = t.status === 'active'
                             ? '<span style="color:#27ae60;font-weight:bold;">进行中</span>'
                             : '<span style="color:#e74c3c;font-weight:bold;">已结算</span>';
                         const pool = (t.total_pool || 0).toLocaleString();
                         const winnerText = t.winner != null && t.winner >= 0 ? opts[t.winner] || '未知' : '-';
                         const btns = t.status === 'active'
-                            ? `<button class="btn" onclick="editPredictTopic(${t.id})">编辑</button>
-                               <button class="btn" style="background:#e74c3c;" onclick="openPredictResolve(${t.id})">结算</button>
-                               <button class="btn" style="background:#999;" onclick="deletePredictTopic(${t.id})">删除</button>`
-                            : `<span style="color:#999;">已结束</span>`;
+                            ? `<button class="action-btn edit-btn" onclick="editPredictTopic(${t.id})">编辑</button>
+                               <button class="action-btn" style="background:#e74c3c;color:#fff;" onclick="openPredictResolve(${t.id})">结算</button>
+                               <button class="action-btn delete-btn" onclick="deletePredictTopic(${t.id})">删除</button>`
+                            : `<span style="color:#999;font-size:0.85rem;">已结束</span>`;
                         return `<tr>
                             <td>${t.id}</td>
-                            <td>${escHtml(t.question)}</td>
-                            <td>${optionNames}</td>
+                            <td>${escHtml(t.question) || '-'}</td>
+                            <td>${optionNames || '-'}</td>
                             <td>${pool}</td>
                             <td>${new Date(t.end_time).toLocaleString()}</td>
                             <td>${statusBadge}</td>
@@ -4210,7 +4216,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const label = document.getElementById('predictBetTopicLabel');
             label.textContent = topicId ? `(话题 #${topicId})` : '';
             try {
-                const data = await newApiRequest('/api/predict/admin/bets', 'POST', { topicId: topicId || null });
+                const data = await fetch('https://api.funbua.uk/api/predict/admin/bets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topicId: topicId || null })
+                }).then(r => r.json());
                 if (!data.success) throw new Error(data.message);
                 const bets = data.bets || [];
                 tbody.innerHTML = bets.length === 0
@@ -4248,7 +4258,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         function editPredictTopic(id) {
             // 需要从后端重新获取数据
-            newApiRequest('/api/predict/admin/list', 'POST', {}).then(data => {
+            fetch('https://api.funbua.uk/api/predict/admin/list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).then(r => r.json()).then(data => {
                 if (data.success) {
                     const t = data.topics.find(x => x.id == id);
                     if (t) {
@@ -4280,10 +4294,15 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             if (!question || !options.length || !endTime) return alert('请填写完整');
             try {
                 let data;
+                const predictApi = (path, body) => fetch('https://api.funbua.uk' + path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                }).then(r => r.json());
                 if (id) {
-                    data = await newApiRequest('/api/predict/admin/update', 'POST', { id: parseInt(id), question, options, end_time: endTime });
+                    data = await predictApi('/api/predict/admin/update', { id: parseInt(id), question, options, end_time: endTime });
                 } else {
-                    data = await newApiRequest('/api/predict/admin/create', 'POST', { question, options, end_time: endTime });
+                    data = await predictApi('/api/predict/admin/create', { question, options, end_time: endTime });
                 }
                 if (data.success) {
                     alert('保存成功');
@@ -4299,7 +4318,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         async function deletePredictTopic(id) {
             if (!confirm('确定删除该话题？已有的投注记录仍然保留。')) return;
-            const data = await newApiRequest('/api/predict/admin/delete', 'POST', { id });
+            const data = await fetch('https://api.funbua.uk/api/predict/admin/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            }).then(r => r.json());
             if (data.success) {
                 alert('已删除');
                 await loadPredictTopics();
@@ -4309,7 +4332,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function openPredictResolve(id) {
-            newApiRequest('/api/predict/admin/list', 'POST', {}).then(data => {
+            fetch('https://api.funbua.uk/api/predict/admin/list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).then(r => r.json()).then(data => {
                 if (data.success) {
                     const t = data.topics.find(x => x.id == id);
                     if (t) {
@@ -4340,7 +4367,11 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const winner = document.querySelector('input[name="predictWinner"]:checked');
             if (!winner || !confirm('确认结算？将会给中奖用户派发奖金。')) return;
             try {
-                const data = await newApiRequest('/api/predict/admin/resolve', 'POST', { id, winner: parseInt(winner.value) });
+                const data = await fetch('https://api.funbua.uk/api/predict/admin/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, winner: parseInt(winner.value) })
+                }).then(r => r.json());
                 if (data.success) {
                     alert(`结算完成！总奖池 ${data.totalPool}，中奖 ${data.winCount} 人`);
                     closePredictResolveModal();
