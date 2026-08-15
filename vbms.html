@@ -3515,8 +3515,19 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             await saveLinkConfig();
         }
 
-        // 打开"替换所有使用该链接的用户"弹窗；source 为该行已有的链接（clash/v2ray）
-        function openReplaceLinkUsers(sourceClash, sourceV2ray) {
+        // 打开"替换所有使用该链接的用户"弹窗；根据行 id 从已加载列表取真实链接
+        function openReplaceLinkUsers(nodeId) {
+            if (!window.currentNodeList || !window.currentNodeList.length) {
+                alert('请先点击"刷新"加载节点数据');
+                return;
+            }
+            const node = window.currentNodeList.find(n => n.id === nodeId);
+            if (!node) {
+                alert('未找到该节点，请刷新后重试');
+                return;
+            }
+            const sourceClash = node.clash_link || '';
+            const sourceV2ray = node.v2ray_link || '';
             if (!sourceClash && !sourceV2ray) {
                 alert('该节点链接为空，无法作为替换来源');
                 return;
@@ -3546,7 +3557,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 alert('新的 Clash 链接和 V2Ray 链接都必须填写');
                 return;
             }
-            // 找出所有 clash_link 或 v2ray_link 等于源链接的节点
+            // 找出所有 clash_link 或 v2ray_link 等于源链接的节点（即"使用该链接的所有用户"）
             const matched = window.currentNodeList.filter(node =>
                 (src.clash && node.clash_link === src.clash) ||
                 (src.v2ray && node.v2ray_link === src.v2ray)
@@ -3599,7 +3610,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                             <button class="action-btn delete-btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="deleteNode(${node.id})">删除</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'month')">替换月链接</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'year')">替换年链接</button>
-                            <button class="action-btn" style="background-color:#9f7aea;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="openReplaceLinkUsers('${node.clash_link || ''}', '${node.v2ray_link || ''}')">替换所有使用该链接的用户</button>
+                            <button class="action-btn" style="background-color:#9f7aea;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="openReplaceLinkUsers(${node.id})">替换所有使用该链接的用户</button>
                         </td>
                     </tr>
                 `).join('');
