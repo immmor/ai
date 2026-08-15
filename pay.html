@@ -886,6 +886,7 @@
             </div>
             
             <div id="yimo-note" style="display: none; text-align: center; font-size: 11px; color: var(--neon-green); margin-top: -12px; margin-bottom: 15px;" data-i18n="amount.yimoNote">当前充值的金额以美元计价，使用中国网络才能使用支付宝充值</div>
+            <div id="alipay-note" data-i18n="amount.alipayNote" style="display: none; text-align: center; font-size: 11px; color: #ed8936; margin-top: -12px; margin-bottom: 15px;"></div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
                 <option value="credit_card" data-i18n="payMethod.creditCard">creem(支付宝/信用卡)</option>
@@ -893,8 +894,6 @@
                 <option value="alipay_static" data-i18n="payMethod.alipayStatic">支付宝(人工)</option>
                 <!-- <option value="wechat_static" data-i18n="payMethod.wechatStatic">微信支付(人工)</option> -->
             </select>
-
-            <div id="alipay-note" data-i18n="amount.alipayNote" style="display: none; text-align: center; font-size: 11px; color: #ed8936; margin-top: 10px; margin-bottom: 5px; padding: 8px; border: 1px dashed #ed8936; border-radius: 6px;"></div>
 
             <button class="glitch-btn" onclick="pay()" data-text="确认交易"></button>
             
