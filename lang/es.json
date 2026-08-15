@@ -26,7 +26,8 @@
     },
     "amount": {
         "custom": "Personalizado",
-        "yimoNote": "El monto de recarga actual está denominado en USD. Se requiere una red china para usar Alipay para recargar"
+        "yimoNote": "El monto de recarga actual está denominado en USD. Se requiere una red china para usar Alipay para recargar",
+        "alipayNote": "Por favor, pague con honestidad; de lo contrario, se cancelará esta opción de pago y el precio del producto podría subir."
     },
     "payMethod": {
         "creditCard": "creem (Alipay/Tarjeta de crédito)",

@@ -26,7 +26,8 @@
     },
     "amount": {
         "custom": "Tùy chỉnh",
-        "yimoNote": "Số tiền nạp hiện tại được tính bằng USD. Cần sử dụng mạng Trung Quốc để nạp bằng Alipay"
+        "yimoNote": "Số tiền nạp hiện tại được tính bằng USD. Cần sử dụng mạng Trung Quốc để nạp bằng Alipay",
+        "alipayNote": "Vui lòng thanh toán trung thực, nếu không quyền thanh toán này sẽ bị hủy và giá sản phẩm có thể tăng."
     },
     "payMethod": {
         "creditCard": "creem (Alipay/Thẻ tín dụng)",

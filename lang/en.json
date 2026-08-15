@@ -26,7 +26,8 @@
     },
     "amount": {
         "custom": "Custom",
-        "yimoNote": "The current recharge amount is denominated in USD. A Chinese network is required to use Alipay for recharge"
+        "yimoNote": "The current recharge amount is denominated in USD. A Chinese network is required to use Alipay for recharge",
+        "alipayNote": "Please pay honestly, otherwise this payment option will be revoked and the product price may increase."
     },
     "payMethod": {
         "creditCard": "creem (Alipay/Credit Card)",
