@@ -1497,6 +1497,32 @@
         </div>
     </div>
 
+    <!-- 替换所有使用该链接的用户模态框 -->
+    <div id="replaceLinkModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>替换所有使用该链接的用户</h3>
+                <button class="close-btn" onclick="closeReplaceLinkModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#4a5568;">源链接（使用该链接的所有用户都将被替换）</label>
+                <div id="replaceLinkSourceText" style="word-break: break-all; font-size:0.8rem; background:#f7fafc; padding:0.5rem; border-radius:4px; color:#718096;"></div>
+            </div>
+            <div class="form-group">
+                <label>新的 Clash 链接</label>
+                <input type="text" id="newReplaceClash" required>
+            </div>
+            <div class="form-group">
+                <label>新的 V2Ray 链接</label>
+                <input type="text" id="newReplaceV2ray" required>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:15px;">
+                <button class="btn" onclick="confirmReplaceLinkUsers()" style="background-color:#9f7aea;">执行替换</button>
+                <span id="replaceLinkHint" style="color:#718096; font-size:0.85rem;"></span>
+            </div>
+        </div>
+    </div>
+
     <!-- 预测话题编辑模态框 -->
     <div id="predictTopicModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
@@ -3489,10 +3515,76 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             await saveLinkConfig();
         }
 
+        // 打开"替换所有使用该链接的用户"弹窗；source 为该行已有的链接（clash/v2ray）
+        function openReplaceLinkUsers(sourceClash, sourceV2ray) {
+            if (!sourceClash && !sourceV2ray) {
+                alert('该节点链接为空，无法作为替换来源');
+                return;
+            }
+            window.replaceLinkSource = { clash: sourceClash, v2ray: sourceV2ray };
+            document.getElementById('replaceLinkSourceText').textContent =
+                sourceClash || sourceV2ray || '(空)';
+            document.getElementById('newReplaceClash').value = '';
+            document.getElementById('newReplaceV2ray').value = '';
+            document.getElementById('replaceLinkHint').textContent = '';
+            document.getElementById('replaceLinkModal').style.display = 'flex';
+        }
+
+        function closeReplaceLinkModal() {
+            document.getElementById('replaceLinkModal').style.display = 'none';
+        }
+
+        async function confirmReplaceLinkUsers() {
+            if (!window.currentNodeList || window.currentNodeList.length === 0) {
+                alert('请先点击"刷新"加载节点数据');
+                return;
+            }
+            const src = window.replaceLinkSource || {};
+            const newClash = document.getElementById('newReplaceClash').value.trim();
+            const newV2ray = document.getElementById('newReplaceV2ray').value.trim();
+            if (!newClash || !newV2ray) {
+                alert('新的 Clash 链接和 V2Ray 链接都必须填写');
+                return;
+            }
+            // 找出所有 clash_link 或 v2ray_link 等于源链接的节点
+            const matched = window.currentNodeList.filter(node =>
+                (src.clash && node.clash_link === src.clash) ||
+                (src.v2ray && node.v2ray_link === src.v2ray)
+            );
+            if (matched.length === 0) {
+                alert('没有找到使用该链接的用户节点');
+                return;
+            }
+            if (!confirm(`确定要将 ${matched.length} 个使用该链接的用户节点替换为新链接吗？`)) {
+                return;
+            }
+            const hint = document.getElementById('replaceLinkHint');
+            let done = 0, failed = 0;
+            for (const node of matched) {
+                hint.textContent = `替换中... ${done + failed}/${matched.length}`;
+                const result = await newApiRequest('/api/node', 'PUT', {
+                    id: node.id,
+                    email: node.email,
+                    password: node.password,
+                    type: node.type,
+                    clash_link: newClash,
+                    v2ray_link: newV2ray,
+                    expire_date: node.expire_date || ''
+                });
+                if (result.code === 200) done++;
+                else failed++;
+            }
+            hint.textContent = `完成：成功 ${done} 个，失败 ${failed} 个`;
+            alert(`批量替换完成：成功 ${done} 个，失败 ${failed} 个`);
+            closeReplaceLinkModal();
+            loadLinks();
+        }
+
         async function loadLinks() {
             const result = await newApiRequest('/api/node', 'GET');
             const tbody = document.getElementById('linksTableBody');
             if (result.code === 200 && result.data.length > 0) {
+                window.currentNodeList = result.data;
                 tbody.innerHTML = result.data.map(node => `
                     <tr>
                         <td>${node.id}</td>
@@ -3507,10 +3599,12 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                             <button class="action-btn delete-btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="deleteNode(${node.id})">删除</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'month')">替换月链接</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'year')">替换年链接</button>
+                            <button class="action-btn" style="background-color:#9f7aea;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="openReplaceLinkUsers('${node.clash_link || ''}', '${node.v2ray_link || ''}')">替换所有使用该链接的用户</button>
                         </td>
                     </tr>
                 `).join('');
             } else {
+                window.currentNodeList = [];
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">暂无节点数据</td></tr>';
             }
         }
