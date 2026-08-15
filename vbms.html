@@ -4197,7 +4197,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                             : `<span style="color:#999;font-size:0.85rem;">已结束</span>`;
                         return `<tr>
                             <td>${t.id}</td>
-                            <td>${escHtml(t.question) || '-'}</td>
+                            <td>${escHtml(question)}</td>
                             <td>${optionNames || '-'}</td>
                             <td>${pool}</td>
                             <td>${new Date(t.end_time).toLocaleString()}</td>
