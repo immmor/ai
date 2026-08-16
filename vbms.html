@@ -1504,11 +1504,10 @@
                 <h3>替换所有使用该链接的用户</h3>
                 <button class="close-btn" onclick="closeReplaceLinkModal()">&times;</button>
             </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#4a5568;">源链接（users 表中所有使用此链接的用户都将被替换）</label>
-                <div id="replaceLinkSourceText" style="word-break: break-all; font-size:0.8rem; background:#f7fafc; padding:0.5rem; border-radius:4px; color:#718096;"></div>
-                <div id="replaceLinkCount" style="margin-top:0.5rem; font-weight:600; color:#9f7aea;"></div>
-                <div id="replaceLinkUsers" style="margin-top:0.5rem; line-height:1.8;"></div>
+            <div style="margin-bottom:1rem;">
+                <div id="replaceLinkSourceText" style="word-break:break-all;font-size:0.8rem;background:#f7fafc;padding:0.5rem;border-radius:4px;color:#718096;"></div>
+                <div id="replaceLinkCount" style="margin-top:0.5rem;font-weight:600;color:#9f7aea;"></div>
+                <div id="replaceLinkUsers" style="margin-top:0.5rem;line-height:1.8;"></div>
             </div>
             <div class="form-group">
                 <label>新的 Clash 链接</label>
@@ -1519,13 +1518,13 @@
                 <input type="text" id="newReplaceV2ray" required>
             </div>
             <div class="form-group">
-                <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#4a5568;">是否同时替换节点链接管理里的这个链接（当前行节点）</label>
-                <label style="margin-right:1.2rem; cursor:pointer;"><input type="radio" name="replaceNodeLink" value="no" checked> 不替换</label>
+                <label>是否同时替换当前节点链接</label>
+                <label style="margin-right:1rem;cursor:pointer;"><input type="radio" name="replaceNodeLink" value="no" checked> 不替换</label>
                 <label style="cursor:pointer;"><input type="radio" name="replaceNodeLink" value="yes"> 替换</label>
             </div>
-            <div style="display:flex; gap:10px; align-items:center; margin-top:15px;">
+            <div style="display:flex;gap:10px;align-items:center;margin-top:15px;">
                 <button class="btn" onclick="confirmReplaceLinkUsers()" style="background-color:#9f7aea;">执行替换</button>
-                <span id="replaceLinkHint" style="color:#718096; font-size:0.85rem;"></span>
+                <span id="replaceLinkHint" style="color:#718096;font-size:0.85rem;"></span>
             </div>
         </div>
     </div>
@@ -3588,47 +3587,29 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 return;
             }
             const replaceNode = document.querySelector('input[name="replaceNodeLink"]:checked')?.value === 'yes';
-            if (!confirm(`确定要将 ${usernames.length} 个使用该链接的用户${replaceNode ? '，并替换节点链接管理里的当前节点' : ''}替换为新链接吗？`)) {
-                return;
-            }
-            const hint = document.getElementById('replaceLinkHint');
+            if (!confirm(`确定将 ${usernames.length} 个用户${replaceNode ? '及当前节点' : ''}的链接替换为新链接？`)) return;
+
             let done = 0, failed = 0;
+            const hint = document.getElementById('replaceLinkHint');
             for (const username of usernames) {
                 hint.textContent = `替换用户中... ${done + failed}/${usernames.length}`;
-                // 参考检查链接里的替换逻辑：POST /api/user/edit 更新用户链接
-                const result = await newApiRequest('/api/user/edit', 'POST', {
-                    username: username,
-                    v_link_clash: newClash,
-                    v_link_v2ray: newV2ray
+                const r = await newApiRequest('/api/user/edit', 'POST', {
+                    username, v_link_clash: newClash, v_link_v2ray: newV2ray
                 });
-                if (result.code === 200) done++;
-                else failed++;
+                r.code === 200 ? done++ : failed++;
             }
 
-            // 可选：同时把节点链接管理里当前这一行的节点链接也替换掉
             if (replaceNode) {
-                const nodeId = window.replaceLinkSourceNodeId;
-                const node = (window.currentNodeList || []).find(n => n.id === nodeId);
-                if (node) {
-                    const nodeResult = await newApiRequest('/api/node', 'PUT', {
-                        id: node.id,
-                        email: node.email,
-                        password: node.password,
-                        type: node.type,
-                        clash_link: newClash,
-                        v2ray_link: newV2ray,
-                        expire_date: node.expire_date || ''
-                    });
-                    if (nodeResult.code === 200) {
-                        hint.textContent = `用户替换完成（成功 ${done}/失败 ${failed}），当前节点链接已替换`;
-                    } else {
-                        hint.textContent = `用户替换完成（成功 ${done}/失败 ${failed}），但当前节点链接替换失败`;
-                    }
-                }
+                const node = (window.currentNodeList || []).find(n => n.id === window.replaceLinkSourceNodeId);
+                const nr = node && await newApiRequest('/api/node', 'PUT', {
+                    id: node.id, email: node.email, password: node.password, type: node.type,
+                    clash_link: newClash, v2ray_link: newV2ray, expire_date: node.expire_date || ''
+                });
+                hint.textContent = `用户：成功 ${done}/失败 ${failed}；当前节点：${nr && nr.code === 200 ? '已替换' : '未替换'}`;
             } else {
                 hint.textContent = `完成：成功 ${done} 个，失败 ${failed} 个`;
             }
-            alert(`批量替换用户完成：成功 ${done} 个，失败 ${failed} 个${replaceNode ? '；当前节点链接已一并替换' : ''}`);
+            alert(`完成：成功 ${done} 个，失败 ${failed} 个${replaceNode ? '（含当前节点）' : ''}`);
             closeReplaceLinkModal();
         }
 
