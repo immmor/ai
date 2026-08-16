@@ -1519,8 +1519,10 @@
             </div>
             <div class="form-group">
                 <label>是否同时替换当前节点链接</label>
-                <label style="margin-right:1rem;cursor:pointer;"><input type="radio" name="replaceNodeLink" value="no" checked> 不替换</label>
-                <label style="cursor:pointer;"><input type="radio" name="replaceNodeLink" value="yes"> 替换</label>
+                <div style="display:flex; gap:1.5rem; margin-top:0.5rem;">
+                    <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="radio" name="replaceNodeLink" value="no" checked> 不替换</label>
+                    <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="radio" name="replaceNodeLink" value="yes"> 替换</label>
+                </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;margin-top:15px;">
                 <button class="btn" onclick="confirmReplaceLinkUsers()" style="background-color:#9f7aea;">执行替换</button>
