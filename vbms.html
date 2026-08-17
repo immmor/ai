@@ -4399,7 +4399,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     if (t) {
                         document.getElementById('predictTopicModalTitle').textContent = '编辑话题';
                         document.getElementById('predictTopicEditId').value = id;
-                        document.getElementById('predictTopicQuestion').value = t.question;
+                        document.getElementById('predictTopicQuestion').value = t.question || t.title || t.topic || '';
                         const opts = Array.isArray(t.options)
                             ? t.options
                             : (typeof t.options === 'string' && t.options ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean) : []);
