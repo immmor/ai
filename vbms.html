@@ -2442,6 +2442,18 @@
                 selectedPage.style.display = 'block';
             }
 
+            // 进入「游戏管理」页面时自动加载所有数据，避免页面空白
+            if (pageName === 'football') {
+                [
+                    'loadWheelBets', 'loadSlotBets', 'loadScratchBets',
+                    'loadPredictTopics', 'loadFootballMatches'
+                ].forEach(fn => {
+                    if (typeof window[fn] === 'function') {
+                        try { window[fn](); } catch (e) { console.error(fn, e); }
+                    }
+                });
+            }
+
             // 设置菜单活跃状态
             const activeMenuItem = document.querySelector(`[onclick="showPage('${pageName}')"]`);
             if (activeMenuItem) {
