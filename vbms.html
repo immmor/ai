@@ -2442,17 +2442,7 @@
                 selectedPage.style.display = 'block';
             }
 
-            // 进入「游戏管理」页面时自动加载所有数据，避免页面空白
-            if (pageName === 'football') {
-                [
-                    'loadWheelBets', 'loadSlotBets', 'loadScratchBets',
-                    'loadPredictTopics', 'loadFootballMatches'
-                ].forEach(fn => {
-                    if (typeof window[fn] === 'function') {
-                        try { window[fn](); } catch (e) { console.error(fn, e); }
-                    }
-                });
-            }
+            // 游戏管理数据改为手动刷新（页面上的刷新按钮），不再自动加载
 
             // 设置菜单活跃状态
             const activeMenuItem = document.querySelector(`[onclick="showPage('${pageName}')"]`);
@@ -4319,7 +4309,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     ? '<tr><td colspan="8" style="text-align:center;color:#999;">暂无预测话题，请新增</td></tr>'
                     : topics.map(t => {
                         const question = t.question || t.title || t.topic || '-';
-                        const rawOpts = t.options || t.choices || t.option_list;
+                        const rawOpts = t.options || t.option_pools || t.choices || t.option_list;
                         const opts = Array.isArray(rawOpts)
                             ? rawOpts
                             : (typeof rawOpts === 'string' && rawOpts
