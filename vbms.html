@@ -4308,7 +4308,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         async function loadPredictTopics() {
             const tbody = document.getElementById('predictTopicBody');
             try {
-                const data = await fetch('https://api.funbua.uk/api/predict/admin/list', {
+                const data = await fetch('https://api.immmor.com/api/predict/admin/list', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
@@ -4357,7 +4357,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const label = document.getElementById('predictBetTopicLabel');
             label.textContent = topicId ? `(话题 #${topicId})` : '';
             try {
-                const data = await fetch('https://api.funbua.uk/api/predict/admin/bets', {
+                const data = await fetch('https://api.immmor.com/api/predict/admin/bets', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ topicId: topicId || null })
@@ -4399,7 +4399,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         function editPredictTopic(id) {
             // 需要从后端重新获取数据
-            fetch('https://api.funbua.uk/api/predict/admin/list', {
+            fetch('https://api.immmor.com/api/predict/admin/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
@@ -4459,7 +4459,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         async function deletePredictTopic(id) {
             if (!confirm('确定删除该话题？已有的投注记录仍然保留。')) return;
-            const data = await fetch('https://api.funbua.uk/api/predict/admin/delete', {
+            const data = await fetch('https://api.immmor.com/api/predict/admin/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -4473,7 +4473,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function openPredictResolve(id) {
-            fetch('https://api.funbua.uk/api/predict/admin/list', {
+            fetch('https://api.immmor.com/api/predict/admin/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
@@ -4508,7 +4508,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const winner = document.querySelector('input[name="predictWinner"]:checked');
             if (!winner || !confirm('确认结算？将会给中奖用户派发奖金。')) return;
             try {
-                const data = await fetch('https://api.funbua.uk/api/predict/admin/resolve', {
+                const data = await fetch('https://api.immmor.com/api/predict/admin/resolve', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, winner: parseInt(winner.value) })
