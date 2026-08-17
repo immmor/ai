@@ -1154,7 +1154,8 @@
                             username: data.userInfo.username,
                             password: typeof data.userInfo.password === 'string' ? data.userInfo.password : '',
                             vipExpire: data.userInfo.v_expire_date || '',
-                            vToken: data.userInfo.v_token || ''
+                            vToken: data.userInfo.v_token || '',
+                            not_trusted: data.userInfo.not_trusted || ''
                         };
                         localStorage.setItem('currentUser', JSON.stringify(userToSave));
                         localStorage.setItem('pricePlan', JSON.stringify(data.pricePlan || null));
