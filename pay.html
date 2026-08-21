@@ -889,7 +889,7 @@
             <div id="alipay-note" data-i18n="amount.alipayNote" style="display: none; text-align: center; font-size: 11px; color: #ed8936; margin-top: -12px; margin-bottom: 15px;"></div>
 
             <select class="pay-select" id="pay-method" onchange="selectPayMethod(this.value)">
-                <option value="credit_card" data-i18n="payMethod.creditCard">creem(支付宝/信用卡)</option>
+                <option value="creem" data-i18n="payMethod.creditCard">creem</option>
                 <option value="usdt" data-i18n="payMethod.usdt">TRON USDT(>100元)</option>
                 <option value="alipay_static" data-i18n="payMethod.alipayStatic">支付宝(人工)</option>
                 <!-- <option value="wechat_static" data-i18n="payMethod.wechatStatic">微信支付(人工)</option> -->
@@ -1068,7 +1068,7 @@
         document.addEventListener('dblclick', function(e) {
             e.preventDefault();
         });
-        let mode = 'credit_card';
+        let mode = 'creem';
         const USD_TO_CNY_RATE = 7;
         let creditCardAmount = 5;
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -1132,7 +1132,7 @@
         }
 
         initI18n().then(() => {
-            selectPayMethod('credit_card');
+            selectPayMethod('creem');
             resetVerify();
         });
 
@@ -1394,14 +1394,14 @@
             mode = m;
             const yimoNote = document.getElementById('yimo-note');
             if (yimoNote) {
-                yimoNote.style.display = (m === 'credit_card') ? 'block' : 'none';
+                yimoNote.style.display = (m === 'creem') ? 'block' : 'none';
             }
             const alipayNote = document.getElementById('alipay-note');
             if (alipayNote) {
                 alipayNote.style.display = (m === 'alipay_static') ? 'block' : 'none';
             }
 
-            if (m === 'credit_card') {
+            if (m === 'creem') {
                 creditCardAmount = 5;
                 document.querySelectorAll('.amount-btn').forEach(btn => {
                     btn.classList.remove('active');
@@ -1468,7 +1468,7 @@
         }
 
         function selectAmount(amount) {
-            if (mode === 'credit_card') {
+            if (mode === 'creem') {
                 return;
             }
             
@@ -1485,7 +1485,7 @@
         }
 
         function showCustomAmount() {
-            if (mode === 'credit_card') {
+            if (mode === 'creem') {
                 return;
             }
             
@@ -1521,7 +1521,7 @@
         }
 
         async function pay() {
-            if (mode === 'credit_card') {
+            if (mode === 'creem') {
                 createCreditCardOrder();
                 return;
             }

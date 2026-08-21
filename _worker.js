@@ -378,7 +378,7 @@ export default {
                 order_no: order_no,
                 username: username,
                 amount: cnyAmount,
-                payment_type: 'credit_card',
+                payment_type: 'creem',
                 status: 'pending',
                 description: `信用卡支付 $${usdAmount}`
               }));
