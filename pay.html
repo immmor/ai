@@ -1428,6 +1428,14 @@
                             <div style="font-size:14px;">$20</div>
                             <div style="font-size:12px;color:#999;">=¥${20 * USD_TO_CNY_RATE}</div>
                         </button>
+                        <button class="amount-btn credit-card-option" data-usd="30" onclick="selectCreditCardAmount(30)">
+                            <div style="font-size:14px;">$30</div>
+                            <div style="font-size:12px;color:#999;">=¥${30 * USD_TO_CNY_RATE}</div>
+                        </button>
+                        <button class="amount-btn credit-card-option" data-usd="50" onclick="selectCreditCardAmount(50)">
+                            <div style="font-size:14px;">$50</div>
+                            <div style="font-size:12px;color:#999;">=¥${50 * USD_TO_CNY_RATE}</div>
+                        </button>
                         <button class="amount-btn credit-card-option" data-usd="100" onclick="selectCreditCardAmount(100)">
                             <div style="font-size:14px;">$100</div>
                             <div style="font-size:12px;color:#999;">=¥${100 * USD_TO_CNY_RATE}</div>
@@ -1436,7 +1444,7 @@
                     creditCardInfo.style.cssText = `
                         grid-column: 1 / -1;
                         display: grid;
-                        grid-template-columns: 1fr 1fr;
+                        grid-template-columns: 1fr 1fr 1fr;
                         gap: 10px;
                     `;
                     amountGrid.appendChild(creditCardInfo);
