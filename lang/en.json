@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "Wallet",
     "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥140!!",
     "nav": {
         "recharge": "Recharge",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "Credit Card Payment",
         "limitedOffer": "($20 gets ¥140)",
-        "createFailed": "Payment Creation Failed"
+        "createFailed": "Payment Creation Failed",
+        "exchangeRate": "Exchange Rate: 1 USD = {rate} RMB"
     },
     "alert": {
         "emptyUsernamePassword": "Username and password cannot be empty",

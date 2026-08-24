@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "Ví tiền",
     "marqueeText": "🎉Ưu đãi giới hạn! Nạp thẻ tín dụng $20 nhận ¥140!!",
     "nav": {
         "recharge": "Nạp tiền",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "Thanh toán thẻ tín dụng",
         "limitedOffer": "($20=¥140)",
-        "createFailed": "Tạo thanh toán thất bại"
+        "createFailed": "Tạo thanh toán thất bại",
+        "exchangeRate": "Tỷ giá: 1 USD = {rate} yuan"
     },
     "alert": {
         "emptyUsernamePassword": "Tên đăng nhập và mật khẩu không được để trống",

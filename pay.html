@@ -1367,6 +1367,10 @@
                         `;
                     });
                 }
+                const exchangeRateEl = document.getElementById('creem-exchange-rate');
+                if (exchangeRateEl) {
+                    exchangeRateEl.textContent = t('creditCard.exchangeRate', { rate: USD_TO_CNY_RATE });
+                }
             }
             const amtInput = document.getElementById('amt');
             if (amtInput) {
@@ -1440,6 +1444,7 @@
                             <div style="font-size:14px;">$100</div>
                             <div style="font-size:12px;color:#999;">=¥${100 * USD_TO_CNY_RATE}</div>
                         </button>
+                        <div style="grid-column: 1 / -1; color: var(--neon-blue); font-size: 11px; text-align: center; margin-top: 4px; margin-bottom: -10px; opacity: 0.8;" id="creem-exchange-rate">${t('creditCard.exchangeRate', { rate: USD_TO_CNY_RATE })}</div>
                     `;
                     creditCardInfo.style.cssText = `
                         grid-column: 1 / -1;
@@ -1448,6 +1453,11 @@
                         gap: 10px;
                     `;
                     amountGrid.appendChild(creditCardInfo);
+                } else {
+                    const exchangeRateEl = document.getElementById('creem-exchange-rate');
+                    if (exchangeRateEl) {
+                        exchangeRateEl.textContent = t('creditCard.exchangeRate', { rate: USD_TO_CNY_RATE });
+                    }
                 }
             } else {
                 selectedAmount = null;

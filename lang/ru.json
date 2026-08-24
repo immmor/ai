@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "Кошелёк",
     "marqueeText": "🎉Ограниченное предложение! Пополнение картой $20 = ¥140!!",
     "nav": {
         "recharge": "Пополнение",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "Оплата картой",
         "limitedOffer": "($20 = ¥140)",
-        "createFailed": "Ошибка создания платежа"
+        "createFailed": "Ошибка создания платежа",
+        "exchangeRate": "Курс: 1 USD = {rate} юаней"
     },
     "alert": {
         "emptyUsernamePassword": "Имя пользователя и пароль не могут быть пустыми",

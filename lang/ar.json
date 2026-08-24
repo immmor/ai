@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "المحفظة",
     "marqueeText": "🎉عرض محدود! شحن البطاقة الائتمانية 20 دولار تحصل على 140 يوان!!",
     "nav": {
         "recharge": "شحن",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "دفع البطاقة الائتمانية",
         "limitedOffer": "(20 دولار = 140 يوان)",
-        "createFailed": "فشل إنشاء الدفع"
+        "createFailed": "فشل إنشاء الدفع",
+        "exchangeRate": "سعر الصرف: 1 دولار = {rate} يوان"
     },
     "alert": {
         "emptyUsernamePassword": "اسم المستخدم وكلمة المرور لا يمكن أن يكونا فارغين",

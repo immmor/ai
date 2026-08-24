@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "Cartera",
     "marqueeText": "🎉¡Oferta Limitada! Recarga con tarjeta de crédito $20 obtiene ¥140!!",
     "nav": {
         "recharge": "Recargar",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "Pago con tarjeta de crédito",
         "limitedOffer": "($20 = ¥140)",
-        "createFailed": "Error al crear el pago"
+        "createFailed": "Error al crear el pago",
+        "exchangeRate": "Tipo de cambio: 1 USD = {rate} yuan"
     },
     "alert": {
         "emptyUsernamePassword": "El nombre de usuario y la contraseña no pueden estar vacíos",

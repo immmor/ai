@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "ウォレット",
     "marqueeText": "🎉限定キャンペーン！クレジットカードで$20チャージで¥140GET!!",
     "nav": {
         "recharge": "チャージ",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "クレジットカード支払い",
         "limitedOffer": "($20=¥140)",
-        "createFailed": "支払い作成失敗"
+        "createFailed": "支払い作成失敗",
+        "exchangeRate": "為替レート：1 USD = {rate}元"
     },
     "alert": {
         "emptyUsernamePassword": "ユーザー名とパスワードは必須です",

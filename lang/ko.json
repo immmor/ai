@@ -1,5 +1,5 @@
 {
-    "appTitle": "钱包",
+    "appTitle": "지갑",
     "marqueeText": "🎉한정 혜택! 신용카드 충전 $20하면 ¥140 획득!!",
     "nav": {
         "recharge": "충전",
@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "신용카드 결제",
         "limitedOffer": "($20=¥140)",
-        "createFailed": "결제 생성 실패"
+        "createFailed": "결제 생성 실패",
+        "exchangeRate": "환율：1 USD = {rate}위안"
     },
     "alert": {
         "emptyUsernamePassword": "사용자 이름과 비밀번호는 비어있을 수 없습니다",

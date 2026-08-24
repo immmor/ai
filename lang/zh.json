@@ -67,7 +67,8 @@
     "creditCard": {
         "pay": "信用卡支付",
         "limitedOffer": "(充20美元到账140人民币)",
-        "createFailed": "创建支付失败"
+        "createFailed": "创建支付失败",
+        "exchangeRate": "汇率：1 USD = {rate} RMB"
     },
     "alert": {
         "emptyUsernamePassword": "用户名和密码不能为空",
