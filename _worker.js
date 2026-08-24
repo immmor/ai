@@ -337,7 +337,7 @@ export default {
           }
           
           const usdAmount = parseInt(amount) || 20;
-          const cnyAmount = usdAmount * 7;
+          const cnyAmount = usdAmount * 6.8;
           
           const creemApiKey = env.CREEM_API_KEY;
           const creemBaseUrl = 'https://api.creem.io/v1/checkouts';

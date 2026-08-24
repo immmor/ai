@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="appTitle">以墨钱包</title>
+    <title data-i18n="appTitle">钱包</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -805,7 +805,7 @@
 </div>
 
 <div class="neon-card" style="position: relative;">
-        <div class="header" data-i18n="appTitle">以墨钱包</div>
+        <div class="header" data-i18n="appTitle">钱包</div>
         <!-- <div class="marquee"><span id="marquee-text" data-i18n="marqueeText">🎉限时特惠！！信用卡充值20美元到账140人民币！！</span></div> -->
         
         <!-- 导航菜单 -->
@@ -961,7 +961,7 @@
                       />
                     </svg>
                 </div>
-                <div class="card-text">immmor</div>
+                <div class="card-text">funbua</div>
             </div>
             <div class="card-section">
                 <div class="card-number">
@@ -1069,7 +1069,7 @@
             e.preventDefault();
         });
         let mode = 'creem';
-        const USD_TO_CNY_RATE = 7;
+        const USD_TO_CNY_RATE = 6.8;
         let creditCardAmount = 5;
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser) {
@@ -1873,8 +1873,8 @@
             }
         }
         
-        // USDT汇率：1 USDT = 7 RMB
-        const USDT_RATE = 7;
+        // USDT汇率：1 USDT = 6.8 RMB
+        const USDT_RATE = 6.8;
         
         // USDT支付功能
         async function createUSDTOrder(rmbAmount) {
@@ -1965,7 +1965,7 @@
                 if (data.code === 200) {
                     localStorage.setItem('creditCardOrder_' + orderNo, JSON.stringify({
                         username: currentUser.username,
-                        amount: usdAmount * 7,
+                        amount: usdAmount * USD_TO_CNY_RATE,
                         order_no: orderNo
                     }));
                     
