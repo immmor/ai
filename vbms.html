@@ -293,6 +293,52 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
+        /* 桌面端：表格独立滚动，横向滚动条常驻底边（仅在超出宽度时出现） */
+        @media (min-width: 769px) {
+            .data-table {
+                overflow: auto;
+                max-height: 75vh;
+                scrollbar-width: thin;
+                scrollbar-color: #667eea #e2e8f0;
+            }
+            .data-table::-webkit-scrollbar {
+                height: 12px;
+                width: 12px;
+            }
+            .data-table::-webkit-scrollbar-track {
+                background: #e2e8f0;
+                border-radius: 6px;
+            }
+            .data-table::-webkit-scrollbar-thumb {
+                background: #667eea;
+                border-radius: 6px;
+            }
+            .data-table::-webkit-scrollbar-thumb:hover {
+                background: #5a67d8;
+            }
+
+            /* 其它带 overflow-x:auto 的表格容器（如链接检测表、智能运营表） */
+            div[style*="overflow-x:auto"],
+            div[style*="overflow-x: auto"] {
+                max-height: 75vh;
+            }
+            div[style*="overflow-x:auto"]::-webkit-scrollbar,
+            div[style*="overflow-x: auto"]::-webkit-scrollbar {
+                height: 12px;
+                width: 12px;
+            }
+            div[style*="overflow-x:auto"]::-webkit-scrollbar-track,
+            div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+                background: #e2e8f0;
+                border-radius: 6px;
+            }
+            div[style*="overflow-x:auto"]::-webkit-scrollbar-thumb,
+            div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+                background: #667eea;
+                border-radius: 6px;
+            }
+        }
+
         .data-table.collapsed > :not(.table-header) {
             display: none !important;
         }

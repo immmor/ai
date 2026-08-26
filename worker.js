@@ -169,6 +169,30 @@ export default {
         })());
       }
 
+      // ========== talangya 商品代理（绕过CORS，原样返回） ==========
+      if (path === '/api/talangya/commodity' && request.method === 'GET') {
+        const r = await fetch('https://talangya.com/user/api/index/commodity?categoryId=0&compact=1', {
+          headers: {
+            'accept': 'application/json, text/javascript, */*; q=0.01',
+            'accept-language': 'zh-CN,zh;q=0.9',
+            'referer': 'https://talangya.com/',
+            'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"macOS"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+            'x-requested-with': 'XMLHttpRequest',
+            'cookie': 'ACG-SHOP=d4tuugthg3i49cj66fqnfo48p4'
+          }
+        });
+        const data = await r.text();
+        return new Response(data, {
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json; charset=utf-8' }
+        });
+      }
+
       // ========== 发送邮箱验证码接口 ==========
       if (path === '/api/send-verify-code' && request.method === 'POST') {
         const params = await request.json();
@@ -1205,7 +1229,13 @@ export default {
           const user = await DB.prepare('SELECT survey FROM user WHERE username = ?').bind(username).first();
           if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
           const survey = user.survey ? JSON.parse(user.survey) : {};
-          survey[key] = value;
+          // 叠加模式：同一 key 保留历史记录（兼容旧格式的单值）
+          const prev = survey[key];
+          let list = Array.isArray(prev) ? prev : (prev !== undefined && prev !== null ? [prev] : []);
+          // 北京时间（UTC+8）
+          const ts = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          list.push({ value, ts });
+          survey[key] = list;
           await DB.prepare('UPDATE user SET survey = ? WHERE username = ?').bind(JSON.stringify(survey), username).run();
           return resJson({ code: 200, msg: '提交成功' });
         } catch (err) {
@@ -1771,12 +1801,12 @@ proxies:
     tls: false
     skip-cert-verify: true
 proxy-groups:
-  - name: "🚀 免费节点已到期"
+  - name: "🚀 免费节点已到期，请重新签到"
     type: select
     proxies:
       - FREE_EXPIRED_SIGNIN_REQUIRED
 rules:
-  - MATCH,🚀 免费节点已到期
+  - MATCH,🚀 免费节点已到期，请重新签到
 `;
             return new Response(mockConfig, {
               headers: {
@@ -1850,7 +1880,7 @@ rules:
           if (!user.free_expire_date || new Date(user.free_expire_date) < now) {
             const mockConfig = `{
   "v": "2",
-  "ps": "🚀 免费节点已到期",
+  "ps": "🚀 免费节点已到期，请重新签到",
   "add": "expired.freenode.local",
   "port": "8080",
   "id": "00000000-0000-0000-0000-000000000000",
@@ -2926,12 +2956,13 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             bettorMap[tid][oi] = (bettorMap[tid][oi] || 0) + 1;
           }
           for (const t of topics) {
-            const optionNames = t.options || t.option_pools || [];
-            const optLen = optionNames.length;
-            t.options = optionNames;
-            t.option_pools = Array.from({ length: optLen }, (_, i) => poolMap[String(t.id)]?.[i] || 0);
-            t.option_bettors = Array.from({ length: optLen }, (_, i) => bettorMap[String(t.id)]?.[i] || 0);
-            t.pool = t.option_pools.reduce((a, b) => a + b, 0);
+            const optLen = (t.options || []).length;
+            // 统一字段：pools 为实时聚合奖池，覆盖存储中的占位值
+            t.pools = Array.from({ length: optLen }, (_, i) => poolMap[String(t.id)]?.[i] || 0);
+            t.bettors = Array.from({ length: optLen }, (_, i) => bettorMap[String(t.id)]?.[i] || 0);
+            t.pool = t.pools.reduce((a, b) => a + b, 0);
+            delete t.option_pools;
+            delete t.option_bettors;
           }
           return resJson({ success: true, topics });
         } catch (err) {
@@ -2977,20 +3008,46 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         try {
           const row = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('predict_topics').first();
           const topics = row?.value ? JSON.parse(row.value) : [];
-          // 统计每个话题的下注人数与真实奖池（实时从 game_bet 聚合）
-          for (const t of topics) {
-            const bets = await DB.prepare("SELECT username, SUM(cost) as total FROM game_bet WHERE game_type='predict' AND json_extract(result, '$.topic_id') = ? GROUP BY username")
-              .bind(String(t.id)).all();
-            const rows = bets.results || [];
-            t.bettor_count = rows.length || 0;
-            t.total_pool = rows.reduce((sum, r) => sum + (Number(r.total) || 0), 0);
-            // 归一化 options 为数组，避免前端字段缺失
-            if (typeof t.options === 'string') {
-              t.options = t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
-            } else if (!Array.isArray(t.options)) {
-              t.options = [];
-            }
+          // 统计每个话题的下注人数与真实奖池（在 JS 侧聚合，规避 D1 json_extract 数字/字符串类型不匹配）
+          const bets = await DB.prepare("SELECT result, cost FROM game_bet WHERE game_type='predict'").all();
+          const poolMap = {};
+          const bettorMap = {};
+          for (const b of (bets.results || [])) {
+            let parsed;
+            try { parsed = JSON.parse(b.result || '{}'); } catch (e) { continue; }
+            const tid = String(parsed.topic_id);
+            const cost = b.cost || 0;
+            if (!poolMap[tid]) poolMap[tid] = 0;
+            if (!bettorMap[tid]) bettorMap[tid] = new Set();
+            poolMap[tid] += cost;
+            bettorMap[tid].add(parsed.username || b.username);
           }
+          for (const t of topics) {
+            const tid = String(t.id);
+            t.total_pool = poolMap[tid] || 0;
+            t.bettor_count = bettorMap[tid] ? bettorMap[tid].size : 0;
+            // 归一化 options 为数组（兼容 option_pools / options / choices 等多种字段名）
+            const rawOpts = t.options ?? t.option_pools ?? t.choices ?? t.option_list;
+            let opts;
+            if (Array.isArray(rawOpts)) {
+              opts = rawOpts.map(s => String(s).trim()).filter(Boolean);
+            } else if (typeof rawOpts === 'string') {
+              opts = rawOpts.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+            } else {
+              opts = [];
+            }
+            t.options = opts;
+            // 统一 pools 字段：实时聚合奖池覆盖存储占位值，长度与 options 对齐
+            if (!Array.isArray(t.pools) || t.pools.length !== opts.length) {
+              t.pools = opts.map((_, i) => poolMap[tid]?.[i] || 0);
+            }
+            delete t.option_pools;
+            delete t.option_bettors;
+            if (!('pools' in t)) t.pools = opts.map(() => 0);
+          }
+          // 持久化迁移：把旧的 option_pools/pool 字段统一为 options/pools
+          await DB.prepare('UPDATE link SET value = ? WHERE key = ?')
+            .bind(JSON.stringify(topics), 'predict_topics').run();
           return resJson({ success: true, topics });
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
@@ -3101,13 +3158,15 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (idx < 0) return resJson({ success: false, message: '话题不存在' }, 404);
           if (topics[idx].status === 'resolved') return resJson({ success: false, message: '该话题已结算' }, 400);
 
-          // 计算总奖池和中奖选项奖池
-          const allBets = await DB.prepare("SELECT rowid, username, cost, result FROM game_bet WHERE game_type='predict' AND json_extract(result, '$.topic_id') = ?")
-            .bind(String(id)).all();
-          const bets = allBets.results || [];
+          // 计算总奖池和中奖选项奖池（JS 侧聚合，规避 D1 json_extract 数字/字符串类型不匹配）
+          const allBets = await DB.prepare("SELECT id, username, cost, result FROM game_bet WHERE game_type='predict'").all();
+          const bids = String(id);
+          const bets = (allBets.results || []).filter(b => {
+            try { return String(JSON.parse(b.result || '{}').topic_id) === bids; } catch { return false; }
+          });
           const totalPool = bets.reduce((s, b) => s + Number(b.cost), 0);
           const winBets = bets.filter(b => {
-            try { return JSON.parse(b.result).option_index == winner; } catch { return false; }
+            try { return Number(JSON.parse(b.result).option_index) === Number(winner); } catch { return false; }
           });
           const winPool = winBets.reduce((s, b) => s + Number(b.cost), 0);
 
@@ -3121,9 +3180,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           // 派奖
           for (const b of winBets) {
             const prize = winPool > 0 ? Math.floor((Number(b.cost) / winPool) * payoutPool) : 0;
-            if (prize > 0) {
+            if (prize > 0 && b.username) {
               await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(prize, b.username).run();
-              await DB.prepare('UPDATE game_bet SET prize = ? WHERE rowid = ?').bind(prize, b.rowid).run();
+              await DB.prepare('UPDATE game_bet SET prize = ? WHERE id = ?').bind(prize, b.id).run();
             }
           }
 
