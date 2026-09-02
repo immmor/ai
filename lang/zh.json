@@ -3,6 +3,7 @@
     "marqueeText": "🎉限时特惠！！信用卡充值20美元到账140人民币！！",
     "nav": {
         "recharge": "充值",
+        "transfer": "转账",
         "orders": "订单",
         "logout": "退出登录"
     },
@@ -90,6 +91,17 @@
         "copySuccess": "复制成功",
         "logoutConfirm": "确定要退出登录吗？",
         "confirmPayment": "请先确认已支付"
+    },
+    "transfer": {
+        "recipientPlaceholder": "收款用户名",
+        "amountPlaceholder": "转账金额",
+        "all": "全部",
+        "confirm": "确认转账",
+        "emptyRecipient": "请输入收款用户名",
+        "invalidAmount": "转账金额必须大于0",
+        "sameUser": "不能转账给自己",
+        "success": "成功转账 {amount} 给 {to}！",
+        "failed": "转账失败，请稍后重试"
     },
     "staticPay": {
         "title": "{name}静态支付",

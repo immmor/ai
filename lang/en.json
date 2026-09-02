@@ -3,6 +3,7 @@
     "marqueeText": "🎉Limited Offer! Credit Card Top-up $20 gets ¥140!!",
     "nav": {
         "recharge": "Recharge",
+        "transfer": "Transfer",
         "orders": "Orders",
         "logout": "Logout"
     },
@@ -90,6 +91,17 @@
         "copySuccess": "Copy successful",
         "logoutConfirm": "Are you sure you want to logout?",
         "confirmPayment": "Please confirm payment first"
+    },
+    "transfer": {
+        "recipientPlaceholder": "Recipient username",
+        "amountPlaceholder": "Amount",
+        "all": "All",
+        "confirm": "Confirm Transfer",
+        "emptyRecipient": "Please enter recipient username",
+        "invalidAmount": "Amount must be greater than 0",
+        "sameUser": "Cannot transfer to yourself",
+        "success": "Successfully transferred {amount} to {to}!",
+        "failed": "Transfer failed, please try again later"
     },
     "staticPay": {
         "title": "{name} Manual Payment",

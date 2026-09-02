@@ -61,9 +61,12 @@ async function autoRenewUser(DB, user) {
   else if (user.balance >= mp) { dur = 30; pr = mp; }
   else return null;
 
+  // 自动续费专属福利：每次续费额外赠送 2 天
+  const actualDays = dur + 2;
+
   const lc = await DB.prepare('SELECT key, value FROM link WHERE key IN (?,?,?,?)').bind('clash_monthly','v2ray_monthly','clash_yearly','v2ray_yearly').all();
   const cfg = {}; lc.results.forEach(r => cfg[r.key] = r.value);
-  const ne = new Date(); ne.setDate(ne.getDate() + dur);
+  const ne = new Date(); ne.setDate(ne.getDate() + actualDays);
   const yr = dur === 365;
   const cl = user.v_link_clash || (yr ? cfg.clash_yearly : cfg.clash_monthly);
   const v2 = user.v_link_v2ray || (yr ? cfg.v2ray_yearly : cfg.v2ray_monthly);
@@ -78,7 +81,7 @@ async function autoRenewUser(DB, user) {
   }
   vorders.unshift({
     type: 'vip',
-    duration: dur,
+    duration: actualDays,
     price: pr,
     created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
     method: 'balance',
@@ -99,20 +102,20 @@ async function autoRenewUser(DB, user) {
 
     // 给用户发送通知（多语言）
     await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind(user.username, nt({
-      cn: `您的VIP已自动续费成功！金额：${pr}元，天数：${dur}天`,
-      en: `Your VIP has been automatically renewed successfully! Amount: ¥${pr}, Days: ${dur}`,
-      jp: `VIPの自動更新が成功しました！金額：${pr}円、日数：${dur}日`,
-      kr: `VIP 자동 갱신 성공! 금액: ¥${pr}, 일수: ${dur}일`,
-      es: `¡Renovación automática de VIP exitosa! Monto: ¥${pr}, Días: ${dur}`,
-      vi: `Gia hạn VIP tự động thành công! Số tiền: ¥${pr}, Ngày: ${dur}`,
-      ar: `تم تجديد VIP تلقائيًا بنجاح! المبلغ: ¥${pr}, الأيام: ${dur}`,
-      ru: `Автоматическое продление VIP успешно! Сумма: ¥${pr}, Дни: ${dur}`
+      cn: `您的VIP已自动续费成功！金额：${pr}元，天数：${actualDays}天（含自动续费赠送2天）`,
+      en: `Your VIP has been automatically renewed successfully! Amount: ¥${pr}, Days: ${actualDays} (incl. 2 bonus days)`,
+      jp: `VIPの自動更新が成功しました！金額：${pr}円、日数：${actualDays}日（自動更新ボーナス2日含む）`,
+      kr: `VIP 자동 갱신 성공! 금액: ¥${pr}, 일수: ${actualDays}일 (자동 갱신 보너스 2일 포함)`,
+      es: `¡Renovación automática de VIP exitosa! Monto: ¥${pr}, Días: ${actualDays} (incl. 2 días de regalo)`,
+      vi: `Gia hạn VIP tự động thành công! Số tiền: ¥${pr}, Ngày: ${actualDays} (gồm 2 ngày tặng thêm)`,
+      ar: `تم تجديد VIP تلقائيًا بنجاح! المبلغ: ¥${pr}, الأيام: ${actualDays} (يشمل يومين هدية)`,
+      ru: `Автоматическое продление VIP успешно! Сумма: ¥${pr}, Дни: ${actualDays} (включая 2 бонусных дня)`
     }), nowStr).run();
     
     // 给管理员发送通知（仅中文）
-    await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${user.username} 自动续费VIP成功！金额：${pr}元，天数：${dur}天`, nowStr).run();
+    await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${user.username} 自动续费VIP成功！金额：${pr}元，天数：${actualDays}天（含自动续费赠送2天）`, nowStr).run();
     
-    return { username: user.username, amount: pr, days: dur };
+    return { username: user.username, amount: pr, days: actualDays };
   }
   
   return null;
@@ -191,6 +194,66 @@ export default {
         return new Response(data, {
           headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json; charset=utf-8' }
         });
+      }
+
+      // ========== 无头浏览器抓取页面文字接口（Browser Run Quick Actions，无需 npm 依赖） ==========
+      // GET /api/baidu-text?url=https://www.baidu.com （url 可选，默认百度）
+      // 依赖：控制台已添加 Browser Run binding（名称 BROWSER），且兼容日期 >= 2026-03-24
+      if (path === '/api/baidu-text' && request.method === 'GET') {
+        const target = url.searchParams.get('url') || 'https://www.baidu.com';
+        if (!env.BROWSER) {
+          return resJson({
+            success: false,
+            message: '浏览器服务未配置！请在 Cloudflare 控制台为该 Worker 添加 Browser Run binding（Variable name 填 BROWSER），并确认兼容日期 >= 2026-03-24'
+          }, 500);
+        }
+        try {
+          const resp = await env.BROWSER.quickAction('content', {
+            url: target,
+            gotoOptions: { waitUntil: 'networkidle2' },
+            rejectResourceTypes: ['image', 'stylesheet', 'font'],
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+          });
+          const json = await resp.json();
+          if (!json.success) {
+            const errs = json.errors || [];
+            const isRateLimit = errs.some(e => e.code === 2001 || e.code === 429 || String(e.message || '').toLowerCase().includes('rate limit'));
+            return resJson({
+              success: false,
+              message: isRateLimit
+                ? '浏览器服务调用过于频繁（免费版每10秒限1次 / 每天限10分钟），请稍等10秒再试或升级 Workers Paid'
+                : '浏览器抓取失败',
+              errors: errs
+            }, isRateLimit ? 429 : 500);
+          }
+          const html = json.result.html || '';
+          const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          const title = titleMatch ? titleMatch[1].trim() : '';
+          // 提取纯文字：去 script/style/注释/标签/HTML实体，合并空白
+          const text = html
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<!--[\s\S]*?-->/g, ' ')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&quot;/gi, '"')
+            .replace(/\s+/g, ' ')
+            .trim();
+          return resJson({
+            success: true,
+            title,
+            url: json.result.url || target,
+            textLength: text.length,
+            text,
+            timeMs: json.result.timeMs || 0,
+            fetchedAt: new Date().toISOString()
+          });
+        } catch (e) {
+          return resJson({ success: false, message: '浏览器抓取失败', error: e.message }, 500);
+        }
       }
 
       // ========== 发送邮箱验证码接口 ==========
@@ -1339,6 +1402,59 @@ export default {
         } catch (err) {
           console.error('Balance query error:', err);
           return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 用户间转账接口 ==========
+      if (path === '/api/transfer' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { from, to, amount } = params;
+
+          if (!from || !to) {
+            return resJson({ code: 400, msg: '缺少 from 或 to 参数' }, 400);
+          }
+          if (from === to) {
+            return resJson({ code: 400, msg: '不能转账给自己' }, 400);
+          }
+          const amt = parseFloat(amount);
+          if (isNaN(amt) || amt <= 0) {
+            return resJson({ code: 400, msg: '转账金额必须大于0' }, 400);
+          }
+
+          // 校验双方用户是否存在
+          const sender = await DB
+            .prepare('SELECT username, balance FROM user WHERE username = ?')
+            .bind(from)
+            .first();
+          if (!sender) {
+            return resJson({ code: 404, msg: '转出用户不存在' }, 404);
+          }
+          const recipient = await DB
+            .prepare('SELECT username FROM user WHERE username = ?')
+            .bind(to)
+            .first();
+          if (!recipient) {
+            return resJson({ code: 404, msg: '收款用户不存在' }, 404);
+          }
+          if (sender.balance < amt) {
+            return resJson({ code: 400, msg: '余额不足' }, 400);
+          }
+
+          // 原子扣减与增加
+          const result = await DB.batch([
+            DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amt, from),
+            DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, to)
+          ]);
+
+          if (result && result.every(r => r.success)) {
+            return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
+          } else {
+            return resJson({ code: 500, msg: '转账失败，请稍后重试' }, 500);
+          }
+        } catch (err) {
+          console.error('Transfer error:', err);
+          return resJson({ code: 500, msg: '转账失败', error: err.message }, 500);
         }
       }
 
@@ -3391,14 +3507,18 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             if (!rec) return resJson({ success: false, message: '无待审核记录' }, 404);
 
             const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
             rec.status = action === 'approve' ? 'approved' : 'rejected';
             rec.reviewed_at = now;
             rec.reviewer = operator || 'admin';
-            await DB.prepare('UPDATE user SET balance = balance + ?, rebates = ? WHERE username = ?')
-              .bind(action === 'approve' ? rec.rebate : 0, JSON.stringify(rebates), inviter).run();
+            await DB.prepare('UPDATE user SET balance = balance + ?, game_winnings = COALESCE(game_winnings, 0) + ?, rebates = ? WHERE username = ?')
+              .bind(action === 'approve' ? rec.rebate : 0, action === 'approve' ? rec.rebate : 0, JSON.stringify(rebates), inviter).run();
             if (action === 'approve') {
               await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-                .bind(inviter, `✅ 邀请返现 ¥${parseFloat(rec.rebate).toFixed(2)}（来自 ${invitee} 的 VIP 订单）已审核通过，已发放到余额`, now).run();
+                .bind(inviter, `✅ 邀请返现 ¥${parseFloat(rec.rebate).toFixed(2)}（来自 ${invitee} 的 VIP 订单）已审核通过，已发放到余额`, msgNow).run();
+            } else {
+              await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+                .bind(inviter, `❌ 邀请返现 ¥${parseFloat(rec.rebate).toFixed(2)}（来自 ${invitee} 的 VIP 订单）未通过审核`, msgNow).run();
             }
             return resJson({ success: true, message: action === 'approve' ? '已通过并发放' : '已拒绝' });
           } catch (err) {

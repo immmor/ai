@@ -811,6 +811,7 @@
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')" data-i18n="nav.recharge">充值</button>
+            <button id="transfer-tab" class="nav-tab" onclick="switchTab('transfer')" data-i18n="nav.transfer">转账</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')" data-i18n="nav.orders">订单</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
@@ -901,6 +902,35 @@
                 <span class="corner-tag" style="cursor:pointer;" onclick="showComplaint()" data-i18n="complaint">投诉</span>
                 <div class="corner-tag" data-i18n="securityConnection">安全连接已激活</div>
             </div>
+        </div>
+        
+        <!-- 转账界面 -->
+        <div id="transfer-interface" style="display: none;">
+            <div class="balance-display" style="margin-bottom: 30px; background: rgba(0, 255, 255, 0.05); border-left: 4px solid var(--neon-blue); border-radius: 5px;">
+                <div class="balance-label" data-i18n="balance.available">可用余额</div>
+                <div class="balance-val" id="transfer-balance">0.00</div>
+            </div>
+
+            <div class="input-box">
+                <input type="text" placeholder="收款用户名" id="transfer-to" data-i18n-placeholder="transfer.recipientPlaceholder">
+            </div>
+
+            <div class="input-box">
+                <input type="number" placeholder="转账金额" id="transfer-amount" min="0.01" step="0.01" data-i18n-placeholder="transfer.amountPlaceholder">
+            </div>
+
+            <div class="amount-grid" style="margin-bottom: 20px;">
+                <button class="amount-btn" onclick="setTransferAmount(10)">¥10</button>
+                <button class="amount-btn" onclick="setTransferAmount(30)">¥30</button>
+                <button class="amount-btn" onclick="setTransferAmount(50)">¥50</button>
+                <button class="amount-btn" onclick="setTransferAmount(100)">¥100</button>
+                <button class="amount-btn" onclick="setTransferAmount(200)">¥200</button>
+                <button class="amount-btn custom-btn" onclick="setTransferAmountAll()" data-i18n="transfer.all">全部</button>
+            </div>
+
+            <div id="transfer-msg" style="display: none; text-align: center; font-size: 12px; margin-bottom: 15px;"></div>
+
+            <button class="glitch-btn transfer-btn" onclick="transfer()" data-text="确认转账" data-i18n="transfer.confirm">确认转账</button>
         </div>
         
         <!-- 订单记录界面 -->
@@ -1034,6 +1064,8 @@
                     btn.setAttribute('data-text', t('register.confirmRegister'));
                 } else if (btn.classList.contains('cancel-btn')) {
                     btn.setAttribute('data-text', t('button.cancel'));
+                } else if (btn.classList.contains('transfer-btn')) {
+                    btn.setAttribute('data-text', t('transfer.confirm'));
                 } else {
                     btn.setAttribute('data-text', t('button.confirmTrade'));
                 }
@@ -2199,15 +2231,84 @@
         function switchTab(tab) {
             document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('pay-interface').style.display = 'none';
+            document.getElementById('transfer-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
             
             if (tab === 'pay') {
                 document.getElementById('pay-tab').classList.add('active');
                 document.getElementById('pay-interface').style.display = 'block';
+            } else if (tab === 'transfer') {
+                document.getElementById('transfer-tab').classList.add('active');
+                document.getElementById('transfer-interface').style.display = 'block';
+                loadTransferBalance();
             } else {
                 document.getElementById('orders-tab').classList.add('active');
                 document.getElementById('orders-interface').style.display = 'block';
                 loadOrders();
+            }
+        }
+
+        async function loadTransferBalance() {
+            if (!currentUser) return;
+            try {
+                const balanceData = await (await fetch(`https://funbua.uk/api/balance?username=${currentUser.username}`)).json();
+                if (balanceData.code === 200) {
+                    document.getElementById('transfer-balance').textContent = balanceData.balance.toFixed(2);
+                }
+            } catch (error) {
+                console.error('查询余额失败:', error);
+            }
+        }
+
+        function setTransferAmount(val) {
+            document.getElementById('transfer-amount').value = val;
+        }
+
+        function setTransferAmountAll() {
+            const b = document.getElementById('transfer-balance').textContent;
+            document.getElementById('transfer-amount').value = parseFloat(b) || 0;
+        }
+
+        async function transfer() {
+            if (!currentUser) return alert(t('alert.invalidCredentials'));
+            const to = document.getElementById('transfer-to').value.trim();
+            const amount = parseFloat(document.getElementById('transfer-amount').value);
+            const msgEl = document.getElementById('transfer-msg');
+            msgEl.style.display = 'none';
+
+            if (!to) return alert(t('transfer.emptyRecipient'));
+            if (!amount || amount <= 0) return alert(t('transfer.invalidAmount'));
+            if (to === currentUser.username) return alert(t('transfer.sameUser'));
+
+            try {
+                const res = await (await fetch('https://funbua.uk/api/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: currentUser.username,
+                        to: to,
+                        amount: amount
+                    })
+                })).json();
+
+                if (res.code === 200) {
+                    msgEl.style.color = 'var(--neon-green)';
+                    msgEl.textContent = t('transfer.success', { to: to, amount: amount.toFixed(2) });
+                    msgEl.style.display = 'block';
+                    document.getElementById('transfer-amount').value = '';
+                    document.getElementById('transfer-to').value = '';
+                    await loadTransferBalance();
+                    await updateBalance();
+                } else {
+                    msgEl.style.color = '#ff4757';
+                    msgEl.textContent = res.msg || t('transfer.failed');
+                    msgEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('转账失败:', error);
+                msgEl.style.color = '#ff4757';
+                msgEl.textContent = t('transfer.failed');
+                msgEl.style.display = 'block';
             }
         }
         
