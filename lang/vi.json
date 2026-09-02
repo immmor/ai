@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "Tên người nhận",
         "amountPlaceholder": "Số tiền",
+        "passwordPlaceholder": "Mật khẩu đăng nhập (xác nhận chuyển tiền)",
         "all": "Tất cả",
         "confirm": "Xác nhận chuyển tiền",
         "emptyRecipient": "Vui lòng nhập tên người nhận",
         "invalidAmount": "Số tiền phải lớn hơn 0",
+        "emptyPassword": "Vui lòng nhập mật khẩu đăng nhập để xác nhận",
         "sameUser": "Không thể chuyển cho chính mình",
         "success": "Đã chuyển {amount} cho {to} thành công!",
         "failed": "Chuyển tiền thất bại, vui lòng thử lại sau"

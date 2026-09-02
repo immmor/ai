@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "收款用户名",
         "amountPlaceholder": "转账金额",
+        "passwordPlaceholder": "登录密码（确认转账）",
         "all": "全部",
         "confirm": "确认转账",
         "emptyRecipient": "请输入收款用户名",
         "invalidAmount": "转账金额必须大于0",
+        "emptyPassword": "请输入登录密码以确认转账",
         "sameUser": "不能转账给自己",
         "success": "成功转账 {amount} 给 {to}！",
         "failed": "转账失败，请稍后重试"

@@ -1409,7 +1409,7 @@ export default {
       if (path === '/api/transfer' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { from, to, amount } = params;
+          const { from, to, amount, password } = params;
 
           if (!from || !to) {
             return resJson({ code: 400, msg: '缺少 from 或 to 参数' }, 400);
@@ -1421,15 +1421,23 @@ export default {
           if (isNaN(amt) || amt <= 0) {
             return resJson({ code: 400, msg: '转账金额必须大于0' }, 400);
           }
+          if (!password) {
+            return resJson({ code: 400, msg: '请输入密码以确认转账' }, 400);
+          }
 
-          // 校验双方用户是否存在
+          // 校验转出用户是否存在 + 身份（密码）校验
           const sender = await DB
-            .prepare('SELECT username, balance FROM user WHERE username = ?')
+            .prepare('SELECT username, password, balance FROM user WHERE username = ?')
             .bind(from)
             .first();
           if (!sender) {
             return resJson({ code: 404, msg: '转出用户不存在' }, 404);
           }
+          if (sender.password !== password) {
+            return resJson({ code: 401, msg: '密码错误，转账被拒绝' }, 401);
+          }
+
+          // 校验收款用户是否存在
           const recipient = await DB
             .prepare('SELECT username FROM user WHERE username = ?')
             .bind(to)
@@ -1437,21 +1445,30 @@ export default {
           if (!recipient) {
             return resJson({ code: 404, msg: '收款用户不存在' }, 404);
           }
-          if (sender.balance < amt) {
-            return resJson({ code: 400, msg: '余额不足' }, 400);
+
+          // 防双花：条件扣减，只有余额充足（balance >= amt）才会真正扣减
+          const deduct = await DB
+            .prepare('UPDATE user SET balance = balance - ? WHERE username = ? AND balance >= ?')
+            .bind(amt, from, amt)
+            .run();
+          if (!deduct.success || deduct.meta.changes === 0) {
+            return resJson({ code: 400, msg: '余额不足或转账失败' }, 400);
           }
 
-          // 原子扣减与增加
-          const result = await DB.batch([
-            DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amt, from),
-            DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, to)
-          ]);
-
-          if (result && result.every(r => r.success)) {
-            return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
-          } else {
-            return resJson({ code: 500, msg: '转账失败，请稍后重试' }, 500);
+          // 加款；若极端情况下加款失败，则回滚扣减，避免资金丢失
+          const add = await DB
+            .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+            .bind(amt, to)
+            .run();
+          if (!add.success || add.meta.changes === 0) {
+            await DB
+              .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
+              .bind(amt, from)
+              .run();
+            return resJson({ code: 500, msg: '转账失败，已撤销扣减' }, 500);
           }
+
+          return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
           console.error('Transfer error:', err);
           return resJson({ code: 500, msg: '转账失败', error: err.message }, 500);

@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "Имя получателя",
         "amountPlaceholder": "Сумма",
+        "passwordPlaceholder": "Пароль входа (подтверждение перевода)",
         "all": "Все",
         "confirm": "Подтвердить перевод",
         "emptyRecipient": "Введите имя получателя",
         "invalidAmount": "Сумма должна быть больше 0",
+        "emptyPassword": "Введите пароль входа для подтверждения",
         "sameUser": "Нельзя переводить самому себе",
         "success": "Успешно переведено {amount} пользователю {to}!",
         "failed": "Перевод не удался, попробуйте позже"

@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "受取ユーザー名",
         "amountPlaceholder": "金額",
+        "passwordPlaceholder": "ログインパスワード（送金確定）",
         "all": "すべて",
         "confirm": "送金を確定",
         "emptyRecipient": "受取ユーザー名を入力してください",
         "invalidAmount": "金額は0より大きくする必要があります",
+        "emptyPassword": "送金を確定するにはログインパスワードを入力してください",
         "sameUser": "自分自身には送金できません",
         "success": "{amount} を {to} に送金しました！",
         "failed": "送金に失敗しました。後ほどお試しください"

@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "Usuario receptor",
         "amountPlaceholder": "Monto",
+        "passwordPlaceholder": "Contraseña de acceso (confirmar transferencia)",
         "all": "Todo",
         "confirm": "Confirmar transferencia",
         "emptyRecipient": "Por favor ingrese el usuario receptor",
         "invalidAmount": "El monto debe ser mayor a 0",
+        "emptyPassword": "Por favor ingrese su contraseña para confirmar",
         "sameUser": "No puedes transferirte a ti mismo",
         "success": "¡Transferencia de {amount} a {to} exitosa!",
         "failed": "Transferencia fallida, intente nuevamente"

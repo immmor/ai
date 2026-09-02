@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "اسم المستخدم المستلم",
         "amountPlaceholder": "المبلغ",
+        "passwordPlaceholder": "كلمة مرور الدخول (تأكيد التحويل)",
         "all": "الكل",
         "confirm": "تأكيد التحويل",
         "emptyRecipient": "يرجى إدخال اسم المستخدم المستلم",
         "invalidAmount": "يجب أن يكون المبلغ أكبر من 0",
+        "emptyPassword": "يرجى إدخال كلمة مرور الدخول لتأكيد التحويل",
         "sameUser": "لا يمكن التحويل إلى نفسك",
         "success": "تم تحويل {amount} إلى {to} بنجاح!",
         "failed": "فشل التحويل، يرجى المحاولة لاحقاً"

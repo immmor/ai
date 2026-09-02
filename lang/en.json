@@ -95,10 +95,12 @@
     "transfer": {
         "recipientPlaceholder": "Recipient username",
         "amountPlaceholder": "Amount",
+        "passwordPlaceholder": "Login password (confirm transfer)",
         "all": "All",
         "confirm": "Confirm Transfer",
         "emptyRecipient": "Please enter recipient username",
         "invalidAmount": "Amount must be greater than 0",
+        "emptyPassword": "Please enter your login password to confirm",
         "sameUser": "Cannot transfer to yourself",
         "success": "Successfully transferred {amount} to {to}!",
         "failed": "Transfer failed, please try again later"
