@@ -2279,7 +2279,15 @@
             const amount = parseFloat(document.getElementById('transfer-amount').value);
             const password = document.getElementById('transfer-password').value;
             const msgEl = document.getElementById('transfer-msg');
-            msgEl.style.display = 'none';
+            let transferMsgTimer = null;
+
+            const showTransferMsg = (text, isError) => {
+                if (transferMsgTimer) clearTimeout(transferMsgTimer);
+                msgEl.style.color = isError ? '#ff4757' : 'var(--neon-green)';
+                msgEl.textContent = text;
+                msgEl.style.display = 'block';
+                transferMsgTimer = setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+            };
 
             if (!to) return alert(t('transfer.emptyRecipient'));
             if (!amount || amount <= 0) return alert(t('transfer.invalidAmount'));
@@ -2299,24 +2307,18 @@
                 })).json();
 
                 if (res.code === 200) {
-                    msgEl.style.color = 'var(--neon-green)';
-                    msgEl.textContent = t('transfer.success', { to: to, amount: amount.toFixed(2) });
-                    msgEl.style.display = 'block';
+                    showTransferMsg(t('transfer.success', { to: to, amount: amount.toFixed(2) }), false);
                     document.getElementById('transfer-amount').value = '';
                     document.getElementById('transfer-to').value = '';
                     document.getElementById('transfer-password').value = '';
                     await loadTransferBalance();
                     await updateBalance();
                 } else {
-                    msgEl.style.color = '#ff4757';
-                    msgEl.textContent = res.msg || t('transfer.failed');
-                    msgEl.style.display = 'block';
+                    showTransferMsg(res.msg || t('transfer.failed'), true);
                 }
             } catch (error) {
                 console.error('转账失败:', error);
-                msgEl.style.color = '#ff4757';
-                msgEl.textContent = t('transfer.failed');
-                msgEl.style.display = 'block';
+                showTransferMsg(t('transfer.failed'), true);
             }
         }
         
