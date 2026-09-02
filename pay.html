@@ -923,15 +923,6 @@
                 <input type="password" placeholder="登录密码（确认转账）" id="transfer-password" data-i18n-placeholder="transfer.passwordPlaceholder">
             </div>
 
-            <div class="amount-grid" style="margin-bottom: 20px;">
-                <button class="amount-btn" onclick="setTransferAmount(10)">¥10</button>
-                <button class="amount-btn" onclick="setTransferAmount(30)">¥30</button>
-                <button class="amount-btn" onclick="setTransferAmount(50)">¥50</button>
-                <button class="amount-btn" onclick="setTransferAmount(100)">¥100</button>
-                <button class="amount-btn" onclick="setTransferAmount(200)">¥200</button>
-                <button class="amount-btn custom-btn" onclick="setTransferAmountAll()" data-i18n="transfer.all">全部</button>
-            </div>
-
             <div id="transfer-msg" style="display: none; text-align: center; font-size: 12px; margin-bottom: 15px;"></div>
 
             <button class="glitch-btn transfer-btn" onclick="transfer()" data-text="确认转账" data-i18n="transfer.confirm">确认转账</button>
@@ -2262,15 +2253,6 @@
             } catch (error) {
                 console.error('查询余额失败:', error);
             }
-        }
-
-        function setTransferAmount(val) {
-            document.getElementById('transfer-amount').value = val;
-        }
-
-        function setTransferAmountAll() {
-            const b = document.getElementById('transfer-balance').textContent;
-            document.getElementById('transfer-amount').value = parseFloat(b) || 0;
         }
 
         async function transfer() {
