@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "チャージ",
         "orders": "注文",
+        "transfer": "送金",
         "logout": "ログアウト"
     },
     "login": {
@@ -90,6 +91,17 @@
         "copySuccess": "コピー成功",
         "logoutConfirm": "ログアウトしてもよろしいですか？",
         "confirmPayment": "先に支払いを確認してください"
+    },
+    "transfer": {
+        "recipientPlaceholder": "受取ユーザー名",
+        "amountPlaceholder": "金額",
+        "all": "すべて",
+        "confirm": "送金を確定",
+        "emptyRecipient": "受取ユーザー名を入力してください",
+        "invalidAmount": "金額は0より大きくする必要があります",
+        "sameUser": "自分自身には送金できません",
+        "success": "{amount} を {to} に送金しました！",
+        "failed": "送金に失敗しました。後ほどお試しください"
     },
     "staticPay": {
         "title": "{name}手動支払い",

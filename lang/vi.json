@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "Nạp tiền",
         "orders": "Đơn hàng",
+        "transfer": "Chuyển tiền",
         "logout": "Đăng xuất"
     },
     "login": {
@@ -90,6 +91,17 @@
         "copySuccess": "Sao chép thành công",
         "logoutConfirm": "Bạn có chắc muốn đăng xuất không?",
         "confirmPayment": "Vui lòng xác nhận thanh toán trước"
+    },
+    "transfer": {
+        "recipientPlaceholder": "Tên người nhận",
+        "amountPlaceholder": "Số tiền",
+        "all": "Tất cả",
+        "confirm": "Xác nhận chuyển tiền",
+        "emptyRecipient": "Vui lòng nhập tên người nhận",
+        "invalidAmount": "Số tiền phải lớn hơn 0",
+        "sameUser": "Không thể chuyển cho chính mình",
+        "success": "Đã chuyển {amount} cho {to} thành công!",
+        "failed": "Chuyển tiền thất bại, vui lòng thử lại sau"
     },
     "staticPay": {
         "title": "Thanh toán thủ công {name}",

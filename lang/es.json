@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "Recargar",
         "orders": "Pedidos",
+        "transfer": "Transferir",
         "logout": "Cerrar sesión"
     },
     "login": {
@@ -90,6 +91,17 @@
         "copySuccess": "Copiado exitosamente",
         "logoutConfirm": "¿Está seguro de que desea cerrar sesión?",
         "confirmPayment": "Por favor confirme el pago primero"
+    },
+    "transfer": {
+        "recipientPlaceholder": "Usuario receptor",
+        "amountPlaceholder": "Monto",
+        "all": "Todo",
+        "confirm": "Confirmar transferencia",
+        "emptyRecipient": "Por favor ingrese el usuario receptor",
+        "invalidAmount": "El monto debe ser mayor a 0",
+        "sameUser": "No puedes transferirte a ti mismo",
+        "success": "¡Transferencia de {amount} a {to} exitosa!",
+        "failed": "Transferencia fallida, intente nuevamente"
     },
     "staticPay": {
         "title": "Pago manual de {name}",

@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "Пополнение",
         "orders": "Заказы",
+        "transfer": "Перевод",
         "logout": "Выйти"
     },
     "login": {
@@ -90,6 +91,17 @@
         "copySuccess": "Успешно скопировано",
         "logoutConfirm": "Вы уверены, что хотите выйти?",
         "confirmPayment": "Пожалуйста, сначала подтвердите оплату"
+    },
+    "transfer": {
+        "recipientPlaceholder": "Имя получателя",
+        "amountPlaceholder": "Сумма",
+        "all": "Все",
+        "confirm": "Подтвердить перевод",
+        "emptyRecipient": "Введите имя получателя",
+        "invalidAmount": "Сумма должна быть больше 0",
+        "sameUser": "Нельзя переводить самому себе",
+        "success": "Успешно переведено {amount} пользователю {to}!",
+        "failed": "Перевод не удался, попробуйте позже"
     },
     "staticPay": {
         "title": "Ручная оплата {name}",

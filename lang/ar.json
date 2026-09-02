@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "شحن",
         "orders": "الطلبات",
+        "transfer": "تحويل",
         "logout": "تسجيل الخروج"
     },
     "login": {
@@ -90,6 +91,17 @@
         "copySuccess": "تم النسخ بنجاح",
         "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
         "confirmPayment": "يرجى تأكيد الدفع أولاً"
+    },
+    "transfer": {
+        "recipientPlaceholder": "اسم المستخدم المستلم",
+        "amountPlaceholder": "المبلغ",
+        "all": "الكل",
+        "confirm": "تأكيد التحويل",
+        "emptyRecipient": "يرجى إدخال اسم المستخدم المستلم",
+        "invalidAmount": "يجب أن يكون المبلغ أكبر من 0",
+        "sameUser": "لا يمكن التحويل إلى نفسك",
+        "success": "تم تحويل {amount} إلى {to} بنجاح!",
+        "failed": "فشل التحويل، يرجى المحاولة لاحقاً"
     },
     "staticPay": {
         "title": "دفع {name} اليدوي",

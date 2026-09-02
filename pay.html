@@ -2337,7 +2337,7 @@
             const totalOrders = document.getElementById('total-orders');
             
             totalOrders.textContent = pagination.total;
-            totalPages = pagination.pages;
+            totalPages = Math.max(1, pagination.pages || 1);
             if (orders.length === 0) {
                 ordersList.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${t('usdt.noOrders')}</div>`;
                 updatePagination();
