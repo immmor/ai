@@ -2281,7 +2281,7 @@
             if (to === currentUser.username) return alert(t('transfer.sameUser'));
 
             try {
-                const res = await (await fetch('https://funbua.uk/api/transfer', {
+                const res = await (await fetch('https://api.funbua.uk/api/transfer', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
