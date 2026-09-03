@@ -1459,7 +1459,8 @@ export default {
           }
 
           // 加款并写入转账流水（同一事务）；任一失败则整体回滚，避免资金或记录丢失
-          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          // 以 UTC 存储，并保留时区标记（ISO 8601 带 Z），避免前端显示时区歧义
+          const now = new Date().toISOString();
           const batch = await DB.batch([
             DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, to),
             DB.prepare('INSERT INTO transfers (from_user, to_user, amount, created_at) VALUES (?, ?, ?, ?)').bind(from, to, amt, now)
@@ -1485,7 +1486,6 @@ export default {
       if (path === '/api/transfers' && request.method === 'GET') {
         try {
           const username = url.searchParams.get('username');
-          const direction = url.searchParams.get('direction') || 'all'; // all | out | in
           const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1);
           const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '10', 10) || 10));
 
@@ -1493,15 +1493,8 @@ export default {
             return resJson({ code: 400, msg: '缺少 username 参数' }, 400);
           }
 
-          let where = 'WHERE from_user = ? OR to_user = ?';
-          let params = [username, username];
-          if (direction === 'out') {
-            where = 'WHERE from_user = ?';
-            params = [username];
-          } else if (direction === 'in') {
-            where = 'WHERE to_user = ?';
-            params = [username];
-          }
+          const where = 'WHERE from_user = ? OR to_user = ?';
+          const params = [username, username];
 
           const totalRow = await DB.prepare(`SELECT COUNT(*) as c FROM transfers ${where}`).bind(...params).first();
           const total = totalRow?.c || 0;

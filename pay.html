@@ -53,14 +53,17 @@
             position: relative;
             width: 380px;
             max-width: 90vw;
+            height: 90vh;
             max-height: 90vh;
             padding: 40px;
+            display: flex;
+            flex-direction: column;
             background: rgba(10, 10, 10, 0.9);
             border: none;
             box-shadow: none;
             border-radius: 5px;
             clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
-            overflow: hidden;
+            overflow: hidden; /* 仅 #tab-body 内部滚动，标题与 Tab 行保持固定 */
             touch-action: pan-y;
         }
 
@@ -813,7 +816,6 @@
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')" data-i18n="nav.recharge">充值</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')" data-i18n="nav.orders">订单</button>
             <button id="transfer-tab" class="nav-tab" onclick="switchTab('transfer')" data-i18n="nav.transfer">转账</button>
-            <button id="records-tab" class="nav-tab" onclick="switchTab('records')" data-i18n="nav.records">记录</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
                     <span id="username-display"></span>
@@ -867,6 +869,7 @@
         </div>
         
         <!-- 支付界面 -->
+        <div id="tab-body" style="flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding-right: 4px;">
         <div id="pay-interface">
             <div style="display: flex; align-items: center; margin-bottom: 30px; background: rgba(255, 0, 255, 0.05); border-left: 4px solid var(--neon-pink); border-radius: 5px;">
                 <div class="balance-display" style="flex: 1; margin-bottom: 0; border-left: none; padding-left: 15px; padding-right: 20px; background: transparent;">
@@ -927,24 +930,18 @@
             <div id="transfer-msg" style="display: none; text-align: center; font-size: 12px; margin-bottom: 15px;"></div>
 
             <button class="glitch-btn transfer-btn" onclick="transfer()" data-text="确认转账" data-i18n="transfer.confirm">确认转账</button>
-        </div>
-        
-        <!-- 转账/收款记录界面 -->
-        <div id="records-interface" style="display: none;">
-            <div class="filter-section" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="page-btn" onclick="loadTransferRecords('all')" data-i18n="records.all">全部</button>
-                <button class="page-btn" onclick="loadTransferRecords('out')" data-i18n="records.out">转出</button>
-                <button class="page-btn" onclick="loadTransferRecords('in')" data-i18n="records.in">收款</button>
-            </div>
 
-            <div id="records-list" class="orders-container" style="max-height: 267px; overflow-y: auto;">
-                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="records.loading">加载中...</div>
-            </div>
+            <div style="margin: 28px 0 12px; border-top: 1px solid rgba(0,255,255,0.15); padding-top: 16px;">
+                <div style="font-size: 14px; color: var(--neon-blue); margin-bottom: 12px;" data-i18n="nav.records">转账记录</div>
+                <div id="records-list" class="orders-container">
+                    <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="records.loading">加载中...</div>
+                </div>
 
-            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                <button id="records-prev" class="page-btn" onclick="changeRecordsPage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
-                <span id="records-page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
-                <button id="records-next" class="page-btn" onclick="changeRecordsPage(1)" disabled data-i18n="orders.nextPage">下一页</button>
+                <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <button id="records-prev" class="page-btn" onclick="changeRecordsPage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
+                    <span id="records-page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
+                    <button id="records-next" class="page-btn" onclick="changeRecordsPage(1)" disabled data-i18n="orders.nextPage">下一页</button>
+                </div>
             </div>
         </div>
         
@@ -971,7 +968,7 @@
             </div>
             
             <!-- 订单列表 -->
-            <div id="orders-list" class="orders-container" style="max-height: 267px; overflow-y: auto;">
+            <div id="orders-list" class="orders-container">
                 <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="orders.loading">
                     加载中...
                 </div>
@@ -983,6 +980,7 @@
                 <span id="page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
                 <button id="next-page" class="page-btn" onclick="changePage(1)" disabled data-i18n="orders.nextPage">下一页</button>
             </div>
+        </div>
         </div>
     </div>
 
@@ -1132,7 +1130,6 @@
         let totalPages = 1;
         let recordsPage = 1;
         let recordsPages = 1;
-        let recordsDirection = 'all';
         let selectedAmount = null;
         let phantomWallet = localStorage.getItem('phantomWallet');
         let walletType = localStorage.getItem('walletType');
@@ -2250,7 +2247,6 @@
             document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('pay-interface').style.display = 'none';
             document.getElementById('transfer-interface').style.display = 'none';
-            document.getElementById('records-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
             
             if (tab === 'pay') {
@@ -2260,10 +2256,7 @@
                 document.getElementById('transfer-tab').classList.add('active');
                 document.getElementById('transfer-interface').style.display = 'block';
                 loadTransferBalance();
-            } else if (tab === 'records') {
-                document.getElementById('records-tab').classList.add('active');
-                document.getElementById('records-interface').style.display = 'block';
-                loadTransferRecords('all');
+                loadTransferRecords();
             } else {
                 document.getElementById('orders-tab').classList.add('active');
                 document.getElementById('orders-interface').style.display = 'block';
@@ -2332,20 +2325,13 @@
             }
         }
 
-        async function loadTransferRecords(direction) {
+        async function loadTransferRecords() {
             if (!currentUser) return;
-            if (direction) {
-                recordsDirection = direction;
-                recordsPage = 1;
-                document.querySelectorAll('#records-interface .filter-section .page-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.getAttribute('data-i18n') === `records.${direction}`);
-                });
-            }
             const listEl = document.getElementById('records-list');
             listEl.innerHTML = `<div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">${t('records.loading')}</div>`;
 
             try {
-                const data = await (await fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&direction=${recordsDirection}&page=${recordsPage}&limit=10`)).json();
+                const data = await (await fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=${recordsPage}&limit=10`)).json();
 
                 if (data.code === 200) {
                     const records = data.data.records || [];
@@ -2482,7 +2468,16 @@
         
         function formatDate(dateString) {
             if (!dateString) return '-';
-            return new Date(dateString).toLocaleString('zh-CN');
+            let s = String(dateString).trim();
+            // 后端统一以 UTC 存储：带 Z 或 ±hh:mm 的按原值解析；
+            // 无时区标记的朴素串（YYYY-MM-DD HH:MM:SS）按 UTC 解析（补 Z）。
+            if (!/[zZ]$|[+-]\d{2}:?\d{2}$/.test(s)) {
+                s = s.includes('T') ? s + 'Z' : s.replace(' ', 'T') + 'Z';
+            }
+            const d = new Date(s);
+            if (isNaN(d.getTime())) return dateString;
+            // 按用户本地时区显示（格式化为中文风格、24 小时制）
+            return d.toLocaleString('zh-CN', { hour12: false });
         }
         
         function toggleDropdown() {
