@@ -5,6 +5,7 @@
         "recharge": "충전",
         "orders": "주문",
         "transfer": "송금",
+        "records": "기록",
         "logout": "로그아웃"
     },
     "login": {
@@ -104,6 +105,17 @@
         "sameUser": "자기 자신에게는 송금할 수 없습니다",
         "success": "{to}님에게 {amount} 송금 완료!",
         "failed": "송금에 실패했습니다. 나중에 다시 시도하세요"
+    },
+    "records": {
+        "all": "전체",
+        "out": "보냄",
+        "in": "받음",
+        "loading": "로딩 중...",
+        "noRecords": "송금 내역이 없습니다",
+        "loadFailed": "불러오기 실패, 다시 시도하세요",
+        "toLabel": "{name}님에게",
+        "fromLabel": "{name}님으로부터",
+        "time": "시간"
     },
     "staticPay": {
         "title": "{name} 수동 결제",

@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "充值",
         "transfer": "转账",
+        "records": "记录",
         "orders": "订单",
         "logout": "退出登录"
     },
@@ -104,6 +105,17 @@
         "sameUser": "不能转账给自己",
         "success": "成功转账 {amount} 给 {to}！",
         "failed": "转账失败，请稍后重试"
+    },
+    "records": {
+        "all": "全部",
+        "out": "转出",
+        "in": "收款",
+        "loading": "加载中...",
+        "noRecords": "暂无转账记录",
+        "loadFailed": "加载失败，请重试",
+        "toLabel": "转给 {name}",
+        "fromLabel": "来自 {name}",
+        "time": "时间"
     },
     "staticPay": {
         "title": "{name}静态支付",

@@ -5,6 +5,7 @@
         "recharge": "チャージ",
         "orders": "注文",
         "transfer": "送金",
+        "records": "記録",
         "logout": "ログアウト"
     },
     "login": {
@@ -104,6 +105,17 @@
         "sameUser": "自分自身には送金できません",
         "success": "{amount} を {to} に送金しました！",
         "failed": "送金に失敗しました。後ほどお試しください"
+    },
+    "records": {
+        "all": "すべて",
+        "out": "送信",
+        "in": "受信",
+        "loading": "読み込み中...",
+        "noRecords": "送金履歴がありません",
+        "loadFailed": "読み込みに失敗しました。再試行してください",
+        "toLabel": "{name}へ",
+        "fromLabel": "{name}から",
+        "time": "時間"
     },
     "staticPay": {
         "title": "{name}手動支払い",

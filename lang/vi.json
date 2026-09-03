@@ -5,6 +5,7 @@
         "recharge": "Nạp tiền",
         "orders": "Đơn hàng",
         "transfer": "Chuyển tiền",
+        "records": "Lịch sử",
         "logout": "Đăng xuất"
     },
     "login": {
@@ -104,6 +105,17 @@
         "sameUser": "Không thể chuyển cho chính mình",
         "success": "Đã chuyển {amount} cho {to} thành công!",
         "failed": "Chuyển tiền thất bại, vui lòng thử lại sau"
+    },
+    "records": {
+        "all": "Tất cả",
+        "out": "Đã gửi",
+        "in": "Đã nhận",
+        "loading": "Đang tải...",
+        "noRecords": "Không có lịch sử chuyển tiền",
+        "loadFailed": "Tải thất bại, vui lòng thử lại",
+        "toLabel": "Đến {name}",
+        "fromLabel": "Từ {name}",
+        "time": "Thời gian"
     },
     "staticPay": {
         "title": "Thanh toán thủ công {name}",

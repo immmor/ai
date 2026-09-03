@@ -5,6 +5,7 @@
         "recharge": "Recargar",
         "orders": "Pedidos",
         "transfer": "Transferir",
+        "records": "Registros",
         "logout": "Cerrar sesión"
     },
     "login": {
@@ -104,6 +105,17 @@
         "sameUser": "No puedes transferirte a ti mismo",
         "success": "¡Transferencia de {amount} a {to} exitosa!",
         "failed": "Transferencia fallida, intente nuevamente"
+    },
+    "records": {
+        "all": "Todo",
+        "out": "Enviado",
+        "in": "Recibido",
+        "loading": "Cargando...",
+        "noRecords": "Sin registros de transferencia",
+        "loadFailed": "Error al cargar, inténtalo de nuevo",
+        "toLabel": "A {name}",
+        "fromLabel": "De {name}",
+        "time": "Hora"
     },
     "staticPay": {
         "title": "Pago manual de {name}",

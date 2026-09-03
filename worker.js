@@ -1446,6 +1446,9 @@ export default {
             return resJson({ code: 404, msg: '收款用户不存在' }, 404);
           }
 
+          // 确保转账流水表存在
+          await DB.prepare('CREATE TABLE IF NOT EXISTS transfers (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user TEXT, to_user TEXT, amount REAL, created_at TEXT)').run();
+
           // 防双花：条件扣减，只有余额充足（balance >= amt）才会真正扣减
           const deduct = await DB
             .prepare('UPDATE user SET balance = balance - ? WHERE username = ? AND balance >= ?')
@@ -1455,23 +1458,77 @@ export default {
             return resJson({ code: 400, msg: '余额不足或转账失败' }, 400);
           }
 
-          // 加款；若极端情况下加款失败，则回滚扣减，避免资金丢失
-          const add = await DB
-            .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-            .bind(amt, to)
-            .run();
-          if (!add.success || add.meta.changes === 0) {
-            await DB
-              .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-              .bind(amt, from)
-              .run();
-            return resJson({ code: 500, msg: '转账失败，已撤销扣减' }, 500);
+          // 加款并写入转账流水（同一事务）；任一失败则整体回滚，避免资金或记录丢失
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          const batch = await DB.batch([
+            DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, to),
+            DB.prepare('INSERT INTO transfers (from_user, to_user, amount, created_at) VALUES (?, ?, ?, ?)').bind(from, to, amt, now)
+          ]);
+          const addOk = batch[0].success && batch[0].meta.changes > 0;
+          const insOk = batch[1].success;
+          if (!addOk || !insOk) {
+            await DB.batch([
+              DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amt, to),
+              DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, from)
+            ]);
+            return resJson({ code: 500, msg: '转账失败，已撤销' }, 500);
           }
 
           return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
           console.error('Transfer error:', err);
           return resJson({ code: 500, msg: '转账失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 查询转账/收款记录接口 ==========
+      if (path === '/api/transfers' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          const direction = url.searchParams.get('direction') || 'all'; // all | out | in
+          const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1);
+          const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '10', 10) || 10));
+
+          if (!username) {
+            return resJson({ code: 400, msg: '缺少 username 参数' }, 400);
+          }
+
+          let where = 'WHERE from_user = ? OR to_user = ?';
+          let params = [username, username];
+          if (direction === 'out') {
+            where = 'WHERE from_user = ?';
+            params = [username];
+          } else if (direction === 'in') {
+            where = 'WHERE to_user = ?';
+            params = [username];
+          }
+
+          const totalRow = await DB.prepare(`SELECT COUNT(*) as c FROM transfers ${where}`).bind(...params).first();
+          const total = totalRow?.c || 0;
+          const pages = Math.max(1, Math.ceil(total / limit));
+          const offset = (page - 1) * limit;
+
+          const rows = await DB.prepare(`SELECT from_user, to_user, amount, created_at FROM transfers ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+            .bind(...params, limit, offset)
+            .all();
+
+          const records = (rows.results || []).map(r => ({
+            counterparty: r.from_user === username ? r.to_user : r.from_user,
+            direction: r.from_user === username ? 'out' : 'in',
+            amount: r.amount,
+            created_at: r.created_at
+          }));
+
+          return resJson({
+            code: 200,
+            data: {
+              records,
+              pagination: { total, page, pages, limit }
+            }
+          });
+        } catch (err) {
+          console.error('Transfers query error:', err);
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
         }
       }
 

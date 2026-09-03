@@ -5,6 +5,7 @@
         "recharge": "Recharge",
         "transfer": "Transfer",
         "orders": "Orders",
+        "records": "Records",
         "logout": "Logout"
     },
     "login": {
@@ -104,6 +105,17 @@
         "sameUser": "Cannot transfer to yourself",
         "success": "Successfully transferred {amount} to {to}!",
         "failed": "Transfer failed, please try again later"
+    },
+    "records": {
+        "all": "All",
+        "out": "Sent",
+        "in": "Received",
+        "loading": "Loading...",
+        "noRecords": "No transfer records",
+        "loadFailed": "Failed to load, please retry",
+        "toLabel": "To {name}",
+        "fromLabel": "From {name}",
+        "time": "Time"
     },
     "staticPay": {
         "title": "{name} Manual Payment",

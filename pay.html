@@ -811,8 +811,9 @@
         <!-- 导航菜单 -->
         <div id="nav-tabs-container" class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid var(--neon-blue);">
             <button id="pay-tab" class="nav-tab active" onclick="switchTab('pay')" data-i18n="nav.recharge">充值</button>
-            <button id="transfer-tab" class="nav-tab" onclick="switchTab('transfer')" data-i18n="nav.transfer">转账</button>
             <button id="orders-tab" class="nav-tab" onclick="switchTab('orders')" data-i18n="nav.orders">订单</button>
+            <button id="transfer-tab" class="nav-tab" onclick="switchTab('transfer')" data-i18n="nav.transfer">转账</button>
+            <button id="records-tab" class="nav-tab" onclick="switchTab('records')" data-i18n="nav.records">记录</button>
             <div class="user-dropdown">
                 <button class="user-btn" onclick="toggleDropdown()">
                     <span id="username-display"></span>
@@ -926,6 +927,25 @@
             <div id="transfer-msg" style="display: none; text-align: center; font-size: 12px; margin-bottom: 15px;"></div>
 
             <button class="glitch-btn transfer-btn" onclick="transfer()" data-text="确认转账" data-i18n="transfer.confirm">确认转账</button>
+        </div>
+        
+        <!-- 转账/收款记录界面 -->
+        <div id="records-interface" style="display: none;">
+            <div class="filter-section" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="page-btn" onclick="loadTransferRecords('all')" data-i18n="records.all">全部</button>
+                <button class="page-btn" onclick="loadTransferRecords('out')" data-i18n="records.out">转出</button>
+                <button class="page-btn" onclick="loadTransferRecords('in')" data-i18n="records.in">收款</button>
+            </div>
+
+            <div id="records-list" class="orders-container" style="max-height: 267px; overflow-y: auto;">
+                <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="records.loading">加载中...</div>
+            </div>
+
+            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <button id="records-prev" class="page-btn" onclick="changeRecordsPage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
+                <span id="records-page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
+                <button id="records-next" class="page-btn" onclick="changeRecordsPage(1)" disabled data-i18n="orders.nextPage">下一页</button>
+            </div>
         </div>
         
         <!-- 订单记录界面 -->
@@ -1110,6 +1130,9 @@
         }
         let currentPage = 1;
         let totalPages = 1;
+        let recordsPage = 1;
+        let recordsPages = 1;
+        let recordsDirection = 'all';
         let selectedAmount = null;
         let phantomWallet = localStorage.getItem('phantomWallet');
         let walletType = localStorage.getItem('walletType');
@@ -2227,6 +2250,7 @@
             document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('pay-interface').style.display = 'none';
             document.getElementById('transfer-interface').style.display = 'none';
+            document.getElementById('records-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
             
             if (tab === 'pay') {
@@ -2236,6 +2260,10 @@
                 document.getElementById('transfer-tab').classList.add('active');
                 document.getElementById('transfer-interface').style.display = 'block';
                 loadTransferBalance();
+            } else if (tab === 'records') {
+                document.getElementById('records-tab').classList.add('active');
+                document.getElementById('records-interface').style.display = 'block';
+                loadTransferRecords('all');
             } else {
                 document.getElementById('orders-tab').classList.add('active');
                 document.getElementById('orders-interface').style.display = 'block';
@@ -2301,6 +2329,71 @@
             } catch (error) {
                 console.error('转账失败:', error);
                 showTransferMsg(t('transfer.failed'), true);
+            }
+        }
+
+        async function loadTransferRecords(direction) {
+            if (!currentUser) return;
+            if (direction) {
+                recordsDirection = direction;
+                recordsPage = 1;
+                document.querySelectorAll('#records-interface .filter-section .page-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-i18n') === `records.${direction}`);
+                });
+            }
+            const listEl = document.getElementById('records-list');
+            listEl.innerHTML = `<div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);">${t('records.loading')}</div>`;
+
+            try {
+                const data = await (await fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&direction=${recordsDirection}&page=${recordsPage}&limit=10`)).json();
+
+                if (data.code === 200) {
+                    const records = data.data.records || [];
+                    recordsPages = data.data.pagination.pages;
+                    if (records.length === 0) {
+                        listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${t('records.noRecords')}</div>`;
+                    } else {
+                        let html = '';
+                        records.forEach(r => {
+                            const isOut = r.direction === 'out';
+                            const sign = isOut ? '-' : '+';
+                            const color = isOut ? '#ff4757' : 'var(--neon-green)';
+                            const label = isOut ? t('records.toLabel', { name: r.counterparty }) : t('records.fromLabel', { name: r.counterparty });
+                            html += `
+                                <div class="order-item">
+                                    <div class="order-header">
+                                        <div class="order-no">${label}</div>
+                                        <div class="order-amount" style="color: ${color};">${sign}¥${parseFloat(r.amount).toFixed(2)}</div>
+                                    </div>
+                                    <div class="order-details">
+                                        <div><strong>${t('records.time') || 'Time'}:</strong> ${formatDate(r.created_at)}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        listEl.innerHTML = html;
+                    }
+                    updateRecordsPagination();
+                } else {
+                    listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: #ff4757;">${data.msg || t('records.loadFailed')}</div>`;
+                }
+            } catch (error) {
+                console.error('加载转账记录失败:', error);
+                listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: #ff4757;">${t('records.loadFailed')}</div>`;
+            }
+        }
+
+        function updateRecordsPagination() {
+            document.getElementById('records-page-info').textContent = t('orders.pageInfo', { current: recordsPage, total: recordsPages });
+            document.getElementById('records-prev').disabled = recordsPage <= 1;
+            document.getElementById('records-next').disabled = recordsPage >= recordsPages;
+        }
+
+        function changeRecordsPage(delta) {
+            const newPage = recordsPage + delta;
+            if (newPage >= 1 && newPage <= recordsPages) {
+                recordsPage = newPage;
+                loadTransferRecords();
             }
         }
         
