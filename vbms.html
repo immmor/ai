@@ -3663,6 +3663,50 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             closeReplaceLinkModal();
         }
 
+        async function clearNodeLinks(nodeId) {
+            const node = (window.currentNodeList || []).find(n => n.id === nodeId);
+            if (!node) {
+                alert('未找到该节点，请刷新后重试');
+                return;
+            }
+            const sourceClash = (node.clash_link || '').trim();
+            const sourceV2ray = (node.v2ray_link || '').trim();
+            if (!sourceClash && !sourceV2ray) {
+                alert('该节点链接为空，无需清空');
+                return;
+            }
+
+            const usersResult = await apiRequest('/api/users?page=1&limit=9999', 'GET');
+            let matchedUsers = [];
+            if (usersResult.code === 200 && usersResult.data?.users) {
+                matchedUsers = usersResult.data.users.filter(u =>
+                    (sourceClash && (u.v_link_clash || '').trim() === sourceClash) ||
+                    (sourceV2ray && (u.v_link_v2ray || '').trim() === sourceV2ray)
+                );
+            }
+
+            if (!matchedUsers.length) {
+                alert('没有用户使用该节点的链接，无需清空');
+                return;
+            }
+
+            if (!confirm(`确定要清空所有使用该节点链接的用户（${matchedUsers.length} 人）的 Clash 和 V2Ray 链接吗？`)) {
+                return;
+            }
+
+            let done = 0, failed = 0;
+            for (const user of matchedUsers) {
+                const r = await newApiRequest('/api/user/edit', 'POST', {
+                    username: user.username,
+                    v_link_clash: '',
+                    v_link_v2ray: ''
+                });
+                r.code === 200 ? done++ : failed++;
+            }
+            alert(`完成：成功清空 ${done} 个用户，失败 ${failed} 个`);
+            checkAllClashLinks();
+        }
+
         async function loadLinks() {
             const result = await newApiRequest('/api/node', 'GET');
             const tbody = document.getElementById('linksTableBody');
@@ -3682,7 +3726,8 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                             <button class="action-btn delete-btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="deleteNode(${node.id})">删除</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'month')">替换月链接</button>
                             <button class="action-btn" style="background-color:#ed8936;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="replaceDefaultLink('${node.clash_link || ''}', '${node.v2ray_link || ''}', 'year')">替换年链接</button>
-                            <button class="action-btn" style="background-color:#9f7aea;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="openReplaceLinkUsers(${node.id})">替换所有使用该链接的用户</button>
+                            <button class="action-btn" style="background-color:#9f7aea;color:white;font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="openReplaceLinkUsers(${node.id})">替换</button>
+                            <button class="action-btn delete-btn" style="font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="clearNodeLinks(${node.id})">清空链接</button>
                         </td>
                     </tr>
                 `).join('');
