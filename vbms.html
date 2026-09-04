@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>后台管理系统</title>
+    <script>if (navigator.platform.includes('Win')) document.documentElement.classList.add('os-windows');</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -298,22 +299,24 @@
             .data-table {
                 overflow: auto;
                 max-height: 75vh;
+            }
+            .os-windows .data-table {
                 scrollbar-width: thin;
                 scrollbar-color: #667eea #e2e8f0;
             }
-            .data-table::-webkit-scrollbar {
+            .os-windows .data-table::-webkit-scrollbar {
                 height: 12px;
                 width: 12px;
             }
-            .data-table::-webkit-scrollbar-track {
+            .os-windows .data-table::-webkit-scrollbar-track {
                 background: #e2e8f0;
                 border-radius: 6px;
             }
-            .data-table::-webkit-scrollbar-thumb {
+            .os-windows .data-table::-webkit-scrollbar-thumb {
                 background: #667eea;
                 border-radius: 6px;
             }
-            .data-table::-webkit-scrollbar-thumb:hover {
+            .os-windows .data-table::-webkit-scrollbar-thumb:hover {
                 background: #5a67d8;
             }
 
@@ -322,18 +325,18 @@
             div[style*="overflow-x: auto"] {
                 max-height: 75vh;
             }
-            div[style*="overflow-x:auto"]::-webkit-scrollbar,
-            div[style*="overflow-x: auto"]::-webkit-scrollbar {
+            .os-windows div[style*="overflow-x:auto"]::-webkit-scrollbar,
+            .os-windows div[style*="overflow-x: auto"]::-webkit-scrollbar {
                 height: 12px;
                 width: 12px;
             }
-            div[style*="overflow-x:auto"]::-webkit-scrollbar-track,
-            div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+            .os-windows div[style*="overflow-x:auto"]::-webkit-scrollbar-track,
+            .os-windows div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
                 background: #e2e8f0;
                 border-radius: 6px;
             }
-            div[style*="overflow-x:auto"]::-webkit-scrollbar-thumb,
-            div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+            .os-windows div[style*="overflow-x:auto"]::-webkit-scrollbar-thumb,
+            .os-windows div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
                 background: #667eea;
                 border-radius: 6px;
             }
