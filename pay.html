@@ -827,7 +827,8 @@
         </div>
         
         <!-- 登录/注册表单 -->
-        <div id="login-form">
+        <div id="login-form" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+            <div class="header" style="margin-bottom: 30px; flex-shrink: 0;">钱包</div>
             <div class="input-box">
                 <input type="text" placeholder="用户名" id="username" data-i18n-placeholder="login.username">
             </div>
@@ -849,7 +850,8 @@
         </div>
         
         <!-- 注册表单 -->
-        <div id="register-form" style="display: none;">
+        <div id="register-form" style="display: none; flex-direction: column; justify-content: center; height: 100%;">
+            <div class="header" style="margin-bottom: 30px; flex-shrink: 0;">钱包</div>
             <div class="input-box">
                 <input type="text" placeholder="用户名" id="reg-username" data-i18n-placeholder="login.username">
             </div>
@@ -946,7 +948,7 @@
         </div>
         
         <!-- 订单记录界面 -->
-        <div id="orders-interface" style="display: none;">
+        <div id="orders-interface" style="display: none; flex-direction: column; height: 100%;">
             <div class="balance-display">
                 <div class="balance-label" data-i18n="orders.totalOrders">订单总数</div>
                 <div class="balance-val" id="total-orders">0</div>
@@ -968,14 +970,14 @@
             </div>
             
             <!-- 订单列表 -->
-            <div id="orders-list" class="orders-container">
+            <div id="orders-list" class="orders-container" style="flex: 1; overflow-y: auto; min-height: 0;">
                 <div class="loading" style="text-align: center; padding: 20px; color: var(--neon-blue);" data-i18n="orders.loading">
                     加载中...
                 </div>
             </div>
             
             <!-- 分页 -->
-            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+            <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; flex-shrink: 0;">
                 <button id="prev-page" class="page-btn" onclick="changePage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
                 <span id="page-info" style="font-size: 12px;" data-i18n="orders.pageInfo">第 1/1 页</span>
                 <button id="next-page" class="page-btn" onclick="changePage(1)" disabled data-i18n="orders.nextPage">下一页</button>
@@ -1225,12 +1227,14 @@
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
             document.getElementById('username-display').textContent = phantomWallet.slice(0, 6) + '...' + phantomWallet.slice(-4);
+            document.querySelector('.header').style.display = '';
             updateBalance();
         } else if (currentUser) {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('nav-tabs-container').style.display = 'flex';
             document.getElementById('pay-interface').style.display = 'block';
             document.getElementById('username-display').textContent = currentUser.username.length > 6 ? currentUser.username.slice(0, 6) + '*' : currentUser.username;
+            document.querySelector('.header').style.display = '';
             updateBalance();
             loadOrders();
             if (currentUser.not_trusted === 'yes') {
@@ -1243,10 +1247,11 @@
                 }
             }
         } else {
-            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('login-form').style.display = 'flex';
             document.getElementById('nav-tabs-container').style.display = 'none';
             document.getElementById('pay-interface').style.display = 'none';
             document.getElementById('orders-interface').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
         }
         
         async function updateBalance() {
@@ -1264,12 +1269,12 @@
         
         function showRegister() {
             document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'flex';
         }
         
         function showLogin() {
             document.getElementById('register-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('login-form').style.display = 'flex';
         }
 
         async function login() {
@@ -2259,7 +2264,7 @@
                 loadTransferRecords();
             } else {
                 document.getElementById('orders-tab').classList.add('active');
-                document.getElementById('orders-interface').style.display = 'block';
+                document.getElementById('orders-interface').style.display = 'flex';
                 loadOrders();
             }
         }
@@ -2410,7 +2415,7 @@
             totalOrders.textContent = pagination.total;
             totalPages = Math.max(1, pagination.pages || 1);
             if (orders.length === 0) {
-                ordersList.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${t('usdt.noOrders')}</div>`;
+                ordersList.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">${t('usdt.noOrders')}</div>`;
                 updatePagination();
                 return;
             }
