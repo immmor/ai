@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUNBUA - 尊享数字钱包</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg-base:#0a0b10;
+  --panel-bg:rgba(255,255,255,0.03);
+  --panel-border:rgba(255,255,255,0.08);
+  --primary-gold:linear-gradient(135deg,#f39c12,#f1c40f);
+  --primary-purple:linear-gradient(135deg,#6c5ce7,#a29bfe);
+  --card-gradient:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.03) 100%);
+  --text-main:#ffffff;
+  --text-muted:#8a8d9b;
+  --accent-green:#00b894;
+  --accent-red:#ff7675;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{
+  background-color:var(--bg-base);color:var(--text-main);
+  min-height:100vh;display:flex;justify-content:center;align-items:center;
+  background-image:radial-gradient(circle at 15% 15%,rgba(108,92,231,0.15) 0%,transparent 40%),radial-gradient(circle at 85% 85%,rgba(241,196,15,0.08) 0%,transparent 40%);
+}
+.app-container{
+  width:100%;max-width:1200px;min-height:85vh;
+  background:rgba(18,20,29,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--panel-border);border-radius:24px;
+  display:grid;grid-template-columns:260px 1fr;
+  box-shadow:0 30px 60px rgba(0,0,0,0.4);overflow:hidden;margin:20px;
+}
+/* Sidebar */
+.sidebar{padding:30px 20px;border-right:1px solid var(--panel-border);display:flex;flex-direction:column;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;letter-spacing:2px;background:linear-gradient(45deg,#fff,#8a8d9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand i{font-size:24px;color:#f1c40f;-webkit-text-fill-color:initial}
+.nav-menu{list-style:none;margin-top:40px}
+.nav-item{margin-bottom:10px}
+.nav-link{
+  display:flex;align-items:center;gap:15px;padding:14px 18px;
+  color:var(--text-muted);text-decoration:none;border-radius:12px;
+  transition:all 0.3s ease;font-weight:500;cursor:pointer;border:none;background:none;font-size:14px;width:100%;
+}
+.nav-link:hover,.nav-link.active{color:#fff;background:var(--panel-bg)}
+.nav-link.active i{color:#6c5ce7}
+.user-profile{display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--panel-border)}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-purple);display:flex;align-items:center;justify-content:center;font-weight:bold}
+.user-info h4{font-size:14px;font-weight:600}
+.user-info p{font-size:12px;color:var(--text-muted)}
+/* Main Content */
+.main-content{padding:40px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;max-height:85vh}
+/* Auth */
+.auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%}
+.auth-page .brand{font-size:32px;margin-bottom:4px}
+.auth-card{width:100%;max-width:330px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:20px;padding:36px}
+.input-group{position:relative;margin-bottom:14px}
+.input-group input{
+  width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);
+  border-radius:12px;color:var(--text-main);font-size:14px;font-family:inherit;outline:none;transition:all 0.2s;
+}
+.input-group input::placeholder{color:var(--text-muted)}
+.input-group input:focus{border-color:#6c5ce7;box-shadow:0 0 0 3px rgba(108,92,231,0.15)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 24px;border:none;border-radius:12px;font-size:15px;font-weight:600;
+  font-family:inherit;cursor:pointer;transition:all 0.2s;width:100%;
+}
+.btn-primary{background:var(--primary-purple);color:#fff;box-shadow:0 4px 16px rgba(108,92,231,0.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(108,92,231,0.4)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--text-muted)}
+.btn-ghost:hover{color:#fff;background:var(--panel-bg)}
+.btn-gold{background:var(--primary-gold);color:#0a0b10;font-weight:700}
+.auth-footer{text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted)}
+.auth-footer a{color:#a29bfe;text-decoration:none;cursor:pointer;font-weight:500}
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.header h1{font-size:24px;font-weight:600}
+.actions{display:flex;gap:15px}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.3s}
+.icon-btn:hover{background:rgba(255,255,255,0.1)}
+/* Dashboard Grid */
+.dashboard-grid{display:grid;grid-template-columns:1fr;gap:30px}
+/* Crypto Card */
+.crypto-card{
+  background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:25px;
+  position:relative;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.2);backdrop-filter:blur(10px);
+}
+.crypto-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200px;height:200px;background:radial-gradient(circle,rgba(108,92,231,0.3) 0%,transparent 70%);pointer-events:none}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.card-balance-label{font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.card-balance-val{font-size:36px;font-weight:700;margin-top:5px;letter-spacing:-0.5px}
+.card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.card-number{font-family:monospace;font-size:16px;letter-spacing:2px;color:rgba(255,255,255,0.7)}
+/* Quick Actions */
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}
+.action-btn{
+  background:var(--panel-bg);border:1px solid var(--panel-border);padding:15px;
+  border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:#fff;cursor:pointer;transition:all 0.3s;font-size:12px;font-family:inherit;
+}
+.action-btn i{font-size:18px;color:#a29bfe}
+.action-btn:hover{background:rgba(108,92,231,0.2);border-color:#6c5ce7;transform:translateY(-2px)}
+/* Sections */
+.section-title{font-size:18px;font-weight:600;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.section-title a{font-size:12px;color:#a29bfe;text-decoration:none;cursor:pointer}
+/* Lists */
+.asset-list,.transaction-list,.order-list{display:flex;flex-direction:column;gap:12px}
+.asset-item,.transaction-item,.order-item{background:var(--panel-bg);border:1px solid var(--panel-border);padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;transition:0.3s}
+.asset-item:hover,.transaction-item:hover,.order-item:hover{background:rgba(255,255,255,0.05)}
+.asset-info,.tx-info{display:flex;align-items:center;gap:15px}
+.asset-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.btc{background:rgba(241,196,15,0.15);color:#f1c40f}
+.eth{background:rgba(108,92,231,0.15);color:#a29bfe}
+.usdt{background:rgba(0,184,148,0.15);color:#00b894}
+.asset-name h4,.tx-name h4{font-size:15px;font-weight:600}
+.asset-name p,.tx-name p{font-size:12px;color:var(--text-muted)}
+.asset-value,.tx-value{text-align:right}
+.asset-value h4,.tx-value h4{font-size:15px;font-weight:600}
+.asset-value p{font-size:12px}
+.green{color:var(--accent-green)}
+.red{color:var(--accent-red)}
+/* Order Status */
+.order-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.order-status.pending{background:rgba(245,166,35,0.15);color:#f5a623}
+.order-status.paid{background:rgba(0,184,148,0.15);color:var(--accent-green)}
+.order-status.failed{background:rgba(255,118,117,0.15);color:var(--accent-red)}
+.amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.amount-btn{padding:12px 8px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-main);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:center}
+.amount-btn:hover{border-color:rgba(108,92,231,0.3)}
+.amount-btn.active{border-color:#6c5ce7;background:rgba(108,92,231,0.15);box-shadow:0 0 0 1px rgba(108,92,231,0.3)}
+.amount-btn .sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.amount-input{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);color:var(--text-main);font-size:20px;font-weight:600;font-family:inherit;text-align:center;outline:none;margin-bottom:16px}
+.amount-input:focus{border-color:#6c5ce7}
+.amount-input::placeholder{color:var(--text-muted);font-weight:400;font-size:16px}
+.method-list{display:flex;gap:10px;margin-bottom:20px}
+.method-card{flex:1;padding:16px 12px;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel-bg);cursor:pointer;transition:all 0.2s;text-align:center;font-family:inherit;color:var(--text-main)}
+.method-card:hover{border-color:rgba(108,92,231,0.3)}
+.method-card.active{border-color:#6c5ce7;background:rgba(108,92,231,0.15);box-shadow:0 0 0 1px rgba(108,92,231,0.3)}
+.method-card .icon{font-size:28px;margin-bottom:6px;display:block}
+.method-card .name{font-size:13px;font-weight:500}
+.method-card .desc{font-size:11px;color:var(--text-muted);margin-top:2px}
+.transfer-form{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:16px;padding:20px}
+.transfer-form .input-group label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
+.transfer-form .input-group input{padding-left:14px}
+.pagination{display:flex;justify-content:space-between;align-items:center;padding-top:12px;gap:12px}
+.page-btn{padding:8px 16px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);font-size:13px;font-family:inherit;cursor:pointer;transition:all 0.2s}
+.page-btn:hover:not(:disabled){background:rgba(255,255,255,0.05);color:#fff}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed}
+.page-info{font-size:13px;color:var(--text-muted)}
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(18,20,29,0.95);border:1px solid var(--panel-border);border-radius:12px;padding:14px 20px;font-size:14px;color:var(--text-main);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:9999;transition:all 0.3s ease;opacity:0;pointer-events:none;display:flex;align-items:center;gap:8px;min-width:200px;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--accent-green)}
+.toast.error{border-color:var(--accent-red)}
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:9998;display:none;align-items:center;justify-content:center}
+.loading-overlay.show{display:flex}
+.loading-box{text-align:center}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--panel-border);border-top-color:#6c5ce7;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-box p{color:var(--text-muted);font-size:14px}
+/* QR Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:9997;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:rgba(18,20,29,0.95);border:1px solid var(--panel-border);border-radius:20px;padding:24px;width:360px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:center}
+.modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
+.modal-close:hover{color:#fff}
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
+.empty-state p{font-size:14px}
+/* Auth Fullscreen */
+.auth-fullscreen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg-base);background-image:radial-gradient(circle at 15% 15%,rgba(108,92,231,0.15) 0%,transparent 40%),radial-gradient(circle at 85% 85%,rgba(241,196,15,0.08) 0%,transparent 40%)}
+/* Hide / Show */
+.hidden{display:none!important}
+/* Mobile Nav */
+.mobile-nav{display:none}
+@media(max-width:992px){.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+  body{align-items:flex-start}
+  .app-container{grid-template-columns:1fr;min-height:100vh;margin:0;border-radius:0;border:none;padding-bottom:65px}
+  .sidebar{display:none}
+  .main-content{padding:20px;gap:20px;max-height:100vh}
+  .auth-page{min-height:80vh;justify-content:center}
+  .card-balance-val{font-size:28px}
+  .mobile-nav{display:flex;justify-content:space-around;align-items:center;position:fixed;bottom:0;left:0;width:100%;height:60px;background:rgba(10,11,16,0.95);backdrop-filter:blur(10px);border-top:1px solid var(--panel-border);z-index:1000}
+  .mobile-nav-item{color:var(--text-muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;cursor:pointer;border:none;background:none;font-family:inherit;padding:8px}
+  .mobile-nav-item.active{color:#6c5ce7}
+  .mobile-nav-item i{font-size:18px}
+  .quick-actions{grid-template-columns:repeat(2,1fr)}
+  .method-list{flex-direction:column}
+  .amount-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <p id="loadingText">Processing...</p>
+  </div>
+</div>
+<div class="modal-overlay" id="qrModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
+    <h3 id="qrTitle">Scan to Pay</h3>
+    <div id="qrContent" style="text-align:center"></div>
+  </div>
+</div>
+
+<!-- ============ AUTH FULLSCREEN ============ -->
+  <div id="authFullscreen" class="auth-fullscreen">
+    <div class="auth-page">
+      <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
+      <div class="auth-card" id="loginForm">
+        <div class="input-group"><input type="text" id="username" placeholder="用户名" autocomplete="username"></div>
+        <div class="input-group"><input type="password" id="password" placeholder="密码" autocomplete="current-password"></div>
+        <button class="btn btn-primary" onclick="handleLogin()"><i class="fa-solid fa-arrow-right"></i> 登录</button>
+      </div>
+      <div class="auth-card hidden" id="registerForm">
+        <div class="input-group"><input type="text" id="regUsername" placeholder="用户名" autocomplete="off"></div>
+        <div class="input-group"><input type="password" id="regPassword" placeholder="密码" autocomplete="new-password"></div>
+        <div class="input-group"><input type="password" id="regConfirm" placeholder="确认密码" autocomplete="new-password"></div>
+        <button class="btn btn-primary" onclick="handleRegister()"><i class="fa-solid fa-user-plus"></i> 注册</button>
+        <button class="btn btn-ghost" onclick="showLogin()" style="margin-top:8px"><i class="fa-solid fa-arrow-left"></i> 返回登录</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container hidden" id="appContainer">
+    <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
+      <ul class="nav-menu" id="sidebarNav">
+        <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> 总览</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> 充值</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> 转账</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="orders" onclick="switchPage('orders')"><i class="fa-solid fa-clock-rotate-left"></i> 订单</a></li>
+      </ul>
+    </div>
+    <div class="user-profile" id="userProfile">
+      <div class="avatar" id="userAvatar">U</div>
+      <div class="user-info">
+        <h4 id="userName">未登录</h4>
+        <p id="userStatus">请登录账户</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ============ DASHBOARD ============ -->
+    <div id="pageDashboard" class="hidden">
+      <header class="header">
+        <div><h1>我的资产总览</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+      </header>
+      <div class="dashboard-grid">
+        <div class="left-column">
+          <div class="crypto-card">
+            <div class="card-top">
+              <div>
+                <div class="card-balance-label">Total Balance</div>
+                <div class="card-balance-val">¥ <span id="balanceDisplay">0.00</span></div>
+              </div>
+              <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8"></i>
+            </div>
+            <div class="card-bottom">
+              <div class="card-number">FUNBUA • 尊享数字账户</div>
+              <span style="font-size:12px;color:var(--accent-green)"><i class="fa-solid fa-arrow-trend-up"></i> <span id="balanceUsd">$0.00</span></span>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span>充值</span></button>
+            <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
+          </div>
+
+          <div style="margin-top:30px">
+            <div class="section-title"><span>近期订单</span><a onclick="switchPage('orders')">查看全部</a></div>
+            <div class="order-list" id="recentOrders"></div>
+          </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- ============ RECHARGE ============ -->
+    <div id="pageRecharge" class="hidden">
+      <header class="header">
+        <div><h1>充值</h1></div>
+        <div class="actions"></div>
+      </header>
+
+      <div class="crypto-card" style="padding:20px">
+        <div class="section-title" style="margin-bottom:10px;font-size:14px">支付方式</div>
+        <div class="method-list">
+          <div class="method-card active" data-method="creem" onclick="selectMethod('creem')">
+            <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
+            <div class="name">Creem</div>
+            <div class="desc">信用卡 · 支付宝</div>
+          </div>
+          <div class="method-card" data-method="alipay_static" onclick="selectMethod('alipay_static')">
+            <span class="icon"><i class="fa-brands fa-alipay"></i></span>
+            <div class="name">支付宝(人工)</div>
+            <div class="desc">扫码 · 自动到账</div>
+          </div>
+          <div class="method-card" data-method="usdt" onclick="selectMethod('usdt')">
+            <span class="icon">₮</span>
+            <div class="name">USDT TRC20</div>
+            <div class="desc">Tron Network</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-bottom:10px;font-size:14px">金额</div>
+        <div class="amount-grid" id="amtGridCredit">
+          <button class="amount-btn active" data-amount="5" onclick="selectCredit(5)">$5<div class="sub">¥34</div></button>
+          <button class="amount-btn" data-amount="10" onclick="selectCredit(10)">$10<div class="sub">¥68</div></button>
+          <button class="amount-btn" data-amount="20" onclick="selectCredit(20)">$20<div class="sub">¥136</div></button>
+          <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub">¥204</div></button>
+          <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
+          <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
+        </div>
+        <div class="amount-grid hidden" id="amtGridCny">
+          <button class="amount-btn" data-amount="30" onclick="selectCny(30)">¥30</button>
+          <button class="amount-btn" data-amount="50" onclick="selectCny(50)">¥50</button>
+          <button class="amount-btn" data-amount="100" onclick="selectCny(100)">¥100</button>
+          <button class="amount-btn" data-amount="200" onclick="selectCny(200)">¥200</button>
+          <button class="amount-btn" data-amount="500" onclick="selectCny(500)">¥500</button>
+          <button class="amount-btn" id="customAmtBtn" onclick="showCustomAmt()">自定义</button>
+        </div>
+        <div class="amount-grid hidden" id="amtGridAlipay" style="grid-template-columns:repeat(4,1fr)">
+          <button class="amount-btn" data-amount="10" onclick="selectAlipayAmt(10)">¥10</button>
+          <button class="amount-btn" data-amount="30" onclick="selectAlipayAmt(30)">¥30</button>
+          <button class="amount-btn" data-amount="50" onclick="selectAlipayAmt(50)">¥50</button>
+          <button class="amount-btn" data-amount="100" onclick="selectAlipayAmt(100)">¥100</button>
+          <button class="amount-btn" data-amount="200" onclick="selectAlipayAmt(200)">¥200</button>
+          <button class="amount-btn" data-amount="500" onclick="selectAlipayAmt(500)">¥500</button>
+          <button class="amount-btn" data-amount="1000" onclick="selectAlipayAmt(1000)">¥1000</button>
+          <button class="amount-btn" id="customAlipayBtn" onclick="showCustomAlipayAmt()">自定义</button>
+        </div>
+        <input type="number" class="amount-input hidden" id="customAmtInput" placeholder="输入金额">
+        <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="输入金额(最低¥10)">
+
+        <button class="btn btn-gold" onclick="handlePay()"><i class="fa-solid fa-arrow-right"></i> <span id="payBtnText">支付 $5</span></button>
+      </div>
+    </div>
+
+    <!-- ============ TRANSFER ============ -->
+    <div id="pageTransfer" class="hidden">
+      <header class="header">
+        <div><h1>转账</h1></div>
+        <div class="actions"></div>
+      </header>
+
+      <div class="transfer-form">
+        <div class="input-group">
+          <label>收款人</label>
+          <input type="text" id="transferTo" placeholder="输入用户名">
+        </div>
+        <div class="input-group">
+          <label>金额 (CNY)</label>
+          <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
+        </div>
+        <div class="input-group">
+          <label>密码</label>
+          <input type="password" id="transferPassword" placeholder="确认密码">
+        </div>
+        <button class="btn btn-primary" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> 发送</button>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="section-title" style="font-size:14px;margin-bottom:12px">转账记录</div>
+        <div class="order-list" id="recordsList"></div>
+        <div class="pagination" id="recordsPagination" style="display:none">
+          <button class="page-btn" id="recordsPrev" onclick="changeRecordsPage(-1)" disabled>上一页</button>
+          <span class="page-info" id="recordsInfo">1 / 1</span>
+          <button class="page-btn" id="recordsNext" onclick="changeRecordsPage(1)" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ORDERS ============ -->
+    <div id="pageOrders" class="hidden">
+      <header class="header">
+        <div><h1>订单记录</h1></div>
+        <div class="actions"></div>
+      </header>
+
+      <div class="crypto-card" style="padding:20px;min-height:200px">
+        <div class="order-list" id="ordersList"></div>
+        <div class="pagination" id="ordersPagination" style="display:none;margin-top:12px">
+          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled>上一页</button>
+          <span class="page-info" id="ordersInfo">1 / 1</span>
+          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="mobile-nav hidden" id="mobileNav">
+  <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>总览</span></button>
+  <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span>充值</span></button>
+  <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
+  <button class="mobile-nav-item" data-page="orders" onclick="switchPage('orders')"><i class="fa-solid fa-clock-rotate-left"></i><span>订单</span></button>
+</nav>
+
+<script>
+const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.8,USDT_RATE=6.8;
+let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
+    orderPage=1,totalOrderPages=1,recordsPage=1,totalRecordPages=1;
+
+// Toast
+let toastTimer=null;
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;
+  t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000)
+}
+function showLoading(t){document.getElementById('loadingText').textContent=t||'处理中...';document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+
+// Page switching
+function switchPage(page){
+  currentPage=page;
+  // Sidebar nav
+  document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
+  // Content pages
+  ['Dashboard','Recharge','Transfer','Orders'].forEach(p=>{
+    const el=document.getElementById('page'+p);
+    if(el)el.classList.toggle('hidden',p.toLowerCase()!==page.toLowerCase())
+  });
+  // Mobile nav
+  document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  // Refresh data
+  if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
+  if(page==='orders'&&currentUser)loadOrders();
+  if(page==='transfer'&&currentUser)loadRecords();
+}
+
+// Auth
+function showLogin(){
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('registerForm').classList.add('hidden');
+  document.getElementById('authFooter').innerHTML='没有账号？<a onclick="showRegister()">注册</a>'
+}
+function showRegister(){
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('registerForm').classList.remove('hidden');
+  document.getElementById('authFooter').innerHTML='已有账号？<a onclick="showLogin()">登录</a>'
+}
+
+async function handleLogin(){
+  const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
+  if(!u||!p)return showToast('请输入用户名和密码','error');
+  showLoading('登录中...');
+  try{
+    const r=await(await fetch(API_BASE+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
+    if(r.success){
+      currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());
+      hideLoading();enterMain()
+    }else{hideLoading();showToast(r.message||'登录失败','error')}
+  }catch(e){hideLoading();showToast('网络错误','error')}
+}
+
+async function handleRegister(){
+  const u=document.getElementById('regUsername').value.trim(),p=document.getElementById('regPassword').value,c=document.getElementById('regConfirm').value;
+  if(!u||!p)return showToast('请填写所有字段','error');
+  if(p!==c)return showToast('两次密码不一致','error');
+  showLoading('注册中...');
+  try{
+    const r=await(await fetch(API_LEGACY+'/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
+    if(r.success){hideLoading();showToast('注册成功');showLogin();document.getElementById('regUsername').value='';document.getElementById('regPassword').value='';document.getElementById('regConfirm').value=''}
+    else{hideLoading();showToast(r.message||'注册失败','error')}
+  }catch(e){hideLoading();showToast('网络错误','error')}
+}
+
+function handleLogout(){
+  if(confirm('确认退出？')){
+    localStorage.removeItem('vpay_user');currentUser=null;
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('mobileNav').classList.add('hidden');
+    document.getElementById('authFullscreen').classList.remove('hidden');
+    document.getElementById('username').value='';document.getElementById('password').value='';
+  }
+}
+
+function enterMain(){
+  document.getElementById('authFullscreen').classList.add('hidden');
+  document.getElementById('appContainer').classList.remove('hidden');
+  document.getElementById('mobileNav').classList.remove('hidden');
+  document.getElementById('userName').textContent=currentUser.username||'用户';
+  document.getElementById('userStatus').textContent='已登录';
+  document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
+  updateBalance();loadRecentOrders();switchPage('dashboard')
+}
+
+// Balance
+async function updateBalance(){
+  if(!currentUser)return;
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/balance?username=${currentUser.username}`)).json();
+    if(r.code===200){const b=r.balance||0;document.getElementById('balanceDisplay').textContent=b.toFixed(2);document.getElementById('balanceUsd').textContent='$'+(b/USD_TO_CNY).toFixed(2)}
+  }catch(e){}
+}
+
+// Payment
+function selectMethod(m){
+  payMethod=m;
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.toggle('active',c.dataset.method===m));
+  document.getElementById('amtGridCredit').classList.toggle('hidden',m!=='creem');
+  document.getElementById('amtGridCny').classList.toggle('hidden',m!=='usdt');
+  document.getElementById('amtGridAlipay').classList.toggle('hidden',m!=='alipay_static');
+  document.getElementById('customAmtInput').classList.add('hidden');
+  document.getElementById('customAlipayInput').classList.add('hidden');
+  updatePayBtn()
+}
+function selectCredit(a){creditAmount=a;document.querySelectorAll('#amtGridCredit .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
+function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
+function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
+function selectAlipayAmt(a){alipayAmount=a;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAlipayInput').classList.add('hidden');updatePayBtn()}
+function showCustomAlipayAmt(){alipayAmount=null;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAlipayInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
+function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=`支付 $${creditAmount}`;else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?`支付 ¥${a}`:'输入金额'}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?`支付 ¥${a}`:'输入金额'}}
+
+async function handlePay(){
+  if(!currentUser||!currentUser.username)return;
+  showLoading('处理中...');
+  if(payMethod==='creem'){
+    try{
+      const r=await(await fetch(API_LEGACY+'/api/pay/build-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'creem',order_no:Date.now().toString(),amount:creditAmount,description:'FUNBUA Recharge',username:currentUser.username})})).json();
+      hideLoading();
+      if(r.code===200&&r.data?.pay_url)window.location.href=r.data.pay_url;
+      else showToast(r.msg||'支付失败','error')
+    }catch(e){hideLoading();showToast('网络错误','error')}
+  }else if(payMethod==='alipay_static'){
+    const a=alipayAmount||parseFloat(document.getElementById('customAlipayInput').value);
+    if(!a||a<=0){hideLoading();return showToast('请输入有效金额','error')}
+    if(a<10){hideLoading();return showToast('最低金额: ¥10','error')}
+    hideLoading();
+    showStaticPayment('alipay_static',a);
+  }else{
+    const a=cnyAmount||parseFloat(document.getElementById('customAmtInput').value);
+    if(!a||a<=0){hideLoading();return showToast('请输入有效金额','error')}
+    if(a<100){hideLoading();return showToast('最低金额: ¥100','error')}
+    const ua=(a/USDT_RATE).toFixed(2),addr='TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
+    try{
+      const r=await(await fetch(`https://tronusdt.xyz/?way=pay&jump=-&product=wallet_recharge&name=${addr}&type=usdt&value=${ua}`)).json();
+      hideLoading();
+      if(r.oid){
+        localStorage.setItem('usdtOrder_'+r.oid,JSON.stringify({username:currentUser.username,rmbAmount:a,usdtAmount:ua,order_no:r.oid}));
+        try{await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})}catch(e){}
+        showQrModal('USDT 支付',
+          `<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">请发送</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">网络: <strong style="color:var(--text-main)">TRC20</strong></div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">地址:</div>
+            <div style="font-size:12px;font-family:monospace;color:var(--text-main);word-break:break-all;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px">${addr}</div>
+            <button onclick="copyText('${addr}')" style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:#a29bfe;cursor:pointer;font-size:13px;font-family:inherit;padding:4px 8px;border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='rgba(108,92,231,0.1)'" onmouseout="this.style.background='transparent'"><i class="fa-solid fa-copy"></i> 复制地址</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.6">仅发送 TRC20 网络的 USDT。系统会自动确认。</div>`)
+      }else showToast('创建订单失败','error')
+    }catch(e){hideLoading();showToast('网络错误','error')}
+  }
+}
+
+// Transfer
+async function handleTransfer(){
+  if(!currentUser)return;
+  const to=document.getElementById('transferTo').value.trim(),amt=parseFloat(document.getElementById('transferAmount').value),pw=document.getElementById('transferPassword').value;
+  if(!to||!amt||!pw)return showToast('请填写所有字段','error');
+  if(amt<=0)return showToast('请输入有效金额','error');
+  showLoading('处理中...');
+  try{
+    const r=await(await fetch(API_LEGACY+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,password:pw})})).json();
+    hideLoading();
+    if(r.success){showToast('转账成功');document.getElementById('transferTo').value='';document.getElementById('transferAmount').value='';document.getElementById('transferPassword').value='';updateBalance();loadRecords()}
+    else showToast(r.message||'转账失败','error')
+  }catch(e){hideLoading();showToast('网络错误','error')}
+}
+
+// Orders
+async function loadRecentOrders(){
+  if(!currentUser)return;
+  const list=document.getElementById('recentOrders');
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=1&limit=3`)).json();
+    if(r.code===200&&r.orders?.length){
+      list.innerHTML=r.orders.map(o=>{
+        const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?'已支付':o.status==='failed'?'失败':'待支付';
+        return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(255,255,255,0.05);color:#fff"><i class="fa-solid fa-receipt"></i></div><div class="tx-name"><h4>¥${(o.amount||0).toFixed(2)}</h4><p>${o.created_at||''}</p></div></div><span class="order-status ${sc}">${st}</span></div>`
+      }).join('')
+    }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无订单</p></div>'
+  }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><p>加载失败</p></div>'}
+}
+
+async function loadOrders(){
+  if(!currentUser)return;
+  const list=document.getElementById('ordersList');list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>加载中...</p></div>';
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=${orderPage}&limit=10`)).json();
+    if(r.code===200){const o=r.orders||[];totalOrderPages=r.totalPages||1;renderOrders(o)}else list.innerHTML='<div class="empty-state"><p>暂无订单</p></div>'
+  }catch(e){list.innerHTML='<div class="empty-state"><p>网络错误</p></div>'}
+}
+function renderOrders(orders){
+  const list=document.getElementById('ordersList'),pg=document.getElementById('ordersPagination');
+  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>暂无订单</p></div>';pg.style.display='none';return}
+  list.innerHTML=orders.map(o=>{
+    const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?'已支付':o.status==='failed'?'失败':'待支付';
+    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(255,255,255,0.05);color:#fff"><i class="fa-solid fa-receipt"></i></div><div class="tx-name"><h4>¥${(o.amount||0).toFixed(2)}</h4><p>#${o.order_no||o.id||''}</p></div></div><div style="text-align:right"><span class="order-status ${sc}">${st}</span><p style="font-size:11px;color:var(--text-muted);margin-top:4px">${o.created_at||''}</p></div></div>`
+  }).join('');
+  pg.style.display=totalOrderPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=orderPage+' / '+totalOrderPages;document.getElementById('ordersPrev').disabled=orderPage<=1;document.getElementById('ordersNext').disabled=orderPage>=totalOrderPages
+}
+function changeOrdersPage(d){orderPage+=d;if(orderPage<1)orderPage=1;if(orderPage>totalOrderPages)orderPage=totalOrderPages;loadOrders()}
+
+// Records
+async function loadRecords(){
+  if(!currentUser)return;
+  const list=document.getElementById('recordsList');list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>加载中...</p></div>';
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/transfer/records?username=${currentUser.username}&page=${recordsPage}&limit=10`)).json();
+    if(r.code===200){const rec=r.records||[];totalRecordPages=r.totalPages||1;renderRecords(rec)}else list.innerHTML='<div class="empty-state"><p>暂无记录</p></div>'
+  }catch(e){list.innerHTML='<div class="empty-state"><p>网络错误</p></div>'}
+}
+function renderRecords(recs){
+  const list=document.getElementById('recordsList'),pg=document.getElementById('recordsPagination');
+  if(!recs.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>暂无记录</p></div>';pg.style.display='none';return}
+  list.innerHTML=recs.map(r=>`<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(255,255,255,0.05);color:#fff"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${r.other||''}</h4><p>${r.created_at||''}</p></div></div><div style="text-align:right"><h4 style="color:${r.type==='send'?'var(--accent-red)':'var(--accent-green)'}">${r.type==='send'?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4><p style="font-size:11px;color:var(--text-muted)">${r.type==='send'?'转出':'收入'}</p></div></div>`).join('');
+  pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
+}
+function changeRecordsPage(d){recordsPage+=d;if(recordsPage<1)recordsPage=1;if(recordsPage>totalRecordPages)recordsPage=totalRecordPages;loadRecords()}
+
+// QR Modal
+function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
+function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('已复制'))}
+
+// Static Payment (Alipay Manual Review)
+const getNowFormat=()=>new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/[\/\s:]/g,'');
+
+function showStaticPayment(paymentType,amount){
+  const paymentName='支付宝';
+  const imagePath='static/pay/zfb.jpg';
+  const orderNo=currentUser.username.split('@')[0]+'_'+getNowFormat();
+  showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType);
+}
+
+function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9998;';
+  const container=document.createElement('div');
+  container.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;padding:20px;border-radius:12px;border:2px solid #6c5ce7;box-shadow:0 0 30px rgba(108,92,231,0.3);z-index:9999;text-align:center;width:min(350px,95vw);max-height:90vh;overflow-y:auto;box-sizing:border-box;';
+  const origOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  container.innerHTML=`
+    <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px">${paymentName} 扫码支付</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <span style="color:#999;font-size:12px">订单号</span>
+      <span style="cursor:pointer;color:#a29bfe;font-size:12px" onclick="copyOrderNo()">复制</span>
+    </div>
+    <div style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px">${orderNo}</div>
+    <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold">¥ ${amount}</div>
+    <img src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
+    <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 20px;text-align:left">
+      <strong>支付说明:</strong><br>
+      1. 打开支付宝扫码<br>
+      2. 支付 <strong>¥${amount}</strong><br>
+      3. 支付完成后截图保存<br>
+      4. 联系客服提供订单号确认到账
+    </div>
+    <div style="display:flex;gap:10px">
+      <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值 (5s)</button>
+      <button onclick="openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">支付宝</button>
+      <button onclick="closeStaticPayment(this)" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">关闭</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(container);
+  container.dataset.origOverflow=origOverflow;
+  createStaticOrderRecord(paymentType,amount,orderNo);
+  startRechargeTimer(document.getElementById('confirmRechargeBtn'),orderNo,amount,paymentType);
+}
+
+function closeStaticPayment(btn){
+  const container=btn.closest('div[style*="position:fixed"]')||btn.parentElement.parentElement.parentElement;
+  if(container&&container.dataset&&container.dataset.origOverflow!==undefined)document.body.style.overflow=container.dataset.origOverflow;
+  const overlays=document.querySelectorAll('div[style*="z-index: 9998"]');
+  overlays.forEach(o=>document.body.removeChild(o));
+  if(container&&container.parentElement)document.body.removeChild(container);
+}
+
+async function createStaticOrderRecord(paymentType,amount,orderNo){
+  try{
+    await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})});
+  }catch(e){}
+}
+
+function startRechargeTimer(btn,orderNo,amount,paymentType){
+  let remaining=5;
+  btn.textContent='确认充值 ('+remaining+'s)';
+  const timer=setInterval(()=>{
+    remaining--;
+    if(remaining<=0){
+      clearInterval(timer);
+      btn.textContent='确认充值';
+      btn.style.background='#6c5ce7';
+      btn.style.opacity='1';
+      btn.style.cursor='pointer';
+      btn.disabled=false;
+      btn.onclick=()=>confirmRecharge(orderNo,amount,paymentType);
+    }else btn.textContent='确认充值 ('+remaining+'s)';
+  },1000);
+}
+
+async function confirmRecharge(orderNo,amount,paymentType){
+  showToast('已提交，等待审核到账');
+  try{
+    await fetch(API_LEGACY+'/api/order/confirm-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})});
+    updateBalance();
+    loadOrders();
+  }catch(e){}
+  const overlays=document.querySelectorAll('div[style*="z-index: 9998"]');
+  overlays.forEach(o=>{if(o.parentElement)document.body.removeChild(o)});
+  const containers=document.querySelectorAll('div[style*="z-index: 9999"]');
+  containers.forEach(c=>{if(c.parentElement)document.body.removeChild(c)});
+  document.body.style.overflow='';
+}
+
+function openAlipayApp(){
+  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isIOS)window.location.href='alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0';
+  else window.location.href='alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0';
+}
+
+function copyOrderNo(){
+  const el=document.querySelector('div[style*="font-family: monospace"]');
+  if(el)navigator.clipboard.writeText(el.textContent).then(()=>showToast('已复制'));
+}
+
+// Init
+(function init(){
+  const saved=localStorage.getItem('vpay_user');
+  if(saved){
+    currentUser=JSON.parse(saved);
+    const lt=localStorage.getItem('vpay_login_time');
+    if(lt&&Date.now()-parseInt(lt)>24*60*60*1000){localStorage.removeItem('vpay_user');localStorage.removeItem('vpay_login_time');currentUser=null}
+    else{enterMain();localStorage.setItem('vpay_login_time',Date.now().toString());return}
+  }
+  const params=new URLSearchParams(window.location.search),ticket=params.get('ticket');
+  if(ticket){
+    (async()=>{
+      try{
+        const r=await(await fetch(API_BASE+'/api/quick-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket})})).json();
+        if(r.success&&r.userInfo){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());const cw=window.location.pathname;window.history.replaceState({},document.title,cw);enterMain()}
+      }catch(e){}
+    })()
+  }
+})();
+</script>
+</body>
+</html>

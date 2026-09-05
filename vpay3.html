@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALOIS - 极致尊享钱包</title>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f4f5f8;
+            --panel-bg: #ffffff;
+            --primary-black: #111111;
+            --gold-gradient: linear-gradient(135deg, #dfba73 0%, #c59b27 100%);
+            --card-gradient: linear-gradient(135deg, #1c1c1e 0%, #0a0a0c 100%);
+            --text-dark: #1a1a1a;
+            --text-gray: #8e8e93;
+            --border-light: rgba(0, 0, 0, 0.06);
+            --accent-green: #27ae60;
+            --accent-red: #eb5757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 整体容器 */
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            height: 90vh;
+            min-height: 750px;
+            background: #fbfbfd;
+            border-radius: 32px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.08), 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            background: #ffffff;
+            padding: 40px 28px;
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: var(--primary-black);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gold-gradient);
+            border-radius: 50%;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-top: 50px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-gray);
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-black);
+            background: #f4f5f8;
+        }
+
+        .nav-link.active i {
+            color: #c59b27;
+        }
+
+        .vip-badge {
+            background: #fdf8eb;
+            border: 1px solid #f3e5b8;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .vip-badge h5 {
+            font-size: 14px;
+            color: #926c05;
+            margin-bottom: 4px;
+        }
+
+        .vip-badge p {
+            font-size: 11px;
+            color: #b38e2d;
+        }
+
+        /* 主区域 */
+        .main-content {
+            padding: 40px 50px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .greeting h2 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .greeting p {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 35px;
+        }
+
+        /* 黑金核心卡片 */
+        .luxury-card {
+            background: var(--card-gradient);
+            border-radius: 28px;
+            padding: 32px;
+            color: #ffffff;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .luxury-card::after {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(223, 186, 115, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-chip {
+            width: 45px;
+            height: 32px;
+            background: linear-gradient(135deg, #e0c38c, #8a6d3b);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 25px;
+        }
+
+        .card-balance {
+            font-size: 38px;
+            font-weight: 700;
+            margin-top: 6px;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #ffffff 0%, #d1d1d6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-footer {
+            margin-top: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-number {
+            font-family: "SF Mono", monospace;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 2px;
+        }
+
+        /* 快捷功能（大圆角图标） */
+        .actions-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        .action-item {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            padding: 18px 10px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .action-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border-color: rgba(197, 155, 39, 0.3);
+        }
+
+        .action-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: #f8f9fc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--primary-black);
+        }
+
+        .action-item span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* 列表区域通用 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .see-all {
+            font-size: 13px;
+            color: #c59b27;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .list-box {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 8px 20px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .row-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .row-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .item-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #f4f5f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .item-text h4 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .item-text p {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 2px;
+        }
+
+        .item-right {
+            text-align: right;
+        }
+
+        .item-right h4 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .item-right p {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .rate-up { color: var(--accent-green); }
+        .rate-down { color: var(--accent-red); }
+
+        /* 移动端底部导航（默认隐藏） */
+        .mobile-tab-bar {
+            display: none;
+        }
+
+        /* 响应式 Breakpoints */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-color: #ffffff;
+            }
+
+            .app-container {
+                grid-template-columns: 1fr;
+                height: 100vh;
+                min-height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                padding-bottom: 80px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                padding: 24px 20px;
+                gap: 25px;
+            }
+
+            .luxury-card {
+                padding: 24px;
+            }
+
+            .card-balance {
+                font-size: 30px;
+            }
+
+            .mobile-tab-bar {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 70px;
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(20px);
+                border-top: 1px solid var(--border-light);
+                z-index: 1000;
+            }
+
+            .tab-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                color: var(--text-gray);
+                text-decoration: none;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .tab-item.active {
+                color: #c59b27;
+            }
+
+            .tab-item i {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 桌面端侧边栏 -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <span>VALOIS</span>
+                    <div class="brand-dot"></div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#" class="nav-link active"><i class="fa-solid fa-house"></i> 仪表盘</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-wallet"></i> 个人钱包</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-compass"></i> 理财精选</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> 账单明细</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-sliders"></i> 偏好设置</a></li>
+                </ul>
+            </div>
+            
+            <div class="vip-badge">
+                <h5><i class="fa-solid fa-crown"></i> 尊荣黑金会员</h5>
+                <p>专属客户经理指导中</p>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 头部区 -->
+            <header class="header">
+                <div class="greeting">
+                    <h2>尊贵的大英先生，午安</h2>
+                    <p>这是您今日的资产配置概览</p>
+                </div>
+                <div class="header-user">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="avatar">
+                </div>
+            </header>
+
+            <!-- 核心布局网格 -->
+            <div class="dashboard-grid">
+                <!-- 左侧主区 -->
+                <div>
+                    <!-- 极致黑金主卡片 -->
+                    <div class="luxury-card">
+                        <div class="card-header">
+                            <span style="font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #dfba73;">VALOIS PRIVATE</span>
+                            <div class="card-chip"></div>
+                        </div>
+                        <div class="card-label">Net Asset Value</div>
+                        <div class="card-balance">$ 3,850,420.00</div>
+                        <div class="card-footer">
+                            <div class="card-number">•••• •••• •••• 9888</div>
+                            <span style="font-size: 13px; color: #dfba73; font-weight: 600;">VISA INFINITE</span>
+                        </div>
+                    </div>
+
+                    <!-- 快捷按键 -->
+                    <div class="actions-group">
+                        <div class="action-item">
+                            <div class="action-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+                            <span>汇款</span>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon"><i class="fa-solid fa-arrow-down-left-and-arrow-up-right-to-center"></i></div>
+                            <span>划转</span>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon"><i class="fa-solid fa-vault"></i></div>
+                            <span>存入</span>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-icon"><i class="fa-solid fa-ellipsis"></i></div>
+                            <span>管理</span>
+                        </div>
+                    </div>
+
+                    <!-- 资产分布列表 -->
+                    <div style="margin-top: 30px;">
+                        <div class="section-header">
+                            <h3>主要资产持仓</h3>
+                            <a href="#" class="see-all">调整配置</a>
+                        </div>
+                        <div class="list-box">
+                            <div class="row-item">
+                                <div class="item-left">
+                                    <div class="item-logo" style="background:#e8f0fe; color:#1a73e8;"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div class="item-text">
+                                        <h4>离岸信托基金</h4>
+                                        <p>保本型 / 稳健增长</p>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <h4>$ 2,100,000.00</h4>
+                                    <p class="rate-up">+4.12% 年化</p>
+                                </div>
+                            </div>
+                            <div class="row-item">
+                                <div class="item-left">
+                                    <div class="item-logo" style="background:#fef3d6; color:#d97706;"><i class="fa-solid fa-coins"></i></div>
+                                    <div class="item-text">
+                                        <h4>实物黄金现货</h4>
+                                        <p>黄金信托凭证</p>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <h4>$ 1,250,000.00</h4>
+                                    <p class="rate-up">+1.85% 今日</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：交易动态与专属服务 -->
+                <div>
+                    <div class="section-header">
+                        <h3>最新交易</h3>
+                        <a href="#" class="see-all">全部记录</a>
+                    </div>
+                    <div class="list-box">
+                        <div class="row-item">
+                            <div class="item-left">
+                                <div class="item-logo"><i class="fa-solid fa-bag-shopping"></i></div>
+                                <div class="item-text">
+                                    <h4>Hermès 专卖店</h4>
+                                    <p>10:24 AM · 消费</p>
+                                </div>
+                            </div>
+                            <div class="item-right">
+                                <h4>-$ 24,500.00</h4>
+                                <p style="color: var(--text-gray);">已结算</p>
+                            </div>
+                        </div>
+                        <div class="row-item">
+                            <div class="item-left">
+                                <div class="item-logo"><i class="fa-solid fa-arrow-down"></i></div>
+                                <div class="item-text">
+                                    <h4>债券派息分红</h4>
+                                    <p>昨天 · 收入</p>
+                                </div>
+                            </div>
+                            <div class="item-right">
+                                <h4 class="rate-up">+$ 12,800.00</h4>
+                                <p style="color: var(--text-gray);">已到账</p>
+                            </div>
+                        </div>
+                        <div class="row-item">
+                            <div class="item-left">
+                                <div class="item-logo"><i class="fa-solid fa-plane"></i></div>
+                                <div class="item-text">
+                                    <h4>NetJets 私人飞行</h4>
+                                    <p>10月28日 · 预订</p>
+                                </div>
+                            </div>
+                            <div class="item-right">
+                                <h4>-$ 45,000.00</h4>
+                                <p style="color: var(--text-gray);">已结算</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 专属服务卡片 -->
+                    <div style="background: linear-gradient(135deg, #fbf2e1 0%, #f5e5c9 100%); border-radius: 24px; padding: 24px; margin-top: 25px; border: 1px solid #ebd4ab;">
+                        <h4 style="color: #835c1e; font-size: 15px;"><i class="fa-solid fa-headset"></i> 专属私人管家</h4>
+                        <p style="color: #a07833; font-size: 12px; margin-top: 6px; line-height: 1.5;">您的私行顾问 <b>Victoria</b> 已上线，随时为您提供一对一资产规划服务。</p>
+                        <button style="margin-top: 15px; background: #835c1e; color: #fff; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer;">立即预约呼叫</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 移动端底部 Tab -->
+    <nav class="mobile-tab-bar">
+        <a href="#" class="tab-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="fa-solid fa-wallet"></i>
+            <span>钱包</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>理财</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="fa-solid fa-user"></i>
+            <span>我的</span>
+        </a>
+    </nav>
+
+</body>
+</html>

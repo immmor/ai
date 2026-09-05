@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0e17;
+  --bg-card:#111520;
+  --bg-hover:#181d2a;
+  --bg-input:rgba(255,255,255,0.04);
+  --text:#f0f2f5;
+  --text-secondary:#8b95a8;
+  --text-tertiary:#5a6478;
+  --accent:#c8a45c;
+  --accent-dim:rgba(200,164,92,0.15);
+  --accent-glow:rgba(200,164,92,0.25);
+  --success:#26d07c;
+  --success-bg:rgba(38,208,124,0.1);
+  --warning:#f5a623;
+  --warning-bg:rgba(245,166,35,0.1);
+  --danger:#ef4e4e;
+  --danger-bg:rgba(239,78,78,0.1);
+  --border:rgba(255,255,255,0.06);
+  --radius:12px;
+  --radius-lg:16px;
+  --radius-xl:20px;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  margin:0;overflow:hidden;position:fixed;
+  width:100%;height:100%;
+  -webkit-font-smoothing:antialiased
+}
+
+/* Background */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(200,164,92,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(200,164,92,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 60%);
+}
+
+/* ========== APP ========== */
+#app{
+  position:relative;z-index:1;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+}
+
+/* ========== AUTH ========== */
+#auth-view{
+  display:flex;flex-direction:column;
+  height:100%;padding:48px 32px;
+  justify-content:center;align-items:center;
+}
+
+.auth-brand{
+  text-align:center;margin-bottom:48px;
+  animation:fadeUp 0.6s ease;
+}
+.auth-brand .logo{
+  width:64px;height:64px;
+  background:linear-gradient(135deg,#c8a45c,#e8c87a);
+  border-radius:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#0b0e17;
+  margin-bottom:20px;
+  box-shadow:0 8px 32px rgba(200,164,92,0.3);
+}
+.auth-brand h1{
+  font-size:26px;font-weight:700;letter-spacing:-0.5px;
+  margin-bottom:8px;color:var(--text);
+}
+.auth-brand p{
+  font-size:15px;color:var(--text-secondary);font-weight:400;
+}
+
+.auth-card{
+  width:100%;max-width:360px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px;
+  animation:fadeUp 0.6s ease 0.1s both;
+}
+
+.input-group{
+  position:relative;margin-bottom:16px;
+}
+.input-group input{
+  width:100%;padding:14px 16px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text);font-size:15px;font-family:inherit;
+  outline:none;transition:all 0.2s;
+}
+.input-group input::placeholder{color:var(--text-tertiary)}
+.input-group input:focus{
+  border-color:var(--accent);
+  background:rgba(200,164,92,0.06);
+  box-shadow:0 0 0 3px var(--accent-dim);
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 24px;border:none;border-radius:var(--radius);
+  font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all 0.2s;width:100%;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#c8a45c,#e8c87a);
+  color:#0b0e17;font-weight:700;
+  box-shadow:0 4px 16px rgba(200,164,92,0.3);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(200,164,92,0.4)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--text-secondary)}
+.btn-ghost:hover{color:var(--text);background:var(--bg-hover)}
+.btn-success{background:linear-gradient(135deg,#26d07c,#34d98a);color:#0b0e17;font-weight:700}
+.btn-danger{background:linear-gradient(135deg,#ef4e4e,#f87171);color:#fff;font-weight:700}
+
+.auth-footer{
+  text-align:center;margin-top:20px;
+  font-size:13px;color:var(--text-tertiary);
+}
+.auth-footer a{color:var(--accent);text-decoration:none;cursor:pointer;font-weight:500}
+.auth-footer a:hover{color:var(--text)}
+
+/* ========== MAIN ========== */
+#main-view{display:none;flex-direction:column;height:100%}
+
+/* Top Bar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 12px;flex-shrink:0;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,#c8a45c,#e8c87a);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#0b0e17;
+}
+.topbar-title{font-size:16px;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.topbar-btn{
+  width:36px;height:36px;border-radius:10px;border:none;
+  background:var(--bg-card);color:var(--text-secondary);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;font-size:16px;border:1px solid var(--border);
+}
+.topbar-btn:hover{background:var(--bg-hover);color:var(--text)}
+
+/* ========== BALANCE CARD ========== */
+.balance-wrap{padding:4px 20px 16px;flex-shrink:0}
+.balance-card{
+  background:linear-gradient(135deg,#111520,#1a1f30);
+  border-radius:var(--radius-lg);
+  padding:24px;position:relative;overflow:hidden;
+  border:1px solid rgba(200,164,92,0.15);
+}
+.balance-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#c8a45c,transparent);
+}
+.balance-card::after{
+  content:'';position:absolute;top:-40%;right:-20%;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(200,164,92,0.08),transparent);
+  pointer-events:none;
+}
+.balance-label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;font-weight:500;margin-bottom:2px}
+.balance-row{display:flex;align-items:baseline;gap:8px;position:relative;z-index:1}
+.balance-amount{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.balance-amount .currency{font-size:20px;font-weight:600;color:var(--text-secondary);margin-right:1px}
+.balance-change{font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--success-bg);color:var(--success)}
+.balance-usd{font-size:13px;color:var(--text-tertiary);margin-top:4px;position:relative;z-index:1}
+
+/* ========== QUICK ACTIONS ========== */
+.quick-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  padding:0 20px 16px;flex-shrink:0;
+}
+.quick-action{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  cursor:pointer;transition:all 0.2s;font-family:inherit;
+  color:var(--text);font-size:14px;font-weight:500;text-align:left;
+}
+.quick-action:hover{background:var(--bg-hover);border-color:rgba(200,164,92,0.2)}
+.quick-action .icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.quick-action .icon.gold{background:var(--accent-dim);color:var(--accent)}
+.quick-action .icon.green{background:var(--success-bg);color:var(--success)}
+.quick-action .icon.blue{background:rgba(59,130,246,0.1);color:#3b82f6}
+.quick-action .icon.red{background:var(--danger-bg);color:var(--danger)}
+.quick-action .label{font-size:11px;color:var(--text-tertiary);font-weight:400;margin-top:1px}
+
+/* ========== TABS ========== */
+.tabs{display:flex;padding:0 20px;gap:0;flex-shrink:0;margin-bottom:0}
+.tab{
+  padding:10px 16px;font-size:13px;font-weight:500;
+  color:var(--text-tertiary);cursor:pointer;border:none;
+  background:none;font-family:inherit;position:relative;
+  transition:color 0.2s;flex:1;text-align:center;
+}
+.tab:hover{color:var(--text-secondary)}
+.tab.active{color:var(--accent)}
+.tab.active::after{
+  content:'';position:absolute;bottom:0;left:20%;right:20%;
+  height:2px;background:var(--accent);border-radius:2px;
+}
+
+/* ========== TAB CONTENT ========== */
+.tab-content{
+  flex:1;overflow-y:auto;padding:20px;
+  -webkit-overflow-scrolling:touch;
+}
+.tab-content::-webkit-scrollbar{width:3px}
+.tab-content::-webkit-scrollbar-track{background:transparent}
+.tab-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp 0.3s ease}
+
+/* ========== RECHARGE ========== */
+.section-label{
+  font-size:11px;font-weight:600;color:var(--text-tertiary);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+}
+
+.method-list{display:flex;gap:10px;margin-bottom:20px}
+.method-card{
+  flex:1;padding:16px 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg-card);
+  cursor:pointer;transition:all 0.2s;text-align:center;
+  font-family:inherit;color:var(--text);
+}
+.method-card:hover{border-color:rgba(200,164,92,0.2)}
+.method-card.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 0 1px var(--accent)}
+.method-card .icon{font-size:28px;margin-bottom:6px;display:block}
+.method-card .name{font-size:13px;font-weight:500}
+.method-card .desc{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+
+.amount-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;
+}
+.amount-btn{
+  padding:12px 8px;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  color:var(--text);font-size:14px;font-weight:500;
+  font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:center;
+}
+.amount-btn:hover{border-color:rgba(200,164,92,0.2)}
+.amount-btn.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 0 1px var(--accent)}
+.amount-btn .sub{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+.amount-input{
+  width:100%;padding:14px 16px;border-radius:var(--radius);
+  background:var(--bg-input);border:1px solid var(--border);
+  color:var(--text);font-size:20px;font-weight:600;font-family:inherit;
+  text-align:center;outline:none;margin-bottom:16px;
+}
+.amount-input:focus{border-color:var(--accent)}
+.amount-input::placeholder{color:var(--text-tertiary);font-weight:400;font-size:16px}
+
+/* ========== TRANSFER ========== */
+.transfer-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;
+}
+.transfer-card .input-group{margin-bottom:14px}
+.transfer-card .input-group:last-of-type{margin-bottom:20px}
+.transfer-card .input-group label{
+  display:block;font-size:12px;color:var(--text-secondary);
+  margin-bottom:6px;font-weight:500;
+}
+.transfer-card .input-group input{padding-left:14px}
+
+.records-section{margin-top:0}
+.records-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;
+}
+.records-header .section-label{margin-bottom:0}
+
+/* ========== ORDERS ========== */
+.order-item{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:10px;
+  transition:all 0.2s;
+}
+.order-item:hover{border-color:rgba(200,164,92,0.15)}
+.order-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.order-id{font-size:12px;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace}
+.order-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.order-status.pending{background:var(--warning-bg);color:var(--warning)}
+.order-status.paid{background:var(--success-bg);color:var(--success)}
+.order-status.failed{background:var(--danger-bg);color:var(--danger)}
+.order-amount{font-size:20px;font-weight:700;margin-bottom:6px}
+.order-meta{display:flex;gap:16px;font-size:12px;color:var(--text-tertiary)}
+.order-meta span{display:flex;align-items:center;gap:4px}
+
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-tertiary)}
+.empty-state .icon{font-size:40px;margin-bottom:12px;opacity:0.4}
+.empty-state p{font-size:14px}
+
+.pagination{display:flex;justify-content:space-between;align-items:center;padding-top:12px;gap:12px}
+.page-btn{
+  padding:8px 16px;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  color:var(--text-secondary);font-size:13px;font-family:inherit;
+  cursor:pointer;transition:all 0.2s;
+}
+.page-btn:hover:not(:disabled){background:var(--bg-hover);color:var(--text)}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed}
+.page-info{font-size:13px;color:var(--text-tertiary)}
+
+/* ========== TOAST ========== */
+.toast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 20px;font-size:14px;
+  color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  z-index:9999;transition:all 0.3s ease;opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:8px;min-width:200px;max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--danger)}
+
+/* ========== LOADING ========== */
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);z-index:9998;display:none;
+  align-items:center;justify-content:center;
+}
+.loading-overlay.show{display:flex}
+.loading-box{text-align:center}
+.loading-spinner{
+  width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.8s linear infinite;margin:0 auto 16px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-box p{color:var(--text-secondary);font-size:14px}
+
+/* ========== QR MODAL ========== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);z-index:9997;display:none;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal-box{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:24px;width:360px;max-width:90vw;
+  max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:center}
+.modal-close{float:right;background:none;border:none;color:var(--text-tertiary);cursor:pointer;font-size:20px}
+
+/* ========== LANGUAGE ========== */
+.lang-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:40px;height:40px;border-radius:12px;
+  border:1px solid var(--border);background:var(--bg-card);
+  color:var(--text-secondary);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.lang-toggle:hover{background:var(--bg-hover);color:var(--text)}
+.lang-menu{
+  position:fixed;top:64px;right:16px;z-index:100;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:4px;display:none;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:140px;
+}
+.lang-menu.show{display:block}
+.lang-opt{
+  padding:10px 14px;cursor:pointer;border-radius:8px;
+  font-size:14px;color:var(--text-secondary);transition:all 0.15s;
+  border:none;background:none;font-family:inherit;width:100%;text-align:left;
+  display:flex;align-items:center;gap:8px;
+}
+.lang-opt:hover{background:var(--bg-hover);color:var(--text)}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:480px){
+  #app{max-width:100%}
+  #auth-view{padding:32px 20px}
+  .auth-card{padding:24px;border-radius:var(--radius)}
+  .balance-wrap{padding:4px 16px 12px}
+  .balance-card{padding:20px;border-radius:var(--radius)}
+  .quick-actions{padding:0 16px 12px;gap:8px}
+  .quick-action{padding:12px 14px}
+  .tabs{padding:0 16px}
+  .tab-content{padding:16px}
+  .method-list{gap:8px}
+  .method-card{padding:14px 10px}
+  .transfer-card{padding:16px;border-radius:var(--radius)}
+}
+@media(min-width:768px){
+  #app{max-width:440px;padding:20px 0}
+  #auth-view{margin:auto}
+  .balance-card{padding:28px}
+  .transfer-card{padding:24px}
+}
+@media(min-width:1200px){
+  #app{max-width:480px;padding:28px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="lang-toggle" onclick="toggleLang()"><i class="fas fa-globe"></i></div>
+<div class="lang-menu" id="langMenu">
+  <button class="lang-opt" onclick="setLang('zh')"><span>🇨🇳</span> 中文</button>
+  <button class="lang-opt" onclick="setLang('en')"><span>🇺🇸</span> English</button>
+  <button class="lang-opt" onclick="setLang('ja')"><span>🇯🇵</span> 日本語</button>
+  <button class="lang-opt" onclick="setLang('ko')"><span>🇰🇷</span> 한국어</button>
+</div>
+
+<div id="app">
+
+  <!-- ======== AUTH ======== -->
+  <div id="auth-view">
+    <div class="auth-brand">
+      <div class="logo">V</div>
+      <h1>VPay</h1>
+      <p>Secure &bull; Fast &bull; Reliable</p>
+    </div>
+    <div class="auth-card" id="loginForm">
+      <div class="input-group"><input type="text" id="username" placeholder="Username" autocomplete="username"></div>
+      <div class="input-group"><input type="password" id="password" placeholder="Password" autocomplete="current-password"></div>
+      <button class="btn btn-primary" onclick="handleLogin()"><i class="fas fa-arrow-right"></i> Sign In</button>
+      <div class="auth-footer" id="authFooter">Don't have an account? <a onclick="showRegister()">Create one</a></div>
+    </div>
+    <div class="auth-card" id="registerForm" style="display:none">
+      <div class="input-group"><input type="text" id="regUsername" placeholder="Username" autocomplete="off"></div>
+      <div class="input-group"><input type="password" id="regPassword" placeholder="Password" autocomplete="new-password"></div>
+      <div class="input-group"><input type="password" id="regConfirm" placeholder="Confirm Password" autocomplete="new-password"></div>
+      <button class="btn btn-primary" onclick="handleRegister()"><i class="fas fa-user-plus"></i> Create Account</button>
+      <button class="btn btn-ghost" onclick="showLogin()" style="margin-top:8px"><i class="fas fa-arrow-left"></i> Back to Sign In</button>
+    </div>
+  </div>
+
+  <!-- ======== MAIN ======== -->
+  <div id="main-view">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">V</div>
+        <span class="topbar-title">VPay</span>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="handleLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-wrap">
+      <div class="balance-card">
+        <div class="balance-label">Available Balance</div>
+        <div class="balance-row">
+          <div class="balance-amount"><span class="currency">¥</span><span id="balanceDisplay">0.00</span></div>
+          <span class="balance-change">+0%</span>
+        </div>
+        <div class="balance-usd">≈ $<span id="balanceUsd">0.00</span> USD</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="quick-action" onclick="switchTab('recharge')">
+        <div class="icon gold"><i class="fas fa-plus-circle"></i></div>
+        <div>Top Up<div class="label">Deposit funds</div></div>
+      </button>
+      <button class="quick-action" onclick="switchTab('transfer')">
+        <div class="icon green"><i class="fas fa-paper-plane"></i></div>
+        <div>Send<div class="label">Transfer money</div></div>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="recharge" onclick="switchTab('recharge')">Deposit</button>
+      <button class="tab" data-tab="transfer" onclick="switchTab('transfer')">Transfer</button>
+      <button class="tab" data-tab="orders" onclick="switchTab('orders')">History</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+      <!-- Recharge -->
+      <div class="tab-panel active" id="panelRecharge">
+        <div class="section-label">Payment Method</div>
+        <div class="method-list">
+          <div class="method-card active" data-method="creem" onclick="selectMethod('creem')">
+            <span class="icon">💳</span>
+            <div class="name">Credit Card</div>
+            <div class="desc">Visa &middot; Mastercard</div>
+          </div>
+          <div class="method-card" data-method="usdt" onclick="selectMethod('usdt')">
+            <span class="icon">₮</span>
+            <div class="name">USDT TRC20</div>
+            <div class="desc">Tron Network</div>
+          </div>
+        </div>
+
+        <div class="section-label">Amount</div>
+        <div class="amount-grid" id="amtGridCredit" style="display:grid">
+          <button class="amount-btn active" data-amount="5" onclick="selectCredit(5)">$5<div class="sub">¥34</div></button>
+          <button class="amount-btn" data-amount="10" onclick="selectCredit(10)">$10<div class="sub">¥68</div></button>
+          <button class="amount-btn" data-amount="20" onclick="selectCredit(20)">$20<div class="sub">¥136</div></button>
+          <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub">¥204</div></button>
+          <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
+          <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
+        </div>
+        <div class="amount-grid" id="amtGridCny" style="display:none">
+          <button class="amount-btn" data-amount="30" onclick="selectCny(30)">¥30</button>
+          <button class="amount-btn" data-amount="50" onclick="selectCny(50)">¥50</button>
+          <button class="amount-btn" data-amount="100" onclick="selectCny(100)">¥100</button>
+          <button class="amount-btn" data-amount="200" onclick="selectCny(200)">¥200</button>
+          <button class="amount-btn" data-amount="500" onclick="selectCny(500)">¥500</button>
+          <button class="amount-btn" id="customAmtBtn" onclick="showCustomAmt()">Custom</button>
+        </div>
+        <input type="number" class="amount-input" id="customAmtInput" placeholder="Enter amount" style="display:none">
+
+        <button class="btn btn-primary" onclick="handlePay()"><i class="fas fa-arrow-right"></i> <span id="payBtnText">Pay $5</span></button>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text-tertiary);cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="showComplaint()"><i class="fas fa-shield-alt"></i> <span data-i="security">Security</span></span>
+          <span style="font-size:11px;color:var(--text-tertiary)"><i class="fas fa-lock"></i> Secured Connection</span>
+        </div>
+      </div>
+
+      <!-- Transfer -->
+      <div class="tab-panel" id="panelTransfer">
+        <div class="transfer-card">
+          <div class="input-group">
+            <label>Recipient</label>
+            <input type="text" id="transferTo" placeholder="Enter username">
+          </div>
+          <div class="input-group">
+            <label>Amount (CNY)</label>
+            <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="transferPassword" placeholder="Confirm your password">
+          </div>
+          <button class="btn btn-primary" onclick="handleTransfer()"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+
+        <div class="records-section">
+          <div class="records-header">
+            <div class="section-label">Transfer History</div>
+          </div>
+          <div id="recordsList"></div>
+          <div class="pagination" id="recordsPagination" style="display:none">
+            <button class="page-btn" id="recordsPrev" onclick="changeRecordsPage(-1)" disabled>Previous</button>
+            <span class="page-info" id="recordsInfo">1 / 1</span>
+            <button class="page-btn" id="recordsNext" onclick="changeRecordsPage(1)" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders -->
+      <div class="tab-panel" id="panelOrders">
+        <div id="ordersList"></div>
+        <div class="pagination" id="ordersPagination" style="display:none">
+          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled>Previous</button>
+          <span class="page-info" id="ordersInfo">1 / 1</span>
+          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled>Next</button>
+        </div>
+      </div>
+
+    </div><!-- /tab-content -->
+  </div><!-- /main-view -->
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <p id="loadingText">Processing...</p>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeQrModal()"><i class="fas fa-times"></i></button>
+    <h3 id="qrTitle">Scan to Pay</h3>
+    <div id="qrContent" style="text-align:center"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.8,USDT_RATE=6.8;
+let currentUser=null,currentTab='recharge',payMethod='creem',creditAmount=5,cnyAmount=null,
+    currentPage=1,totalPages=1,recordsPage=1,recordsPages=1,
+    currentLang=localStorage.getItem('vpay_lang')||'zh';
+
+const LANG={
+  zh:{
+    signIn:'登录',createAccount:'创建账号',backToSignIn:'返回登录',
+    noAccount:'没有账号？<a onclick="showRegister()">创建</a>',hasAccount:'已有账号？<a onclick="showLogin()">登录</a>',
+    balance:'可用余额',topUp:'充值',send:'发送',deposit:'充值',transfer:'转账',history:'历史',
+    creditCard:'信用卡',usdt:'USDT TRC20',enterAmount:'输入金额',pay:'支付',
+    recipient:'收款人',amount:'金额',password:'密码',recipientPH:'输入用户名',
+    amountPH:'0.00',passwordPH:'确认密码',transferHistory:'转账记录',
+    noOrders:'暂无订单',noRecords:'暂无记录',loading:'加载中...',processing:'处理中...',
+    pending:'待支付',paid:'已支付',failed:'支付失败',
+    prev:'上一页',next:'下一页',pageInfo:'{c} / {t}',
+    logout:'退出登录',confirmLogout:'确认退出？',
+    networkError:'网络错误',invalidAmount:'请输入有效金额',minAmount:'最低金额',
+    loginFailed:'登录失败',registerSuccess:'注册成功',registerFailed:'注册失败',
+    transferSuccess:'转账成功',transferFailed:'转账失败',
+    copy:'复制',copied:'已复制',custom:'自定义',
+    brandDesc:'Secure &bull; Fast &bull; Reliable',
+    security:'安全',secured:'安全连接已激活',
+    depositFunds:'存入资金',transferMoney:'转账汇款',
+  },
+  en:{
+    signIn:'Sign In',createAccount:'Create Account',backToSignIn:'Back to Sign In',
+    noAccount:"Don't have an account? <a onclick=\"showRegister()\">Create one</a>",
+    hasAccount:'Already have an account? <a onclick="showLogin()">Sign In</a>',
+    balance:'Available Balance',topUp:'Top Up',send:'Send',deposit:'Deposit',
+    transfer:'Transfer',history:'History',
+    creditCard:'Credit Card',usdt:'USDT TRC20',enterAmount:'Enter amount',pay:'Pay',
+    recipient:'Recipient',amount:'Amount',password:'Password',recipientPH:'Enter username',
+    amountPH:'0.00',passwordPH:'Confirm password',transferHistory:'Transfer History',
+    noOrders:'No orders yet',noRecords:'No records yet',loading:'Loading...',processing:'Processing...',
+    pending:'Pending',paid:'Paid',failed:'Failed',
+    prev:'Previous',next:'Next',pageInfo:'{c} / {t}',
+    logout:'Logout',confirmLogout:'Confirm logout?',
+    networkError:'Network error',invalidAmount:'Invalid amount',minAmount:'Minimum amount',
+    loginFailed:'Login failed',registerSuccess:'Registration successful',registerFailed:'Registration failed',
+    transferSuccess:'Transfer successful',transferFailed:'Transfer failed',
+    copy:'Copy',copied:'Copied',custom:'Custom',
+    brandDesc:'Secure &bull; Fast &bull; Reliable',
+    security:'Security',secured:'Secured Connection',
+    depositFunds:'Deposit funds',transferMoney:'Transfer money',
+  }
+};
+
+function t(k,p={}){let v=LANG[currentLang]?.[k]||k;return v.replace(/\{(\w+)\}/g,(_,k)=>p[k]??`{${k}}`)}
+
+function applyLang(){
+  document.querySelectorAll('[data-i]').forEach(el=>{const k=el.dataset.i;el.textContent=t(k)})
+  document.querySelectorAll('[data-ip]').forEach(el=>{el.placeholder=t(el.dataset.ip)})
+  updateUI()
+}
+
+function setLang(l){currentLang=l;localStorage.setItem('vpay_lang',l);document.getElementById('langMenu').classList.remove('show');applyLang()}
+function toggleLang(){document.getElementById('langMenu').classList.toggle('show')}
+document.addEventListener('click',e=>{if(!e.target.closest('.lang-toggle'))document.getElementById('langMenu').classList.remove('show')})
+
+// Toast
+let toastTimer=null;
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;
+  t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000)
+}
+
+// Loading
+function showLoading(t){document.getElementById('loadingText').textContent=t||'Processing...';document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+
+// Auth
+function showLogin(){document.getElementById('loginForm').style.display='';document.getElementById('registerForm').style.display='none';document.getElementById('authFooter').innerHTML=t('noAccount')}
+function showRegister(){document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='';document.getElementById('authFooter').innerHTML=t('hasAccount')}
+
+async function handleLogin(){
+  const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
+  if(!u||!p)return showToast(t('invalidAmount'),'error');
+  showLoading(t('processing'));
+  try{
+    const r=await(await fetch(API_BASE+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
+    if(r.success){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());hideLoading();enterMain()}
+    else{hideLoading();showToast(r.message||t('loginFailed'),'error')}
+  }catch(e){hideLoading();showToast(t('networkError'),'error')}
+}
+
+async function handleRegister(){
+  const u=document.getElementById('regUsername').value.trim(),p=document.getElementById('regPassword').value,c=document.getElementById('regConfirm').value;
+  if(!u||!p)return showToast('Please fill all fields','error');
+  if(p!==c)return showToast('Passwords do not match','error');
+  showLoading(t('processing'));
+  try{
+    const r=await(await fetch(API_LEGACY+'/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
+    if(r.success){hideLoading();showToast(t('registerSuccess'));showLogin();document.getElementById('regUsername').value='';document.getElementById('regPassword').value='';document.getElementById('regConfirm').value=''}
+    else{hideLoading();showToast(r.message||t('registerFailed'),'error')}
+  }catch(e){hideLoading();showToast(t('networkError'),'error')}
+}
+
+function handleLogout(){if(confirm(t('confirmLogout'))){localStorage.removeItem('vpay_user');currentUser=null;document.getElementById('main-view').style.display='none';document.getElementById('auth-view').style.display='flex';document.getElementById('username').value='';document.getElementById('password').value=''}}
+
+function enterMain(){document.getElementById('auth-view').style.display='none';document.getElementById('main-view').style.display='flex';updateBalance();loadOrders();updateUI()}
+
+function updateUI(){
+  document.querySelector('.balance-label').textContent=t('balance');
+  document.querySelectorAll('.tab').forEach(tab=>{
+    const k=tab.dataset.tab;
+    if(k==='recharge')tab.innerHTML=t('deposit');
+    else if(k==='transfer')tab.innerHTML=t('transfer');
+    else if(k==='orders')tab.innerHTML=t('history');
+  });
+  const qa=document.querySelectorAll('.quick-action');
+  if(qa[0]){qa[0].querySelector('div').childNodes[0].textContent=t('topUp');qa[0].querySelector('.label').textContent=t('depositFunds')}
+  if(qa[1]){qa[1].querySelector('div').childNodes[0].textContent=t('send');qa[1].querySelector('.label').textContent=t('transferMoney')}
+  document.querySelector('.auth-brand p').textContent=t('brandDesc');
+  updatePayBtn();
+}
+
+// Balance
+async function updateBalance(){
+  if(!currentUser)return;
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/balance?username=${currentUser.username}`)).json();
+    if(r.code===200){const b=r.balance||0;document.getElementById('balanceDisplay').textContent=b.toFixed(2);document.getElementById('balanceUsd').textContent=(b/USD_TO_CNY).toFixed(2)}
+  }catch(e){}
+}
+
+// Tabs
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel'+tab.charAt(0).toUpperCase()+tab.slice(1)));
+}
+
+// Payment
+function selectMethod(m){
+  payMethod=m;
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.toggle('active',c.dataset.method===m));
+  document.getElementById('amtGridCredit').style.display=m==='creem'?'grid':'none';
+  document.getElementById('amtGridCny').style.display=m==='usdt'?'grid':'none';
+  document.getElementById('customAmtInput').style.display='none';
+  updatePayBtn();
+}
+function selectCredit(a){creditAmount=a;document.querySelectorAll('#amtGridCredit .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));updatePayBtn()}
+function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').style.display='none';updatePayBtn()}
+function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.style.display='block';i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
+function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=`${t('pay')} $${creditAmount}`;else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?`${t('pay')} ¥${a}`:t('enterAmount')}}
+
+async function handlePay(){
+  if(!currentUser)return;
+  if(payMethod==='creem'){
+    showLoading(t('processing'));
+    try{
+      const r=await(await fetch(API_LEGACY+'/api/pay/build-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'creem',order_no:Date.now().toString(),amount:creditAmount,description:'VPay Recharge',username:currentUser.username})})).json();
+      if(hideLoading(),r.code===200&&r.data?.pay_url)window.location.href=r.data.pay_url;else showToast(r.msg||'Payment failed','error')
+    }catch(e){hideLoading();showToast(t('networkError'),'error')}
+  }else{
+    const a=cnyAmount||parseFloat(document.getElementById('customAmtInput').value);
+    if(!a||a<=0)return showToast(t('invalidAmount'),'error');
+    if(a<100)return showToast(t('minAmount')+': ¥100','error');
+    showLoading(t('processing'));const ua=(a/USDT_RATE).toFixed(2),addr='TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
+    try{
+      const r=await(await fetch(`https://tronusdt.xyz/?way=pay&jump=-&product=wallet_recharge&name=${addr}&type=usdt&value=${ua}`)).json();
+      if(hideLoading(),r.oid){
+        localStorage.setItem('usdtOrder_'+r.oid,JSON.stringify({username:currentUser.username,rmbAmount:a,usdtAmount:ua,order_no:r.oid}));
+        try{await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})}catch(e){}
+        showQrModal('USDT Payment',
+          `<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">Send exactly</div><div style="font-size:28px;font-weight:800;color:var(--success)">${ua} USDT</div><div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">≈ ¥${a}</div></div>
+          <div style="background:var(--bg-input);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left">
+            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">Network: <strong style="color:var(--text-secondary)">TRC20</strong></div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">Address:</div>
+            <div style="font-size:12px;font-family:monospace;color:var(--text);word-break:break-all;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px">${addr}</div>
+            <button class="copy-btn" onclick="copyText('${addr}')" style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-family:inherit;padding:4px 8px;border-radius:4px"><i class="fas fa-copy"></i> ${t('copy')}</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-tertiary);line-height:1.6">Send only USDT on TRC20 network. The system will confirm automatically.</div>`)
+      }else showToast('Failed to create USDT order','error')
+    }catch(e){hideLoading();showToast(t('networkError'),'error')}
+  }
+}
+
+// Transfer
+async function handleTransfer(){
+  if(!currentUser)return;
+  const to=document.getElementById('transferTo').value.trim(),amt=parseFloat(document.getElementById('transferAmount').value),pw=document.getElementById('transferPassword').value;
+  if(!to||!amt||!pw)return showToast('Please fill all fields','error');
+  if(amt<=0)return showToast(t('invalidAmount'),'error');
+  showLoading(t('processing'));
+  try{
+    const r=await(await fetch(API_LEGACY+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,password:pw})})).json();
+    if(hideLoading(),r.success){showToast(t('transferSuccess'));document.getElementById('transferTo').value='';document.getElementById('transferAmount').value='';document.getElementById('transferPassword').value='';updateBalance();loadRecords()}
+    else showToast(r.message||t('transferFailed'),'error')
+  }catch(e){hideLoading();showToast(t('networkError'),'error')}
+}
+
+// Orders
+async function loadOrders(){
+  if(!currentUser)return;
+  const list=document.getElementById('ordersList');list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fas fa-spinner fa-spin"></i></div><p>${t('loading')}</p></div>`;
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=${currentPage}&limit=10`)).json();
+    if(r.code===200){const o=r.orders||[];totalPages=r.totalPages||1;renderOrders(o)}else list.innerHTML=`<div class="empty-state"><p>${t('noOrders')}</p></div>`
+  }catch(e){list.innerHTML=`<div class="empty-state"><p>${t('networkError')}</p></div>`}
+}
+function renderOrders(orders){
+  const list=document.getElementById('ordersList'),pg=document.getElementById('ordersPagination');
+  if(!orders.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fas fa-receipt"></i></div><p>${t('noOrders')}</p></div>`;pg.style.display='none';return}
+  list.innerHTML=orders.map(o=>{
+    const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('paid'):o.status==='failed'?t('failed'):t('pending');
+    return `<div class="order-item"><div class="order-top"><span class="order-id">#${o.order_no||o.id||''}</span><span class="order-status ${sc}">${st}</span></div><div class="order-amount">¥${(o.amount||0).toFixed(2)}</div><div class="order-meta"><span><i class="far fa-clock"></i> ${o.created_at||''}</span></div></div>`
+  }).join('');
+  pg.style.display=totalPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=t('pageInfo',{c:currentPage,t:totalPages});document.getElementById('ordersPrev').disabled=currentPage<=1;document.getElementById('ordersNext').disabled=currentPage>=totalPages
+}
+function changeOrdersPage(d){currentPage+=d;if(currentPage<1)currentPage=1;if(currentPage>totalPages)currentPage=totalPages;loadOrders()}
+
+// Records
+async function loadRecords(){
+  if(!currentUser)return;
+  const list=document.getElementById('recordsList');list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fas fa-spinner fa-spin"></i></div><p>${t('loading')}</p></div>`;
+  try{
+    const r=await(await fetch(API_LEGACY+`/api/transfer/records?username=${currentUser.username}&page=${recordsPage}&limit=10`)).json();
+    if(r.code===200){const rec=r.records||[];recordsPages=r.totalPages||1;renderRecords(rec)}else list.innerHTML=`<div class="empty-state"><p>${t('noRecords')}</p></div>`
+  }catch(e){list.innerHTML=`<div class="empty-state"><p>${t('networkError')}</p></div>`}
+}
+function renderRecords(recs){
+  const list=document.getElementById('recordsList'),pg=document.getElementById('recordsPagination');
+  if(!recs.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fas fa-paper-plane"></i></div><p>${t('noRecords')}</p></div>`;pg.style.display='none';return}
+  list.innerHTML=recs.map(r=>`<div class="order-item"><div class="order-top"><span class="order-id">${r.type==='send'?'→':'←'} ${r.other||''}</span><span class="order-status ${r.type==='send'?'pending':'paid'}">${r.type==='send'?t('send'):'Receive'}</span></div><div class="order-amount" style="color:${r.type==='send'?'var(--danger)':'var(--success)'}">${r.type==='send'?'-':'+'}¥${(r.amount||0).toFixed(2)}</div><div class="order-meta"><span><i class="far fa-clock"></i> ${r.created_at||''}</span></div></div>`).join('');
+  pg.style.display=recordsPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=t('pageInfo',{c:recordsPage,t:recordsPages});document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=recordsPages
+}
+function changeRecordsPage(d){recordsPage+=d;if(recordsPage<1)recordsPage=1;if(recordsPage>recordsPages)recordsPage=recordsPages;loadRecords()}
+
+// QR Modal
+function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
+function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast(t('copied')))}
+
+// Complaint
+function showComplaint(){showToast('Security feature','success')}
+
+// Init
+(function init(){
+  const saved=localStorage.getItem('vpay_user');
+  if(saved){
+    currentUser=JSON.parse(saved);
+    const lt=localStorage.getItem('vpay_login_time');
+    if(lt&&Date.now()-parseInt(lt)>24*60*60*1000){localStorage.removeItem('vpay_user');localStorage.removeItem('vpay_login_time');currentUser=null}
+    else{enterMain();localStorage.setItem('vpay_login_time',Date.now().toString())}
+  }
+  const params=new URLSearchParams(window.location.search),ticket=params.get('ticket');
+  if(ticket&&!currentUser){
+    (async()=>{
+      try{
+        const r=await(await fetch(API_BASE+'/api/quick-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket})})).json();
+        if(r.success&&r.userInfo){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());const cw=window.location.pathname;window.history.replaceState({},document.title,cw);enterMain()}
+      }catch(e){}
+    })()
+  }
+  applyLang();
+  if(currentUser&&document.getElementById('main-view').style.display==='flex')loadRecords()
+})();
+</script>
+</body>
+</html>
