@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE CAPITAL GAZETTE // 资产社论报刊</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --paper-bg: #f4f1ea;
+            --ink-black: #111111;
+            --ink-light: #555555;
+            --accent-crimson: #a91d22;
+            --border-line: #111111;
+            --font-serif: "Playfair Display", Georgia, "Songti SC", "SimSun", serif;
+            --font-mono: "Space Mono", Consolas, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--paper-bg);
+            color: var(--ink-black);
+            font-family: var(--font-serif);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            /* 细微复古纸张纹理感 */
+            background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        /* 报纸外壳容器 */
+        .gazette-container {
+            width: 100%;
+            max-width: 1100px;
+            background: #fcfbf8;
+            border: 2px solid var(--border-line);
+            padding: 40px;
+            box-shadow: 12px 12px 0px var(--ink-black);
+            position: relative;
+        }
+
+        /* 报刊报头顶部 Header */
+        .gazette-header {
+            border-bottom: 3px double var(--border-line);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .gazette-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border-line);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        .gazette-title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .gazette-subtitle {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink-light);
+            letter-spacing: 1px;
+        }
+
+        /* 主双栏报纸网格布局 */
+        .editorial-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        /* 左侧主社论与核心资产 */
+        .main-column {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            border-right: 1px solid var(--border-line);
+            padding-right: 40px;
+        }
+
+        .hero-asset-box {
+            border: 1px solid var(--border-line);
+            padding: 32px;
+            background: var(--paper-bg);
+            position: relative;
+        }
+
+        .hero-asset-box::before {
+            content: "FIG. 01 — NET LIQUIDITY";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #fcfbf8;
+            padding: 0 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .hero-amount {
+            font-size: 64px;
+            font-weight: 400;
+            line-height: 1;
+            margin: 12px 0;
+            letter-spacing: -2px;
+        }
+
+        .hero-change {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent-crimson);
+            font-weight: 700;
+        }
+
+        /* 排版排版列表 */
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-serif);
+        }
+
+        .asset-table th {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--border-line);
+        }
+
+        .asset-table td {
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+            font-size: 15px;
+        }
+
+        .asset-table .mono {
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        /* 右侧栏：分析与操控栏 */
+        .side-column {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .editorial-card {
+            border: 1px solid var(--border-line);
+            padding: 24px;
+        }
+
+        .editorial-card-title {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-line);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .editorial-p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--ink-light);
+            margin-bottom: 16px;
+        }
+
+        /* 高定排版按钮 */
+        .editorial-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .editorial-btn {
+            background: var(--ink-black);
+            color: #ffffff;
+            border: 1px solid var(--ink-black);
+            padding: 14px 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .editorial-btn:hover {
+            background: var(--paper-bg);
+            color: var(--ink-black);
+            box-shadow: 4px 4px 0px var(--ink-black);
+        }
+
+        .editorial-btn.outline {
+            background: transparent;
+            color: var(--ink-black);
+        }
+
+        .editorial-btn.outline:hover {
+            background: var(--ink-black);
+            color: #ffffff;
+        }
+
+        /* 移动端响应式 */
+        @media (max-width: 850px) {
+            .gazette-container { padding: 20px; box-shadow: none; border-radius: 0; }
+            .gazette-title { font-size: 36px; }
+            .editorial-grid { grid-template-columns: 1fr; gap: 32px; }
+            .main-column { border-right: none; padding-right: 0; }
+            .hero-amount { font-size: 42px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="gazette-container">
+        <!-- 报头 Header -->
+        <header class="gazette-header">
+            <div class="gazette-meta-bar">
+                <span>VOL. LXVIII NO. 402</span>
+                <span>ISSUE: SEPTEMBER 2026</span>
+                <span>PRICE: PRIVILEGED</span>
+            </div>
+            <h1 class="gazette-title">The Capital Gazette</h1>
+            <div class="gazette-subtitle">A PRIVATE COMPENDIUM OF HIGH-NET-WORTH ASSETS & LIQUIDITY</div>
+        </header>
+
+        <!-- 双栏社论网格 -->
+        <div class="editorial-grid">
+            <!-- 左栏：主资产数据与清算清单 -->
+            <main class="main-column">
+                <!-- 核心数据框 -->
+                <div class="hero-asset-box">
+                    <div style="font-family: var(--font-mono); font-size: 12px; color: var(--ink-light);">TOTAL CAPITAL EVALUATION</div>
+                    <div class="hero-amount">$ 12,450,000</div>
+                    <div class="hero-change">▲ +14.2% NET PERFORMANCE / YTD</div>
+                </div>
+
+                <!-- 资产表格 -->
+                <div>
+                    <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+                        [ SCHEDULE A — PORTFOLIO ALLOCATION ]
+                    </div>
+                    <table class="asset-table">
+                        <thead>
+                            <tr>
+                                <th>ASSET CLASS</th>
+                                <th>ALLOCATION</th>
+                                <th style="text-align: right;">VALUATION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>物理黄金 & 稀缺金属</strong><br>
+                                    <small style="color: var(--ink-light); font-family: var(--font-mono);">ZÜRICH VAULT</small>
+                                </td>
+                                <td>40.0%</td>
+                                <td style="text-align: right;" class="mono">$ 4,980,000</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>核心暗池加密储备</strong><br>
+                                    <small style="color: var(--ink-light); font-family: var(--font-mono);">MULTI-SIG COLD</small>
+                                </td>
+                                <td>35.0%</td>
+                                <td style="text-align: right;" class="mono">$ 4,357,500</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>短期高收益国债</strong><br>
+                                    <small style="color: var(--ink-light); font-family: var(--font-mono);">T-BILLS 90D</small>
+                                </td>
+                                <td>25.0%</td>
+                                <td style="text-align: right;" class="mono">$ 3,112,500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- 右栏：简报与操作面板 -->
+            <aside class="side-column">
+                <div class="editorial-card">
+                    <div class="editorial-card-title">
+                        <span>EXECUTIVE BRIEF</span>
+                        <i class="fa-solid fa-bookmark"></i>
+                    </div>
+                    <p class="editorial-p">
+                        本月资产组合波动率维持在 2.1% 的极低区间。对冲策略已自动调整至第 4 级风险抵御机制，物理金库与去中心化节点的质押率平衡良好。
+                    </p>
+                    <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--accent-crimson);">
+                        STATUS: AUDITED & SIGNED
+                    </div>
+                </div>
+
+                <!-- 指令区 -->
+                <div class="editorial-btn-group">
+                    <a href="#" class="editorial-btn">
+                        EXECUTE TRANSFER <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                    </a>
+                    <a href="#" class="editorial-btn outline">
+                        DOWNLOAD AUDIT PDF
+                    </a>
+                    <a href="#" class="editorial-btn outline">
+                        REBALANCING LOGS
+                    </a>
+                </div>
+
+                <div style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-light); line-height: 1.5; border-top: 1px dashed var(--border-line); padding-top: 16px;">
+                    CONFIDENTIALITY NOTICE: THIS FINANCIAL DISCLOSURE IS STRICTLY RESTRICTED TO AUTHORIZED TRUSTEES ONLY.
+                </div>
+            </aside>
+        </div>
+    </div>
+
+</body>
+</html>

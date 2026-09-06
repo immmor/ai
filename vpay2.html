@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FUNBUA - 尊享数字钱包</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -45,6 +45,8 @@ body{
 .nav-link:hover,.nav-link.active{color:#fff;background:var(--panel-bg)}
 .nav-link.active i{color:#6c5ce7}
 .user-profile{display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--panel-border)}
+.sidebar-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;border-radius:6px;transition:all .2s;font-size:14px;flex-shrink:0;margin-left:auto}
+.sidebar-logout:hover{color:var(--accent-red);background:rgba(255,118,117,0.1)}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-purple);display:flex;align-items:center;justify-content:center;font-weight:bold}
 .user-info h4{font-size:14px;font-weight:600}
 .user-info p{font-size:12px;color:var(--text-muted)}
@@ -135,13 +137,23 @@ body{
 .amount-input{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);color:var(--text-main);font-size:20px;font-weight:600;font-family:inherit;text-align:center;outline:none;margin-bottom:16px}
 .amount-input:focus{border-color:#6c5ce7}
 .amount-input::placeholder{color:var(--text-muted);font-weight:400;font-size:16px}
-.method-list{display:flex;gap:10px;margin-bottom:20px}
-.method-card{flex:1;padding:16px 12px;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel-bg);cursor:pointer;transition:all 0.2s;text-align:center;font-family:inherit;color:var(--text-main)}
-.method-card:hover{border-color:rgba(108,92,231,0.3)}
-.method-card.active{border-color:#6c5ce7;background:rgba(108,92,231,0.15);box-shadow:0 0 0 1px rgba(108,92,231,0.3)}
-.method-card .icon{font-size:28px;margin-bottom:6px;display:block}
-.method-card .name{font-size:13px;font-weight:500}
-.method-card .desc{font-size:11px;color:var(--text-muted);margin-top:2px}
+/* Method Dropdown */
+.method-select-wrapper{position:relative;margin-bottom:20px}
+.method-select{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.05);border:1px solid var(--panel-border);border-radius:12px;padding:14px 16px;min-height:64px;cursor:pointer;transition:border-color .2s}
+.method-select:hover{border-color:rgba(255,255,255,0.2)}
+.method-select-trigger{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.method-select-trigger .icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:17px;flex-shrink:0}
+.method-select-trigger .name{font-size:15px;font-weight:600;white-space:nowrap}
+.method-select-trigger .desc{font-size:12px;color:var(--text-muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:12px}
+.dropdown-arrow{color:var(--text-muted);font-size:14px;transition:transform .2s;flex-shrink:0;margin-left:10px}
+.method-select.open .dropdown-arrow{transform:rotate(180deg)}
+.method-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(22,24,34,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;z-index:10;box-shadow:0 12px 40px rgba(0,0,0,0.5);backdrop-filter:blur(12px)}
+.method-option{display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:64px;cursor:pointer;transition:background .15s;border:none;background:none;color:#fff;width:100%;font-family:inherit;font-size:inherit;text-align:left}
+.method-option:hover{background:rgba(255,255,255,0.06)}
+.method-option.active{background:rgba(255,255,255,0.08)}
+.method-option .icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:17px;flex-shrink:0}
+.method-option .name{font-size:14px;font-weight:600;white-space:nowrap}
+.method-option .desc{font-size:12px;color:var(--text-muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:12px}
 .transfer-form{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:16px;padding:20px}
 .transfer-form .input-group label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
 .transfer-form .input-group input{padding-left:14px}
@@ -184,7 +196,7 @@ body{
   body{align-items:flex-start}
   .app-container{grid-template-columns:1fr;min-height:100vh;margin:0;border-radius:0;border:none;padding-bottom:65px}
   .sidebar{display:none}
-  .main-content{padding:20px;gap:20px;max-height:100vh}
+  .main-content{padding:20px;gap:20px;max-height:calc(100vh - 60px)}
   .auth-page{min-height:80vh;justify-content:center}
   .card-balance-val{font-size:28px}
   .mobile-nav{display:flex;justify-content:space-around;align-items:center;position:fixed;bottom:0;left:0;width:100%;height:60px;background:rgba(10,11,16,0.95);backdrop-filter:blur(10px);border-top:1px solid var(--panel-border);z-index:1000}
@@ -192,7 +204,6 @@ body{
   .mobile-nav-item.active{color:#6c5ce7}
   .mobile-nav-item i{font-size:18px}
   .quick-actions{grid-template-columns:repeat(2,1fr)}
-  .method-list{flex-direction:column}
   .amount-grid{grid-template-columns:repeat(3,1fr)}
 }
 </style>
@@ -242,7 +253,6 @@ body{
         <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> 总览</a></li>
         <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> 充值</a></li>
         <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> 转账</a></li>
-        <li class="nav-item"><a class="nav-link" data-page="orders" onclick="switchPage('orders')"><i class="fa-solid fa-clock-rotate-left"></i> 订单</a></li>
       </ul>
     </div>
     <div class="user-profile" id="userProfile">
@@ -251,6 +261,7 @@ body{
         <h4 id="userName">未登录</h4>
         <p id="userStatus">请登录账户</p>
       </div>
+      <button class="sidebar-logout" onclick="handleLogout()" title="退出登录"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </aside>
 
@@ -277,7 +288,6 @@ body{
             </div>
             <div class="card-bottom">
               <div class="card-number">FUNBUA • 尊享数字账户</div>
-              <span style="font-size:12px;color:var(--accent-green)"><i class="fa-solid fa-arrow-trend-up"></i> <span id="balanceUsd">$0.00</span></span>
             </div>
           </div>
 
@@ -287,7 +297,7 @@ body{
           </div>
 
           <div style="margin-top:30px">
-            <div class="section-title"><span>近期订单</span><a onclick="switchPage('orders')">查看全部</a></div>
+            <div class="section-title"><span>近期订单</span></div>
             <div class="order-list" id="recentOrders"></div>
           </div>
         </div>
@@ -303,21 +313,31 @@ body{
 
       <div class="crypto-card" style="padding:20px">
         <div class="section-title" style="margin-bottom:10px;font-size:14px">支付方式</div>
-        <div class="method-list">
-          <div class="method-card active" data-method="creem" onclick="selectMethod('creem')">
-            <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
-            <div class="name">Creem</div>
-            <div class="desc">信用卡 · 支付宝</div>
+        <div class="method-select-wrapper" id="methodSelectWrapper">
+          <div class="method-select" id="methodSelect" onclick="toggleMethodDropdown()">
+            <div class="method-select-trigger" id="methodSelectTrigger">
+              <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
+              <span class="name">Creem</span>
+              <span class="desc">信用卡 · 支付宝</span>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
           </div>
-          <div class="method-card" data-method="alipay_static" onclick="selectMethod('alipay_static')">
-            <span class="icon"><i class="fa-brands fa-alipay"></i></span>
-            <div class="name">支付宝(人工)</div>
-            <div class="desc">扫码 · 自动到账</div>
-          </div>
-          <div class="method-card" data-method="usdt" onclick="selectMethod('usdt')">
-            <span class="icon">₮</span>
-            <div class="name">USDT TRC20</div>
-            <div class="desc">Tron Network</div>
+          <div class="method-dropdown hidden" id="methodDropdown">
+            <button class="method-option active" data-method="creem" onclick="selectMethodFromDropdown('creem')">
+              <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
+              <span class="name">Creem</span>
+              <span class="desc">信用卡 · 支付宝</span>
+            </button>
+            <button class="method-option" data-method="alipay_static" onclick="selectMethodFromDropdown('alipay_static')">
+              <span class="icon"><i class="fa-brands fa-alipay"></i></span>
+              <span class="name">支付宝(人工)</span>
+              <span class="desc">扫码 · 自动到账</span>
+            </button>
+            <button class="method-option" data-method="usdt" onclick="selectMethodFromDropdown('usdt')">
+              <span class="icon">₮</span>
+              <span class="name">USDT TRC20</span>
+              <span class="desc">Tron Network</span>
+            </button>
           </div>
         </div>
 
@@ -352,6 +372,17 @@ body{
         <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="输入金额(最低¥10)">
 
         <button class="btn btn-gold" onclick="handlePay()"><i class="fa-solid fa-arrow-right"></i> <span id="payBtnText">支付 $5</span></button>
+      </div>
+
+      <!-- 充值记录 -->
+      <div style="margin-top:24px">
+        <div class="section-title" style="font-size:14px;margin-bottom:12px">充值记录</div>
+        <div class="order-list" id="ordersList"></div>
+        <div class="pagination" id="ordersPagination" style="display:none;margin-top:12px">
+          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled>上一页</button>
+          <span class="page-info" id="ordersInfo">1 / 1</span>
+          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled>下一页</button>
+        </div>
       </div>
     </div>
 
@@ -389,23 +420,6 @@ body{
       </div>
     </div>
 
-    <!-- ============ ORDERS ============ -->
-    <div id="pageOrders" class="hidden">
-      <header class="header">
-        <div><h1>订单记录</h1></div>
-        <div class="actions"></div>
-      </header>
-
-      <div class="crypto-card" style="padding:20px;min-height:200px">
-        <div class="order-list" id="ordersList"></div>
-        <div class="pagination" id="ordersPagination" style="display:none;margin-top:12px">
-          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled>上一页</button>
-          <span class="page-info" id="ordersInfo">1 / 1</span>
-          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled>下一页</button>
-        </div>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -414,7 +428,6 @@ body{
   <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>总览</span></button>
   <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span>充值</span></button>
   <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
-  <button class="mobile-nav-item" data-page="orders" onclick="switchPage('orders')"><i class="fa-solid fa-clock-rotate-left"></i><span>订单</span></button>
 </nav>
 
 <script>
@@ -437,7 +450,7 @@ function switchPage(page){
   // Sidebar nav
   document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
   // Content pages
-  ['Dashboard','Recharge','Transfer','Orders'].forEach(p=>{
+  ['Dashboard','Recharge','Transfer'].forEach(p=>{
     const el=document.getElementById('page'+p);
     if(el)el.classList.toggle('hidden',p.toLowerCase()!==page.toLowerCase())
   });
@@ -445,7 +458,7 @@ function switchPage(page){
   document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
-  if(page==='orders'&&currentUser)loadOrders();
+  if(page==='recharge'&&currentUser)loadOrders();
   if(page==='transfer'&&currentUser)loadRecords();
 }
 
@@ -496,11 +509,15 @@ function handleLogout(){
   }
 }
 
+function maskUsername(name){
+  if(!name||name.length<=6)return name||'用户';
+  return name.slice(0,6)+'*';
+}
 function enterMain(){
   document.getElementById('authFullscreen').classList.add('hidden');
   document.getElementById('appContainer').classList.remove('hidden');
   document.getElementById('mobileNav').classList.remove('hidden');
-  document.getElementById('userName').textContent=currentUser.username||'用户';
+  document.getElementById('userName').textContent=maskUsername(currentUser.username)||'用户';
   document.getElementById('userStatus').textContent='已登录';
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
   updateBalance();loadRecentOrders();switchPage('dashboard')
@@ -518,7 +535,7 @@ async function updateBalance(){
 // Payment
 function selectMethod(m){
   payMethod=m;
-  document.querySelectorAll('.method-card').forEach(c=>c.classList.toggle('active',c.dataset.method===m));
+  document.querySelectorAll('.method-option').forEach(c=>c.classList.toggle('active',c.dataset.method===m));
   document.getElementById('amtGridCredit').classList.toggle('hidden',m!=='creem');
   document.getElementById('amtGridCny').classList.toggle('hidden',m!=='usdt');
   document.getElementById('amtGridAlipay').classList.toggle('hidden',m!=='alipay_static');
@@ -526,6 +543,27 @@ function selectMethod(m){
   document.getElementById('customAlipayInput').classList.add('hidden');
   updatePayBtn()
 }
+function toggleMethodDropdown(){
+  const s=document.getElementById('methodSelect');
+  const d=document.getElementById('methodDropdown');
+  s.classList.toggle('open');
+  d.classList.toggle('hidden');
+}
+function selectMethodFromDropdown(m){
+  selectMethod(m);
+  document.getElementById('methodDropdown').classList.add('hidden');
+  document.getElementById('methodSelect').classList.remove('open');
+  const trigger=document.getElementById('methodSelectTrigger');
+  const opt=document.querySelector(`.method-option[data-method="${m}"]`);
+  if(opt)trigger.innerHTML=opt.innerHTML;
+}
+document.addEventListener('click',function(e){
+  const w=document.getElementById('methodSelectWrapper');
+  if(w&&!w.contains(e.target)){
+    document.getElementById('methodDropdown')?.classList.add('hidden');
+    document.getElementById('methodSelect')?.classList.remove('open');
+  }
+});
 function selectCredit(a){creditAmount=a;document.querySelectorAll('#amtGridCredit .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
 function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
 function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
@@ -537,11 +575,14 @@ async function handlePay(){
   if(!currentUser||!currentUser.username)return;
   showLoading('处理中...');
   if(payMethod==='creem'){
+    const orderNo=currentUser.username+'_'+Date.now();
     try{
-      const r=await(await fetch(API_LEGACY+'/api/pay/build-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'creem',order_no:Date.now().toString(),amount:creditAmount,description:'FUNBUA Recharge',username:currentUser.username})})).json();
+      const r=await(await fetch(API_LEGACY+'/api/pay/creem-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,order_no:orderNo,amount:creditAmount})})).json();
       hideLoading();
-      if(r.code===200&&r.data?.pay_url)window.location.href=r.data.pay_url;
-      else showToast(r.msg||'支付失败','error')
+      if(r.code===200&&r.data?.checkout_url){
+        localStorage.setItem('creditCardOrder_'+orderNo,JSON.stringify({username:currentUser.username,amount:creditAmount*USDT_RATE,order_no:orderNo}));
+        window.location.href=r.data.checkout_url;
+      }else showToast(r.msg||'支付失败','error')
     }catch(e){hideLoading();showToast('网络错误','error')}
   }else if(payMethod==='alipay_static'){
     const a=alipayAmount||parseFloat(document.getElementById('customAlipayInput').value);
@@ -594,13 +635,25 @@ async function loadRecentOrders(){
   if(!currentUser)return;
   const list=document.getElementById('recentOrders');
   try{
-    const r=await(await fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=1&limit=3`)).json();
-    if(r.code===200&&r.orders?.length){
-      list.innerHTML=r.orders.map(o=>{
-        const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?'已支付':o.status==='failed'?'失败':'待支付';
-        return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(255,255,255,0.05);color:#fff"><i class="fa-solid fa-receipt"></i></div><div class="tx-name"><h4>¥${(o.amount||0).toFixed(2)}</h4><p>${o.created_at||''}</p></div></div><span class="order-status ${sc}">${st}</span></div>`
+    const [ordersRes,recordsRes]=await Promise.all([
+      fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=1&limit=5`),
+      fetch(API_LEGACY+`/api/transfer/records?username=${currentUser.username}&page=1&limit=5`)
+    ]);
+    const ordersData=await ordersRes.json(),recordsData=await recordsRes.json();
+    const orders=(ordersData.code===200?ordersData.orders||[]:[]).map(o=>({type:'recharge',amount:o.amount,status:o.status,id:o.order_no||o.id,time:o.created_at||''}));
+    const records=(recordsData.code===200?recordsData.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.other,status:r.type==='send'?'send':'receive',time:r.created_at||''}));
+    const all=[...orders,...records].sort((a,b)=>b.time.localeCompare(a.time)).slice(0,5);
+    if(all.length){
+      list.innerHTML=all.map(item=>{
+        if(item.type==='recharge'){
+          const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?'已支付':item.status==='failed'?'失败':'待支付';
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.time}</p></div></div><span class="order-status ${sc}">${st}</span></div>`
+        }else{
+          const isSend=item.status==='send';
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''} · ${item.time}</p></div></div><span style="font-size:12px;color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}</span></div>`
+        }
       }).join('')
-    }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无订单</p></div>'
+    }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无记录</p></div>'
   }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><p>加载失败</p></div>'}
 }
 
@@ -679,66 +732,74 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
       4. 联系客服提供订单号确认到账
     </div>
     <div style="display:flex;gap:10px">
-      <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值 (5s)</button>
+      <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值</button>
       <button onclick="openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">支付宝</button>
-      <button onclick="closeStaticPayment(this)" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">关闭</button>
+      <button id="closeStaticPayBtn" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">关闭</button>
     </div>`;
   document.body.appendChild(overlay);
   document.body.appendChild(container);
-  container.dataset.origOverflow=origOverflow;
   createStaticOrderRecord(paymentType,amount,orderNo);
-  startRechargeTimer(document.getElementById('confirmRechargeBtn'),orderNo,amount,paymentType);
-}
-
-function closeStaticPayment(btn){
-  const container=btn.closest('div[style*="position:fixed"]')||btn.parentElement.parentElement.parentElement;
-  if(container&&container.dataset&&container.dataset.origOverflow!==undefined)document.body.style.overflow=container.dataset.origOverflow;
-  const overlays=document.querySelectorAll('div[style*="z-index: 9998"]');
-  overlays.forEach(o=>document.body.removeChild(o));
-  if(container&&container.parentElement)document.body.removeChild(container);
+  startRechargeTimer(document.getElementById('confirmRechargeBtn'),orderNo,amount,paymentType,function(){
+    document.body.removeChild(overlay);
+    document.body.removeChild(container);
+    document.body.style.overflow=origOverflow;
+  });
+  document.getElementById('closeStaticPayBtn').onclick=function(){
+    document.body.removeChild(overlay);
+    document.body.removeChild(container);
+    document.body.style.overflow=origOverflow;
+  };
 }
 
 async function createStaticOrderRecord(paymentType,amount,orderNo){
   try{
-    await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})});
+    await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType,status:'pending',description:'Wallet Top-up (Manual Review)'})});
   }catch(e){}
 }
 
-function startRechargeTimer(btn,orderNo,amount,paymentType){
-  let remaining=5;
-  btn.textContent='确认充值 ('+remaining+'s)';
+function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
+  const lastRechargeTime=localStorage.getItem('lastRechargeTime');
+  const now=Date.now();
+  const COOLDOWN_TIME=86400000;
+  if(lastRechargeTime&&(now-parseInt(lastRechargeTime))<COOLDOWN_TIME){
+    const remaining=COOLDOWN_TIME-(now-parseInt(lastRechargeTime));
+    btn.textContent='冷却中，请稍后再试';
+    btn.style.background='#666';
+    btn.disabled=true;
+    return;
+  }
+  let countdown=30;
+  btn.textContent='确认充值 ('+countdown+'s)';
   const timer=setInterval(()=>{
-    remaining--;
-    if(remaining<=0){
+    countdown--;
+    if(countdown<0){
       clearInterval(timer);
-      btn.textContent='确认充值';
-      btn.style.background='#6c5ce7';
-      btn.style.opacity='1';
-      btn.style.cursor='pointer';
+      btn.style.cssText='flex:6;padding:12px;background:#e17055;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;';
       btn.disabled=false;
-      btn.onclick=()=>confirmRecharge(orderNo,amount,paymentType);
-    }else btn.textContent='确认充值 ('+remaining+'s)';
+      btn.textContent='确认充值';
+      btn.onclick=function(){
+        this.disabled=true;
+        this.textContent='处理中...';
+        confirmRecharge(orderNo,amount,paymentType,onClose);
+      };
+    }else btn.textContent='确认充值 ('+countdown+'s)';
   },1000);
 }
 
-async function confirmRecharge(orderNo,amount,paymentType){
-  showToast('已提交，等待审核到账');
+async function confirmRecharge(orderNo,amount,paymentType,onClose){
   try{
     await fetch(API_LEGACY+'/api/order/confirm-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})});
-    updateBalance();
-    loadOrders();
+    localStorage.setItem('lastRechargeTime',Date.now().toString());
   }catch(e){}
-  const overlays=document.querySelectorAll('div[style*="z-index: 9998"]');
-  overlays.forEach(o=>{if(o.parentElement)document.body.removeChild(o)});
-  const containers=document.querySelectorAll('div[style*="z-index: 9999"]');
-  containers.forEach(c=>{if(c.parentElement)document.body.removeChild(c)});
-  document.body.style.overflow='';
+  showToast('已提交，等待审核到账');
+  updateBalance();
+  loadOrders();
+  if(onClose)onClose();
 }
 
 function openAlipayApp(){
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(isIOS)window.location.href='alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0';
-  else window.location.href='alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0';
+  window.location.href=isIOS?'alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0':'alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx15464aezwcqfyl4aiga0';
 }
 
 function copyOrderNo(){

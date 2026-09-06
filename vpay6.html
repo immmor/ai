@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KISO 木石 - 禅意资产质感室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-zen: #eae6df;
+            --surface-card: #f4f1ea;
+            --surface-moss: #1c2826;
+            --text-dark: #2b2927;
+            --text-muted: #8c857b;
+            --accent-clay: #d97757;
+            --accent-cinnabar: #c84b31;
+            --border-soft: rgba(43, 41, 39, 0.08);
+            --font-serif: "Noto Serif SC", "Source Han Serif SC", "Georgia", serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+            --font-mono: "Courier New", Courier, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-zen);
+            color: var(--text-dark);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 主容器：模拟一张重平质感的卡纸 */
+        .zen-container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--surface-card);
+            border-radius: 32px;
+            box-shadow: 0 30px 80px rgba(35, 30, 25, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            overflow: hidden;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            padding: 40px 32px;
+            border-right: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: rgba(235, 230, 222, 0.4);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-stamp {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-cinnabar);
+            color: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .brand-name {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .nav-group {
+            list-style: none;
+            margin-top: 48px;
+        }
+
+        .nav-item { margin-bottom: 20px; }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .nav-link.active i {
+            color: var(--accent-clay);
+        }
+
+        .side-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            border-top: 1px dashed var(--border-soft);
+            padding-top: 20px;
+        }
+
+        /* 主舞台 */
+        .main-stage {
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+        }
+
+        /* 顶部欢迎词 */
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-title h1 {
+            font-family: var(--font-serif);
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* 苔绿印章卡片 */
+        .moss-card {
+            background: var(--surface-moss);
+            color: #f4f1ea;
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(28, 40, 38, 0.2);
+            overflow: hidden;
+        }
+
+        .moss-card::after {
+            content: "";
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(217, 119, 87, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .card-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #a3b18a;
+        }
+
+        .card-val {
+            font-family: var(--font-serif);
+            font-size: 44px;
+            margin-top: 8px;
+            letter-spacing: -0.5px;
+            color: #f4f1ea;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: #a3b18a;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-circle-group {
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .btn-zen {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f4f1ea;
+            padding: 12px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-zen:hover {
+            background: var(--accent-clay);
+            border-color: var(--accent-clay);
+            color: #fff;
+        }
+
+        /* 资产列表（温润触感） */
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .asset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .asset-item {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .asset-item:hover {
+            background: #ffffff;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .asset-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .asset-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #eae6df;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .asset-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .asset-type {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .asset-num {
+            text-align: right;
+        }
+
+        .asset-amount {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .asset-status {
+            font-size: 12px;
+            color: var(--accent-clay);
+            margin-top: 2px;
+        }
+
+        /* 移动端 bottom bar */
+        .mobile-bar { display: none; }
+
+        @media (max-width: 868px) {
+            .zen-container {
+                grid-template-columns: 1fr;
+                border-radius: 0;
+                margin: -20px;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+
+            .sidebar { display: none; }
+
+            .main-stage {
+                padding: 24px;
+                gap: 24px;
+                padding-bottom: 90px;
+            }
+
+            .moss-card {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 28px;
+            }
+
+            .card-val { font-size: 36px; }
+
+            .mobile-bar {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 64px;
+                background: var(--surface-card);
+                border-top: 1px solid var(--border-soft);
+                z-index: 100;
+            }
+
+            .mobile-bar a {
+                color: var(--text-muted);
+                text-decoration: none;
+                font-size: 11px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .mobile-bar a.active { color: var(--accent-cinnabar); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="zen-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-stamp">木</div>
+                    <div class="brand-name">KISO</div>
+                </div>
+
+                <ul class="nav-group">
+                    <li class="nav-item"><a href="#" class="nav-link active"><i class="fa-solid fa-leaf"></i> 静态总览</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-gem"></i> 实物信托</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-scroll"></i> 契约明细</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-compass"></i> 私人托管</a></li>
+                </ul>
+            </div>
+
+            <div class="side-note">
+                <p>“大巧若拙，大盈若冲。”</p>
+                <p style="margin-top: 6px; color: var(--text-dark);">京都质押托管所 · 在线</p>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-stage">
+            <header class="stage-header">
+                <div class="header-title">
+                    <h1>静心盘点</h1>
+                    <p>当前托管资产估值与净盈余</p>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">
+                    AUTUMN 2026 / KYOTO
+                </div>
+            </header>
+
+            <!-- 核心主卡片（苔绿质感） -->
+            <section class="moss-card">
+                <div>
+                    <div class="card-label">Asset Balance</div>
+                    <div class="card-val">¥ 18,450,000</div>
+                    <div class="card-sub">
+                        <i class="fa-solid fa-arrow-up-long" style="color: var(--accent-clay);"></i>
+                        <span>本季度净增长 +3.25%</span>
+                    </div>
+                </div>
+
+                <div class="action-circle-group">
+                    <button class="btn-zen"><i class="fa-solid fa-paper-plane"></i> 划转</button>
+                    <button class="btn-zen"><i class="fa-solid fa-folder-closed"></i> 封存</button>
+                </div>
+            </section>
+
+            <!-- 细分列表 -->
+            <section>
+                <div class="section-title">
+                    <span>持份清单</span>
+                    <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-sans);">共 3 项实体凭证</span>
+                </div>
+
+                <div class="asset-list">
+                    <div class="asset-item">
+                        <div class="asset-info">
+                            <div class="asset-badge">茶</div>
+                            <div>
+                                <div class="asset-name">宇治百年茶园期权凭证</div>
+                                <div class="asset-type">实物农业信托 · 2026 期</div>
+                            </div>
+                        </div>
+                        <div class="asset-num">
+                            <div class="asset-amount">¥ 8,200,000</div>
+                            <div class="asset-status">收益率 5.4% / 年</div>
+                        </div>
+                    </div>
+
+                    <div class="asset-item">
+                        <div class="asset-info">
+                            <div class="asset-badge">金</div>
+                            <div>
+                                <div class="asset-name">高纯度物理金锭储备</div>
+                                <div class="asset-type">金库编号 #9901-JP</div>
+                            </div>
+                        </div>
+                        <div class="asset-num">
+                            <div class="asset-amount">¥ 6,100,000</div>
+                            <div class="asset-status" style="color: var(--text-muted);">稳健存管中</div>
+                        </div>
+                    </div>
+
+                    <div class="asset-item">
+                        <div class="asset-info">
+                            <div class="asset-badge">林</div>
+                            <div>
+                                <div class="asset-name">吉野杉木碳汇抵押契约</div>
+                                <div class="asset-type">绿色对冲组合</div>
+                            </div>
+                        </div>
+                        <div class="asset-num">
+                            <div class="asset-amount">¥ 4,150,000</div>
+                            <div class="asset-status">收益率 4.1% / 年</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 移动端底栏 -->
+    <nav class="mobile-bar">
+        <a href="#" class="active"><i class="fa-solid fa-leaf"></i><span>总览</span></a>
+        <a href="#"><i class="fa-solid fa-gem"></i><span>信托</span></a>
+        <a href="#"><i class="fa-solid fa-scroll"></i><span>契约</span></a>
+    </nav>
+
+</body>
+</html>
