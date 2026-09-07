@@ -343,9 +343,9 @@ body{
             <button class="method-option" data-method="alipay_static" onclick="selectMethodFromDropdown('alipay_static')">
               <span class="icon"><i class="fa-brands fa-alipay"></i></span>
               <span class="name">支付宝(人工)</span>
-              <span class="desc">扫码 · 自动到账</span>
+              <span class="desc">扫码 · 人工审核</span>
             </button>
-            <button class="method-option" data-method="usdt" onclick="selectMethodFromDropdown('usdt')">
+            <button class="method-option" data-method="usdt" onclick="selectMethodFromDropdown('usdt')" style="display:none">
               <span class="icon">₮</span>
               <span class="name">USDT TRC20</span>
               <span class="desc">Tron Network</span>
@@ -362,6 +362,7 @@ body{
           <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
           <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
           <div style="grid-column:1/-1;text-align:center;font-size:11px;color:var(--text-muted);opacity:0.7;margin-top:4px" id="creem-exchange-rate">1 USD = ¥6.8</div>
+          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:#ed8936;margin-top:2px">当前充值的金额以美元计价，使用中国网络才能使用支付宝充值</div>
         </div>
         <div class="amount-grid hidden" id="amtGridCny">
           <button class="amount-btn" data-amount="30" onclick="selectCny(30)">¥30</button>
@@ -619,7 +620,8 @@ async function handlePay(){
         localStorage.setItem('usdtOrder_'+r.oid,JSON.stringify({username:currentUser.username,rmbAmount:a,usdtAmount:ua,order_no:r.oid}));
         try{await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})}catch(e){}
         showQrModal('USDT 支付',
-          `<div style="margin-bottom:16px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">请发送</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
+          `<div style="margin-bottom:12px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">请发送</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('tron:'+addr+'?amount='+ua)}" alt="USDT QR Code" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">
           <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left">
             <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">网络: <strong style="color:var(--text-main)">TRC20</strong></div>
             <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">地址:</div>
@@ -754,14 +756,14 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     <img src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
     <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 20px;text-align:left">
       <strong>支付说明:</strong><br>
-      1. 打开支付宝扫码<br>
+      1. 点击支付宝打开支付页面<br>
       2. 支付 <strong>¥${amount}</strong><br>
-      3. 支付完成后截图保存<br>
-      4. 联系客服提供订单号确认到账
+      3. 备注订单号<br>
+      4. 回到当前界面点击确认充值
     </div>
     <div style="display:flex;gap:10px">
       <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值</button>
-      <button onclick="openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">支付宝</button>
+      <button onclick="copyOrderNo();openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">支付宝</button>
       <button id="closeStaticPayBtn" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">关闭</button>
     </div>`;
   document.body.appendChild(overlay);
