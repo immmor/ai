@@ -736,6 +736,13 @@
                             </div>
                             <div class="stat-icon">💰</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3 id="monthlyRevenue">-</h3>
+                                <p>本月收入</p>
+                            </div>
+                            <div class="stat-icon">📆</div>
+                        </div>
                     </div>
                     
                     <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
@@ -1847,10 +1854,11 @@
         
         // 加载仪表盘数据
         async function loadDashboardData() {
-            // 同时调用两个统计接口（核心指标来自 API_BASE，业务聚合来自 NEW_API_BASE）
-            const [mainRes, dashRes] = await Promise.all([
+            const now = new Date(), monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const [mainRes, dashRes, ordersRes] = await Promise.all([
                 apiRequest('/api/stats', 'GET'),
-                newApiRequest('/api/stats/dashboard', 'GET').catch(err => ({ code: 500, msg: String(err) }))
+                newApiRequest('/api/stats/dashboard', 'GET').catch(err => ({ code: 500, msg: String(err) })),
+                apiRequest('/api/orders?page=1&limit=9999', 'GET')
             ]);
             
             if (mainRes.code === 200) {
@@ -1859,102 +1867,73 @@
                 document.getElementById('totalOrders').textContent = data.totalOrders || 0;
                 document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
                 document.getElementById('totalRevenue').textContent = '¥' + (data.totalRevenue || 0);
-                
-                // 延迟渲染图表，确保DOM已准备就绪
-                setTimeout(() => {
-                    renderCharts(data);
-                }, 100);
+                mainData = data;
             } else {
                 console.error('加载统计数据失败:', mainRes.msg);
             }
             
+            if (ordersRes.code === 200) {
+                ordersData = ordersRes.data.orders || [];
+                const monthly = ordersData.reduce((s, o) =>
+                    o.status === 'paid' && new Date(o.created_at) >= monthStart ? s + (parseFloat(o.amount) || 0) : s, 0);
+                document.getElementById('monthlyRevenue').textContent = '¥' + monthly.toFixed(2);
+            } else {
+                document.getElementById('monthlyRevenue').textContent = '¥0.00';
+            }
+            
             if (dashRes.code === 200) {
                 dashData = dashRes.data || {};
-                setTimeout(() => {
-                    renderDashboardCharts(dashData);
-                }, 120);
             } else {
                 console.error('加载聚合统计数据失败:', dashRes.msg, dashRes.error || '');
+            }
+            
+            // 渲染所有图表
+            if (mainData) {
+                setTimeout(() => renderAllCharts(mainData, dashData || {}), 100);
             }
         }
         
         let charts = {};
         
-        function renderCharts(data) {
-            const ctx1 = document.getElementById('ordersChart').getContext('2d');
-            const ctx2 = document.getElementById('usersChart').getContext('2d');
-            const ctx3 = document.getElementById('revenueChart').getContext('2d');
-            
+        function renderAllCharts(m, d) {
+            const COLORS = ['#667eea', '#48bb78', '#ed8936', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181', '#9f7aea', '#38b2ac'];
+
             if (charts.orders) charts.orders.destroy();
             if (charts.users) charts.users.destroy();
             if (charts.revenue) charts.revenue.destroy();
-            
-            charts.orders = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: data.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                    datasets: [{
-                        label: '订单数',
-                        data: data.orderData || [12, 19, 15, 25, 22, 30, 28],
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-            
-            charts.users = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['普通用户', 'VIP用户'],
-                    datasets: [{
-                        data: [data.normalUsers || 100, data.vipUsers || 20],
-                        backgroundColor: ['#667eea', '#48bb78']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            charts.revenue = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: data.paymentLabels || [],
-                    datasets: [{
-                        label: '收入金额',
-                        data: data.paymentData || [],
-                        backgroundColor: ['#ed8936', '#48bb78', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        }
 
-        // 渲染首页业务聚合图表（来自 /api/stats/dashboard）
-        function renderDashboardCharts(d) {
-            const COLORS = ['#667eea', '#48bb78', '#ed8936', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181', '#9f7aea', '#38b2ac'];
+            // ---- 订单趋势（折线）----
+            const octx = document.getElementById('ordersChart');
+            if (octx) {
+                charts.orders = new Chart(octx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: m.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                        datasets: [{ label: '订单数', data: m.orderData || [12, 19, 15, 25, 22, 30, 28], borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', tension: 0.4, fill: true }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            // ---- 用户类型（环形）----
+            const uctx = document.getElementById('usersChart');
+            if (uctx) {
+                charts.users = new Chart(uctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: { labels: ['普通用户', 'VIP用户'], datasets: [{ data: [m.normalUsers || 100, m.vipUsers || 20], backgroundColor: ['#667eea', '#48bb78'] }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // ---- 收入分布（柱状）----
+            const rctx = document.getElementById('revenueChart');
+            if (rctx) {
+                charts.revenue = new Chart(rctx.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: m.paymentLabels || [], datasets: [{ label: '收入金额', data: m.paymentData || [], backgroundColor: ['#ed8936', '#48bb78', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
 
             // ---- 游戏下注 / 派奖趋势（折线）----
             const gctx = document.getElementById('gameChart');
@@ -2054,6 +2033,7 @@
         }
 
         // ==================== 智能运营分析 ====================
+        let mainData = null;
         let dashData = null;           // /api/stats/dashboard 聚合数据（含游戏按用户聚合）
         let insightData = null;        // 分析结果缓存
         let insightActiveSeg = 'potential';
