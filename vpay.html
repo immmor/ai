@@ -131,7 +131,7 @@ body{
 .order-status.paid{background:rgba(0,184,148,0.15);color:var(--accent-green)}
 .order-status.failed{background:rgba(255,118,117,0.15);color:var(--accent-red)}
 .amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.amount-btn{padding:12px 8px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-main);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:right}
+.amount-btn{padding:12px 8px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-main);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:center}
 .amount-btn:hover{border-color:rgba(108,92,231,0.3)}
 .amount-btn.active{border-color:#6c5ce7;background:rgba(108,92,231,0.15);box-shadow:0 0 0 1px rgba(108,92,231,0.3)}
 .amount-btn .sub{font-size:11px;color:var(--text-muted);margin-top:2px}
@@ -736,13 +736,13 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
   const origOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';
   container.innerHTML=`
-    <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px">${paymentName} 扫码支付</h3>
+    <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px;text-align:center">${paymentName} 扫码支付</h3>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
       <span style="color:#999;font-size:12px">订单号</span>
       <span style="cursor:pointer;color:#a29bfe;font-size:12px" onclick="copyOrderNo()">复制</span>
     </div>
-    <div style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px">${orderNo}</div>
-    <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold">¥ ${amount}</div>
+    <div style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px;text-align:center">${orderNo}</div>
+    <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold;text-align:center">¥ ${amount}</div>
     <img src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
     <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 20px;text-align:left">
       <strong>支付说明:</strong><br>
