@@ -1,0 +1,207 @@
+/* 专属信用卡模态框 */
+.card-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.card-modal.show {
+  display: flex;
+}
+
+.cyber-card {
+  width: 350px;
+  max-width: 90vw;
+  height: 220px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 20px;
+  padding: 20px 30px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 30px rgba(0, 242, 255, 0.3),
+    0 0 60px rgba(255, 0, 255, 0.2),
+    inset 0 0 60px rgba(0, 242, 255, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.4);
+  background-clip: padding-box;
+  animation: cardPulse 3s ease-in-out infinite;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* 全息光泽效果 */
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(0, 242, 255, 0.15) 50%,
+    rgba(255, 0, 255, 0.15) 75%,
+    transparent 100%
+  );
+  animation: holographic 5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes holographic {
+  0% { transform: translateX(-33%); }
+  100% { transform: translateX(33%); }
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #00f2ff, #ff00ff, #00ff88, #00f2ff);
+  background-size: 400% 400%;
+  border-radius: 22px;
+  z-index: -1;
+  animation: borderGlow 8s linear infinite;
+}
+
+@keyframes borderGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes cardPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2),
+                inset 0 0 60px rgba(0, 242, 255, 0.1), 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.5), 0 0 80px rgba(255, 0, 255, 0.4),
+                inset 0 0 80px rgba(0, 242, 255, 0.15), 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.cyber-card .card-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.cyber-card .card-section-top {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cyber-card .card-number {
+  font-family: 'Courier New', monospace;
+  font-size: 24px;
+  color: #fff;
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(0, 242, 255, 0.3),
+    0 2px 3px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.cyber-card .card-number span {
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.cyber-card .card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.cyber-card .card-holder {
+  text-align: left;
+}
+
+.cyber-card .card-holder-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.cyber-card .card-holder-name {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.cyber-card .card-expiry {
+  text-align: right;
+}
+
+.cyber-card .card-expiry-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.cyber-card .card-expiry-date {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.card-logo {
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-text {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  color: #fff;
+  text-transform: lowercase;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+/* 底部提示 */
+.card-modal-footer {
+  position: absolute;
+  bottom: 30px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
