@@ -626,8 +626,8 @@ async function handleTransfer(){
   try{
     const r=await(await fetch(API_BASE+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,password:pw})})).json();
     hideLoading();
-    if(r.success){showToast('转账成功');document.getElementById('transferTo').value='';document.getElementById('transferAmount').value='';document.getElementById('transferPassword').value='';updateBalance();loadRecords()}
-    else showToast(r.message||'转账失败','error')
+    if(r.code===200){showToast('转账成功');document.getElementById('transferTo').value='';document.getElementById('transferAmount').value='';document.getElementById('transferPassword').value='';updateBalance();loadRecords()}
+    else showToast(r.msg||'转账失败','error')
   }catch(e){hideLoading();showToast('网络错误','error')}
 }
 
@@ -651,7 +651,7 @@ async function loadRecentOrders(){
           return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.time}</p></div></div><span class="order-status ${sc}">${st}</span></div>`
         }else{
           const isSend=item.status==='send';
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''} · ${item.time}</p></div></div><span style="font-size:12px;color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}</span></div>`
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''} · ${item.time}</p></div></div><div style="text-align:right"><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
       }).join('')
     }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无记录</p></div>'
