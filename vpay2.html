@@ -768,7 +768,6 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     document.body.removeChild(overlay);
     document.body.removeChild(container);
     document.body.style.overflow=origOverflow;
-    loadOrders();
   };
 }
 
@@ -809,13 +808,15 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
 
 async function confirmRecharge(orderNo,amount,paymentType,onClose){
   try{
-    await fetch(API_LEGACY+'/api/order/confirm-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})});
-    localStorage.setItem('lastRechargeTime',Date.now().toString());
-  }catch(e){}
-  showToast('已提交，等待审核到账');
-  updateBalance();
-  loadOrders();
-  if(onClose)onClose();
+    const r=await(await fetch(API_LEGACY+'/api/order/confirm-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType})})).json();
+    if(r.code===200||r.success){
+      localStorage.setItem('lastRechargeTime',Date.now().toString());
+      showToast('充值成功');
+      updateBalance();
+      loadOrders();
+      if(onClose)onClose();
+    }else showToast(r.msg||'充值失败','error')
+  }catch(e){showToast('网络错误','error')}
 }
 
 function openAlipayApp(){
