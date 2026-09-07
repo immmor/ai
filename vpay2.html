@@ -444,6 +444,14 @@ function showToast(msg,type='success'){
 }
 function showLoading(t){document.getElementById('loadingText').textContent=t||'处理中...';document.getElementById('loadingOverlay').classList.add('show')}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+function formatDate(d){
+  if(!d)return'';
+  const date=new Date(d);
+  if(isNaN(date.getTime()))return d;
+  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),dd=String(date.getDate()).padStart(2,'0');
+  const h=String(date.getHours()).padStart(2,'0'),mi=String(date.getMinutes()).padStart(2,'0');
+  return `${y}-${m}-${dd} ${h}:${mi}`;
+}
 
 // Page switching
 function switchPage(page){
@@ -648,10 +656,10 @@ async function loadRecentOrders(){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
           const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?'已支付':item.status==='failed'?'失败':'待支付';
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${item.time}</p><span class="order-status ${sc}">${st}</span></div></div>`
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${item.time}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
       }).join('')
     }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无记录</p></div>'
@@ -675,7 +683,7 @@ function renderOrders(orders){
   if(!orders.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>暂无订单</p></div>';pg.style.display='none';return}
   list.innerHTML=orders.map(o=>{
     const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?'已支付':o.status==='failed'?'失败':'待支付';
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${o.created_at||''}</p><span class="order-status ${sc}">${st}</span></div></div>`
+    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
   }).join('');
   pg.style.display=totalOrderPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=orderPage+' / '+totalOrderPages;document.getElementById('ordersPrev').disabled=orderPage<=1;document.getElementById('ordersNext').disabled=orderPage>=totalOrderPages
 }
@@ -699,7 +707,7 @@ function renderRecords(recs){
   if(!recs.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>暂无记录</p></div>';pg.style.display='none';return}
   list.innerHTML=recs.map(r=>{
     const isOut=r.direction==='out';
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isOut?'转出':'收入'} ¥${(r.amount||0).toFixed(2)}</h4><p>${r.counterparty||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${r.created_at||''}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
+    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isOut?'转出':'收入'} ¥${(r.amount||0).toFixed(2)}</h4><p>${r.counterparty||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
   }).join('');
   pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
 }
