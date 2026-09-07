@@ -768,6 +768,7 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     document.body.removeChild(overlay);
     document.body.removeChild(container);
     document.body.style.overflow=origOverflow;
+    loadOrders();
   };
 }
 
