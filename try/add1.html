@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      perspective: 800px;
+    }
+
+    .origami-btn {
+      display: flex;
+      cursor: pointer;
+      transform-style: preserve-3d;
+    }
+
+    /* 折叠的纸片层 */
+    .fold {
+      width: 0px;
+      height: 50px;
+      background: #38bdf8;
+      border: 1px solid #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      font-weight: bold;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: left center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .fold:nth-child(even) {
+      background: #7dd3fc;
+    }
+
+    /* 初始触发点 */
+    .origami-trigger {
+      width: 50px;
+      height: 50px;
+      background: #0284c7;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      border-radius: 8px 0 0 8px;
+    }
+
+    /* 展开状态：像屏风一样折叠张开 */
+    .origami-btn.unfold .fold {
+      width: 60px;
+    }
+
+    .origami-btn.unfold .fold:nth-child(2) { transform: rotateY(20deg); }
+    .origami-btn.unfold .fold:nth-child(3) { transform: rotateY(-40deg); }
+    .origami-btn.unfold .fold:nth-child(4) { transform: rotateY(20deg); }
+  </style>
+</head>
+<body>
+
+  <div class="origami-btn" id="origami" onclick="unfoldPaper()">
+    <div class="origami-trigger">+</div>
+    <div class="fold">折</div>
+    <div class="fold">纸</div>
+    <div class="fold">展开</div>
+  </div>
+
+  <script>
+    function unfoldPaper() {
+      document.getElementById('origami').classList.toggle('unfold');
+    }
+  </script>
+
+</body>
+</html>

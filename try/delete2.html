@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    /* 震动屏幕主体 */
+    .rocket-container {
+      position: relative;
+    }
+
+    .rocket-btn {
+      position: relative;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+      z-index: 2;
+    }
+
+    /* 火焰与尾气 */
+    .flame {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 20px;
+      height: 30px;
+      background: linear-gradient(to bottom, #f59e0b, #ef4444, transparent);
+      border-radius: 50%;
+      filter: blur(2px);
+      z-index: 1;
+      transition: transform 0.2s;
+    }
+
+    /* 1. 点火蓄力状态 */
+    .rocket-container.ignite .flame {
+      transform: translateX(-50%) scale(1.5);
+      animation: flicker 0.1s infinite alternate;
+    }
+
+    .rocket-container.ignite {
+      animation: shake 0.1s infinite;
+    }
+
+    /* 2. 向上发射冲出屏幕 */
+    .rocket-container.launch {
+      animation: launchUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes flicker {
+      0% { height: 25px; opacity: 0.8; }
+      100% { height: 40px; opacity: 1; }
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px); }
+      50% { transform: translate(-1px, -2px); }
+      100% { transform: translate(-2px, 1px); }
+    }
+
+    @keyframes launchUp {
+      0% { transform: translateY(0); }
+      20% { transform: translateY(20px); } /* 先下沉下蹲，再极速喷射 */
+      100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="rocket-container" id="rocketBox">
+    <button class="rocket-btn" onclick="launchRocket()">发射销毁 🚀</button>
+    <div class="flame"></div>
+  </div>
+
+  <script>
+    function launchRocket() {
+      const box = document.getElementById('rocketBox');
+      if (box.classList.contains('ignite')) return;
+
+      // 阶段一：点火震动 (蓄力 0.6 秒)
+      box.classList.add('ignite');
+
+      // 阶段二：起飞发射
+      setTimeout(() => {
+        box.classList.remove('ignite');
+        box.classList.add('launch');
+      }, 600);
+    }
+  </script>
+
+</body>
+</html>
