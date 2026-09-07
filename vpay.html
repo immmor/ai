@@ -171,7 +171,7 @@ body{
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:9998;display:none;align-items:center;justify-content:center}
 .loading-overlay.show{display:flex}
-.loading-box{text-align:right}
+.loading-box{text-align:center}
 .loading-spinner{width:36px;height:36px;border:3px solid var(--panel-border);border-top-color:#6c5ce7;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-box p{color:var(--text-muted);font-size:14px}
@@ -183,7 +183,7 @@ body{
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
 /* Empty state */
-.empty-state{text-align:right;padding:40px 20px;color:var(--text-muted)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
 .empty-state p{font-size:14px}
 /* Auth Fullscreen */
@@ -288,7 +288,8 @@ body{
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8"></i>
             </div>
             <div class="card-bottom">
-              <div class="card-number">FUNBUA • 尊享数字账户</div>
+              <div class="card-number">FUNBUA尊享数字账户</div>
+              <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto">1 USD = ¥<span id="dashboardRate">6.8</span></div>
             </div>
           </div>
 
@@ -350,6 +351,7 @@ body{
           <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub">¥204</div></button>
           <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
           <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
+          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:var(--text-muted);opacity:0.7;margin-top:4px" id="creem-exchange-rate">1 USD = ¥6.8</div>
         </div>
         <div class="amount-grid hidden" id="amtGridCny">
           <button class="amount-btn" data-amount="30" onclick="selectCny(30)">¥30</button>
@@ -539,6 +541,9 @@ async function updateBalance(){
     const r=await(await fetch(API_LEGACY+`/api/balance?username=${currentUser.username}`)).json();
     if(r.code===200){const b=r.balance||0;document.getElementById('balanceDisplay').textContent=b.toFixed(2);document.getElementById('balanceUsd').textContent='$'+(b/USD_TO_CNY).toFixed(2)}
   }catch(e){}
+  const rate='1 USD = ¥'+USD_TO_CNY;
+  const dr=document.getElementById('dashboardRate');if(dr)dr.textContent=USD_TO_CNY;
+  const cr=document.getElementById('creem-exchange-rate');if(cr)cr.textContent=rate;
 }
 
 // Payment
@@ -824,8 +829,8 @@ function openAlipayApp(){
 }
 
 function copyOrderNo(){
-  const el=document.querySelector('div[style*="font-family: monospace"]');
-  if(el)navigator.clipboard.writeText(el.textContent).then(()=>showToast('已复制'));
+  const el=document.querySelector('div[style*="monospace"]');
+  if(el)navigator.clipboard.writeText(el.textContent.trim()).then(()=>showToast('已复制'));
 }
 
 // Init
@@ -839,10 +844,11 @@ function copyOrderNo(){
   }
   const params=new URLSearchParams(window.location.search),ticket=params.get('ticket');
   if(ticket){
+    window.history.replaceState({},document.title,window.location.pathname);
     (async()=>{
       try{
         const r=await(await fetch(API_BASE+'/api/quick-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket})})).json();
-        if(r.success&&r.userInfo){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());const cw=window.location.pathname;window.history.replaceState({},document.title,cw);enterMain()}
+        if(r.success&&r.userInfo){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());enterMain()}
       }catch(e){}
     })()
   }
