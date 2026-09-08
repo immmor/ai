@@ -1399,7 +1399,9 @@
                                 <tr>
                                     <th>邀请人</th>
                                     <th>被邀请人</th>
+                                    <th>第几单</th>
                                     <th>订单金额</th>
+                                    <th>比例</th>
                                     <th>返现金额</th>
                                     <th>状态</th>
                                     <th>申请时间</th>
@@ -4917,7 +4919,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         function renderRebates(list) {
             const tbody = document.getElementById('rebateTableBody');
             if (!list.length) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">暂无返现记录</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">暂无返现记录</td></tr>';
                 return;
             }
             const statusMap = { pending: '待审核', approved: '已通过', rejected: '已驳回' };
@@ -4926,7 +4928,9 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 <tr>
                     <td>${escHtml(r.inviter)}</td>
                     <td>${escHtml(r.invitee)}</td>
+                    <td>第 ${r.order_index || '-'} 单</td>
                     <td>¥${parseFloat(r.order_price || 0).toFixed(2)}</td>
+                    <td>${r.rate ? (r.rate * 100).toFixed(0) + '%' : '-'}</td>
                     <td style="color:#48bb78;font-weight:bold;">¥${parseFloat(r.rebate || 0).toFixed(2)}</td>
                     <td style="color:${statusColor[r.status] || '#000'}">${statusMap[r.status] || r.status}</td>
                     <td>${r.created_at || ''}</td>
