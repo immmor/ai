@@ -34,7 +34,7 @@ body{
 }
 /* Sidebar */
 .sidebar{padding:30px 20px;border-right:1px solid var(--panel-border);display:flex;flex-direction:column;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;letter-spacing:2px;background:linear-gradient(45deg,#fff,#8a8d9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand{display:flex;align-items:center;justify-content:center;gap:12px;font-size:20px;font-weight:700;letter-spacing:2px;background:linear-gradient(45deg,#fff,#8a8d9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .brand i{font-size:24px;color:#f1c40f;-webkit-text-fill-color:initial}
 .nav-menu{list-style:none;margin-top:40px}
 .nav-item{margin-bottom:10px}
@@ -54,9 +54,9 @@ body{
 /* Main Content */
 .main-content{padding:40px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;max-height:85vh}
 /* Auth */
-.auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%}
-.auth-page .brand{font-size:32px;margin-bottom:4px}
-.auth-card{width:100%;max-width:330px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:20px;padding:36px}
+.auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%;max-width:420px;margin:0 auto}
+.auth-page .brand{font-size:32px;margin-bottom:4px;justify-content:center}
+.auth-card{width:100%;max-width:330px;margin-left:auto;margin-right:auto;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:20px;padding:36px}
 .input-group{position:relative;margin-bottom:14px}
 .input-group input{
   width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);
@@ -228,7 +228,7 @@ body{
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
 .empty-state p{font-size:14px}
 /* Auth Fullscreen */
-.auth-fullscreen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg-base);background-image:radial-gradient(circle at 15% 15%,rgba(108,92,231,0.15) 0%,transparent 40%),radial-gradient(circle at 85% 85%,rgba(241,196,15,0.08) 0%,transparent 40%)}
+.auth-fullscreen{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;margin:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg-base);background-image:radial-gradient(circle at 15% 15%,rgba(108,92,231,0.15) 0%,transparent 40%),radial-gradient(circle at 85% 85%,rgba(241,196,15,0.08) 0%,transparent 40%)}
 /* Hide / Show */
 .hidden{display:none!important}
 /* Mobile Nav */
@@ -360,7 +360,7 @@ body{
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8;cursor:pointer" onclick="showCardModal()"></i>
             </div>
             <div class="card-bottom">
-              <div class="card-number">FUNBUA尊享数字账户</div>
+              <div class="card-number">FUNBUA<span id="tierAccountLabel">尊享数字账户</span></div>
               <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto">1 USD = ¥<span id="dashboardRate">6.8</span></div>
             </div>
           </div>
@@ -502,6 +502,7 @@ body{
   <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
 </nav>
 
+<script src="vpay-tier.js"></script>
 <script>
 const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.8,USDT_RATE=6.8;
 let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
@@ -588,7 +589,7 @@ function enterMain(){
   document.getElementById('appContainer').classList.remove('hidden');
   document.getElementById('mobileNav').classList.remove('hidden');
   document.getElementById('userName').textContent=maskUsername(currentUser.username)||'用户';
-  document.getElementById('userStatus').textContent='已登录';
+  if(window.VpayTier)VpayTier.apply(balanceVal);else document.getElementById('userStatus').textContent='已登录';
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
   // 不可信用户隐藏支付宝人工支付
   if(currentUser.not_trusted==='yes'){
@@ -612,7 +613,7 @@ async function updateBalance(){
   if(!currentUser)return;
   try{
     const r=await(await fetch(API_LEGACY+`/api/balance?username=${currentUser.username}`)).json();
-    if(r.code===200){balanceVal=r.balance||0;renderBalance()}
+    if(r.code===200){balanceVal=r.balance||0;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal)}
   }catch(e){}
   const rate='1 USD = ¥'+USD_TO_CNY;
   const dr=document.getElementById('dashboardRate');if(dr)dr.textContent=USD_TO_CNY;
