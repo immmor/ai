@@ -192,6 +192,23 @@ body{
 .modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:right}
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
+/* 支付密码键盘 */
+.pwd-label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
+.pwd-field{display:flex;gap:8px;margin-bottom:14px;cursor:pointer}
+.pwd-field i{flex:1;height:46px;border:1px solid var(--panel-border);border-radius:10px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center}
+.pwd-field i.on::after{content:'';width:10px;height:10px;border-radius:50%;background:#fff}
+.pwd-field.active i{border-color:#6c5ce7}
+.pwd-field.active i.on::after{background:#a29bfe}
+.pwd-keyboard{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(110%);width:100%;max-width:420px;background:rgba(18,20,29,.98);backdrop-filter:blur(20px);border:1px solid var(--panel-border);border-bottom:none;border-radius:20px 20px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));z-index:10000;transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.pwd-keyboard.show{transform:translateX(-50%)}
+.pk-tip{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.pk-tip .safe{color:var(--accent-green)}
+.pk-close{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:4px 6px}
+.pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pk-key{height:52px;border:1px solid var(--panel-border);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font-size:22px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pk-key:active{background:rgba(108,92,231,.35)}
+.kb-open .modal-overlay{align-items:flex-end;padding-bottom:330px}
+.kb-open .modal-box{max-height:calc(100vh - 330px);padding-bottom:16px}
 /* Empty state */
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
@@ -234,6 +251,36 @@ body{
     <h3 id="qrTitle" style="text-align:left">Scan to Pay</h3>
     <div id="qrContent"></div>
   </div>
+</div>
+
+<!-- ============ 强制设置支付密码 ============ -->
+<div class="modal-overlay" id="payPwdModal">
+  <div class="modal-box">
+    <h3 style="text-align:left">设置支付密码</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">首次使用转账功能需设置 6 位数字支付密码，用于确认每一笔转账，请妥善保管。</p>
+    <label class="pwd-label">支付密码</label>
+    <div class="pwd-field" id="setPwd1" onclick="pwdKb(true,'setPwd1','请输入6位支付密码')"></div>
+    <label class="pwd-label">确认支付密码</label>
+    <div class="pwd-field" id="setPwd2" onclick="pwdKb(true,'setPwd2','请再次输入支付密码')"></div>
+    <label class="pwd-label" style="margin-top:4px">登录密码</label>
+    <div class="input-group"><input type="password" id="setPayPwdAccount" onfocus="pwdKb(false)" placeholder="请输入登录密码以确认身份"></div>
+    <button class="btn btn-primary" onclick="submitPayPassword()"><i class="fa-solid fa-shield-halved"></i> 保存支付密码</button>
+  </div>
+</div>
+
+<!-- ============ 转账确认（点击发送后弹出，输入支付密码） ============ -->
+<div class="modal-overlay" id="transferPwdModal">
+  <div class="modal-box">
+    <h3 style="text-align:left">确认转账</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">向 <b id="tpmTo" style="color:#fff"></b> 转账 <b id="tpmAmt" style="color:#fff"></b>，请输入 6 位支付密码。</p>
+    <div class="pwd-field" id="transferPwd" onclick="pwdKb(true,'transferPwd','请输入6位支付密码')"></div>
+  </div>
+</div>
+
+<!-- ============ 自定义安全数字键盘（按键由 JS 生成） ============ -->
+<div class="pwd-keyboard" id="pwdKeyboard">
+  <div class="pk-tip"><span id="pkTip"></span><span><i class="fa-solid fa-shield-halved safe"></i> 安全键盘 <button class="pk-close" onclick="pwdKb(false)"><i class="fa-solid fa-times"></i></button></span></div>
+  <div class="pk-grid" id="pkGrid"></div>
 </div>
 
 <!-- ============ AUTH FULLSCREEN ============ -->
@@ -416,10 +463,6 @@ body{
           <label>金额 (CNY)</label>
           <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
         </div>
-        <div class="input-group">
-          <label>密码</label>
-          <input type="password" id="transferPassword" placeholder="确认密码">
-        </div>
         <button class="btn btn-primary" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> 发送</button>
       </div>
 
@@ -469,6 +512,7 @@ function formatDate(d){
 // Page switching
 function switchPage(page){
   currentPage=page;
+  pwdKb(false);
   // Sidebar nav
   document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
   // Content pages
@@ -481,7 +525,7 @@ function switchPage(page){
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
   if(page==='recharge'&&currentUser)loadOrders();
-  if(page==='transfer'&&currentUser)loadRecords();
+  if(page==='transfer'&&currentUser){pwdBuf.transferPwd='';loadRecords();ensurePayPassword();}
 }
 
 // Auth
@@ -511,7 +555,7 @@ async function handleLogin(){
 
 function handleLogout(){
   if(confirm('确认退出？')){
-    localStorage.removeItem('vpay_user');currentUser=null;
+    localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
     document.getElementById('appContainer').classList.add('hidden');
     document.getElementById('mobileNav').classList.add('hidden');
     document.getElementById('authFullscreen').classList.remove('hidden');
@@ -524,6 +568,7 @@ function maskUsername(name){
   return name.slice(0,6)+'*';
 }
 function enterMain(){
+  payPasswordReady=false;
   document.getElementById('authFullscreen').classList.add('hidden');
   document.getElementById('appContainer').classList.remove('hidden');
   document.getElementById('mobileNav').classList.remove('hidden');
@@ -635,17 +680,92 @@ async function handlePay(){
 }
 
 // Transfer
-async function handleTransfer(){
+let payPasswordReady=false;
+
+// ===== 安全数字键盘（设置支付密码 / 转账共用） =====
+const pwdBuf={setPwd1:'',setPwd2:'',transferPwd:''};
+const pwdFields=Object.keys(pwdBuf);
+const $=id=>document.getElementById(id);
+let pwdFocus=null,pending=null;
+// 生成数字键盘
+$('pkGrid').innerHTML=[1,2,3,4,5,6,7,8,9,'',0,'del'].map(k=>k===''?'<span></span>':`<button class="pk-key" onclick="pwdKey('${k}')">${k==='del'?'<i class="fa-solid fa-delete-left"></i>':k}</button>`).join('');
+// 渲染 6 位密码点阵
+function renderPwd(id){
+  const v=pwdBuf[id],el=$(id);
+  el.innerHTML='<i class="on"></i>'.repeat(v.length)+'<i></i>'.repeat(6-v.length);
+  el.classList.toggle('active',id===pwdFocus);
+}
+// 弹出 / 收起键盘
+function pwdKb(show,id,tip){
+  pwdFocus=show?id:null;
+  if(tip)$('pkTip').textContent=tip;
+  $('pwdKeyboard').classList.toggle('show',show);
+  document.body.classList.toggle('kb-open',show);
+  $('transferPwdModal').classList.toggle('show',show&&id==='transferPwd');
+  pwdFields.forEach(renderPwd);
+}
+function pwdKey(k){
+  if(!pwdFocus)return;
+  const v=pwdBuf[pwdFocus];
+  pwdBuf[pwdFocus]=k==='del'?v.slice(0,-1):v.length<6?v+k:v;
+  renderPwd(pwdFocus);
+  if(pwdBuf[pwdFocus].length<6)return;
+  // 输满 6 位：设置流程跳确认框，转账流程提交
+  if(pwdFocus==='setPwd1'&&!pwdBuf.setPwd2)pwdKb(true,'setPwd2','请再次输入支付密码');
+  else if(pwdFocus==='transferPwd')handleTransfer(pwdBuf.transferPwd);
+}
+function showPayPwdModal(){
+  pwdFields.forEach(k=>pwdBuf[k]='');
+  $('setPayPwdAccount').value='';
+  $('payPwdModal').classList.add('show');
+  pwdKb(true,'setPwd1','请输入6位支付密码');
+}
+// 进入转账页时检测：未设置支付密码则强制弹窗设置
+async function ensurePayPassword(){
+  if(!currentUser||payPasswordReady)return;
+  try{
+    const r=await(await fetch(API_BASE+`/api/pay-password?username=${encodeURIComponent(currentUser.username)}`)).json();
+    if(r.code===200&&r.hasPayPassword){payPasswordReady=true;return}
+    if(r.code===200)showPayPwdModal();
+  }catch(e){}
+}
+async function submitPayPassword(){
   if(!currentUser)return;
-  const to=document.getElementById('transferTo').value.trim(),amt=parseFloat(document.getElementById('transferAmount').value),pw=document.getElementById('transferPassword').value;
-  if(!to||!amt||!pw)return showToast('请填写所有字段','error');
-  if(amt<=0)return showToast('请输入有效金额','error');
+  const {setPwd1:p1,setPwd2:p2}=pwdBuf,acc=$('setPayPwdAccount').value;
+  if(!/^\d{6}$/.test(p1))return showToast('支付密码必须为6位数字','error');
+  if(p1!==p2)return showToast('两次输入的支付密码不一致','error');
+  if(!acc)return showToast('请输入登录密码','error');
+  showLoading('保存中...');
+  try{
+    const r=await(await fetch(API_BASE+'/api/pay-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,password:acc,payPassword:p1})})).json();
+    hideLoading();
+    if(r.code===200){payPasswordReady=true;$('payPwdModal').classList.remove('show');pwdKb(false);showToast('支付密码设置成功')}
+    else showToast(r.msg||'设置失败','error')
+  }catch(e){hideLoading();showToast('网络错误','error')}
+}
+// 点发送：先校验并弹出密码框；输满 6 位后带密码提交
+async function handleTransfer(pw){
+  if(!currentUser)return;
+  if(!pw){
+    const to=$('transferTo').value.trim(),amt=parseFloat($('transferAmount').value);
+    if(!to)return showToast('请输入收款人','error');
+    if(!amt||amt<=0)return showToast('请输入有效金额','error');
+    pending={to,amt};pwdBuf.transferPwd='';
+    $('tpmTo').textContent=to;
+    $('tpmAmt').textContent='¥'+amt.toFixed(2);
+    return pwdKb(true,'transferPwd','请输入6位支付密码');
+  }
+  if(!/^\d{6}$/.test(pw)||!pending)return;
+  const {to,amt}=pending;pending=null;
   showLoading('处理中...');
   try{
     const r=await(await fetch(API_BASE+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,password:pw})})).json();
     hideLoading();
-    if(r.code===200){showToast('转账成功');document.getElementById('transferTo').value='';document.getElementById('transferAmount').value='';document.getElementById('transferPassword').value='';updateBalance();loadRecords()}
-    else showToast(r.msg||'转账失败','error')
+    if(r.code===200){
+      showToast('转账成功');
+      $('transferTo').value='';$('transferAmount').value='';
+      pwdBuf.transferPwd='';pwdKb(false);updateBalance();loadRecords();
+    }else{showToast(r.msg||'转账失败','error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
   }catch(e){hideLoading();showToast('网络错误','error')}
 }
 

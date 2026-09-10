@@ -10,8 +10,9 @@ function fbChoiceLabel(_match, choice) {
   return map[choice] || choice;
 }
 
-// 邀请返现：被邀请人开通首笔 VIP 订单（月或年），给邀请人生成该笔订单价格 20% 的待审核返现记录
-async function grantRebate(DB, inviteeUsername, orderPrice, isYearly) {
+// 邀请返现：被邀请人每开通一笔 VIP 订单（月或年），按订单序号阶梯返现给邀请人
+// 阶梯比例：第1笔订单 20%，第2笔订单 15%，第3笔及以后每笔订单 10%（均生成待审核返现记录）
+async function grantRebate(DB, inviteeUsername, orderPrice, isYearly, orderId) {
   try {
     const me = await DB.prepare('SELECT invited_by FROM user WHERE username = ?').bind(inviteeUsername).first();
     if (!me?.invited_by) return;
@@ -19,15 +20,20 @@ async function grantRebate(DB, inviteeUsername, orderPrice, isYearly) {
     if (!inviter) return;
     let rebates = [];
     try { rebates = JSON.parse(inviter.rebates || '[]'); } catch (e) {}
-    // 仅首笔订单返现：若该被邀请人已有未驳回的返现记录，则不再生成
-    const existed = rebates.some(r => r.invitee === inviteeUsername && r.status !== 'rejected');
-    if (existed) return;
+    // 幂等：同一笔订单（orderId）不重复生成返现记录
+    if (orderId && rebates.some(r => r.order_id === orderId && r.status !== 'rejected')) return;
+    // 统计该被邀请人已产生（未驳回）的返现笔数，决定本次阶梯比例
+    const paidCount = rebates.filter(r => r.invitee === inviteeUsername && r.status !== 'rejected').length;
+    const rate = paidCount === 0 ? 0.2 : (paidCount === 1 ? 0.15 : 0.1);
     const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
     rebates.unshift({
       invitee: inviteeUsername,
+      order_id: orderId || null,
+      order_index: paidCount + 1,
       order_type: isYearly ? 'year' : 'month',
       order_price: orderPrice,
-      rebate: +(orderPrice * 0.2).toFixed(2),
+      rate: rate,
+      rebate: +(orderPrice * rate).toFixed(2),
       status: 'pending',
       created_at: nowTime
     });
@@ -79,7 +85,9 @@ async function autoRenewUser(DB, user) {
   } catch (e) {
     vorders = [];
   }
+  const renewOrderId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   vorders.unshift({
+    id: renewOrderId,
     type: 'vip',
     duration: actualDays,
     price: pr,
@@ -97,8 +105,8 @@ async function autoRenewUser(DB, user) {
   if (r.success && r.meta.changes > 0) {
     const nowStr = new Date().toISOString().slice(0,19).replace('T',' ');
 
-    // 邀请返现：自动续费虽是一笔 VIP 订单，但 grantRebate 已按首笔去重，不会重复返现
-    await grantRebate(DB, user.username, pr, yr);
+    // 邀请返现：自动续费是一笔 VIP 订单，按阶梯比例给邀请人生成待审核返现记录（orderId 保证幂等）
+    await grantRebate(DB, user.username, pr, yr, renewOrderId);
 
     // 给用户发送通知（多语言）
     await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind(user.username, nt({
@@ -640,7 +648,7 @@ export default {
             const registerTime = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
             invitedUsers.unshift({ username: username, registerTime: registerTime });
             await DB.prepare('UPDATE user SET invited_user = ? WHERE username = ?').bind(JSON.stringify(invitedUsers), inviterUsername).run();
-            // 记录被邀请人由谁邀请（用于后续首单返现）
+            // 记录被邀请人由谁邀请（用于后续阶梯返现）
             await DB.prepare('UPDATE user SET invited_by = ? WHERE username = ?').bind(inviterUsername, username).run();
           }
           
@@ -1210,6 +1218,7 @@ export default {
           }
           
           const newOrder = {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
             type: 'vip',
             duration: duration,
             price: vipPrice,
@@ -1245,8 +1254,8 @@ export default {
               .bind('immmor', msg, nowTime)
               .run();
             
-            // 邀请返现：被邀请人每开通一笔 VIP 订单（月或年），给邀请人生成该笔订单价格 20% 的待审核返现记录
-            await grantRebate(DB, username, vipPrice, isYearly);
+            // 邀请返现：被邀请人每开通一笔 VIP 订单（月或年），按阶梯比例给邀请人生成待审核返现记录
+            await grantRebate(DB, username, vipPrice, isYearly, newOrder.id);
 
             const updatedUser = await DB
               .prepare('SELECT username, balance, v_expire_date, v_token, v_link_clash, v_link_v2ray, vorders FROM user WHERE username = ?')
@@ -1405,6 +1414,38 @@ export default {
         }
       }
 
+      // ========== 支付密码接口：GET 查询状态 / POST 设置（6位数字） ==========
+      if (path === '/api/pay-password') {
+        try {
+          // 懒加载字段：不存在时新增
+          try { await DB.prepare('ALTER TABLE user ADD COLUMN pay_password TEXT').run(); } catch (e) {}
+
+          // 查询是否已设置
+          if (request.method === 'GET') {
+            const username = url.searchParams.get('username');
+            if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+            const user = await DB.prepare('SELECT pay_password FROM user WHERE username = ?').bind(username).first();
+            if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+            return resJson({ code: 200, hasPayPassword: !!user.pay_password });
+          }
+
+          // 设置支付密码
+          if (request.method === 'POST') {
+            const { username, password, payPassword } = await request.json();
+            if (!username || !password || !payPassword) return resJson({ code: 400, msg: '参数不完整' }, 400);
+            if (!/^\d{6}$/.test(String(payPassword))) return resJson({ code: 400, msg: '支付密码必须为6位数字' }, 400);
+            // 校验登录密码，确认身份
+            const user = await DB.prepare('SELECT username FROM user WHERE username = ? AND password = ?').bind(username, password).first();
+            if (!user) return resJson({ code: 401, msg: '登录密码错误' }, 401);
+            await DB.prepare('UPDATE user SET pay_password = ? WHERE username = ?').bind(String(payPassword), username).run();
+            return resJson({ code: 200, msg: '支付密码设置成功' });
+          }
+        } catch (err) {
+          console.error('Pay password error:', err);
+          return resJson({ code: 500, msg: '操作失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 用户间转账接口 ==========
       if (path === '/api/transfer' && request.method === 'POST') {
         try {
@@ -1422,19 +1463,25 @@ export default {
             return resJson({ code: 400, msg: '转账金额必须大于0' }, 400);
           }
           if (!password) {
-            return resJson({ code: 400, msg: '请输入密码以确认转账' }, 400);
+            return resJson({ code: 400, msg: '请输入6位支付密码以确认转账' }, 400);
           }
 
-          // 校验转出用户是否存在 + 身份（密码）校验
+          // 确保支付密码字段存在
+          try { await DB.prepare('ALTER TABLE user ADD COLUMN pay_password TEXT').run(); } catch (e) {}
+
+          // 校验转出用户是否存在 + 支付密码校验
           const sender = await DB
-            .prepare('SELECT username, password, balance FROM user WHERE username = ?')
+            .prepare('SELECT username, pay_password, balance FROM user WHERE username = ?')
             .bind(from)
             .first();
           if (!sender) {
             return resJson({ code: 404, msg: '转出用户不存在' }, 404);
           }
-          if (sender.password !== password) {
-            return resJson({ code: 401, msg: '密码错误，转账被拒绝' }, 401);
+          if (!sender.pay_password) {
+            return resJson({ code: 403, msg: '请先设置6位支付密码' }, 403);
+          }
+          if (String(sender.pay_password) !== String(password)) {
+            return resJson({ code: 401, msg: '支付密码错误，转账被拒绝' }, 401);
           }
 
           // 校验收款用户是否存在
@@ -1474,6 +1521,10 @@ export default {
             ]);
             return resJson({ code: 500, msg: '转账失败，已撤销' }, 500);
           }
+
+          const msgTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+            .bind('immmor', `💰 用户 ${from} 向 ${to} 转账 ¥${amt}`, msgTime).run();
 
           return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
@@ -3405,11 +3456,11 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // ========== 提现：提交提现申请 ==========
       if (path === '/api/withdraw' && request.method === 'POST') {
         try {
-          const { username, amount, method, qrCode, account } = await request.json();
+          const { username, amount, method, qrCode, account, email } = await request.json();
           if (!username) return resJson({ success: false, key: 'withdraw_err_login', message: '请先登录' }, 401);
           if (!amount || amount <= 0) return resJson({ success: false, key: 'withdraw_err_amount', message: '请输入有效金额' }, 400);
           if (!method) return resJson({ success: false, key: 'withdraw_err_method', message: '请选择收款方式' }, 400);
-          if (method !== 'wechat' && method !== 'alipay' && !method.startsWith('crypto_')) return resJson({ success: false, key: 'withdraw_err_method', message: '请选择收款方式' }, 400);
+          if (method !== 'wechat' && method !== 'alipay' && !method.startsWith('crypto_') && method !== 'okx_usdt' && method !== 'binance_usdt') return resJson({ success: false, key: 'withdraw_err_method', message: '请选择收款方式' }, 400);
 
           let finalQrCode = null;
           if (method.startsWith('crypto_')) {
@@ -3417,6 +3468,11 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             const acc = (account || '').trim();
             if (!acc) return resJson({ success: false, key: 'withdraw_err_qr', message: '请填写收款账号' }, 400);
             finalQrCode = acc;
+          } else if (method === 'okx_usdt' || method === 'binance_usdt') {
+            // OKX/Binance 通过邮箱提现，无需二维码
+            const emailVal = (email || '').trim();
+            if (!emailVal) return resJson({ success: false, key: 'withdraw_err_qr', message: '请填写收款邮箱' }, 400);
+            finalQrCode = emailVal;
           } else {
             // 收款码若客户端未上传（复用已存），则从服务端取用，避免重复传输图片
             finalQrCode = qrCode;
@@ -3969,9 +4025,6 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         const ordersData = await ordersRes.json().catch(() => null);
         const orderCount = ordersData?.data?.pagination?.total
           ?? (Array.isArray(ordersData?.data?.orders) ? ordersData.data.orders.length : 0);
-        console.log('订单接口查询结果:', orderCount);
-        await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
-          .bind('immmor', `定时订单查询完成，订单总数：${orderCount}`, ts).run();
       } catch (e) {
         console.error('请求订单接口失败:', e);
       }
