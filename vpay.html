@@ -103,7 +103,21 @@ body{
 .crypto-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200px;height:200px;background:radial-gradient(circle,rgba(108,92,231,0.3) 0%,transparent 70%);pointer-events:none}
 .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
 .card-balance-label{font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
-.card-balance-val{font-size:36px;font-weight:700;margin-top:5px;letter-spacing:-0.5px}
+.card-balance-val{font-size:36px;font-weight:700;margin-top:5px;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px}
+.balance-amount{display:inline-block;min-width:4ch;font-variant-numeric:tabular-nums}
+#balanceDisplay.masked{position:relative;top:0.18em}
+.balance-toggle{
+  width:22px;height:22px;flex:none;padding:0;border:0;border-radius:50%;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:1;
+  color:rgba(255,255,255,0.38);background:transparent;
+  position:relative;top:2px;
+  transition:color .2s,background .2s,transform .15s;
+}
+.balance-toggle:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.balance-toggle:active{transform:scale(0.88)}
+.balance-toggle:focus-visible{outline:2px solid rgba(108,92,231,0.9);outline-offset:2px}
+.balance-toggle.on{color:#8f7dff}
+.balance-toggle.on:hover{color:#a99cff;background:rgba(108,92,231,0.18)}
 .card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
 .card-number{font-family:monospace;font-size:16px;letter-spacing:2px;color:rgba(255,255,255,0.7)}
 /* Quick Actions */
@@ -226,7 +240,8 @@ body{
   .sidebar{display:none}
   .main-content{padding:20px;gap:20px;max-height:calc(100vh - 60px)}
   .auth-page{min-height:80vh;justify-content:center}
-  .card-balance-val{font-size:28px}
+  .card-balance-val{font-size:28px;gap:10px}
+  .balance-toggle{width:20px;height:20px;font-size:11px}
   .mobile-nav{display:flex;justify-content:space-around;align-items:center;position:fixed;bottom:0;left:0;width:100%;height:60px;background:rgba(10,11,16,0.95);backdrop-filter:blur(10px);border-top:1px solid var(--panel-border);z-index:1000}
   .mobile-nav-item{color:var(--text-muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;cursor:pointer;border:none;background:none;font-family:inherit;padding:8px}
   .mobile-nav-item.active{color:#6c5ce7}
@@ -340,7 +355,7 @@ body{
             <div class="card-top">
               <div>
                 <div class="card-balance-label">Total Balance</div>
-                <div class="card-balance-val">¥ <span id="balanceDisplay">0.00</span></div>
+                <div class="card-balance-val"><span class="balance-amount">¥ <span id="balanceDisplay" class="masked">****</span></span><button type="button" class="balance-toggle" id="balanceEye" onclick="toggleBalance()" aria-label="显示或隐藏余额" title="显示 / 隐藏余额"><i class="fa-regular fa-eye-slash"></i></button></div>
               </div>
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8;cursor:pointer" onclick="showCardModal()"></i>
             </div>
@@ -555,7 +570,7 @@ async function handleLogin(){
 
 function handleLogout(){
   if(confirm('确认退出？')){
-    localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
+    localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;balanceVisible=false;pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
     document.getElementById('appContainer').classList.add('hidden');
     document.getElementById('mobileNav').classList.add('hidden');
     document.getElementById('authFullscreen').classList.remove('hidden');
@@ -583,12 +598,21 @@ function enterMain(){
   updateBalance();loadRecentOrders();switchPage('dashboard')
 }
 
-// Balance
+// Balance（默认隐藏金额，点眼睛切换）
+let balanceVisible=false,balanceVal=0;
+function renderBalance(){
+  const bd=document.getElementById('balanceDisplay');
+  bd.textContent=balanceVisible?balanceVal.toFixed(2):'****';
+  bd.classList.toggle('masked',!balanceVisible);
+  document.querySelector('#balanceEye i').className='fa-regular '+(balanceVisible?'fa-eye':'fa-eye-slash');
+  document.getElementById('balanceEye').classList.toggle('on',balanceVisible);
+}
+function toggleBalance(){balanceVisible=!balanceVisible;renderBalance()}
 async function updateBalance(){
   if(!currentUser)return;
   try{
     const r=await(await fetch(API_LEGACY+`/api/balance?username=${currentUser.username}`)).json();
-    if(r.code===200){const b=r.balance||0;document.getElementById('balanceDisplay').textContent=b.toFixed(2);document.getElementById('balanceUsd').textContent='$'+(b/USD_TO_CNY).toFixed(2)}
+    if(r.code===200){balanceVal=r.balance||0;renderBalance()}
   }catch(e){}
   const rate='1 USD = ¥'+USD_TO_CNY;
   const dr=document.getElementById('dashboardRate');if(dr)dr.textContent=USD_TO_CNY;
