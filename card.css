@@ -17,48 +17,15 @@
   display: flex;
 }
 
+/* 舞台：只负责尺寸与 3D 透视，卡片的外观全部画在 .card-face 上 */
 .cyber-card {
   width: 350px;
   max-width: 90vw;
   height: 220px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  border-radius: 20px;
-  padding: 20px 30px;
   position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 0 30px rgba(0, 242, 255, 0.3),
-    0 0 60px rgba(255, 0, 255, 0.2),
-    inset 0 0 60px rgba(0, 242, 255, 0.1),
-    0 20px 40px rgba(0, 0, 0, 0.4);
-  background-clip: padding-box;
-  animation: cardPulse 3s ease-in-out infinite;
+  perspective: 1200px;
+  cursor: pointer;
   box-sizing: border-box;
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-}
-
-/* 全息光泽效果 */
-.cyber-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 300%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 25%,
-    rgba(0, 242, 255, 0.15) 50%,
-    rgba(255, 0, 255, 0.15) 75%,
-    transparent 100%
-  );
-  animation: holographic 5s linear infinite;
-  pointer-events: none;
 }
 
 @keyframes holographic {
@@ -66,34 +33,21 @@
   100% { transform: translateX(33%); }
 }
 
-.cyber-card::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #00f2ff, #ff00ff, #00ff88, #00f2ff);
-  background-size: 400% 400%;
-  border-radius: 22px;
-  z-index: -1;
-  animation: borderGlow 8s linear infinite;
-}
-
+/* 描边流光：只动第一层（描边），第二层（卡底）保持不动 */
 @keyframes borderGlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { background-position: 0% 50%, 0 0; }
+  50% { background-position: 100% 50%, 0 0; }
+  100% { background-position: 0% 50%, 0 0; }
 }
 
 @keyframes cardPulse {
   0%, 100% {
-    box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2),
-                inset 0 0 60px rgba(0, 242, 255, 0.1), 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 30px var(--tier-glow, rgba(0, 242, 255, 0.3)), 0 0 60px var(--tier-glow-soft, rgba(255, 0, 255, 0.2)),
+                inset 0 0 60px var(--tier-glow-soft, rgba(0, 242, 255, 0.1)), 0 20px 40px rgba(0, 0, 0, 0.4);
   }
   50% {
-    box-shadow: 0 0 50px rgba(0, 242, 255, 0.5), 0 0 80px rgba(255, 0, 255, 0.4),
-                inset 0 0 80px rgba(0, 242, 255, 0.15), 0 25px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 50px var(--tier-glow-strong, rgba(0, 242, 255, 0.5)), 0 0 80px var(--tier-glow, rgba(255, 0, 255, 0.4)),
+                inset 0 0 80px var(--tier-glow-soft, rgba(0, 242, 255, 0.15)), 0 25px 50px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -118,7 +72,7 @@
   letter-spacing: 3px;
   text-shadow:
     0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(0, 242, 255, 0.3),
+    0 0 20px var(--tier-glow, rgba(0, 242, 255, 0.3)),
     0 2px 3px rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -156,7 +110,7 @@
   font-size: 16px;
   color: #fff;
   letter-spacing: 1px;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+  text-shadow: 0 0 10px var(--tier-glow, rgba(0, 242, 255, 0.3));
 }
 
 .cyber-card .card-expiry {
@@ -176,7 +130,7 @@
   font-size: 16px;
   color: #fff;
   letter-spacing: 1px;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+  text-shadow: 0 0 10px var(--tier-glow, rgba(0, 242, 255, 0.3));
 }
 
 .card-logo {
@@ -194,7 +148,7 @@
   text-transform: lowercase;
   letter-spacing: 2px;
   opacity: 0.9;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+  text-shadow: 0 0 10px var(--tier-glow, rgba(0, 242, 255, 0.3));
 }
 
 /* 底部提示 */
@@ -204,4 +158,117 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
+}
+
+/* ===================== 翻面 ===================== */
+
+/* 旋转体：整张卡（底色 / 描边 / 光晕 / 内容）一起翻 */
+.card-flip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.85s cubic-bezier(0.4, 0.15, 0.2, 1);
+  will-change: transform;
+}
+
+.cyber-card.flipped .card-flip {
+  transform: rotateY(180deg);
+}
+
+/* 每一面都是一张完整的卡片：底色 + 渐变描边 + 呼吸光晕 */
+.card-face {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background-image:
+    linear-gradient(45deg, var(--tier-color, #00f2ff), rgba(255, 255, 255, 0.7), var(--tier-color, #00f2ff), rgba(255, 255, 255, 0.7)),
+    var(--tier-card-bg-solid, linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%));
+  background-origin: border-box, padding-box;
+  background-clip: border-box, padding-box;
+  background-size: 400% 400%, 100% 100%;
+  animation: borderGlow 8s linear infinite, cardPulse 3s ease-in-out infinite;
+}
+
+/* 全息光泽：裁剪在卡片圆角内 */
+.card-face::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    var(--tier-glow, rgba(0, 242, 255, 0.15)) 50%,
+    var(--tier-glow-soft, rgba(255, 0, 255, 0.15)) 75%,
+    transparent 100%
+  );
+  animation: holographic 5s linear infinite;
+  pointer-events: none;
+}
+
+/* ===================== 背面：站内小装饰卡 ===================== */
+
+.card-back {
+  justify-content: space-between;
+  padding: 26px 30px;
+  transform: rotateY(180deg);
+}
+
+.card-back-tier {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--tier-color, #ffffff);
+  text-shadow: 0 0 14px var(--tier-glow, rgba(0, 242, 255, 0.35));
+}
+
+.card-back-mark {
+  width: 52px;
+  height: 76px;
+  color: var(--tier-color, #ffffff);
+  opacity: 0.45;
+  filter: drop-shadow(0 0 14px var(--tier-glow, rgba(0, 242, 255, 0.4)));
+  animation: markBreath 5s ease-in-out infinite;
+}
+
+@keyframes markBreath {
+  0%, 100% { opacity: 0.38; transform: translateY(-2px) scale(0.98); }
+  50% { opacity: 0.6; transform: translateY(2px) scale(1.02); }
+}
+
+.card-back .card-text {
+  font-size: 15px;
+  opacity: 0.75;
+}
+
+/* 翻面提示 */
+.card-flip-hint {
+  position: fixed;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
 }
