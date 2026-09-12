@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FUNBUA - 尊享数字钱包</title>
+<title data-i18n="vpay.title">FUNBUA - 尊享数字钱包</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="card.css">
 <style>
@@ -47,6 +47,13 @@ body{
 .user-profile{display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--panel-border)}
 .sidebar-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;border-radius:6px;transition:all .2s;font-size:14px;flex-shrink:0;margin-left:auto}
 .sidebar-logout:hover{color:var(--accent-red);background:rgba(255,118,117,0.1)}
+.user-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.lang-dropdown{position:relative;display:inline-block}
+.lang-menu{display:none;position:absolute;right:0;top:100%;margin-top:8px;min-width:54px;background:#1a1a1a;border:1px solid #6c5ce7;border-radius:8px;overflow:hidden;text-align:center;z-index:10002}
+.lang-menu.show{display:block}
+.lang-menu div{padding:10px 4px;cursor:pointer}
+.lang-menu div:hover{background:#2a2a2a}
+@media(max-width:768px){.lang-menu{top:auto;bottom:100%;margin-top:0;margin-bottom:8px}}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-purple);display:flex;align-items:center;justify-content:center;font-weight:bold}
 .user-info h4{font-size:14px;font-weight:600}
 .user-info p{font-size:12px;color:var(--text-muted)}
@@ -244,17 +251,19 @@ body{
 </head>
 <body>
 
+
+
 <div class="toast" id="toast"></div>
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box">
     <div class="loading-spinner"></div>
-    <p id="loadingText">Processing...</p>
+    <p id="loadingText" data-i18n="vpay.processing">Processing...</p>
   </div>
 </div>
 <div class="modal-overlay" id="qrModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
-    <h3 id="qrTitle" style="text-align:left">Scan to Pay</h3>
+    <h3 id="qrTitle" style="text-align:left" data-i18n="vpay.scanToPay">Scan to Pay</h3>
     <div id="qrContent"></div>
   </div>
 </div>
@@ -262,30 +271,30 @@ body{
 <!-- ============ 强制设置支付密码 ============ -->
 <div class="modal-overlay" id="payPwdModal">
   <div class="modal-box">
-    <h3 style="text-align:left">设置支付密码</h3>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">首次使用转账功能需设置 6 位数字支付密码，用于确认每一笔转账，请妥善保管。</p>
-    <label class="pwd-label">支付密码</label>
-    <div class="pwd-field" id="setPwd1" onclick="pwdKb(true,'setPwd1','请输入6位支付密码')"></div>
-    <label class="pwd-label">确认支付密码</label>
-    <div class="pwd-field" id="setPwd2" onclick="pwdKb(true,'setPwd2','请再次输入支付密码')"></div>
-    <label class="pwd-label" style="margin-top:4px">登录密码</label>
-    <div class="input-group"><input type="password" id="setPayPwdAccount" onfocus="pwdKb(false)" placeholder="请输入登录密码以确认身份"></div>
-    <button class="btn btn-primary" onclick="submitPayPassword()"><i class="fa-solid fa-shield-halved"></i> 保存支付密码</button>
+    <h3 style="text-align:left" data-i18n="vpay.setPayPwd">设置支付密码</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6" data-i18n="vpay.setPayPwdHint">首次使用转账功能需设置 6 位数字支付密码，用于确认每一笔转账，请妥善保管。</p>
+    <label class="pwd-label" data-i18n="vpay.payPwd">支付密码</label>
+    <div class="pwd-field" id="setPwd1" onclick="pwdKb(true,'setPwd1')"></div>
+    <label class="pwd-label" data-i18n="vpay.confirmPayPwd">确认支付密码</label>
+    <div class="pwd-field" id="setPwd2" onclick="pwdKb(true,'setPwd2')"></div>
+    <label class="pwd-label" style="margin-top:4px" data-i18n="vpay.loginPwd">登录密码</label>
+    <div class="input-group"><input type="password" id="setPayPwdAccount" onfocus="pwdKb(false)" placeholder="请输入登录密码以确认身份" data-i18n-placeholder="vpay.loginPwdPlaceholder"></div>
+    <button class="btn btn-primary" onclick="submitPayPassword()"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="vpay.savePayPwd">保存支付密码</span></button>
   </div>
 </div>
 
 <!-- ============ 转账确认（点击发送后弹出，输入支付密码） ============ -->
 <div class="modal-overlay" id="transferPwdModal">
   <div class="modal-box">
-    <h3 style="text-align:left">确认转账</h3>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">向 <b id="tpmTo" style="color:#fff"></b> 转账 <b id="tpmAmt" style="color:#fff"></b>，请输入 6 位支付密码。</p>
-    <div class="pwd-field" id="transferPwd" onclick="pwdKb(true,'transferPwd','请输入6位支付密码')"></div>
+    <h3 style="text-align:left" data-i18n="transfer.confirm">确认转账</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6"><span id="tpmText"></span><span data-i18n="vpay.transferPwdHint">请输入 6 位支付密码。</span></p>
+    <div class="pwd-field" id="transferPwd" onclick="pwdKb(true,'transferPwd')"></div>
   </div>
 </div>
 
 <!-- ============ 自定义安全数字键盘（按键由 JS 生成） ============ -->
 <div class="pwd-keyboard" id="pwdKeyboard">
-  <div class="pk-tip"><span id="pkTip"></span><span><i class="fa-solid fa-shield-halved safe"></i> 安全键盘 <button class="pk-close" onclick="pwdKb(false)"><i class="fa-solid fa-times"></i></button></span></div>
+  <div class="pk-tip"><span id="pkTip"></span><span><i class="fa-solid fa-shield-halved safe"></i> <span data-i18n="vpay.secureKeyboard">安全键盘</span> <button class="pk-close" onclick="pwdKb(false)"><i class="fa-solid fa-times"></i></button></span></div>
   <div class="pk-grid" id="pkGrid"></div>
 </div>
 
@@ -294,17 +303,18 @@ body{
     <div class="auth-page">
       <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
       <div class="auth-card" id="loginForm">
-        <div class="input-group"><input type="text" id="username" placeholder="用户名" autocomplete="username"></div>
-        <div class="input-group"><input type="password" id="password" placeholder="密码" autocomplete="current-password"></div>
-        <button class="btn btn-primary" onclick="handleLogin()"><i class="fa-solid fa-arrow-right"></i> 登录</button>
+        <div class="input-group"><input type="text" id="username" placeholder="用户名" data-i18n-placeholder="login.username" autocomplete="username"></div>
+        <div class="input-group"><input type="password" id="password" placeholder="密码" data-i18n-placeholder="login.password" autocomplete="current-password"></div>
+        <button class="btn btn-primary" onclick="handleLogin()"><i class="fa-solid fa-arrow-right"></i> <span data-i18n="login.login">登录</span></button>
       </div>
       <div class="auth-card hidden" id="registerForm">
-        <div class="input-group"><input type="text" id="regUsername" placeholder="用户名" autocomplete="off"></div>
-        <div class="input-group"><input type="password" id="regPassword" placeholder="密码" autocomplete="new-password"></div>
-        <div class="input-group"><input type="password" id="regConfirm" placeholder="确认密码" autocomplete="new-password"></div>
-        <button class="btn btn-primary" onclick="handleRegister()"><i class="fa-solid fa-user-plus"></i> 注册</button>
-        <button class="btn btn-ghost" onclick="showLogin()" style="margin-top:8px"><i class="fa-solid fa-arrow-left"></i> 返回登录</button>
+        <div class="input-group"><input type="text" id="regUsername" placeholder="用户名" data-i18n-placeholder="login.username" autocomplete="off"></div>
+        <div class="input-group"><input type="password" id="regPassword" placeholder="密码" data-i18n-placeholder="login.password" autocomplete="new-password"></div>
+        <div class="input-group"><input type="password" id="regConfirm" placeholder="确认密码" data-i18n-placeholder="register.confirmPassword" autocomplete="new-password"></div>
+        <button class="btn btn-primary" onclick="handleRegister()"><i class="fa-solid fa-user-plus"></i> <span data-i18n="register.confirmRegister">注册</span></button>
+        <button class="btn btn-ghost" onclick="showLogin()" style="margin-top:8px"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="vpay.backToLogin">返回登录</span></button>
       </div>
+      <div class="auth-footer" id="authFooter"></div>
     </div>
   </div>
 
@@ -314,16 +324,16 @@ body{
     <div>
       <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
       <ul class="nav-menu" id="sidebarNav">
-        <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> 总览</a></li>
-        <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> 充值</a></li>
-        <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> 转账</a></li>
+        <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="vpay.overview">总览</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="nav.recharge">充值</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="nav.transfer">转账</span></a></li>
       </ul>
     </div>
     <div class="user-profile" id="userProfile">
       <div class="avatar" id="userAvatar">U</div>
       <div class="user-info">
-        <h4 id="userName">未登录</h4>
-        <p id="userStatus">请登录账户</p>
+        <h4 id="userName" data-i18n="vpay.guest">未登录</h4>
+        <p id="userStatus" data-i18n="vpay.loggedIn">请登录账户</p>
       </div>
       <button class="sidebar-logout" onclick="handleLogout()" title="退出登录"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
@@ -335,9 +345,22 @@ body{
     <!-- ============ DASHBOARD ============ -->
     <div id="pageDashboard" class="hidden">
       <header class="header">
-        <div><h1>我的资产总览</h1></div>
+        <div><h1 data-i18n="vpay.assetsOverview">我的资产总览</h1></div>
         <div class="actions">
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <div id="lang-dropdown" class="lang-dropdown">
+            <button class="icon-btn" onclick="toggleLangDropdown()"><i class="fa-solid fa-globe"></i></button>
+            <div id="lang-dropdown-menu" class="lang-menu">
+              <div onclick="setLanguage('zh')">🇨🇳</div>
+              <div onclick="setLanguage('en')">🇺🇸</div>
+              <div onclick="setLanguage('ar')">🇸🇦</div>
+              <div onclick="setLanguage('es')">🇪🇸</div>
+              <div onclick="setLanguage('ru')">🇷🇺</div>
+              <div onclick="setLanguage('ja')">🇯🇵</div>
+              <div onclick="setLanguage('ko')">🇰🇷</div>
+              <div onclick="setLanguage('vi')">🇻🇳</div>
+            </div>
+          </div>
         </div>
       </header>
       <div class="dashboard-grid">
@@ -345,24 +368,24 @@ body{
           <div class="crypto-card">
             <div class="card-top">
               <div>
-                <div class="card-balance-label">Total Balance</div>
+                <div class="card-balance-label" data-i18n="vpay.totalBalance">Total Balance</div>
                 <div class="card-balance-val"><span class="balance-amount">¥ <span id="balanceDisplay" class="masked">****</span></span><button type="button" class="balance-toggle" id="balanceEye" onclick="toggleBalance()" aria-label="显示或隐藏余额" title="显示 / 隐藏余额"><i class="fa-regular fa-eye-slash"></i></button></div>
               </div>
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8;cursor:pointer" onclick="showCardModal()"></i>
             </div>
             <div class="card-bottom">
               <div class="card-number">FUNBUA<span id="tierAccountLabel"></span></div>
-              <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto">1 USD = ¥<span id="dashboardRate">6.8</span></div>
+              <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto"><span data-i18n="vpay.exchangePrefix">1 USD = ¥</span><span id="dashboardRate">6.8</span></div>
             </div>
           </div>
 
           <div class="quick-actions">
-            <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span>充值</span></button>
-            <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
+            <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
+            <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
           </div>
 
           <div style="margin-top:30px">
-            <div class="section-title"><span>近期订单</span></div>
+            <div class="section-title"><span data-i18n="vpay.recentOrders">近期订单</span></div>
             <div class="order-list" id="recentOrders"></div>
           </div>
         </div>
@@ -372,41 +395,39 @@ body{
     <!-- ============ RECHARGE ============ -->
     <div id="pageRecharge" class="hidden">
       <header class="header">
-        <div><h1>充值</h1></div>
-        <div class="actions"></div>
+        <div><h1 data-i18n="nav.recharge">充值</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
       </header>
 
       <div class="crypto-card" style="padding:20px">
-        <div class="section-title" style="margin-bottom:10px;font-size:14px">支付方式</div>
+        <div class="section-title" style="margin-bottom:10px;font-size:14px" data-i18n="vpay.payMethodTitle">支付方式</div>
         <div class="method-select-wrapper" id="methodSelectWrapper">
           <div class="method-select" id="methodSelect" onclick="toggleMethodDropdown()">
             <div class="method-select-trigger" id="methodSelectTrigger">
               <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
-              <span class="name">Creem</span>
-              <span class="desc">信用卡 · 支付宝</span>
+              <span class="name" data-i18n="payMethod.creditCard">Creem</span>
             </div>
             <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
           </div>
           <div class="method-dropdown hidden" id="methodDropdown">
             <button class="method-option active" data-method="creem" onclick="selectMethodFromDropdown('creem')">
               <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
-              <span class="name">Creem</span>
-              <span class="desc">信用卡 · 支付宝</span>
+              <span class="name" data-i18n="payMethod.creditCard">Creem</span>
             </button>
             <button class="method-option" data-method="alipay_static" onclick="selectMethodFromDropdown('alipay_static')">
               <span class="icon"><i class="fa-brands fa-alipay"></i></span>
-              <span class="name">支付宝(人工)</span>
-              <span class="desc">扫码 · 人工审核</span>
+              <span class="name" data-i18n="payMethod.alipayStatic">支付宝(人工)</span>
             </button>
             <button class="method-option" data-method="usdt" onclick="selectMethodFromDropdown('usdt')" style="display:none">
               <span class="icon">₮</span>
-              <span class="name">USDT TRC20</span>
-              <span class="desc">Tron Network</span>
+              <span class="name" data-i18n="payMethod.usdt">USDT TRC20</span>
             </button>
           </div>
         </div>
 
-        <div class="section-title" style="margin-bottom:10px;font-size:14px">金额</div>
+        <div class="section-title" style="margin-bottom:10px;font-size:14px" data-i18n="vpay.amountTitle">金额</div>
         <div class="amount-grid" id="amtGridCredit">
           <button class="amount-btn active" data-amount="5" onclick="selectCredit(5)">$5<div class="sub">¥34</div></button>
           <button class="amount-btn" data-amount="10" onclick="selectCredit(10)">$10<div class="sub">¥68</div></button>
@@ -414,8 +435,8 @@ body{
           <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub">¥204</div></button>
           <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
           <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
-          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:var(--text-muted);opacity:0.7;margin-top:4px" id="creem-exchange-rate">1 USD = ¥6.8</div>
-          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:#ed8936;margin-top:2px">当前充值的金额以美元计价，使用中国网络才能使用支付宝充值</div>
+          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:var(--text-muted);opacity:0.7;margin-top:4px" id="creem-exchange-rate"></div>
+          <div style="grid-column:1/-1;text-align:center;font-size:11px;color:#ed8936;margin-top:2px" data-i18n="amount.yimoNote">当前充值的金额以美元计价，使用中国网络才能使用支付宝充值</div>
         </div>
         <div class="amount-grid hidden" id="amtGridCny">
           <button class="amount-btn" data-amount="30" onclick="selectCny(30)">¥30</button>
@@ -423,7 +444,7 @@ body{
           <button class="amount-btn" data-amount="100" onclick="selectCny(100)">¥100</button>
           <button class="amount-btn" data-amount="200" onclick="selectCny(200)">¥200</button>
           <button class="amount-btn" data-amount="500" onclick="selectCny(500)">¥500</button>
-          <button class="amount-btn" id="customAmtBtn" onclick="showCustomAmt()">自定义</button>
+          <button class="amount-btn" id="customAmtBtn" onclick="showCustomAmt()" data-i18n="amount.custom">自定义</button>
         </div>
         <div class="amount-grid hidden" id="amtGridAlipay" style="grid-template-columns:repeat(4,1fr)">
           <button class="amount-btn" data-amount="10" onclick="selectAlipayAmt(10)">¥10</button>
@@ -433,23 +454,23 @@ body{
           <button class="amount-btn" data-amount="200" onclick="selectAlipayAmt(200)">¥200</button>
           <button class="amount-btn" data-amount="500" onclick="selectAlipayAmt(500)">¥500</button>
           <button class="amount-btn" data-amount="1000" onclick="selectAlipayAmt(1000)">¥1000</button>
-          <button class="amount-btn" id="customAlipayBtn" onclick="showCustomAlipayAmt()">自定义</button>
-          <div style="grid-column:1/-1;font-size:12px;color:#ed8936;margin-top:8px;line-height:1.6;text-align:center">请诚实付款，否则将取消这项支付资格，并且商品可能涨价。</div>
+          <button class="amount-btn" id="customAlipayBtn" onclick="showCustomAlipayAmt()" data-i18n="amount.custom">自定义</button>
+          <div style="grid-column:1/-1;font-size:12px;color:#ed8936;margin-top:8px;line-height:1.6;text-align:center" data-i18n="amount.alipayNote">请诚实付款，否则将取消这项支付资格，并且商品可能涨价。</div>
         </div>
-        <input type="number" class="amount-input hidden" id="customAmtInput" placeholder="输入金额">
-        <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="输入金额(最低¥10)">
+        <input type="number" class="amount-input hidden" id="customAmtInput" placeholder="输入金额" data-i18n-placeholder="vpay.enterAmount">
+        <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="输入金额(最低¥10)" data-i18n-placeholder="vpay.enterAmountMin10">
 
         <button class="btn btn-primary pay-btn" onclick="handlePay()"><i class="fa-solid fa-arrow-right"></i> <span id="payBtnText">支付 $5</span></button>
       </div>
 
       <!-- 充值记录 -->
       <div style="margin-top:24px">
-        <div class="section-title" style="font-size:14px;margin-bottom:12px">充值记录</div>
+        <div class="section-title" style="font-size:14px;margin-bottom:12px" data-i18n="vpay.rechargeRecords">充值记录</div>
         <div class="order-list" id="ordersList"></div>
         <div class="pagination" id="ordersPagination" style="display:none;margin-top:12px">
-          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled>上一页</button>
+          <button class="page-btn" id="ordersPrev" onclick="changeOrdersPage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
           <span class="page-info" id="ordersInfo">1 / 1</span>
-          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled>下一页</button>
+          <button class="page-btn" id="ordersNext" onclick="changeOrdersPage(1)" disabled data-i18n="orders.nextPage">下一页</button>
         </div>
       </div>
     </div>
@@ -457,29 +478,31 @@ body{
     <!-- ============ TRANSFER ============ -->
     <div id="pageTransfer" class="hidden">
       <header class="header">
-        <div><h1>转账</h1></div>
-        <div class="actions"></div>
+        <div><h1 data-i18n="nav.transfer">转账</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
       </header>
 
       <div class="crypto-card transfer-form" style="padding:20px">
         <div class="input-group">
-          <label style="color:#fff;font-size:14px">收款人</label>
-          <input type="text" id="transferTo" placeholder="输入用户名">
+          <label style="color:#fff;font-size:14px" data-i18n="vpay.recipient">收款人</label>
+          <input type="text" id="transferTo" placeholder="输入用户名" data-i18n-placeholder="vpay.enterRecipient">
         </div>
         <div class="input-group">
-          <label style="color:#fff;font-size:14px">金额 (CNY)</label>
+          <label style="color:#fff;font-size:14px" data-i18n="vpay.amountCny">金额 (CNY)</label>
           <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
         </div>
-        <button class="btn btn-primary" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> 发送</button>
+        <button class="btn btn-primary" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
       </div>
 
       <div style="margin-top:20px">
-        <div class="section-title" style="font-size:14px;margin-bottom:12px">转账记录</div>
+        <div class="section-title" style="font-size:14px;margin-bottom:12px" data-i18n="vpay.transferRecords">转账记录</div>
         <div class="order-list" id="recordsList"></div>
         <div class="pagination" id="recordsPagination" style="display:none">
-          <button class="page-btn" id="recordsPrev" onclick="changeRecordsPage(-1)" disabled>上一页</button>
+          <button class="page-btn" id="recordsPrev" onclick="changeRecordsPage(-1)" disabled data-i18n="orders.prevPage">上一页</button>
           <span class="page-info" id="recordsInfo">1 / 1</span>
-          <button class="page-btn" id="recordsNext" onclick="changeRecordsPage(1)" disabled>下一页</button>
+          <button class="page-btn" id="recordsNext" onclick="changeRecordsPage(1)" disabled data-i18n="orders.nextPage">下一页</button>
         </div>
       </div>
     </div>
@@ -489,13 +512,60 @@ body{
 
 <!-- Mobile Nav -->
 <nav class="mobile-nav hidden" id="mobileNav">
-  <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>总览</span></button>
-  <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span>充值</span></button>
-  <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>转账</span></button>
+  <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="vpay.overview">总览</span></button>
+  <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
+  <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
 </nav>
 
 <script src="vpay-tier.js"></script>
 <script>
+// ===== 多语言 i18n =====
+let currentLang=localStorage.getItem('lang')||'zh';
+let translations={};
+function toggleLangDropdown(){const m=document.getElementById('lang-dropdown-menu');m.classList.toggle('show');}
+document.addEventListener('click',function(e){
+  const d=document.getElementById('lang-dropdown');
+  if(d&&!d.contains(e.target)){const m=document.getElementById('lang-dropdown-menu');if(m)m.classList.remove('show');}
+});
+async function loadTranslations(){
+  try{const r=await fetch('lang/'+currentLang+'.json');translations=await r.json();}catch(e){console.error('load translations failed',e);}
+}
+function t(key,params){
+  params=params||{};
+  const ks=String(key).split('.');let v=translations;
+  for(const k of ks)v=v&&v[k];
+  if(typeof v==='string')return v.replace(/\{(\w+)\}/g,(_,k)=>params[k]!=null?params[k]:('{'+k+'}'));
+  return key;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// 与 vpay-tier.js 的 TIERS 顺序一一对应
+const TIER_KEYS=['common','silver','gold','platinum','blackgold','diamond'];
+function renderTierStatus(){
+  const us=document.getElementById('userStatus');if(!us)return;
+  if(currentUser && window.VpayTier){
+    const idx=VpayTier.tierOf(balanceVal);
+    us.innerHTML='<i class="fa-solid '+VpayTier.tiers[idx].icon+'"></i>'+t('tier.'+TIER_KEYS[idx]);
+  }else if(currentUser){
+    us.textContent=t('vpay.loggedIn');
+  }
+}
+function applyTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.getAttribute('data-i18n')));
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.placeholder=t(el.getAttribute('data-i18n-placeholder')));
+  document.documentElement.lang=currentLang;
+}
+function updateDynamicI18n(){
+  const cr=document.getElementById('creem-exchange-rate');if(cr)cr.textContent=t('vpay.exchangePrefix')+USD_TO_CNY;
+  if(typeof updatePayBtn==='function')updatePayBtn();
+  if(currentUser){
+    const un=document.getElementById('userName');if(un)un.textContent=maskUsername(currentUser.username)||t('vpay.guest');
+    renderTierStatus();
+  }
+}
+async function setLanguage(l){currentLang=l;localStorage.setItem('lang',l);await loadTranslations();applyTranslations();updateDynamicI18n();const m=document.getElementById('lang-dropdown-menu');if(m)m.classList.remove('show');}
+initI18n().then(initApp);
+async function initI18n(){await loadTranslations();applyTranslations();updateDynamicI18n();}
+
 const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.8,USDT_RATE=6.8;
 let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
     orderPage=1,totalOrderPages=1,recordsPage=1,totalRecordPages=1;
@@ -534,35 +604,40 @@ function switchPage(page){
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
   if(page==='recharge'&&currentUser)loadOrders();
   if(page==='transfer'&&currentUser){pwdBuf.transferPwd='';loadRecords();ensurePayPassword();}
+  // 把语言切换控件移到当前 tab 的 header 右上角（退出按钮右边）
+  const ld=document.getElementById('lang-dropdown');
+  const curActions=document.querySelector('#page'+page.charAt(0).toUpperCase()+page.slice(1)+' .header .actions');
+  const lm=document.getElementById('lang-dropdown-menu');if(lm)lm.classList.remove('show');
+  if(ld&&curActions&&ld.parentElement!==curActions)curActions.appendChild(ld);
 }
 
 // Auth
 function showLogin(){
   document.getElementById('loginForm').classList.remove('hidden');
   document.getElementById('registerForm').classList.add('hidden');
-  document.getElementById('authFooter').innerHTML='没有账号？<a onclick="showRegister()">注册</a>'
+  document.getElementById('authFooter').innerHTML='<span>'+t('vpay.noAccount')+'</span><a onclick="showRegister()">'+t('vpay.register')+'</a>'
 }
 function showRegister(){
   document.getElementById('loginForm').classList.add('hidden');
   document.getElementById('registerForm').classList.remove('hidden');
-  document.getElementById('authFooter').innerHTML='已有账号？<a onclick="showLogin()">登录</a>'
+  document.getElementById('authFooter').innerHTML='<span>'+t('vpay.haveAccount')+'</span><a onclick="showLogin()">'+t('login.login')+'</a>'
 }
 
 async function handleLogin(){
   const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
-  if(!u||!p)return showToast('请输入用户名和密码','error');
-  showLoading('登录中...');
+  if(!u||!p)return showToast(t('vpay.enterUserPwd'),'error');
+  showLoading(t('vpay.loggingIn'));
   try{
     const r=await(await fetch(API_BASE+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
     if(r.success){
       currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());
       hideLoading();enterMain()
     }else{hideLoading();showToast(r.message||'登录失败','error')}
-  }catch(e){hideLoading();showToast('网络错误','error')}
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
 }
 
 function handleLogout(){
-  if(confirm('确认退出？')){
+  if(confirm(t('alert.logoutConfirm'))){
     localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;balanceVisible=false;pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
     document.getElementById('appContainer').classList.add('hidden');
     document.getElementById('mobileNav').classList.add('hidden');
@@ -580,8 +655,9 @@ function enterMain(){
   document.getElementById('authFullscreen').classList.add('hidden');
   document.getElementById('appContainer').classList.remove('hidden');
   document.getElementById('mobileNav').classList.remove('hidden');
-  document.getElementById('userName').textContent=maskUsername(currentUser.username)||'用户';
-  if(window.VpayTier)VpayTier.apply(balanceVal);else document.getElementById('userStatus').textContent='已登录';
+  document.getElementById('userName').textContent=maskUsername(currentUser.username)||t('vpay.guest');
+  if(window.VpayTier)VpayTier.apply(balanceVal);
+  renderTierStatus();
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
   // 不可信用户隐藏支付宝人工支付
   if(currentUser.not_trusted==='yes'){
@@ -649,11 +725,11 @@ function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount
 function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
 function selectAlipayAmt(a){alipayAmount=a;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAlipayInput').classList.add('hidden');updatePayBtn()}
 function showCustomAlipayAmt(){alipayAmount=null;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAlipayInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
-function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=`支付 $${creditAmount}`;else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?`支付 ¥${a}`:'输入金额'}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?`支付 ¥${a}`:'输入金额'}}
+function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=t('vpay.payBtn',{amount:'$'+creditAmount});else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):'输入金额'}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):'输入金额'}}
 
 async function handlePay(){
   if(!currentUser||!currentUser.username)return;
-  showLoading('处理中...');
+  showLoading(t('vpay.processing'));
   if(payMethod==='creem'){
     const orderNo=currentUser.username+'_'+Date.now();
     try{
@@ -662,18 +738,18 @@ async function handlePay(){
       if(r.code===200&&r.data?.checkout_url){
         localStorage.setItem('creditCardOrder_'+orderNo,JSON.stringify({username:currentUser.username,amount:creditAmount*USDT_RATE,order_no:orderNo}));
         window.location.href=r.data.checkout_url;
-      }else showToast(r.msg||'支付失败','error')
-    }catch(e){hideLoading();showToast('网络错误','error')}
+      }else showToast(r.msg||t('vpay.payFailed'),'error')
+    }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
   }else if(payMethod==='alipay_static'){
     const a=alipayAmount||parseFloat(document.getElementById('customAlipayInput').value);
-    if(!a||a<=0){hideLoading();return showToast('请输入有效金额','error')}
-    if(a<10){hideLoading();return showToast('最低金额: ¥10','error')}
+    if(!a||a<=0){hideLoading();return showToast(t('alert.invalidAmount'),'error')}
+    if(a<10){hideLoading();return showToast(t('vpay.minAlipay10'),'error')}
     hideLoading();
     showStaticPayment('alipay_static',a);
   }else{
     const a=cnyAmount||parseFloat(document.getElementById('customAmtInput').value);
-    if(!a||a<=0){hideLoading();return showToast('请输入有效金额','error')}
-    if(a<100){hideLoading();return showToast('最低金额: ¥100','error')}
+    if(!a||a<=0){hideLoading();return showToast(t('alert.invalidAmount'),'error')}
+    if(a<100){hideLoading();return showToast(t('vpay.minUsdt100'),'error')}
     const ua=(a/USDT_RATE).toFixed(2),addr='TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
     try{
       const r=await(await fetch(`https://tronusdt.xyz/?way=pay&jump=-&product=wallet_recharge&name=${addr}&type=usdt&value=${ua}`)).json();
@@ -682,17 +758,17 @@ async function handlePay(){
         localStorage.setItem('usdtOrder_'+r.oid,JSON.stringify({username:currentUser.username,rmbAmount:a,usdtAmount:ua,order_no:r.oid}));
         try{await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})}catch(e){}
         showQrModal('USDT 支付',
-          `<div style="margin-bottom:12px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">请发送</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
+          `<div style="margin-bottom:12px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">${t('usdt.send')}</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('tron:'+addr+'?amount='+ua)}" alt="USDT QR Code" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">
           <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left">
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">网络: <strong style="color:var(--text-main)">TRC20</strong></div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">地址:</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${t('usdt.network')}: <strong style="color:var(--text-main)">TRC20</strong></div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${t('usdt.address')}:</div>
             <div style="font-size:12px;font-family:monospace;color:var(--text-main);word-break:break-all;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px">${addr}</div>
-            <div style="text-align:right;margin-top:8px"><button onclick="copyText('${addr}')" style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:#a29bfe;cursor:pointer;font-size:13px;font-family:inherit;padding:4px 8px;border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='rgba(108,92,231,0.1)'" onmouseout="this.style.background='transparent'"><i class="fa-solid fa-copy"></i> 复制地址</button></div>
+            <div style="text-align:right;margin-top:8px"><button onclick="copyText('${addr}')" style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:#a29bfe;cursor:pointer;font-size:13px;font-family:inherit;padding:4px 8px;border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='rgba(108,92,231,0.1)'" onmouseout="this.style.background='transparent'"><i class="fa-solid fa-copy"></i> ${t('usdt.copyAddress')}</button></div>
           </div>
-          <div style="font-size:12px;color:var(--text-muted);line-height:1.6;text-align:center">仅发送 TRC20 网络的 USDT。系统会自动确认。</div>`)
-      }else showToast('创建订单失败','error')
-    }catch(e){hideLoading();showToast('网络错误','error')}
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.6;text-align:center">${t('usdt.autoConfirm')}</div>`)
+      }else showToast(t('vpay.createOrderFailed'),'error')
+    }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
   }
 }
 
@@ -713,9 +789,9 @@ function renderPwd(id){
   el.classList.toggle('active',id===pwdFocus);
 }
 // 弹出 / 收起键盘
-function pwdKb(show,id,tip){
+function pwdKb(show,id){
   pwdFocus=show?id:null;
-  if(tip)$('pkTip').textContent=tip;
+  $('pkTip').textContent=(id==='setPwd2')?t('vpay.reenterPayPwd'):t('vpay.enterPayPwd');
   $('pwdKeyboard').classList.toggle('show',show);
   document.body.classList.toggle('kb-open',show);
   $('transferPwdModal').classList.toggle('show',show&&id==='transferPwd');
@@ -749,41 +825,40 @@ async function ensurePayPassword(){
 async function submitPayPassword(){
   if(!currentUser)return;
   const {setPwd1:p1,setPwd2:p2}=pwdBuf,acc=$('setPayPwdAccount').value;
-  if(!/^\d{6}$/.test(p1))return showToast('支付密码必须为6位数字','error');
-  if(p1!==p2)return showToast('两次输入的支付密码不一致','error');
-  if(!acc)return showToast('请输入登录密码','error');
-  showLoading('保存中...');
+  if(!/^\d{6}$/.test(p1))return showToast(t('vpay.payPwd6Digits'),'error');
+  if(p1!==p2)return showToast(t('alert.passwordMismatch'),'error');
+  if(!acc)return showToast(t('vpay.enterLoginPwd'),'error');
+  showLoading(t('vpay.saving'));
   try{
     const r=await(await fetch(API_BASE+'/api/pay-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,password:acc,payPassword:p1})})).json();
     hideLoading();
-    if(r.code===200){payPasswordReady=true;$('payPwdModal').classList.remove('show');pwdKb(false);showToast('支付密码设置成功')}
-    else showToast(r.msg||'设置失败','error')
-  }catch(e){hideLoading();showToast('网络错误','error')}
+    if(r.code===200){payPasswordReady=true;$('payPwdModal').classList.remove('show');pwdKb(false);showToast(t('vpay.payPwdSetSuccess'))}
+    else showToast(r.msg||t('vpay.setFailed'),'error')
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
 }
 // 点发送：先校验并弹出密码框；输满 6 位后带密码提交
 async function handleTransfer(pw){
   if(!currentUser)return;
   if(!pw){
     const to=$('transferTo').value.trim(),amt=parseFloat($('transferAmount').value);
-    if(!to)return showToast('请输入收款人','error');
-    if(!amt||amt<=0)return showToast('请输入有效金额','error');
+    if(!to)return showToast(t('vpay.enterRecipient'),'error');
+    if(!amt||amt<=0)return showToast(t('alert.invalidAmount'),'error');
     pending={to,amt};pwdBuf.transferPwd='';
-    $('tpmTo').textContent=to;
-    $('tpmAmt').textContent='¥'+amt.toFixed(2);
-    return pwdKb(true,'transferPwd','请输入6位支付密码');
+    $('tpmText').innerHTML=t('vpay.transferTo',{to:'<b style="color:#fff">'+escapeHtml(to)+'</b>',amt:'<b style="color:#fff">¥'+escapeHtml(amt.toFixed(2))+'</b>'});
+    return pwdKb(true,'transferPwd');
   }
   if(!/^\d{6}$/.test(pw)||!pending)return;
   const {to,amt}=pending;pending=null;
-  showLoading('处理中...');
+  showLoading(t('vpay.processing'));
   try{
     const r=await(await fetch(API_BASE+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,password:pw})})).json();
     hideLoading();
     if(r.code===200){
-      showToast('转账成功');
+      showToast(t('vpay.transferSuccess'));
       $('transferTo').value='';$('transferAmount').value='';
       pwdBuf.transferPwd='';pwdKb(false);updateBalance();loadRecords();
-    }else{showToast(r.msg||'转账失败','error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
-  }catch(e){hideLoading();showToast('网络错误','error')}
+    }else{showToast(r.msg||t('transfer.failed'),'error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
 }
 
 // Orders
@@ -802,34 +877,34 @@ async function loadRecentOrders(){
     if(all.length){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
-          const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?'已支付':item.status==='failed'?'失败':'待支付';
+          const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?t('orders.paid'):item.status==='failed'?t('orders.failed'):t('orders.pending');
           return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?'转出':'收入'} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?t('records.out'):t('records.in')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
       }).join('')
-    }else list.innerHTML='<div class="empty-state" style="padding:20px"><p>暂无记录</p></div>'
-  }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><p>加载失败</p></div>'}
+    }else list.innerHTML=`<div class="empty-state" style="padding:20px"><p>${t('vpay.noRecords')}</p></div>`
+  }catch(e){list.innerHTML=`<div class="empty-state" style="padding:20px"><p>${t('vpay.loadFailed')}</p></div>`}
 }
 
 async function loadOrders(){
   if(!currentUser)return;
-  const list=document.getElementById('ordersList');list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>加载中...</p></div>';
+  const list=document.getElementById('ordersList');list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>${t('orders.loading')}</p></div>`;
   try{
     const r=await(await fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=${orderPage}&limit=5`)).json();
     if(r.code===200){
       const orders=r.data?.orders||[];
       totalOrderPages=Math.max(1,(r.data?.pagination?.pages)||1);
       renderOrders(orders);
-    }else list.innerHTML='<div class="empty-state"><p>暂无订单</p></div>'
-  }catch(e){list.innerHTML='<div class="empty-state"><p>网络错误</p></div>'}
+    }else list.innerHTML=`<div class="empty-state"><p>${t('vpay.noOrders')}</p></div>`
+  }catch(e){list.innerHTML=`<div class="empty-state"><p>${t('alert.networkError')}</p></div>`}
 }
 function renderOrders(orders){
   const list=document.getElementById('ordersList'),pg=document.getElementById('ordersPagination');
-  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>暂无订单</p></div>';pg.style.display='none';return}
+  if(!orders.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>${t('vpay.noOrders')}</p></div>`;pg.style.display='none';return}
   list.innerHTML=orders.map(o=>{
-    const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?'已支付':o.status==='failed'?'失败':'待支付';
+    const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
     return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
   }).join('');
   pg.style.display=totalOrderPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=orderPage+' / '+totalOrderPages;document.getElementById('ordersPrev').disabled=orderPage<=1;document.getElementById('ordersNext').disabled=orderPage>=totalOrderPages
@@ -839,22 +914,22 @@ function changeOrdersPage(d){orderPage+=d;if(orderPage<1)orderPage=1;if(orderPag
 // Records
 async function loadRecords(){
   if(!currentUser)return;
-  const list=document.getElementById('recordsList');list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>加载中...</p></div>';
+  const list=document.getElementById('recordsList');list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>${t('orders.loading')}</p></div>`;
   try{
     const r=await(await fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=${recordsPage}&limit=5`)).json();
     if(r.code===200){
       const rec=r.data?.records||[];
       totalRecordPages=Math.max(1,(r.data?.pagination?.pages)||1);
       renderRecords(rec);
-    }else list.innerHTML='<div class="empty-state"><p>暂无记录</p></div>'
-  }catch(e){list.innerHTML='<div class="empty-state"><p>网络错误</p></div>'}
+    }else list.innerHTML=`<div class="empty-state"><p>${t('vpay.noRecords')}</p></div>`
+  }catch(e){list.innerHTML=`<div class="empty-state"><p>${t('alert.networkError')}</p></div>`}
 }
 function renderRecords(recs){
   const list=document.getElementById('recordsList'),pg=document.getElementById('recordsPagination');
-  if(!recs.length){list.innerHTML='<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>暂无记录</p></div>';pg.style.display='none';return}
+  if(!recs.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>${t('vpay.noRecords')}</p></div>`;pg.style.display='none';return}
   list.innerHTML=recs.map(r=>{
     const isOut=r.direction==='out';
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isOut?'转出':'收入'} ¥${(r.amount||0).toFixed(2)}</h4><p>${r.counterparty||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
+    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isOut?t('records.out'):t('records.in')} ¥${(r.amount||0).toFixed(2)}</h4><p>${r.counterparty||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
   }).join('');
   pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
 }
@@ -863,13 +938,13 @@ function changeRecordsPage(d){recordsPage+=d;if(recordsPage<1)recordsPage=1;if(r
 // QR Modal
 function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
 function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
-function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('已复制'))}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast(t('staticPay.copied')))}
 
 // Static Payment (Alipay Manual Review)
 const getNowFormat=()=>new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/[\/\s:]/g,'');
 
 function showStaticPayment(paymentType,amount){
-  const paymentName='支付宝';
+  const paymentName=t('orders.alipay');
   const imagePath='static/pay/zfb.jpg';
   const orderNo=currentUser.username.split('@')[0]+'_'+getNowFormat();
   showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType);
@@ -883,25 +958,25 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
   const origOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';
   container.innerHTML=`
-    <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px;text-align:center">${paymentName} 扫码支付</h3>
+    <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px;text-align:center">${t('vpay.alipayPayTitle')}</h3>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-      <span style="color:#999;font-size:12px">订单号</span>
-      <span style="cursor:pointer;color:#a29bfe;font-size:12px" onclick="copyOrderNo()">复制</span>
+      <span style="color:#999;font-size:12px">${t('staticPay.orderNo')}</span>
+      <span style="cursor:pointer;color:#a29bfe;font-size:12px" onclick="copyOrderNo()">${t('staticPay.copy')}</span>
     </div>
     <div style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px;text-align:center">${orderNo}</div>
     <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold;text-align:center">¥ ${amount}</div>
     <img src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
     <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 20px;text-align:left">
-      <strong>支付说明:</strong><br>
-      1. 点击支付宝打开支付页面<br>
-      2. 支付 <strong>¥${amount}</strong><br>
-      3. 备注订单号<br>
-      4. 回到当前界面点击确认充值
+      <strong>${t('staticPay.instruction')}</strong><br>
+      1. ${t('vpay.payStep1')}<br>
+      2. ${t('vpay.payStep2',{amount:amount})}<br>
+      3. ${t('vpay.payStep3')}<br>
+      4. ${t('vpay.payStep4')}
     </div>
     <div style="display:flex;gap:10px">
       <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值</button>
-      <button onclick="copyOrderNo();openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">支付宝</button>
-      <button id="closeStaticPayBtn" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">关闭</button>
+      <button onclick="copyOrderNo();openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">${t('orders.alipay')}</button>
+      <button id="closeStaticPayBtn" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">${t('staticPay.close')}</button>
     </div>`;
   document.body.appendChild(overlay);
   document.body.appendChild(container);
@@ -937,30 +1012,30 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
     return;
   }
   let countdown=30;
-  btn.textContent='确认充值 ('+countdown+'s)';
+  btn.textContent=t('vpay.confirmRechargeCountdown',{countdown:countdown});
   const timer=setInterval(()=>{
     countdown--;
     if(countdown<0){
       clearInterval(timer);
       btn.style.cssText='flex:6;padding:12px;background:#e17055;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;';
       btn.disabled=false;
-      btn.textContent='确认充值';
+      btn.textContent=t('staticPay.confirmRecharge');
       btn.onclick=function(){
         this.disabled=true;
-        this.textContent='处理中...';
+        this.textContent=t('vpay.processing');
         confirmRecharge(orderNo,amount,paymentType,onClose);
       };
-    }else btn.textContent='确认充值 ('+countdown+'s)';
+    }else btn.textContent=t('vpay.confirmRechargeCountdown',{countdown:countdown});
   },1000);
 }
 
 async function confirmRecharge(orderNo,amount,paymentType,onClose){
   try{
     const r=await(await fetch(API_LEGACY+'/api/recharge/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:parseFloat(amount),payment_type:paymentType})})).json();
-    if(!r.success){showToast(r.message||'充值失败','error');return}
+    if(!r.success){showToast(r.message||t('vpay.rechargeFailed'),'error');return}
     localStorage.setItem('lastRechargeTime',Date.now().toString());
-  }catch(e){showToast('网络错误','error');return}
-  showToast('充值成功');
+  }catch(e){showToast(t('alert.networkError'),'error');return}
+  showToast(t('vpay.rechargeSuccess'));
   updateBalance();
   loadOrders();
   if(onClose)onClose();
@@ -973,11 +1048,11 @@ function openAlipayApp(){
 
 function copyOrderNo(){
   const el=document.querySelector('div[style*="monospace"]');
-  if(el)navigator.clipboard.writeText(el.textContent.trim()).then(()=>showToast('已复制'));
+  if(el)navigator.clipboard.writeText(el.textContent.trim()).then(()=>showToast(t('staticPay.copied')));
 }
 
 // Init
-(function init(){
+function initApp(){
   const saved=localStorage.getItem('vpay_user');
   if(saved){
     currentUser=JSON.parse(saved);
@@ -995,7 +1070,8 @@ function copyOrderNo(){
       }catch(e){}
     })()
   }
-})();
+  if(!currentUser)showLogin();
+}
 </script>
 
 <div class="card-modal" id="cardModal" onclick="closeCardModal()">
@@ -1036,7 +1112,7 @@ function copyOrderNo(){
 
       <!-- 背面：站内小装饰卡 -->
       <div class="card-face card-back">
-        <span class="card-back-tier" id="cardBackTier">数字账户</span>
+        <span class="card-back-tier" id="cardBackTier" data-i18n="vpay.digitalAccount">数字账户</span>
         <svg class="card-back-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300">
           <path d="M 110,20 C 100,50 80,90 50,140 C 20,180 35,200 70,190 C 110,180 160,175 155,210 C 150,245 120,250 100,280" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -1045,7 +1121,7 @@ function copyOrderNo(){
 
     </div>
   </div>
-  <div class="card-flip-hint">点击卡片翻面</div>
+  <div class="card-flip-hint" data-i18n="vpay.flipHint">点击卡片翻面</div>
 </div>
 
 <script>
@@ -1108,7 +1184,7 @@ function generateCardInfo(){
   if(backTier){
     const tierSource = document.getElementById('tierAccountLabel');
     const tierText = tierSource ? tierSource.textContent.trim() : '';
-    backTier.textContent = tierText || '数字账户';
+    backTier.textContent = tierText || t('vpay.digitalAccount');
   }
 }
 </script>
