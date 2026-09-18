@@ -519,7 +519,8 @@ body{
 <script src="vpay-tier.js"></script>
 <script>
 // ===== 多语言 i18n =====
-let currentLang=localStorage.getItem('lang')||'zh';
+const _urlLang=new URLSearchParams(location.search).get('lang');
+let currentLang=(_urlLang||localStorage.getItem('lang')||localStorage.getItem('preferredLang')||'zh').split('-')[0];
 let translations={};
 function toggleLangDropdown(){const m=document.getElementById('lang-dropdown-menu');m.classList.toggle('show');}
 document.addEventListener('click',function(e){
