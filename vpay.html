@@ -374,7 +374,7 @@ body{
             </div>
             <div class="card-bottom">
               <div class="card-number">FUNBUA<span id="tierAccountLabel"></span></div>
-              <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto"><span data-i18n="vpay.exchangePrefix">1 USD = ¥</span><span id="dashboardRate">6.8</span></div>
+              <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto"><span data-i18n="vpay.exchangePrefix">1 USD = ¥</span><span id="dashboardRate">6.7</span></div>
             </div>
           </div>
 
@@ -566,7 +566,7 @@ async function setLanguage(l){currentLang=l;localStorage.setItem('lang',l);await
 initI18n().then(initApp);
 async function initI18n(){await loadTranslations();applyTranslations();updateDynamicI18n();}
 
-const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.8,USDT_RATE=6.8;
+const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.7,USDT_RATE=6.7;
 let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
     orderPage=1,totalOrderPages=1,recordsPage=1,totalRecordPages=1;
 
