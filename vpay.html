@@ -428,12 +428,12 @@ body{
 
         <div class="section-title" style="margin-bottom:10px;font-size:14px" data-i18n="vpay.amountTitle">金额</div>
         <div class="amount-grid" id="amtGridCredit">
-          <button class="amount-btn active" data-amount="5" onclick="selectCredit(5)">$5<div class="sub">¥34</div></button>
-          <button class="amount-btn" data-amount="10" onclick="selectCredit(10)">$10<div class="sub">¥68</div></button>
-          <button class="amount-btn" data-amount="20" onclick="selectCredit(20)">$20<div class="sub">¥136</div></button>
-          <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub">¥204</div></button>
-          <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub">¥340</div></button>
-          <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub">¥680</div></button>
+          <button class="amount-btn active" data-amount="5" onclick="selectCredit(5)">$5<div class="sub"></div></button>
+          <button class="amount-btn" data-amount="10" onclick="selectCredit(10)">$10<div class="sub"></div></button>
+          <button class="amount-btn" data-amount="20" onclick="selectCredit(20)">$20<div class="sub"></div></button>
+          <button class="amount-btn" data-amount="30" onclick="selectCredit(30)">$30<div class="sub"></div></button>
+          <button class="amount-btn" data-amount="50" onclick="selectCredit(50)">$50<div class="sub"></div></button>
+          <button class="amount-btn" data-amount="100" onclick="selectCredit(100)">$100<div class="sub"></div></button>
           <div style="grid-column:1/-1;text-align:center;font-size:11px;color:var(--text-muted);opacity:0.7;margin-top:4px" id="creem-exchange-rate"></div>
           <div style="grid-column:1/-1;text-align:center;font-size:11px;color:#ed8936;margin-top:2px" data-i18n="amount.yimoNote">当前充值的金额以美元计价，使用中国网络才能使用支付宝充值</div>
         </div>
@@ -720,6 +720,13 @@ document.addEventListener('click',function(e){
     document.getElementById('methodSelect')?.classList.remove('open');
   }
 });
+function renderCreditSubs(){
+  document.querySelectorAll('#amtGridCredit .amount-btn').forEach(b=>{
+    const amt=parseFloat(b.dataset.amount);if(isNaN(amt))return;
+    const v=amt*USD_TO_CNY;const sub=b.querySelector('.sub');
+    if(sub)sub.textContent='¥'+(Number.isInteger(v)?v:v.toFixed(1));
+  });
+}
 function selectCredit(a){creditAmount=a;document.querySelectorAll('#amtGridCredit .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
 function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAmtInput').classList.add('hidden');updatePayBtn()}
 function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
@@ -1053,6 +1060,7 @@ function copyOrderNo(){
 
 // Init
 function initApp(){
+  renderCreditSubs();
   const saved=localStorage.getItem('vpay_user');
   if(saved){
     currentUser=JSON.parse(saved);
