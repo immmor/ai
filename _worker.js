@@ -336,7 +336,7 @@ export default {
             return jsonResponse({ code: 400, msg: '缺少必要参数' }, 400);
           }
           
-          const usdAmount = parseInt(amount) || 20;
+          const usdAmount = parseFloat(amount) || 20;
           const cnyAmount = usdAmount * 6.7;
           
           const creemApiKey = env.CREEM_API_KEY;
@@ -375,17 +375,17 @@ export default {
           console.log('Creem.io response:', checkoutResult);
           
           if (response.ok && checkoutResult.id) {
-            try {
-              await supabaseFetch('orders', createSupabaseConfig('POST', {
-                order_no: order_no,
-                username: username,
-                amount: cnyAmount,
-                payment_type: 'creem',
-                status: 'pending',
-                description: `信用卡支付 $${usdAmount}`
-              }));
-            } catch (supabaseError) {
-              console.error('Supabase订单记录失败:', supabaseError);
+            const orderRes = await supabaseFetch('orders', createSupabaseConfig('POST', {
+              order_no: order_no,
+              username: username,
+              amount: cnyAmount,
+              payment_type: 'creem',
+              status: 'pending',
+              description: `信用卡支付 $${usdAmount}`
+            }));
+            if (orderRes && orderRes.error) {
+              console.error('Supabase订单记录失败:', orderRes.error);
+              return jsonResponse({ code: 500, msg: '订单记录失败: ' + (orderRes.error.message || JSON.stringify(orderRes.error)), error: orderRes }, 500);
             }
             
             return jsonResponse({
