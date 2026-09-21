@@ -485,6 +485,24 @@ export default {
               .prepare('SELECT balance FROM user WHERE username = ?')
               .bind(username)
               .first();
+
+            // 写入充值记录到 Supabase orders 表，否则后台充值记录里查不到
+            try {
+              if (env.SUPABASE_URL && env.SUPABASE_KEY) {
+                await supabaseFetch('orders', createSupabaseConfig('POST', {
+                  order_no: `manual_${username}_${Date.now()}`,
+                  username: username,
+                  amount: amount,
+                  payment_type: 'manual',
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  description: '后台快速充值'
+                }));
+              }
+            } catch (orderErr) {
+              console.error('充值订单记录失败:', orderErr);
+            }
             
             return new Response(JSON.stringify({ code: 200, msg: '充值成功', balance: user.balance }), {
               headers: { 'Content-Type': 'application/json' }
