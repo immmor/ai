@@ -858,6 +858,7 @@
                                     <th onclick="sortUsers('not_trusted')" style="cursor:pointer; min-width: 120px;">不信任 <span class="sort-indicator" data-col="not_trusted"></span></th>
                                     <th onclick="sortUsers('price_plan')" style="cursor:pointer;">订阅价格 <span class="sort-indicator" data-col="price_plan"></span></th>
                                     <th onclick="sortUsers('balance')" style="cursor:pointer;">余额 <span class="sort-indicator" data-col="balance"></span></th>
+                                    <th onclick="sortUsers('monthly_quota')" style="cursor:pointer; min-width: 110px;">流量额度 <span class="sort-indicator" data-col="monthly_quota"></span></th>
                                     <th onclick="sortUsers('success_count')" style="cursor:pointer; min-width: 100px;">成功支付次数 <span class="sort-indicator" data-col="success_count"></span></th>
                                     <th onclick="sortUsers('success_amount')" style="cursor:pointer; min-width: 100px;">成功支付金额 <span class="sort-indicator" data-col="success_amount"></span></th>
                                     <th onclick="sortUsers('survey')" style="cursor:pointer; min-width: 100px;">问卷 <span class="sort-indicator" data-col="survey"></span></th>
@@ -1451,6 +1452,11 @@
                     <div class="form-group">
                         <label for="userBalance">余额</label>
                         <input type="number" step="0.01" id="userBalance" name="userBalance">
+                    </div>
+                    <div class="form-group">
+                        <label for="userMonthlyQuotaGB">流量额度 (GB)</label>
+                        <input type="number" step="0.1" min="0" id="userMonthlyQuotaGB" name="userMonthlyQuotaGB" oninput="syncQuotaHint()">
+                        <span id="userQuotaHint" style="color:#718096; font-size:0.85rem;"></span>
                     </div>
                     <div class="form-group">
                         <label for="userVExpireDate">VIP过期时间</label>
@@ -2596,6 +2602,12 @@
             if (preset) document.getElementById('userPricePlan').value = preset;
         }
 
+        // 流量额度：输入 GB，实时显示换算后的 MB
+        function syncQuotaHint() {
+            const gb = parseFloat(document.getElementById('userMonthlyQuotaGB').value);
+            document.getElementById('userQuotaHint').textContent = gb > 0 ? `= ${Math.round(gb * 1024)} MB` : '';
+        }
+
         async function savePricePlan() {
             const plan = {
                 monthly_original: parseFloat(document.getElementById('price_monthly_original').value) || 0,
@@ -2745,6 +2757,7 @@
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>¥${user.balance || 0}</td>
+                    <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>
@@ -2987,6 +3000,8 @@
             document.getElementById('editUsername').value = username;
             document.getElementById('userPassword').value = user.password || '';
             document.getElementById('userBalance').value = user.balance || 0;
+            document.getElementById('userMonthlyQuotaGB').value = user.monthly_quota ? Math.round(user.monthly_quota / 1024 * 10) / 10 : '';
+            syncQuotaHint();
             document.getElementById('userVExpireDate').value = user.v_expire_date ? user.v_expire_date.split(' ')[0] : '';
             document.getElementById('userLearnVipExpireDate').value = user.learn_vip_expire_date ? user.learn_vip_expire_date.split(' ')[0] : '';
             document.getElementById('userVToken').value = user.v_token || '';
@@ -3014,6 +3029,8 @@
             const username = document.getElementById('editUsername').value;
             const password = document.getElementById('userPassword').value;
             const balance = document.getElementById('userBalance').value;
+            const quotaGB = parseFloat(document.getElementById('userMonthlyQuotaGB').value);
+            const monthly_quota = quotaGB > 0 ? Math.round(quotaGB * 1024) : null;
             const v_expire_date = document.getElementById('userVExpireDate').value;
             const learn_vip_expire_date = document.getElementById('userLearnVipExpireDate').value;
             const v_token = document.getElementById('userVToken').value;
@@ -3040,6 +3057,7 @@
                     username: username,
                     password: password,
                     balance: balance !== '' ? parseFloat(balance) : null,
+                    monthly_quota: monthly_quota,
                     v_expire_date: v_expire_date || null,
                     learn_vip_expire_date: learn_vip_expire_date || null,
                     v_token: v_token || '',
@@ -3124,6 +3142,7 @@
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>¥${user.balance || 0}</td>
+                    <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
                     <td>${user.survey || '-'}</td>

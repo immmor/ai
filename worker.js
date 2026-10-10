@@ -5,6 +5,23 @@ const t = (d) => JSON.stringify(Object.fromEntries(LK.map(k => [k, d[k] ?? '']))
 const NP = { cn:'[系统通知]', en:'[System Notification]', jp:'[システム通知]', kr:'[시스템 알림]', es:'[Notificación del Sistema]', vi:'[Thông báo Hệ thống]', ar:'[إشعار النظام]', ru:'[Системное уведомление]' };
 const nt = (d) => t(Object.fromEntries(LK.map(k => [k, `${NP[k]} ${d[k] ?? ''}`])));
 
+// 给管理员(immmor)推送外部通知：POST 表单（title/body/group/ttl）。不依赖 ctx，调用处直接 await
+const notifyAdmin = async (title, body) => {
+  const url = 'https://notify.funbua.uk/W6qUt6AoVEN6nQYVnNnuQq';
+  const form = new URLSearchParams();
+  form.set('title', title);
+  form.set('body', body);
+  form.set('group', 'Phantom');
+  form.set('ttl', '600');
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+    });
+  } catch (e) {}
+};
+
 function fbChoiceLabel(_match, choice) {
   const map = { a: '主胜', draw: '平局', b: '客胜' };
   return map[choice] || choice;
@@ -41,6 +58,123 @@ async function grantRebate(DB, inviteeUsername, orderPrice, isYearly, orderId) {
   } catch (e) {}
 }
 
+// ========== Upstash Redis REST 客户端（无依赖，Worker 兼容） ==========
+// 在 Cloudflare Worker 控制台 Settings → Variables/Secrets 中配置：
+//   UPSTASH_REDIS_REST_URL   例如 https://xxx.upstash.io
+//   UPSTASH_REDIS_REST_TOKEN 例如 Axxxxxxxx
+// 用法：redis(env,'SET','key','val','EX',60) / redis(env,'GET','key') / redis(env,'DEL','key')
+async function redis(env, ...args) {
+  const base = (env.UPSTASH_REDIS_REST_URL || '').replace(/\/+$/, '');
+  const token = env.UPSTASH_REDIS_REST_TOKEN || '';
+  const url = base + '/' + args.map(a => encodeURIComponent(String(a))).join('/');
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Upstash HTTP ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error('Upstash: ' + data.error);
+  return data.result; // 不存在的 key 返回 null
+}
+
+// ========== 可插拔 AI 对话（默认 Agnes AI，非流式） ==========
+// 接入新模型：在 AI_PROVIDERS 中新增一项即可，无需改动 callAI 与路由。
+// 每个 provider 需提供：
+//   endpoint     请求地址
+//   apiKeyEnv    存放 API Key 的 Worker 环境变量名（在控制台 Secrets 中配置）
+//   defaultModel 默认模型名
+//   buildBody    根据入参构造请求体（messages / model / 可选 temperature / maxTokens）
+//   parseReply   从响应 JSON 中解析出回复文本
+const AI_PROVIDERS = {
+  agnes: {
+    endpoint: 'https://api.agnes-ai.cn/v1/chat/completions',
+    apiKeyEnv: 'AGNES_API_KEY',
+    defaultModel: 'agnes-2.5-flash',
+    buildBody: ({ model, messages, temperature, maxTokens }) => ({
+      model: model || 'agnes-2.5-flash',
+      messages,
+      temperature: temperature ?? 0.7,
+      max_tokens: maxTokens || 1024,
+    }),
+    parseReply: (data) => data?.choices?.[0]?.message?.content ?? '',
+  },
+  // 示例：接入 OpenAI（去掉注释并在控制台配置 OPENAI_API_KEY 即可）
+  // openai: {
+  //   endpoint: 'https://api.openai.com/v1/chat/completions',
+  //   apiKeyEnv: 'OPENAI_API_KEY',
+  //   defaultModel: 'gpt-4o-mini',
+  //   buildBody: ({ model, messages, temperature, maxTokens }) => ({
+  //     model: model || 'gpt-4o-mini',
+  //     messages,
+  //     temperature: temperature ?? 0.7,
+  //     max_tokens: maxTokens || 1024,
+  //   }),
+  //   parseReply: (data) => data?.choices?.[0]?.message?.content ?? '',
+  // },
+  // Gemini：模型名在 URL 中，key 走 query 参数，消息体为 contents 结构
+  // 控制台需配置 GEMINI_API_KEY；role 映射 user->user / assistant->model / system->systemInstruction
+  gemini: {
+    endpoint: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    auth: 'query',
+    apiKeyEnv: 'GEMINI_API_KEY',
+    defaultModel: 'gemini-flash-latest',
+    buildBody: ({ messages, temperature, maxTokens }) => {
+      const sys = messages.filter(m => m.role === 'system').map(m => m.content).join('\n');
+      const contents = messages
+        .filter(m => m.role !== 'system')
+        .map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        }));
+      const body = { contents };
+      if (sys) body.systemInstruction = { parts: [{ text: sys }] };
+      const gen = {};
+      if (temperature != null) gen.temperature = temperature;
+      if (maxTokens) gen.maxOutputTokens = maxTokens;
+      if (Object.keys(gen).length) body.generationConfig = gen;
+      return body;
+    },
+    parseReply: (data) => {
+      const parts = data?.candidates?.[0]?.content?.parts;
+      if (!Array.isArray(parts)) return '';
+      return parts.map(p => p.text || '').join('');
+    },
+  },
+};
+
+// 通用 AI 调用（非流式，返回 { reply, model, raw }）
+async function callAI(env, { provider = 'agnes', model, messages, temperature, maxTokens } = {}) {
+  const p = AI_PROVIDERS[provider];
+  if (!p) throw new Error('未知的 AI provider: ' + provider);
+  const apiKey = env[p.apiKeyEnv];
+  if (!apiKey) throw new Error(`未配置 API Key 环境变量: ${p.apiKeyEnv}`);
+  const finalModel = model || p.defaultModel;
+
+  // endpoint 可为字符串，或 (model) => url 的函数（如 Gemini 把模型名放进 URL）
+  const endpoint = typeof p.endpoint === 'function' ? p.endpoint(finalModel) : p.endpoint;
+
+  // 鉴权方式：'bearer'（默认，放 Authorization 头）或 'query'（key 放 query 参数，如 Gemini）
+  const authMode = p.auth || 'bearer';
+  const headers = { 'Content-Type': 'application/json', ...(p.headers || {}) };
+  let finalEndpoint = endpoint;
+  if (authMode === 'bearer') {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  } else if (authMode === 'query') {
+    finalEndpoint += (endpoint.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(apiKey);
+  }
+
+  const res = await fetch(finalEndpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(p.buildBody({ model: finalModel, messages, temperature, maxTokens })),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`AI 接口 HTTP ${res.status}: ${text.slice(0, 500)}`);
+  }
+  const data = await res.json();
+  const reply = p.parseReply(data);
+  if (!reply) throw new Error('AI 接口返回空回复');
+  return { reply, model: finalModel, raw: data };
+}
+
 // 自动续费单个用户的函数
 async function autoRenewUser(DB, user) {
   const now = new Date();
@@ -50,7 +184,7 @@ async function autoRenewUser(DB, user) {
   // 计算还有多久过期（毫秒）
   const timeUntilExpire = expireDate ? expireDate.getTime() - now.getTime() : Infinity;
   const oneDayInMs = 24 * 60 * 60 * 1000;
-  
+
   // 如果未开启自动续费，直接返回
   if (!user.auto_rewn) return null;
   
@@ -100,7 +234,10 @@ async function autoRenewUser(DB, user) {
   const vordersStr = JSON.stringify(vorders);
 
   // 自动续费只延长有效期与链接，不重新生成 v_token（沿用用户原有 token，避免旧 token 失效）
-  const r = await DB.prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_link_clash = ?, v_link_v2ray = ?, vorders = ? WHERE username = ?').bind(pr, ne.toISOString().slice(0,19).replace('T',' '), cl, v2, vordersStr, user.username).run();
+  // 防重复续费：仅当库中 v_expire_date 仍处于「待续费」区间时才扣费，
+  // 避免定时任务与 /api/vip-status 并发/重试导致同一用户被扣两次费、发两条消息
+  const guardDue = new Date(now.getTime() + oneDayInMs).toISOString().slice(0, 19).replace('T', ' ');
+  const r = await DB.prepare('UPDATE user SET balance = balance - ?, v_expire_date = ?, v_link_clash = ?, v_link_v2ray = ?, vorders = ? WHERE username = ? AND (v_expire_date IS NULL OR v_expire_date <= ?)').bind(pr, ne.toISOString().slice(0,19).replace('T',' '), cl, v2, vordersStr, user.username, guardDue).run();
   
   if (r.success && r.meta.changes > 0) {
     const nowStr = new Date().toISOString().slice(0,19).replace('T',' ');
@@ -122,6 +259,7 @@ async function autoRenewUser(DB, user) {
     
     // 给管理员发送通知（仅中文）
     await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${user.username} 自动续费VIP成功！金额：${pr}元，天数：${actualDays}天（含自动续费赠送2天）`, nowStr).run();
+    await notifyAdmin('VIP自动续费', `用户 ${user.username} 自动续费VIP成功！金额：${pr}元，天数：${actualDays}天（含自动续费赠送2天）`);
     
     return { username: user.username, amount: pr, days: actualDays };
   }
@@ -147,6 +285,23 @@ async function ensureCardColumn(DB) {
   try { await DB.prepare('ALTER TABLE user ADD COLUMN card_number TEXT').run(); } catch (e) {}
   try { await DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_card_number ON user (card_number)').run(); } catch (e) {}
   globalThis.__cardColReady = true;
+}
+
+// 懒加载额外流量字段（幂等）：月付桶 / 年付桶 各自独立，互不覆盖
+async function ensureBonusColumn(DB) {
+  try { await DB.prepare('ALTER TABLE user ADD COLUMN bonus_quota_monthly INTEGER DEFAULT 0').run(); } catch (e) {}
+  try { await DB.prepare('ALTER TABLE user ADD COLUMN bonus_expire_monthly TEXT').run(); } catch (e) {}
+  try { await DB.prepare('ALTER TABLE user ADD COLUMN bonus_quota_annual INTEGER DEFAULT 0').run(); } catch (e) {}
+  try { await DB.prepare('ALTER TABLE user ADD COLUMN bonus_expire_annual TEXT').run(); } catch (e) {}
+}
+
+// 懒加 p_token 列（幂等），生成新鉴权 token 并持久化，返回完整 token 串
+// token 格式：<随机UUID>.<过期时间戳(ms)>，有效期 1 天，每次登录刷新
+async function newPToken(DB, username) {
+  try { await DB.prepare('ALTER TABLE user ADD COLUMN p_token TEXT').run(); } catch (e) {}
+  const token = `${crypto.randomUUID()}.${Date.now() + 24 * 60 * 60 * 1000}`;
+  try { await DB.prepare('UPDATE user SET p_token = ? WHERE username = ?').bind(token, username).run(); } catch (e) {}
+  return token;
 }
 
 // 取用户卡号，没有就补发一张（唯一索引防撞号，撞了就重试）
@@ -199,7 +354,7 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           'Access-Control-Max-Age': '86400'
         }
       });
@@ -332,23 +487,15 @@ export default {
           return resJson({ success: false, message: '请输入有效的邮箱地址！' }, 400);
         }
 
-        // 检查频率限制：同一邮箱60秒内只能发送一次
-        const lastSent = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_time_${email}`).first();
-        if (lastSent) {
-          const elapsed = Date.now() - parseInt(lastSent.value);
-          if (elapsed < 60000) {
-            const remaining = Math.ceil((60000 - elapsed) / 1000);
-            return resJson({ success: false, message: `请 ${remaining} 秒后再试！` }, 429);
-          }
+        // 频率限制：验证码 key 本身带 60s TTL，只要它还存活（TTL>0）就说明 60 秒内已发送过
+        const ttl = await redis(env, 'TTL', `verify_code_${email}`);
+        if (ttl > 0) {
+          return resJson({ success: false, message: `请 ${ttl} 秒后再试！` }, 429);
         }
 
-        // 生成6位数字验证码
+        // 生成6位数字验证码，存入同一个 key（1分钟自动过期，过期即等于冷却结束）
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const now = Date.now().toString();
-
-        // 存储验证码和时间戳（5分钟有效）
-        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_code_${email}`, verifyCode).run();
-        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_code_time_${email}`, now).run();
+        await redis(env, 'SET', `verify_code_${email}`, verifyCode, 'EX', 60);
 
         // 通过 Resend 发送验证码
         const RESEND_API_KEY = env.RESEND_API_KEY;
@@ -392,6 +539,7 @@ export default {
 
           const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
           await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${email} 点击了获取验证码`, nowStr).run();
+          await notifyAdmin('获取验证码', `用户 ${email} 点击了获取验证码`);
 
           return resJson({ success: true, message: '验证码已发送到您的邮箱！' });
         } catch (e) {
@@ -409,32 +557,20 @@ export default {
           return resJson({ success: false, message: '邮箱和验证码不能为空！' }, 400);
         }
 
-        const storedCode = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_${email}`).first();
+        const storedCode = await redis(env, 'GET', `verify_code_${email}`);
 
         if (!storedCode) {
-          return resJson({ success: false, message: '请先获取验证码！' }, 400);
+          // key 不存在 = 未获取或已自动过期（Redis TTL）
+          return resJson({ success: false, message: '请先获取验证码，或验证码已过期！' }, 400);
         }
 
-        // 检查验证码是否过期（5分钟）
-        const timeRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_code_time_${email}`).first();
-        if (timeRow) {
-          const elapsed = Date.now() - parseInt(timeRow.value);
-          if (elapsed > 5 * 60 * 1000) {
-            // 验证码已过期，清理
-            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_${email}`).run();
-            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_time_${email}`).run();
-            return resJson({ success: false, message: '验证码已过期，请重新获取！' }, 400);
-          }
-        }
-
-        if (storedCode.value !== code) {
+        if (storedCode !== code) {
           return resJson({ success: false, message: '验证码错误！' }, 400);
         }
 
-        // 验证成功：清理验证码，存储 verified 标记（5分钟有效，用于注册时校验）
-        await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_${email}`).run();
-        await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_code_time_${email}`).run();
-        await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(`verify_passed_${email}`, String(Date.now())).run();
+        // 验证成功：删除验证码，写入已验证标记（1分钟自动过期，用于注册校验）
+        await redis(env, 'DEL', `verify_code_${email}`);
+        await redis(env, 'SET', `verify_passed_${email}`, String(Date.now()), 'EX', 60);
 
         return resJson({ success: true, message: '验证成功！' });
       }
@@ -442,7 +578,7 @@ export default {
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
       if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
-        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, fromGithub, web3Address } = params;
+        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, fromGithub, web3Address, sliderVerified, textVerified, audioVerified } = params;
         
         // 统一用小写处理 web3 地址
         const web3AddressLower = web3Address ? web3Address.toLowerCase() : '';
@@ -457,17 +593,12 @@ export default {
           return resJson({ success: false, message: '邮箱格式不正确！' }, 400);
         }
 
-        // 校验验证码：必须完成邮箱验证后才能注册（谷歌/GitHub 登录跳过此检查）
-        if (!fromGoogle && !fromGithub) {
-          const verifyPassed = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(`verify_passed_${username}`).first();
+        // 校验验证码：必须完成邮箱验证后才能注册（谷歌/GitHub 登录、滑块验证、图片文字验证、声音验证 跳过此检查）
+        if (!fromGoogle && !fromGithub && !sliderVerified && !textVerified && !audioVerified) {
+          const verifyPassed = await redis(env, 'GET', `verify_passed_${username}`);
           if (!verifyPassed) {
-            return resJson({ success: false, message: '请先完成邮箱验证！' }, 400);
-          }
-          // 检查验证标记是否过期（5分钟）
-          const verifyPassedTime = parseInt(verifyPassed.value);
-          if (Date.now() - verifyPassedTime > 5 * 60 * 1000) {
-            await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_passed_${username}`).run();
-            return resJson({ success: false, message: '验证已过期，请重新验证邮箱！' }, 400);
+            // key 不存在 = 未验证或已自动过期（Redis TTL）
+            return resJson({ success: false, message: '请先完成邮箱验证，或验证已过期，请重新验证！' }, 400);
           }
         }
 
@@ -583,6 +714,7 @@ export default {
                   ru: `Пользователь ${inviterUser.username} успешно пригласил ${username} зарегистрироваться`
                 }), now)
                 .run();
+              await notifyAdmin('邀请注册', `用户 ${inviterUser.username} 成功邀请了 ${username} 注册`);
             }
           }
         }
@@ -622,7 +754,7 @@ export default {
         let result;
         try {
           result = await DB
-            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders, web3_address, card_number) VALUES (?, ?, ?, NULL, NULL, 307200, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)')
+            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders, web3_address, card_number) VALUES (?, ?, ?, NULL, NULL, 153600, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)')
             .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue, '[]', web3AddressLower || '', newCardNumber)
             .run();
         } catch (e) {
@@ -636,24 +768,35 @@ export default {
 
         if (result.success) {
           // 注册成功，清理验证标记
-          await DB.prepare('DELETE FROM link WHERE key = ?').bind(`verify_passed_${username}`).run();
+          await redis(env, 'DEL', `verify_passed_${username}`);
 
           const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+          // 注册验证方式标签（按语言），用于管理员通知区分来源
+          const verifyMethod = fromGoogle ? { cn: '谷歌登录', en: 'Google login', jp: 'Googleログイン', kr: 'Google 로그인', es: 'Inicio de sesión de Google', vi: 'Đăng nhập Google', ar: 'تسجيل دخول Google', ru: 'Вход через Google' }
+            : fromGithub ? { cn: 'GitHub登录', en: 'GitHub login', jp: 'GitHubログイン', kr: 'GitHub 로그인', es: 'Inicio de sesión de GitHub', vi: 'Đăng nhập GitHub', ar: 'تسجيل دخول GitHub', ru: 'Вход через GitHub' }
+            : web3Address ? { cn: 'Web3钱包', en: 'Web3 wallet', jp: 'Web3ウォレット', kr: 'Web3 지갑', es: 'Billetera Web3', vi: 'Ví Web3', ar: 'محفظة Web3', ru: 'Web3 кошелёк' }
+            : sliderVerified ? { cn: '滑块验证', en: 'Slider verification', jp: 'スライダー認証', kr: '슬라이더 인증', es: 'Verificación deslizante', vi: 'Xác minh thanh trượt', ar: 'التحقق المنزلق', ru: 'Слайдер-верификация' }
+            : textVerified ? { cn: '图片文字验证', en: 'Image text verification', jp: '画像文字認証', kr: '이미지 문자 인증', es: 'Verificación de texto de imagen', vi: 'Xác minh chữ trong ảnh', ar: 'التحقق من نص الصورة', ru: 'Проверка текста с картинки' }
+            : audioVerified ? { cn: '声音验证', en: 'Audio verification', jp: '音声認証', kr: '음성 인증', es: 'Verificación de audio', vi: 'Xác minh bằng giọng nói', ar: 'التحقق الصوتي', ru: 'Аудио-верификация' }
+            : { cn: '邮箱验证码', en: 'Email code', jp: 'メール認証コード', kr: '이메일 코드', es: 'Código de correo', vi: 'Mã email', ar: 'رمز البريد الإلكتروني', ru: 'Код по email' };
+
           const msg = nt({
-            cn: `用户 ${username} 注册成功！`,
-            en: `User ${username} registered successfully!`,
-            jp: `ユーザー ${username} が登録しました！`,
-            kr: `사용자 ${username} 님이 등록했습니다!`,
-            es: `¡El usuario ${username} se registró exitosamente!`,
-            vi: `Người dùng ${username} đã đăng ký thành công!`,
-            ar: `قام المستخدم ${username} بالتسجيل بنجاح!`,
-            ru: `Пользователь ${username} успешно зарегистрировался!`
+            cn: `用户 ${username} 通过${verifyMethod.cn}注册成功！`,
+            en: `User ${username} registered successfully via ${verifyMethod.en}!`,
+            jp: `ユーザー ${username} が${verifyMethod.jp}で登録に成功しました！`,
+            kr: `사용자 ${username} 님이 ${verifyMethod.kr}로 등록했습니다!`,
+            es: `¡El usuario ${username} se registró exitosamente vía ${verifyMethod.es}!`,
+            vi: `Người dùng ${username} đã đăng ký thành công qua ${verifyMethod.vi}!`,
+            ar: `قام المستخدم ${username} بالتسجيل بنجاح عبر ${verifyMethod.ar}!`,
+            ru: `Пользователь ${username} успешно зарегистрировался через ${verifyMethod.ru}!`
           });
 
           await DB
             .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', msg, now)
             .run();
+          await notifyAdmin('新用户注册', `用户 ${username} 通过${verifyMethod.cn}注册成功！`);
 
           await DB
             .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
@@ -741,6 +884,8 @@ export default {
           .first();
 
         if (user) {
+          // 生成登录鉴权 token（p_token），每次登录刷新并持久化，供后续受保护接口校验
+          const pToken = await newPToken(DB, username);
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
           const loginInfoEntry = { type: 'login', time: now, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: request.url, device: request.headers.get('User-Agent') || 'unknown', acceptLanguage: request.headers.get('Accept-Language') || 'unknown', country: request.headers.get('CF-IPCountry') || 'unknown', referer: request.headers.get('Referer') || 'unknown' };
 
@@ -759,7 +904,8 @@ export default {
 
           const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
 
-          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber }, pricePlan });
+
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, p_token: pToken, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber }, pricePlan });
         } else {
           return resJson({ success: false, message: '用户名或密码错误' }, 401);
         }
@@ -801,8 +947,10 @@ export default {
           const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
 
           const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
+          const pToken = await newPToken(DB, user.username);
 
-          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber }, pricePlan });
+
+          return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, p_token: pToken, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber }, pricePlan });
         } else {
           return resJson({ success: true, needRegister: true, address: address, message: '该钱包地址未注册，请完成注册！' });
         }
@@ -903,6 +1051,7 @@ export default {
 
           const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
 
+
           return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber }, pricePlan });
         } else {
           return resJson({ success: false, message: '用户不存在' }, 401);
@@ -957,8 +1106,10 @@ export default {
             await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, email).run();
 
             const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+            const pToken = await newPToken(DB, user.username);
+  
 
-            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates }, pricePlan });
+            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, p_token: pToken, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates }, pricePlan });
           } else {
             return resJson({ success: true, needRegister: true, email: email, message: '该谷歌账号未注册，请完成注册！' });
           }
@@ -1054,8 +1205,10 @@ export default {
             await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, email).run();
 
             const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+            const pToken = await newPToken(DB, user.username);
+  
 
-            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates }, pricePlan });
+            return resJson({ success: true, message: '登录成功！', userInfo: { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, p_token: pToken, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates }, pricePlan });
           } else {
             return resJson({ success: true, needRegister: true, email, message: '该 GitHub 账号未注册，请完成注册！' });
           }
@@ -1233,7 +1386,21 @@ export default {
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
           }
-          
+
+          // ========== p_token 鉴权（校验有效性 + 归属） ==========
+          const authToken = params.p_token || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+          if (!authToken) {
+            return resJson({ code: 401, msg: '缺少 p_token，请先登录' }, 401);
+          }
+          const tokenExp = Number(authToken.split('.')[1]);
+          if (!tokenExp || Date.now() > tokenExp) {
+            return resJson({ code: 401, msg: '登录已过期，请重新登录' }, 401);
+          }
+          const tokenUser = await DB.prepare('SELECT username FROM user WHERE p_token = ?').bind(authToken).first();
+          if (!tokenUser || tokenUser.username !== username) {
+            return resJson({ code: 403, msg: '无权操作该账号' }, 403);
+          }
+
           const vipPrice = parseFloat(price);
           
           const now = new Date();
@@ -1257,7 +1424,7 @@ export default {
           if (!user) {
             return resJson({ code: 404, msg: '用户不存在' }, 404);
           }
-          
+
           if (user.balance < vipPrice) {
             return resJson({ 
               code: 400, 
@@ -1274,7 +1441,7 @@ export default {
             newExpireDate.setDate(now.getDate() + duration);
           }
           
-          const vToken = generateVToken();
+          const vToken = user.v_token || generateVToken();
           
           const isYearly = duration === 365;
           const vLinkClash = user.v_link_clash || (isYearly ? config.clash_yearly : config.clash_monthly);
@@ -1324,6 +1491,7 @@ export default {
               .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
               .bind('immmor', msg, nowTime)
               .run();
+            await notifyAdmin('开通VIP', `用户 ${username} 开通VIP成功！金额：${vipPrice}元，天数：${duration}天`);
             
             // 邀请返现：被邀请人每开通一笔 VIP 订单（月或年），按阶梯比例给邀请人生成待审核返现记录
             await grantRebate(DB, username, vipPrice, isYearly, newOrder.id);
@@ -1361,6 +1529,115 @@ export default {
             msg: '开通VIP失败', 
             error: err.message
           }, 500);
+        }
+      }
+
+      // ========== 增加流量接口 ==========
+      if (path === '/api/add-traffic' && request.method === 'PUT') {
+        try {
+          const params = await request.json();
+          const { username, price = 0, gb = 150, duration = 30, p_token } = params;
+
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+
+          // p_token 鉴权（校验有效性 + 归属）
+          const authToken = p_token || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+          if (!authToken) return resJson({ code: 401, msg: '缺少 p_token，请先登录' }, 401);
+          const tokenExp = Number(authToken.split('.')[1]);
+          if (!tokenExp || Date.now() > tokenExp) return resJson({ code: 401, msg: '登录已过期，请重新登录' }, 401);
+          const tokenUser = await DB.prepare('SELECT username FROM user WHERE p_token = ?').bind(authToken).first();
+          if (!tokenUser || tokenUser.username !== username) return resJson({ code: 403, msg: '无权操作该账号' }, 403);
+
+          await ensureBonusColumn(DB);
+
+          const addPrice = parseFloat(price);
+          const addMb = Math.round(parseFloat(gb) * 1024);
+
+          const user = await DB
+            .prepare('SELECT balance, v_expire_date, bonus_quota_monthly, bonus_expire_monthly, bonus_quota_annual, bonus_expire_annual, vorders FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+
+          const now = new Date();
+          const expireDate = user.v_expire_date ? new Date(user.v_expire_date.replace(' ', 'T') + 'Z') : null;
+          // 增加流量必须依附于有效的月付/年付套餐；额外流量有效期不得超过 VIP 本身有效期
+          if (!expireDate || expireDate <= now) {
+            return resJson({ code: 400, msg: '请先开通有效的VIP套餐后再增加流量' }, 400);
+          }
+
+          if (user.balance < addPrice) {
+            return resJson({ code: 400, msg: '余额不足，请先充值', balance: user.balance, required: addPrice }, 400);
+          }
+
+          // 额外流量有效期 = min(购买当下 + 套餐时长, VIP 过期日)，确保不超过 VIP 本身有效期
+          const dur = parseInt(duration, 10) === 365 ? 365 : 30;
+          const isAnnual = dur === 365;
+          const packageExpire = new Date(now.getTime() + dur * 24 * 60 * 60 * 1000);
+          const bonusExpire = (packageExpire < expireDate ? packageExpire : expireDate).toISOString().slice(0, 19).replace('T', ' ');
+
+          // 月/年独立两个流量桶，互不覆盖；购买时若桶已过期则先清零再累加
+          const qKey = isAnnual ? 'bonus_quota_annual' : 'bonus_quota_monthly';
+          const eKey = isAnnual ? 'bonus_expire_annual' : 'bonus_expire_monthly';
+          const curExpire = user[eKey];
+          const curQuota = parseInt(user[qKey], 10) || 0;
+          const expired = curExpire ? new Date(curExpire.replace(' ', 'T') + 'Z') <= now : true;
+          const newQuota = (expired ? 0 : curQuota) + addMb;
+
+          let vorders = [];
+          try { vorders = JSON.parse(user.vorders || '[]'); } catch (e) { vorders = []; }
+          const newOrder = {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+            type: 'traffic',
+            gb: parseFloat(gb),
+            duration: dur,
+            price: addPrice,
+            expire: bonusExpire,
+            created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            method: 'balance',
+            status: 'success'
+          };
+          vorders.unshift(newOrder);
+          if (vorders.length > 50) vorders = vorders.slice(0, 50);
+          const vordersStr = JSON.stringify(vorders);
+
+          const result = await DB
+            .prepare(`UPDATE user SET balance = balance - ?, ${qKey} = ?, ${eKey} = ?, vorders = ? WHERE username = ?`)
+            .bind(addPrice, newQuota, bonusExpire, vordersStr, username)
+            .run();
+
+          if (result.success && result.meta.changes > 0) {
+            const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            await DB
+              .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind('immmor', `用户 ${username} 增加流量成功！${gb}GB（${isAnnual ? '年付' : '月付'}），金额：${addPrice}元`, nowTime).run();
+              await notifyAdmin('增加流量', `用户 ${username} 增加流量成功！${gb}GB（${isAnnual ? '年付' : '月付'}），金额：${addPrice}元`);
+
+            const updated = await DB
+              .prepare('SELECT balance, bonus_quota_monthly, bonus_expire_monthly, bonus_quota_annual, bonus_expire_annual, vorders FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+
+            return resJson({
+              code: 200,
+              msg: '增加流量成功',
+              data: {
+                balance: updated.balance,
+                bonus_quota_monthly: updated.bonus_quota_monthly,
+                bonus_expire_monthly: updated.bonus_expire_monthly,
+                bonus_quota_annual: updated.bonus_quota_annual,
+                bonus_expire_annual: updated.bonus_expire_annual,
+                vorders: updated.vorders,
+                gb: parseFloat(gb)
+              }
+            });
+          } else {
+            return resJson({ code: 500, msg: '增加流量失败，请重试' }, 500);
+          }
+        } catch (err) {
+          console.error('增加流量错误:', err);
+          return resJson({ code: 500, msg: '增加流量失败', error: err.message }, 500);
         }
       }
 
@@ -1407,8 +1684,10 @@ export default {
           const username = url.searchParams.get('username');
           if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
 
+          await ensureBonusColumn(DB);
+
           let user = await DB
-            .prepare('SELECT username, v_expire_date, v_token, v_link_clash, v_link_v2ray, auto_rewn, balance, price_plan FROM user WHERE username = ?')
+            .prepare('SELECT username, v_expire_date, v_token, v_link_clash, v_link_v2ray, auto_rewn, balance, price_plan, monthly_quota, used_quota, quota_reset_date, bonus_quota_monthly, bonus_expire_monthly, bonus_quota_annual, bonus_expire_annual FROM user WHERE username = ?')
             .bind(username)
             .first();
 
@@ -1419,25 +1698,14 @@ export default {
           let isVipValid = expireDate && expireDate > now;
           let daysRemaining = isVipValid ? Math.max(0, Math.ceil((expireDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
 
-          if (!isVipValid && user.auto_rewn) {
-            // 使用新的自动续费函数
-            const result = await autoRenewUser(DB, user);
-            if (result) {
-              user = await DB
-                .prepare('SELECT username, v_expire_date, v_token, v_link_clash, v_link_v2ray, auto_rewn, balance, price_plan FROM user WHERE username = ?')
-                .bind(username)
-                .first();
-              expireDate = user.v_expire_date ? new Date(user.v_expire_date.replace(' ', 'T') + 'Z') : null;
-              isVipValid = expireDate && expireDate > now;
-              daysRemaining = isVipValid ? Math.max(0, Math.ceil((expireDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
-            }
-          }
-
           return resJson({
             code: 200, msg: '查询成功',
             data: {
               username: user.username, v_expire_date: user.v_expire_date, v_token: user.v_token,
               v_link_clash: user.v_link_clash, v_link_v2ray: user.v_link_v2ray,
+              monthly_quota: user.monthly_quota, used_quota: user.used_quota, quota_reset_date: user.quota_reset_date,
+              bonus_quota_monthly: user.bonus_quota_monthly, bonus_expire_monthly: user.bonus_expire_monthly,
+              bonus_quota_annual: user.bonus_quota_annual, bonus_expire_annual: user.bonus_expire_annual,
               is_vip_valid: isVipValid, days_remaining: daysRemaining, auto_renew: !!user.auto_rewn
             }
           });
@@ -1596,6 +1864,7 @@ export default {
           const msgTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
           await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', `💰 用户 ${from} 向 ${to} 转账 ¥${amt}`, msgTime).run();
+          await notifyAdmin('用户转账', `💰 用户 ${from} 向 ${to} 转账 ¥${amt}`);
 
           return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
@@ -1692,7 +1961,7 @@ export default {
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { username, password, balance, v_expire_date, learn_vip_expire_date, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn, remark, free_expire_date, last_checkin } = params;
+          const { username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, v_token, invite_code, v_link_clash, v_link_v2ray, not_trusted, login_info, price_plan, vorders, fetch_link, security_answer, auto_rewn, remark, free_expire_date, last_checkin } = params;
           
           if (!username) {
             return resJson({ code: 400, msg: '缺少username参数' }, 400);
@@ -1725,6 +1994,10 @@ export default {
           if (learn_vip_expire_date !== undefined) {
             updates.push('learn_vip_expire_date = ?');
             values.push(learn_vip_expire_date);
+          }
+          if (monthly_quota !== undefined && monthly_quota !== null) {
+            updates.push('monthly_quota = ?');
+            values.push(monthly_quota);
           }
           if (v_token !== undefined) {
             updates.push('v_token = ?');
@@ -1803,61 +2076,6 @@ export default {
         } catch (err) {
           console.error('User edit error:', err);
           return resJson({ code: 500, msg: '修改失败', error: err.message }, 500);
-        }
-      }
-
-      // ========== 查询流量使用情况接口 ==========
-      if (path === '/api/quota' && request.method === 'GET') {
-        try {
-          const username = url.searchParams.get('username');
-          
-          if (!username) {
-            return resJson({ code: 400, msg: '缺少username参数' }, 400);
-          }
-          
-          const user = await DB
-            .prepare('SELECT monthly_quota, used_quota, quota_reset_date, v_expire_date, v_link_clash, v_link_v2ray FROM user WHERE username = ?')
-            .bind(username)
-            .first();
-          
-          if (!user) {
-            return resJson({ code: 404, msg: '用户不存在' }, 404);
-          }
-          
-          const now = new Date();
-          const expireDate = user.v_expire_date ? new Date(user.v_expire_date) : null;
-          const isVipValid = expireDate && expireDate > now;
-          
-          // 检查是否需要重置流量
-          const resetDate = user.quota_reset_date ? new Date(user.quota_reset_date) : new Date();
-          const nextMonth = new Date(resetDate);
-          nextMonth.setMonth(nextMonth.getMonth() + 1);
-          
-          if (now > nextMonth) {
-            await DB
-              .prepare('UPDATE user SET used_quota = 0, quota_reset_date = ? WHERE username = ?')
-              .bind(now.toISOString().slice(0, 19).replace('T', ' '), username)
-              .run();
-            user.used_quota = 0;
-          }
-          
-          return resJson({
-            code: 200,
-            msg: '查询成功',
-            data: {
-              username: username,
-              is_vip: isVipValid,
-              monthly_quota: user.monthly_quota || 307200,
-              used_quota: user.used_quota || 0,
-              remaining_quota: (user.monthly_quota || 307200) - (user.used_quota || 0),
-              quota_reset_date: user.quota_reset_date,
-              v_link_clash: user.v_link_clash,
-              v_link_v2ray: user.v_link_v2ray,
-              next_reset_date: nextMonth.toISOString().slice(0, 19).replace('T', ' ')
-            }
-          });
-        } catch (err) {
-          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
         }
       }
 
@@ -2543,6 +2761,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               .run();
             
             if (result.success) {
+              await notifyAdmin('用户私信', `有用户向 ${username} 发送了私信：${content}`);
               return resJson({
                 code: 200,
                 msg: '发送成功',
@@ -2584,6 +2803,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               totalInserted += batch.length;
             }
 
+            await notifyAdmin('群发消息', `向 ${target} 群发了消息（${totalInserted}人）：${content}`);
             return resJson({ code: 200, msg: '发送成功', data: { total: totalInserted, content, target } });
           }
         } catch (err) {
@@ -3058,6 +3278,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           const resultLabel = fbChoiceLabel(matches[idx], result);
           await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', `⚽ 竞猜开奖！${matches[idx].teamA} vs ${matches[idx].teamB} → 结果：${resultLabel}，派奖 ¥${totalPayout}，中奖 ${winCount} 人`, now).run();
+            await notifyAdmin('竞猜开奖', `⚽ 竞猜开奖！${matches[idx].teamA} vs ${matches[idx].teamB} → 结果：${resultLabel}，派奖 ¥${totalPayout}，中奖 ${winCount} 人`);
 
           return resJson({
             success: true,
@@ -3582,6 +3803,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           const methodLabel = method === 'wechat' ? '微信' : (method === 'alipay' ? '支付宝' : (cryptoLabelMap[method] || '数字货币'));
           await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', `💰 新的提现申请！用户 ${username} 申请提现 ¥${withdrawAmount.toFixed(2)}（${methodLabel}）`, msgNow).run();
+          await notifyAdmin('提现申请', `💰 新的提现申请！用户 ${username} 申请提现 ¥${withdrawAmount.toFixed(2)}（${methodLabel}）`);
 
           // 持久化收款码/账号，供下次提现自动填充（避免每次都要重新上传）
           try {
@@ -4012,6 +4234,36 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         }
       }
 
+      // ========== AI 对话接口（非流式，默认 Agnes AI；可插拔其它模型） ==========
+      if (path === '/api/ai-chat' && request.method === 'POST') {
+        try {
+          const params = await request.json();
+          const { messages, provider, model, temperature, maxTokens } = params;
+          if (!Array.isArray(messages) || messages.length === 0) {
+            return resJson({ code: 400, msg: 'messages 不能为空，且需为数组' }, 400);
+          }
+          // 简单校验每条消息结构
+          for (const m of messages) {
+            if (!m || !['system', 'user', 'assistant'].includes(m.role) || typeof m.content !== 'string') {
+              return resJson({ code: 400, msg: 'messages 中存在非法消息（需含 role(user/system/assistant) 与 content 字符串）' }, 400);
+            }
+          }
+          const result = await callAI(env, { provider, model, messages, temperature, maxTokens });
+          return resJson({
+            code: 200,
+            msg: 'ok',
+            data: {
+              reply: result.reply,
+              model: result.model,
+              provider: provider || 'agnes',
+            },
+          });
+        } catch (err) {
+          console.error('AI 对话错误:', err);
+          return resJson({ code: 500, msg: 'AI 调用失败：' + err.message }, 500);
+        }
+      }
+
       // ========== 默认接口提示 ==========
       return resJson({
         code: 200,
@@ -4087,6 +4339,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         const now = new Date().toISOString().slice(0,19).replace('T',' ');
         const totalAmount = results.reduce((sum, r) => sum + r.amount, 0);
         await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `定时任务执行完成！共续费 ${results.length} 个用户，总金额 ¥${totalAmount}`, now).run();
+        await notifyAdmin('自动续费汇总', `定时任务执行完成！共续费 ${results.length} 个用户，总金额 ¥${totalAmount}`);
       }
 
       // 定时任务顺带请求一次外部订单接口（与现有定时任务同频）
