@@ -1492,6 +1492,22 @@
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userPricePlan">订阅价格</label>
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:0.5rem;">
+                            <select id="userPricePreset" onchange="applyUserPricePreset()" style="padding:0.5rem; border:1px solid #e2e8f0; border-radius:4px; min-width:240px;">
+                                <option value="">-- 选择预设 --</option>
+                                <option value='{"monthly_original":12,"monthly_discount":10,"annual_original":144,"annual_discount":100,"savings":44}'>基础版 (12/10 - 144/100 - 44)</option>
+                                <option value='{"monthly_original":25,"monthly_discount":20,"annual_original":300,"annual_discount":200,"savings":100}'>标准版 (25/20 - 300/200 - 100)</option>
+                                <option value='{"monthly_original":37.5,"monthly_discount":30,"annual_original":450,"annual_discount":350,"savings":100}'>高级版 (37.5/30 - 450/350 - 100)</option>
+                                <option value='{"monthly_original":50,"monthly_discount":40,"annual_original":600,"annual_discount":450,"savings":150}'>企业版 (50/40 - 600/450 - 150)</option>
+                                <option value='{"monthly_original":62.5,"monthly_discount":50,"annual_original":750,"annual_discount":550,"savings":200}'>豪华版 (62.5/50 - 750/550 - 200)</option>
+                                <option value='{"monthly_original":75,"monthly_discount":60,"annual_original":900,"annual_discount":650,"savings":250}'>G版 (75/60 - 900/650 - 250)</option>
+                                <option value='{"monthly_original":87.5,"monthly_discount":70,"annual_original":1050,"annual_discount":750,"savings":300}'>H版 (87.5/70 - 1050/750 - 300)</option>
+                                <option value='{"monthly_original":100,"monthly_discount":80,"annual_original":1200,"annual_discount":850,"savings":350}'>I版 (100/80 - 1200/850 - 350)</option>
+                                <option value='{"monthly_original":112.5,"monthly_discount":90,"annual_original":1350,"annual_discount":950,"savings":400}'>J版 (112.5/90 - 1350/950 - 400)</option>
+                                <option value='{"monthly_original":125,"monthly_discount":100,"annual_original":1500,"annual_discount":1050,"savings":450}'>K版 (125/100 - 1500/1050 - 450)</option>
+                            </select>
+                            <span style="color:#718096; font-size:0.85rem;">选择后会<b>替换</b>下方输入框内容，输入框仍可手动自定义</span>
+                        </div>
                         <textarea id="userPricePlan" name="userPricePlan" rows="4" style="width: 100%; resize: vertical; font-family: monospace;"></textarea>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
@@ -2574,6 +2590,12 @@
             }
         }
 
+        // 用户编辑弹窗：用预设价格替换 price_plan 输入框内容（输入框仍可手动改）
+        function applyUserPricePreset() {
+            const preset = document.getElementById('userPricePreset').value;
+            if (preset) document.getElementById('userPricePlan').value = preset;
+        }
+
         async function savePricePlan() {
             const plan = {
                 monthly_original: parseFloat(document.getElementById('price_monthly_original').value) || 0,
@@ -2974,6 +2996,7 @@
             document.getElementById('userVLinkV2ray').value = user.v_link_v2ray || '';
             document.getElementById('userNotTrusted').value = user.not_trusted || '';
             document.getElementById('userPricePlan').value = user.price_plan || '';
+            document.getElementById('userPricePreset').value = '';
             document.getElementById('userLoginInfo').value = user.login_info || '';
             document.getElementById('userVorders').value = user.vorders || '';
             document.getElementById('userFetchLink').value = user.fetch_link || '';
