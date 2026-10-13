@@ -272,3 +272,45 @@
   color: rgba(255, 255, 255, 0.45);
   pointer-events: none;
 }
+
+/* ===================== 白天模式 ===================== */
+/* 弹窗遮罩：白天转浅，不再压黑全屏 */
+body.theme-light .card-modal {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+/* 卡面：覆盖深色卡底（真正画背景的层），描边流光保留 tier 色但调淡 */
+body.theme-light .card-face {
+  background-image:
+    linear-gradient(45deg, var(--tier-color, #00b8d4), rgba(0, 0, 0, 0.15), var(--tier-color, #00b8d4), rgba(0, 0, 0, 0.15)),
+    var(--tier-card-bg-light, linear-gradient(135deg, #ffffff 0%, #f3f4f8 50%, #e9ebf2 100%));
+}
+
+/* 卡面文字：白字改深字，去掉霓虹投影 */
+body.theme-light .cyber-card .card-number,
+body.theme-light .cyber-card .card-holder-name,
+body.theme-light .cyber-card .card-expiry-date,
+body.theme-light .card-text,
+body.theme-light .card-back-tier {
+  color: #1a1c23;
+  text-shadow: none;
+}
+
+body.theme-light .cyber-card .card-holder-label,
+body.theme-light .cyber-card .card-expiry-label {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+body.theme-light .card-logo svg path {
+  stroke: var(--tier-color, #00b8d4);
+}
+
+body.theme-light .card-back-mark {
+  color: var(--tier-color, #00b8d4);
+  filter: none;
+  opacity: 0.6;
+}
+
+body.theme-light .card-flip-hint {
+  color: rgba(0, 0, 0, 0.5);
+}
