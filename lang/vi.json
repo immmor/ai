@@ -242,5 +242,13 @@
         "platinum": "Thành viên Bạch kim",
         "blackgold": "Thành viên Vàng đen",
         "diamond": "Thành viên Kim cương"
+    },
+    "tierCard": {
+        "common": "Tài khoản số Cao cấp",
+        "silver": "Tài khoản số Bạc",
+        "gold": "Tài khoản số Vàng",
+        "platinum": "Tài khoản số Bạch kim",
+        "blackgold": "Tài khoản số Vàng đen",
+        "diamond": "Tài khoản số Kim cương"
     }
 }

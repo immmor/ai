@@ -242,5 +242,13 @@
         "platinum": "플래티넘 회원",
         "blackgold": "블랙골드 회원",
         "diamond": "다이아몬드 회원"
+    },
+    "tierCard": {
+        "common": "프리미엄 디지털 계좌",
+        "silver": "실버 디지털 계좌",
+        "gold": "골드 디지털 계좌",
+        "platinum": "플래티넘 디지털 계좌",
+        "blackgold": "블랙골드 디지털 계좌",
+        "diamond": "다이아몬드 디지털 계좌"
     }
 }

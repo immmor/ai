@@ -241,5 +241,13 @@
         "platinum": "Platinum Member",
         "blackgold": "Black Gold Member",
         "diamond": "Diamond Member"
+    },
+    "tierCard": {
+        "common": "Exclusive Digital Account",
+        "silver": "Silver Digital Account",
+        "gold": "Gold Digital Account",
+        "platinum": "Platinum Digital Account",
+        "blackgold": "Black Gold Digital Account",
+        "diamond": "Diamond Digital Account"
     }
 }

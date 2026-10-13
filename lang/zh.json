@@ -241,5 +241,13 @@
         "platinum": "铂金会员",
         "blackgold": "黑金会员",
         "diamond": "钻石会员"
+    },
+    "tierCard": {
+        "common": "尊享数字账户",
+        "silver": "白银数字账户",
+        "gold": "黄金数字账户",
+        "platinum": "铂金数字账户",
+        "blackgold": "黑金数字账户",
+        "diamond": "钻石数字账户"
     }
 }

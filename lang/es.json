@@ -242,5 +242,13 @@
         "platinum": "Miembro Platino",
         "blackgold": "Miembro Oro Negro",
         "diamond": "Miembro Diamante"
+    },
+    "tierCard": {
+        "common": "Cuenta digital exclusiva",
+        "silver": "Cuenta digital Plata",
+        "gold": "Cuenta digital Oro",
+        "platinum": "Cuenta digital Platino",
+        "blackgold": "Cuenta digital Oro Negro",
+        "diamond": "Cuenta digital Diamante"
     }
 }

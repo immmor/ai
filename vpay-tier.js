@@ -29,38 +29,38 @@
   'use strict';
 
   var TIERS = [
-    { name: '普通会员', card: '尊享数字账户', icon: 'fa-user', min: 0,
+    { key: 'common', name: '普通会员', card: '尊享数字账户', icon: 'fa-user', min: 0,
       color: '#9aa0b0',
       grad: 'linear-gradient(135deg,#8a8d9b,#b6bac7)',
       cardBg: 'linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0.02) 100%)',
       cardBgSolid: 'linear-gradient(135deg,#1b1e29 0%,#2a2f3d 50%,#161922 100%)' },
 
-    { name: '白银会员', card: '白银数字账户', icon: 'fa-medal', min: 100,
+    { key: 'silver', name: '白银会员', card: '白银数字账户', icon: 'fa-medal', min: 100,
       color: '#cbd5e6',
       grad: 'linear-gradient(135deg,#b8c2d1,#eef2f8)',
       cardBg: 'linear-gradient(135deg,rgba(203,213,230,0.22) 0%,rgba(203,213,230,0.03) 100%)',
       cardBgSolid: 'linear-gradient(135deg,#242b38 0%,#4e5a70 50%,#1e2430 100%)' },
 
-    { name: '黄金会员', card: '黄金数字账户', icon: 'fa-crown', min: 1000,
+    { key: 'gold', name: '黄金会员', card: '黄金数字账户', icon: 'fa-crown', min: 1000,
       color: '#f1c40f',
       grad: 'linear-gradient(135deg,#f39c12,#f7dc6f)',
       cardBg: 'linear-gradient(135deg,rgba(241,196,15,0.22) 0%,rgba(241,196,15,0.03) 100%)',
       cardBgSolid: 'linear-gradient(135deg,#2c2412 0%,#6e5919 50%,#22190c 100%)' },
 
-    { name: '铂金会员', card: '铂金数字账户', icon: 'fa-gem', min: 5000,
+    { key: 'platinum', name: '铂金会员', card: '铂金数字账户', icon: 'fa-gem', min: 5000,
       color: '#a9d6f5',
       grad: 'linear-gradient(135deg,#8fb8e0,#d9edff)',
       cardBg: 'linear-gradient(135deg,rgba(169,214,245,0.22) 0%,rgba(169,214,245,0.03) 100%)',
       cardBgSolid: 'linear-gradient(135deg,#1a2733 0%,#3f5f7d 50%,#151f28 100%)' },
 
     // 黑金：黑底 + 金，主色用古金 #d4af37，底色是近黑里透金
-    { name: '黑金会员', card: '黑金数字账户', icon: 'fa-shield-halved', min: 20000,
+    { key: 'blackgold', name: '黑金会员', card: '黑金数字账户', icon: 'fa-shield-halved', min: 20000,
       color: '#d4af37',
       grad: 'linear-gradient(135deg,#17171c,#d4af37)',
       cardBg: 'linear-gradient(135deg,rgba(212,175,55,0.24) 0%,rgba(12,12,14,0.55) 100%)',
       cardBgSolid: 'linear-gradient(135deg,#0b0b0d 0%,#3a2f16 45%,#0b0b0d 100%)' },
 
-    { name: '钻石会员', card: '钻石数字账户', icon: 'fa-star', min: 100000,
+    { key: 'diamond', name: '钻石会员', card: '钻石数字账户', icon: 'fa-star', min: 100000,
       color: '#b9f2ff',
       grad: 'linear-gradient(135deg,#7ee8fa,#ffd166,#ff8fab)',
       cardBg: 'linear-gradient(135deg,rgba(185,242,255,0.24) 0%,rgba(255,209,102,0.06) 50%,rgba(255,143,171,0.10) 100%)',
@@ -106,6 +106,12 @@
     document.head.appendChild(s);
   }
 
+  // 取翻译：页面把 t() 挂到 window.vpayT 上；取不到就退回中文原文
+  function tr(key, fallback) {
+    var v = (typeof window.vpayT === 'function') ? window.vpayT(key) : null;
+    return (typeof v === 'string' && v !== key) ? v : fallback;
+  }
+
   // 按余额算等级下标（余额不够则停在能到的最高档）
   function tierOf(balance) {
     var b = Number(balance) || 0;
@@ -137,12 +143,24 @@
 
     // 侧边栏：账号下面的等级文字
     var st = document.getElementById('userStatus');
-    if (st) st.innerHTML = '<i class="fa-solid ' + t.icon + '"></i>' + t.name;
+    if (st) st.innerHTML = '<i class="fa-solid ' + t.icon + '"></i>' + tr('tier.' + t.key, t.name);
 
     // 资产卡底部：FUNBUA ＋ 等级账户名
-    var acc = document.getElementById('tierAccountLabel');
-    if (acc) acc.textContent = t.card;
+    setAccountLabel(idx);
   }
 
-  window.VpayTier = { apply: apply, tierOf: tierOf, tiers: TIERS };
+  // 资产卡底部那串 "FUNBUA ____"，切换语言时可单独重刷
+  function setAccountLabel(idx) {
+    var acc = document.getElementById('tierAccountLabel');
+    if (!acc) return;
+    var t = TIERS[idx] || TIERS[0];
+    acc.textContent = tr('tierCard.' + t.key, t.card);
+  }
+
+  window.VpayTier = {
+    apply: apply,
+    tierOf: tierOf,
+    tiers: TIERS,
+    setAccountLabel: setAccountLabel
+  };
 })();
