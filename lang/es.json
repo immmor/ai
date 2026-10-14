@@ -136,6 +136,20 @@
         "hours": "{hours} horas",
         "copied": "Copiado"
     },
+    "alipayGuide": {
+        "viewGuide": "Ver guía",
+        "stepCount": "Paso {cur} / {total}",
+        "step1Title": "① Copia el número de pedido y añade una nota",
+        "step1Text": "Este es tu número de pedido único de recarga. Al pagar, DEBES escribirlo en el campo «Nota» de Alipay — sin él no podemos confirmar la recarga. Pulsa «Copiar» a la derecha para copiarlo.",
+        "step2Title": "② Escanea para pagar",
+        "step2Text": "Escanea este código QR con la app de Alipay, o pulsa el botón verde «Alipay» de la ventana para abrirla directamente. Paga el importe exacto (mínimo ¥10, debe coincidir).",
+        "step3Title": "③ Confirmar recarga",
+        "step3Text": "Tras pagar, espera a que termine la cuenta atrás de 30 s y pulsa «Confirmar recarga». Nota: cada cuenta solo puede confirmar una recarga cada 24 h — recarga lo suficiente de una vez; el número de pedido es de un solo uso, no pagues dos veces.",
+        "skip": "Omitir",
+        "prev": "Atrás",
+        "next": "Siguiente",
+        "finish": "Listo"
+    },
     "usdt": {
         "title": "Recarga TRON USDT",
         "address": "Dirección de recarga",

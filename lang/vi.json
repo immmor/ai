@@ -136,6 +136,20 @@
         "hours": "{hours} giờ",
         "copied": "Đã sao chép"
     },
+    "alipayGuide": {
+        "viewGuide": "Xem hướng dẫn",
+        "stepCount": "Bước {cur} / {total}",
+        "step1Title": "① Sao chép mã đơn & ghi chú",
+        "step1Text": "Đây là mã đơn nạp tiền riêng của bạn. Khi thanh toán, BẮT BUỘC nhập nó vào mục «Ghi chú» của Alipay — thiếu mã chúng tôi không thể xác nhận nạp tiền. Nhấn «Sao chép» bên phải để copy.",
+        "step2Title": "② Quét để thanh toán",
+        "step2Text": "Dùng app Alipay quét mã QR này, hoặc nhấn nút xanh «Alipay» trong cửa sổ để mở trực tiếp. Thanh toán đúng số tiền hiển thị (tối thiểu ¥10, phải khớp).",
+        "step3Title": "③ Xác nhận nạp tiền",
+        "step3Text": "Sau khi thanh toán, đợi đếm ngược 30 giây kết thúc rồi nhấn «Xác nhận nạp tiền» để gửi. Lưu ý: mỗi tài khoản chỉ xác nhận được 1 lần nạp mỗi 24 giờ — hãy nạp đủ một lần; mã đơn dùng 1 lần, không thanh toán 2 lần.",
+        "skip": "Bỏ qua",
+        "prev": "Trước",
+        "next": "Tiếp",
+        "finish": "Xong"
+    },
     "usdt": {
         "title": "Nạp TRON USDT",
         "address": "Địa chỉ nạp",

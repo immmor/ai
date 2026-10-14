@@ -80,6 +80,9 @@ body{
 /* 支付按钮悬停时箭头右移动效 */
 .pay-btn i{transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1)}
 .pay-btn:hover i{transform:translateX(6px) scale(1.15)}
+.transfer-send-btn{overflow:hidden}
+.transfer-send-btn i{transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.transfer-send-btn:hover i{transform:translate(5px,-5px) scale(0.92)}
 .btn-ghost{background:transparent;color:var(--text-muted)}
 .btn-ghost:hover{color:#fff;background:var(--panel-bg)}
 .auth-footer{text-align:right;margin-top:16px;font-size:13px;color:var(--text-muted)}
@@ -206,6 +209,19 @@ body{
 .modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:right}
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
+/* ===== 支付宝人工支付 · 聚焦教学指引（spotlight） ===== */
+.guide-spot{position:fixed;z-index:10000;border-radius:12px;box-shadow:0 0 0 4px rgba(108,92,231,.9),0 0 0 9999px rgba(0,0,0,.72);transition:all .25s ease;pointer-events:none}
+.guide-bubble{position:fixed;z-index:10001;max-width:300px;background:#1a1a1a;border:1px solid #6c5ce7;border-radius:14px;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.55);color:#fff;font-size:13px;line-height:1.6}
+.guide-bubble .guide-step-no{font-size:11px;color:#8a8d9b;margin-bottom:2px}
+.guide-bubble h4{margin:0 0 8px;font-size:15px;color:#a29bfe;font-weight:700}
+.guide-bubble p{margin:0;color:#cfd2dc}
+.guide-bubble .guide-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.guide-bubble button{border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.guide-bubble .g-skip{background:transparent;color:#8a8d9b}
+.guide-bubble .g-prev{background:#2a2a2a;color:#fff}
+.guide-bubble .g-next{background:#6c5ce7;color:#fff}
+.guide-link{color:#a29bfe;font-size:12px;cursor:pointer;text-decoration:none}
+.guide-link:hover{text-decoration:underline}
 /* 支付密码键盘 */
 .pwd-label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
 .pwd-field{display:flex;gap:8px;margin-bottom:14px;cursor:pointer}
@@ -298,6 +314,8 @@ body{
   body.theme-light .input-group input{background:rgba(0,0,0,0.03);}
   /* 内联 style 白字（标签、转账确认文案等）白天化 */
   body.theme-light [style*="color:#fff"]{color:var(--text-main)!important;}
+  /* 支付宝人工支付弹窗本身是深色的，白天模式下订单号必须是白色（比通用白字翻转规则更优先） */
+  body.theme-light #staticPayContainer #guideOrderNo{color:#fff!important;}
 </style>
 </head>
 <body>
@@ -577,7 +595,7 @@ body{
           <label style="color:#fff;font-size:14px" data-i18n="vpay.amountCny">金额 (CNY)</label>
           <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
         </div>
-        <button class="btn btn-primary" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
+        <button class="btn btn-primary transfer-send-btn" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
       </div>
 
       <div style="margin-top:20px">
@@ -1035,6 +1053,65 @@ function showQrModal(title,content){document.getElementById('qrTitle').textConte
 function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast(t('staticPay.copied')))}
 
+// ===== 支付宝人工支付 · 聚焦教学指引（中文，分步 spotlight） =====
+let _guideSteps=null,_guideIdx=0,_guideEls=null;
+function startAlipayFocusGuide(){
+  // 聚焦目标：支付弹窗内的 订单号 → 二维码/扫码 → 确认充值
+  _guideSteps=[
+    {sel:'#guideOrderNo',title:t('alipayGuide.step1Title'),text:t('alipayGuide.step1Text')},
+    {sel:'#guideQr',title:t('alipayGuide.step2Title'),text:t('alipayGuide.step2Text')},
+    {sel:'#confirmRechargeBtn',title:t('alipayGuide.step3Title'),text:t('alipayGuide.step3Text')}
+  ];
+  _guideIdx=0;
+  if(!_guideEls){
+    _guideEls={spot:document.createElement('div'),bubble:document.createElement('div')};
+    _guideEls.spot.className='guide-spot';
+    _guideEls.bubble.className='guide-bubble';
+    document.body.appendChild(_guideEls.spot);
+    document.body.appendChild(_guideEls.bubble);
+  }
+  _guideEls.spot.style.display=_guideEls.bubble.style.display='block';
+  renderGuideStep();
+  window.addEventListener('resize',renderGuideStep);
+}
+function renderGuideStep(){
+  if(!_guideSteps)return;
+  const step=_guideSteps[_guideIdx];
+  const target=document.querySelector(step.sel);
+  const r=target?target.getBoundingClientRect():{width:0,height:0};
+  if(!target||r.width===0||r.height===0){closeAlipayFocusGuide();return;} // 目标不可见（如弹窗未打开）则退出
+
+  const pad=8,spot=_guideEls.spot;
+  spot.style.top=(r.top-pad)+'px';
+  spot.style.left=(r.left-pad)+'px';
+  spot.style.width=(r.width+pad*2)+'px';
+  spot.style.height=(r.height+pad*2)+'px';
+  const isLast=_guideIdx===_guideSteps.length-1;
+  const bub=_guideEls.bubble;
+  bub.innerHTML=
+    '<div class="guide-step-no">'+t('alipayGuide.stepCount',{cur:_guideIdx+1,total:_guideSteps.length})+'</div>'+
+    '<h4>'+step.title+'</h4><p>'+step.text+'</p>'+
+    '<div class="guide-actions">'+
+      '<button class="g-skip" onclick="closeAlipayFocusGuide()">'+t('alipayGuide.skip')+'</button>'+
+      (_guideIdx>0?'<button class="g-prev" onclick="guidePrev()">'+t('alipayGuide.prev')+'</button>':'')+
+      '<button class="g-next" onclick="'+(isLast?'closeAlipayFocusGuide()':'guideNext()')+'">'+(isLast?t('alipayGuide.finish'):t('alipayGuide.next'))+'</button>'+
+    '</div>';
+  const bw=300,bh=bub.offsetHeight||170;
+  let top=r.bottom+12;
+  if(top+bh>window.innerHeight-10) top=r.top-bh-12;
+  if(top<10) top=10;
+  let left=r.left+(r.width-bw)/2;
+  left=Math.max(10,Math.min(left,window.innerWidth-bw-10));
+  bub.style.top=top+'px';
+  bub.style.left=left+'px';
+}
+function guideNext(){_guideIdx++;renderGuideStep();}
+function guidePrev(){_guideIdx--;renderGuideStep();}
+function closeAlipayFocusGuide(){
+  if(_guideEls){_guideEls.spot.style.display='none';_guideEls.bubble.style.display='none';}
+  window.removeEventListener('resize',renderGuideStep);
+}
+
 // Static Payment (Alipay Manual Review)
 const getNowFormat=()=>new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/[\/\s:]/g,'');
 
@@ -1049,6 +1126,7 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9998;';
   const container=document.createElement('div');
+  container.id='staticPayContainer';
   container.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;padding:20px;border-radius:12px;border:2px solid #6c5ce7;box-shadow:0 0 30px rgba(108,92,231,0.3);z-index:9999;text-align:right;width:min(350px,95vw);max-height:90vh;overflow-y:auto;box-sizing:border-box;';
   const origOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';
@@ -1058,16 +1136,17 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
       <span style="color:#999;font-size:12px">${t('staticPay.orderNo')}</span>
       <span style="cursor:pointer;color:#a29bfe;font-size:12px" onclick="copyOrderNo()">${t('staticPay.copy')}</span>
     </div>
-    <div style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px;text-align:center">${orderNo}</div>
+    <div id="guideOrderNo" style="background:rgba(108,92,231,0.1);padding:8px 12px;border-radius:6px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:15px;text-align:center;color:#fff">${orderNo}</div>
     <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold;text-align:center">¥ ${amount}</div>
-    <img src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
-    <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 20px;text-align:left">
+    <img id="guideQr" src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
+    <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 12px;text-align:left">
       <strong>${t('staticPay.instruction')}</strong><br>
       1. ${t('vpay.payStep1')}<br>
       2. ${t('vpay.payStep2',{amount:amount})}<br>
       3. ${t('vpay.payStep3')}<br>
       4. ${t('vpay.payStep4')}
     </div>
+    <div style="text-align:center;margin-bottom:14px"><a class="guide-link" onclick="startAlipayFocusGuide()"><i class="fa-solid fa-circle-question"></i> ${t('alipayGuide.viewGuide')}</a></div>
     <div style="display:flex;gap:10px">
       <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值</button>
       <button onclick="copyOrderNo();openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">${t('orders.alipay')}</button>
@@ -1087,6 +1166,11 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     document.body.style.overflow=origOverflow;
     loadOrders();
   };
+  // 首次打开支付弹窗时自动跑一次聚焦指引（localStorage 记忆，只看一次）
+  if(!localStorage.getItem('alipay_pay_guide')){
+    localStorage.setItem('alipay_pay_guide','1');
+    setTimeout(startAlipayFocusGuide,350);
+  }
 }
 
 async function createStaticOrderRecord(paymentType,amount,orderNo){
