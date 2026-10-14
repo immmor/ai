@@ -315,7 +315,7 @@ body{
     }
     function applyTheme(light) {
       document.body.classList.toggle('theme-light', !!light);
-      var icon = '<i class="fa-solid ' + (light ? 'fa-moon' : 'fa-sun') + '"></i>';
+      var icon = '<i class="fa-solid ' + (light ? 'fa-sun' : 'fa-moon') + '"></i>';
       document.querySelectorAll('.theme-toggle-btn').forEach(function (b) { b.innerHTML = icon; });
     }
     var light = getTheme();
