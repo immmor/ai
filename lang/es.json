@@ -275,7 +275,11 @@
         "q2": "¿Cómo transferir?",
         "q3": "Consultar mi saldo",
         "q4": "¿Cómo funcionan el escaneo y la recepción?",
-        "inputPlaceholder": "Escribe tu pregunta…"
+        "inputPlaceholder": "Escribe tu pregunta…",
+        "newChat": "Nueva conversación",
+        "history": "Historial",
+        "noHistory": "Sin historial",
+        "delete": "Eliminar"
     },
     "scan": {
         "title": "Escanear",

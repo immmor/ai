@@ -90,7 +90,7 @@ body{
 /* Header */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .header h1{font-size:24px;font-weight:600}
-.actions{display:flex;gap:15px}
+.actions{display:flex;gap:8px}
 .icon-btn{width:42px;height:42px;font-size:42px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.3s}
 .icon-btn i{font-size:0.38em}
 .icon-btn:hover{background:rgba(255,255,255,0.1)}
@@ -207,6 +207,15 @@ body{
 .modal-overlay.show{display:flex}
 .modal-box{background:rgba(18,20,29,0.95);border:1px solid var(--panel-border);border-radius:20px;padding:24px;width:360px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
 .modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:right}
+.history-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.history-empty{text-align:center;color:var(--text-muted);font-size:14px;padding:24px 0}
+.history-item{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--panel-border);border-radius:12px;padding:12px 42px 12px 14px;cursor:pointer;transition:.2s}
+.history-item:hover{background:rgba(108,92,231,.12);border-color:#6c5ce7}
+.history-title{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:4px}
+.history-preview{font-size:12px;color:var(--text-muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.history-time{font-size:11px;color:var(--text-muted);margin-top:6px}
+.history-del{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:8px;border:none;background:rgba(255,255,255,.06);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.history-del:hover{background:rgba(231,76,60,.2);color:#e74c3c}
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
 /* Scan Modal */
@@ -415,6 +424,15 @@ body{
     </div>
     <p id="scanStatus" style="font-size:13px;color:var(--text-muted);text-align:center;margin:12px 0 4px" data-i18n="scan.waiting">将二维码放入框内，正在等待识别…</p>
     <button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer;margin-top:8px" onclick="closeScan()" data-i18n="scan.close">关闭</button>
+  </div>
+</div>
+
+<!-- ============ 助手历史对话 ============ -->
+<div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistory()">
+  <div class="modal-box" style="width:380px">
+    <button class="modal-close" onclick="closeHistory()"><i class="fa-solid fa-times"></i></button>
+    <h3 style="text-align:left" data-i18n="assistant.history">历史对话</h3>
+    <div id="historyList" class="history-list"></div>
   </div>
 </div>
 
@@ -672,6 +690,8 @@ body{
       <header class="header">
         <div><h1 data-i18n="assistant.title">智能助手</h1></div>
         <div class="actions">
+          <button class="icon-btn" data-i18n-title="assistant.newChat" onclick="newConversation()"><i class="fa-solid fa-plus"></i></button>
+          <button class="icon-btn" data-i18n-title="assistant.history" onclick="openHistory()"><i class="fa-solid fa-clock-rotate-left"></i></button>
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
           <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
         </div>
@@ -746,6 +766,7 @@ function renderTierStatus(){
 function applyTranslations(){
   document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.getAttribute('data-i18n')));
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.placeholder=t(el.getAttribute('data-i18n-placeholder')));
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.getAttribute('data-i18n-title')));
   document.documentElement.lang=currentLang;
 }
 function updateDynamicI18n(){
@@ -1303,14 +1324,16 @@ function sendAssistant(){
   const text=input.value.trim();
   if(!text)return;
   input.value='';
+  ensureConversation();
   appendChat('user',text);
+  pushMessage('user',text);
   _chatBusy=true;
   const think=appendThinking();
   const reply=assistantReply(text);
   const delay=Math.min(1400,500+reply.length*10);
   setTimeout(()=>{
     think.remove();
-    streamReply(reply,()=>{_chatBusy=false;});
+    streamReply(reply,()=>{pushMessage('bot',reply);_chatBusy=false;});
   },delay);
 }
 function streamReply(full,done){
@@ -1340,6 +1363,71 @@ function askAssistant(el){
   window.addEventListener('mouseup',()=>{isDown=false;cq.style.cursor='grab'});
   cq.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();}},true);
 })();
+
+// ===== 助手：会话存储（localStorage） =====
+const ASSISTANT_KEY='vpay_assistant_conversations';
+let _currentConvId=null;
+function _loadConvs(){try{return JSON.parse(localStorage.getItem(ASSISTANT_KEY))||[]}catch(e){return[]}}
+function _saveConvs(list){try{localStorage.setItem(ASSISTANT_KEY,JSON.stringify(list))}catch(e){}}
+function _renderWelcome(){
+  const body=document.getElementById('chatBody');
+  const d=document.createElement('div');
+  d.className='chat-msg bot';
+  d.innerHTML='<div class="chat-avatar"><i class="fa-solid fa-robot"></i></div><div class="chat-bubble chat-welcome">'+escapeHtml(t('assistant.welcome')).replace(/\n/g,'<br>')+'</div>';
+  body.appendChild(d);
+}
+function ensureConversation(){
+  let list=_loadConvs();
+  let conv=list.find(c=>c.id===_currentConvId);
+  if(!conv){
+    conv={id:'c'+Date.now(),title:'',messages:[],createdAt:Date.now(),updatedAt:Date.now()};
+    list.unshift(conv);_currentConvId=conv.id;_saveConvs(list);
+  }
+  return conv;
+}
+function pushMessage(role,text){
+  let list=_loadConvs();
+  let conv=list.find(c=>c.id===_currentConvId);
+  if(!conv){conv={id:_currentConvId||('c'+Date.now()),title:'',messages:[],createdAt:Date.now(),updatedAt:Date.now()};list.unshift(conv);_currentConvId=conv.id;}
+  if(role==='user'&&!conv.messages.some(m=>m.role==='user'))conv.title=text.slice(0,20)||conv.title;
+  conv.messages.push({role,text});conv.updatedAt=Date.now();_saveConvs(list);
+}
+function newConversation(){
+  _currentConvId=null;
+  const body=document.getElementById('chatBody');body.innerHTML='';_renderWelcome();
+  ensureConversation();
+}
+function openHistory(){
+  const list=_loadConvs();const box=document.getElementById('historyList');
+  if(!list.length){box.innerHTML='<div class="history-empty">'+t('assistant.noHistory')+'</div>';}
+  else{
+    box.innerHTML=list.map(c=>{
+      const last=c.messages[c.messages.length-1];
+      const preview=last?last.text:'';
+      const time=new Date(c.updatedAt).toLocaleString();
+      return '<div class="history-item" onclick="loadConversation(\''+c.id+'\')">'
+        +'<div class="history-title">'+escapeHtml(c.title||t('assistant.newChat'))+'</div>'
+        +'<div class="history-preview">'+escapeHtml(preview)+'</div>'
+        +'<div class="history-time">'+escapeHtml(time)+'</div>'
+        +'<button class="history-del" title="'+t('assistant.delete')+'" onclick="event.stopPropagation();deleteConversation(\''+c.id+'\')"><i class="fa-solid fa-trash"></i></button>'
+        +'</div>';
+    }).join('');
+  }
+  document.getElementById('historyModal').classList.add('show');
+}
+function closeHistory(){document.getElementById('historyModal').classList.remove('show');}
+function loadConversation(id){
+  const conv=_loadConvs().find(c=>c.id===id);if(!conv)return;
+  _currentConvId=id;
+  const body=document.getElementById('chatBody');body.innerHTML='';_renderWelcome();
+  (conv.messages||[]).forEach(m=>appendChat(m.role,m.text));
+  closeHistory();
+}
+function deleteConversation(id){
+  _saveConvs(_loadConvs().filter(c=>c.id!==id));
+  if(_currentConvId===id)_currentConvId=null;
+  openHistory();
+}
 
 // ===== 支付宝人工支付 · 聚焦教学指引（中文，分步 spotlight） =====
 let _guideSteps=null,_guideIdx=0,_guideEls=null;

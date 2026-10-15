@@ -274,7 +274,11 @@
         "q2": "How to transfer?",
         "q3": "Check my balance",
         "q4": "How do scan & receive work?",
-        "inputPlaceholder": "Type your question…"
+        "inputPlaceholder": "Type your question…",
+        "newChat": "New Chat",
+        "history": "History",
+        "noHistory": "No history yet",
+        "delete": "Delete"
     },
     "scan": {
         "title": "Scan",

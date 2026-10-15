@@ -275,7 +275,11 @@
         "q2": "Làm sao để chuyển khoản?",
         "q3": "Kiểm tra số dư của tôi",
         "q4": "Cách dùng quét và nhận tiền?",
-        "inputPlaceholder": "Nhập câu hỏi của bạn…"
+        "inputPlaceholder": "Nhập câu hỏi của bạn…",
+        "newChat": "Cuộc hội thoại mới",
+        "history": "Lịch sử",
+        "noHistory": "Chưa có lịch sử",
+        "delete": "Xóa"
     },
     "scan": {
         "title": "Quét",

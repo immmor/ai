@@ -275,7 +275,11 @@
         "q2": "どうやって送金する？",
         "q3": "残高を確認",
         "q4": "スキャンと受取の使い方は？",
-        "inputPlaceholder": "質問を入力…"
+        "inputPlaceholder": "質問を入力…",
+        "newChat": "新しい会話",
+        "history": "履歴",
+        "noHistory": "履歴はまだありません",
+        "delete": "削除"
     },
     "scan": {
         "title": "スキャン",

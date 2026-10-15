@@ -275,7 +275,11 @@
         "q2": "송금은 어떻게 하나요?",
         "q3": "내 잔액 확인",
         "q4": "스캔 및 수령은 어떻게 쓰나요?",
-        "inputPlaceholder": "질문을 입력하세요…"
+        "inputPlaceholder": "질문을 입력하세요…",
+        "newChat": "새 대화",
+        "history": "기록",
+        "noHistory": "기록이 없습니다",
+        "delete": "삭제"
     },
     "scan": {
         "title": "스캔",

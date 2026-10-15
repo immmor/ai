@@ -274,7 +274,11 @@
         "q2": "怎么转账？",
         "q3": "查一下我的余额",
         "q4": "扫码和收款怎么用？",
-        "inputPlaceholder": "输入你的问题…"
+        "inputPlaceholder": "输入你的问题…",
+        "newChat": "新建对话",
+        "history": "历史对话",
+        "noHistory": "暂无历史对话",
+        "delete": "删除"
     },
     "scan": {
         "title": "扫一扫",
