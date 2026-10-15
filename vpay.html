@@ -57,7 +57,7 @@ body{
 .user-info h4{font-size:14px;font-weight:600}
 .user-info p{font-size:12px;color:var(--text-muted)}
 /* Main Content */
-.main-content{padding:40px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;max-height:85vh}
+.main-content{padding:40px 40px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
 /* Auth */
 .auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%;max-width:420px;margin:0 auto}
 .auth-page .brand{font-size:32px;margin-bottom:4px;justify-content:center}
@@ -209,6 +209,13 @@ body{
 .modal-box h3{font-size:18px;font-weight:600;margin-bottom:16px;text-align:right}
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
+/* Scan Modal */
+.scan-viewport{position:relative;width:100%;aspect-ratio:1/1;background:#0b0c12;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.scan-viewport video{width:100%;height:100%;object-fit:cover}
+.scan-frame{position:absolute;top:50%;left:50%;width:62%;height:62%;transform:translate(-50%,-50%);border:2px solid #6c5ce7;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45);pointer-events:none}
+.scan-frame::before,.scan-frame::after{content:"";position:absolute;width:22px;height:22px;border:3px solid #a29bfe}
+.scan-frame::before{top:-3px;left:-3px;border-right:none;border-bottom:none;border-top-left-radius:14px}
+.scan-frame::after{bottom:-3px;right:-3px;border-left:none;border-top:none;border-bottom-right-radius:14px}
 /* ===== 支付宝人工支付 · 聚焦教学指引（spotlight） ===== */
 .guide-spot{position:fixed;z-index:10000;border-radius:12px;box-shadow:0 0 0 4px rgba(108,92,231,.9),0 0 0 9999px rgba(0,0,0,.72);transition:all .25s ease;pointer-events:none}
 .guide-bubble{position:fixed;z-index:10001;max-width:300px;background:#1a1a1a;border:1px solid #6c5ce7;border-radius:14px;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.55);color:#fff;font-size:13px;line-height:1.6}
@@ -254,7 +261,7 @@ body{
   body{align-items:flex-start}
   .app-container{grid-template-columns:1fr;min-height:100vh;margin:0;border-radius:0;border:none;padding-bottom:65px}
   .sidebar{display:none}
-  .main-content{padding:20px;gap:20px;max-height:calc(100vh - 60px)}
+  .main-content{padding:20px;gap:20px;height:calc(100vh - 60px)}
   .auth-page{min-height:80vh;justify-content:center}
   .card-balance-val{font-size:28px;gap:10px}
   .balance-toggle{width:20px;height:20px;font-size:11px}
@@ -316,6 +323,35 @@ body{
   body.theme-light [style*="color:#fff"]{color:var(--text-main)!important;}
   /* 支付宝人工支付弹窗本身是深色的，白天模式下订单号必须是白色（比通用白字翻转规则更优先） */
   body.theme-light #staticPayContainer #guideOrderNo{color:#fff!important;}
+  /* 助手聊天：白天模式头像/气泡配色 */
+  body.theme-light .chat-avatar{background:rgba(108,92,231,0.12);color:#6c5ce7}
+  body.theme-light .chat-msg.user .chat-avatar{background:rgba(0,0,0,0.06);color:var(--text-main)}
+  body.theme-light .chat-bubble{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.1)}
+/* Assistant Chat */
+#pageAssistant{display:flex;flex-direction:column;flex:1;min-height:0}
+.chat-card{display:flex;flex-direction:column;gap:14px;padding:18px 18px 6px;flex:1;min-height:0}
+.chat-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
+.chat-msg{display:flex;gap:10px;align-items:flex-start;max-width:90%}
+.chat-msg.user{flex-direction:row-reverse;align-self:flex-end}
+.chat-avatar{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:rgba(108,92,231,0.18);color:#a29bfe;display:flex;align-items:center;justify-content:center;font-size:15px}
+.chat-msg.user .chat-avatar{background:rgba(255,255,255,0.08);color:#fff}
+.chat-bubble{background:rgba(255,255,255,0.06);border:1px solid var(--panel-border);padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.6;color:var(--text-main);word-break:break-word}
+.chat-msg.user .chat-bubble{background:linear-gradient(135deg,#6c5ce7,#8a7bff);border-color:transparent;color:#fff}
+.chat-quick{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:14px 0 4px;border-top:1px solid var(--panel-border);cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chat-quick::-webkit-scrollbar{display:none}
+.chat-chip{flex-shrink:0;white-space:nowrap;background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.4);color:#a29bfe;padding:7px 12px;border-radius:999px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s}
+.chat-chip:hover{background:rgba(108,92,231,0.28);color:#fff}
+.chat-input{display:flex;gap:10px;align-items:center}
+.chat-input input{flex:1;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid var(--panel-border);color:var(--text-main);font-family:inherit;font-size:14px;outline:none}
+.chat-input input:focus{border-color:#6c5ce7}
+.chat-send{width:46px;height:46px;flex-shrink:0;border:none;border-radius:14px;background:linear-gradient(135deg,#6c5ce7,#8a7bff);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s}
+.chat-send:active{transform:scale(0.94)}
+/* 思考动画（三点跳动） */
+.chat-typing{display:inline-flex;gap:5px;align-items:center;padding:2px 0}
+.chat-typing span{width:7px;height:7px;border-radius:50%;background:var(--text-muted);animation:chatBlink 1.2s infinite both}
+.chat-typing span:nth-child(2){animation-delay:.2s}
+.chat-typing span:nth-child(3){animation-delay:.4s}
+@keyframes chatBlink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
 </style>
 </head>
 <body>
@@ -364,6 +400,20 @@ body{
     <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
     <h3 id="qrTitle" style="text-align:left" data-i18n="vpay.scanToPay">Scan to Pay</h3>
     <div id="qrContent"></div>
+  </div>
+</div>
+
+<!-- ============ 扫一扫（调用摄像头扫码） ============ -->
+<div class="modal-overlay" id="scanModal">
+  <div class="modal-box" style="width:380px">
+    <button class="modal-close" onclick="closeScan()"><i class="fa-solid fa-times"></i></button>
+    <h3 style="text-align:left;margin-bottom:14px">扫一扫</h3>
+    <div class="scan-viewport">
+      <video id="scanVideo" playsinline autoplay muted></video>
+      <div class="scan-frame"></div>
+    </div>
+    <p id="scanStatus" style="font-size:13px;color:var(--text-muted);text-align:center;margin:12px 0 4px">将二维码放入框内，正在等待识别…</p>
+    <button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer;margin-top:8px" onclick="closeScan()">关闭</button>
   </div>
 </div>
 
@@ -426,6 +476,7 @@ body{
         <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="vpay.overview">总览</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="nav.recharge">充值</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="nav.transfer">转账</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i> <span>助手</span></a></li>
       </ul>
     </div>
     <div class="user-profile" id="userProfile">
@@ -482,6 +533,8 @@ body{
           <div class="quick-actions">
             <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
             <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
+            <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span>扫码</span></button>
+            <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span>收款</span></button>
           </div>
 
           <div style="margin-top:30px">
@@ -596,6 +649,10 @@ body{
           <input type="number" id="transferAmount" placeholder="0.00" min="0.01" step="0.01">
         </div>
         <button class="btn btn-primary transfer-send-btn" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
+        <div class="transfer-quick" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px">
+          <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span>扫码</span></button>
+          <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span>收款</span></button>
+        </div>
       </div>
 
       <div style="margin-top:20px">
@@ -609,6 +666,36 @@ body{
       </div>
     </div>
 
+    <!-- ============ ASSISTANT ============ -->
+    <div id="pageAssistant" class="hidden">
+      <header class="header">
+        <div><h1>智能助手</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
+        </div>
+      </header>
+
+      <div class="chat-card">
+        <div class="chat-body" id="chatBody">
+          <div class="chat-msg bot">
+            <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div class="chat-bubble">你好，我是 FUNBUA 智能助手 👋<br>可以问我充值、转账、余额、扫码收款等问题，或直接点下面的快捷问题。</div>
+          </div>
+        </div>
+        <div class="chat-quick" id="chatQuick">
+          <button class="chat-chip" onclick="askAssistant(this.textContent)">怎么充值？</button>
+          <button class="chat-chip" onclick="askAssistant(this.textContent)">怎么转账？</button>
+          <button class="chat-chip" onclick="askAssistant(this.textContent)">查一下我的余额</button>
+          <button class="chat-chip" onclick="askAssistant(this.textContent)">扫码和收款怎么用？</button>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="输入你的问题…" onkeydown="if(event.key==='Enter')sendAssistant()">
+          <button class="chat-send" onclick="sendAssistant()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -617,6 +704,7 @@ body{
   <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="vpay.overview">总览</span></button>
   <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
   <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
+  <button class="mobile-nav-item" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i><span>助手</span></button>
 </nav>
 
 <script src="vpay-tier.js"></script>
@@ -700,7 +788,7 @@ function switchPage(page){
   // Sidebar nav
   document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
   // Content pages
-  ['Dashboard','Recharge','Transfer'].forEach(p=>{
+  ['Dashboard','Recharge','Transfer','Assistant'].forEach(p=>{
     const el=document.getElementById('page'+p);
     if(el)el.classList.toggle('hidden',p.toLowerCase()!==page.toLowerCase())
   });
@@ -1052,6 +1140,202 @@ function changeRecordsPage(d){recordsPage+=d;if(recordsPage<1)recordsPage=1;if(r
 function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
 function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast(t('staticPay.copied')))}
+
+// ===== 扫一扫（调用摄像头 + jsQR 解码） =====
+let _scanStream=null,_scanRAF=null,_scanCanvas=null,_scanActive=false,_scanJsQRPromise=null,_collectPayload='';
+function loadJsQR(){
+  if(window.jsQR)return Promise.resolve(window.jsQR);
+  if(_scanJsQRPromise)return _scanJsQRPromise;
+  _scanJsQRPromise=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+    s.onload=()=>resolve(window.jsQR);
+    s.onerror=()=>reject(new Error('jsQR 加载失败'));
+    document.head.appendChild(s);
+  });
+  return _scanJsQRPromise;
+}
+async function openScan(){
+  const m=document.getElementById('scanModal');
+  m.classList.add('show');
+  const status=document.getElementById('scanStatus');
+  status.textContent='正在启动摄像头…';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    status.textContent='当前环境不支持摄像头（请使用 https 或 localhost 打开）';
+    return;
+  }
+  try{
+    await loadJsQR();
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    _scanStream=stream;
+    const video=document.getElementById('scanVideo');
+    video.srcObject=stream;
+    await video.play();
+    _scanActive=true;
+    status.textContent='将二维码放入框内，正在等待识别…';
+    _scanCanvas=_scanCanvas||document.createElement('canvas');
+    scanLoop();
+  }catch(e){
+    console.error(e);
+    status.textContent='无法访问摄像头：'+(e&&e.message?e.message:e)+'（请检查权限或使用 https/localhost）';
+  }
+}
+function scanLoop(){
+  if(!_scanActive)return;
+  const video=document.getElementById('scanVideo');
+  if(video.readyState>=2){
+    const cw=video.videoWidth,ch=video.videoHeight;
+    if(cw&&ch){
+      _scanCanvas.width=cw;_scanCanvas.height=ch;
+      const ctx=_scanCanvas.getContext('2d');
+      ctx.drawImage(video,0,0,cw,ch);
+      try{
+        const img=ctx.getImageData(0,0,cw,ch);
+        const res=window.jsQR(img.data,cw,ch,{inversionAttempts:'attemptBoth'});
+        if(res&&res.data){onScanResult(res.data);return;}
+      }catch(e){}
+    }
+  }
+  _scanRAF=requestAnimationFrame(scanLoop);
+}
+function onScanResult(data){
+  closeScan();
+  // 识别到本钱包收款码：自动跳转到转账并填入收款人
+  if(typeof data==='string'&&data.indexOf('funbua:collect')===0){
+    const mm=data.match(/user=([^&]+)/);
+    if(mm){
+      const user=decodeURIComponent(mm[1]);
+      switchPage('transfer');
+      const ti=document.getElementById('transferTo');
+      if(ti)ti.value=user;
+      showToast('已填入收款人：'+user);
+      return;
+    }
+  }
+  showToast('已识别：'+data);
+}
+function closeScan(){stopScanStream();_scanActive=false;document.getElementById('scanModal').classList.remove('show')}
+function stopScanStream(){
+  if(_scanRAF){cancelAnimationFrame(_scanRAF);_scanRAF=null;}
+  if(_scanStream){_scanStream.getTracks().forEach(t=>t.stop());_scanStream=null;}
+}
+// ===== 收款码 =====
+function openCollect(){
+  const user=currentUser?currentUser.username:'';
+  _collectPayload='funbua:collect?user='+encodeURIComponent(user);
+  const content=
+    '<div style="text-align:center">'+
+    '<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">我的收款码</div>'+
+    '<div style="font-size:16px;font-weight:600;margin-bottom:16px">'+escapeHtml(user)+'</div>'+
+    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(_collectPayload)+'" alt="收款码" style="width:220px;height:220px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">'+
+    '<button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer" onclick="copyCollect()">复制收款信息</button>'+
+    '</div>';
+  showQrModal('收款',content);
+}
+function copyCollect(){copyText(_collectPayload)}
+
+// ===== 智能助手（本地规则引擎，离线可用） =====
+function appendChat(role,text){
+  const body=document.getElementById('chatBody');
+  const msg=document.createElement('div');
+  msg.className='chat-msg '+(role==='user'?'user':'bot');
+  const avatar=role==='user'
+    ?'<div class="chat-avatar">'+(currentUser&&currentUser.username?escapeHtml((currentUser.username[0]||'U').toUpperCase()):'<i class="fa-solid fa-user"></i>')+'</div>'
+    :'<div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>';
+  msg.innerHTML=avatar+'<div class="chat-bubble">'+escapeHtml(text).replace(/\n/g,'<br>')+'</div>';
+  body.appendChild(msg);
+  body.scrollTop=body.scrollHeight;
+  return msg;
+}
+function assistantReply(text){
+  const q=String(text||'').toLowerCase();
+  const has=k=>q.indexOf(k)>=0;
+  // 余额
+  if(has('余额')||has('balance')||has('还有多少')||has('资产')){
+    if(currentUser){
+      const bal=(typeof balanceVal==='number')?balanceVal.toFixed(2):'0.00';
+      return '你当前账户（'+(currentUser.username||'')+'）的余额约为 ¥'+bal+'（折合 $'+(bal/USD_TO_CNY).toFixed(2)+'）。\n可在「总览」页点击眼睛图标隐藏/显示余额。';
+    }
+    return '请先登录账户，我才能帮你查询余额哦。';
+  }
+  // 充值
+  if(has('充值')||has('recharge')||has('怎么充')||has('购买')||has('买币')){
+    return '充值步骤：\n1. 进入「充值」页；\n2. 选择支付方式（信用卡 Creem / 支付宝人工 / USDT）；\n3. 选择或输入金额；\n4. 点击「支付」并按页面提示完成付款。\n付款后通常几分钟内到账，可在充值记录里查看。';
+  }
+  // 转账
+  if(has('转账')||has('transfer')||has('汇')||has('打钱')||has('发给')){
+    return '转账步骤：\n1. 进入「转账」页；\n2. 填写收款人用户名和金额（CNY）；\n3. 点击「发送」并输入 6 位支付密码确认。\n首次使用需先设置支付密码。也可点「扫码」直接扫收款码自动填入收款人。';
+  }
+  // 扫码 / 收款
+  if(has('扫码')||has('扫一')||has('scan')||has('收款')||has('collect')||has('收钱')){
+    return '「扫码」：调用摄像头识别二维码，扫到本钱包收款码会自动跳到转账并填入收款人。\n「收款」：弹出你自己的收款码（含你的用户名），让对方扫码即可向你付款。';
+  }
+  // 汇率
+  if(has('汇率')||has('rate')||has('多少人民币')||has('美金')||has('美元')){
+    return '当前汇率约为 1 USD = ¥'+USD_TO_CNY+'，USDT 也按约 ¥'+USDT_RATE+' 折算。';
+  }
+  // 密码 / 安全
+  if(has('密码')||has('支付密码')||has('登录')||has('安全')||has('忘记')){
+    return '登录密码用于进入账户；支付密码是 6 位数字，用于确认每一笔转账，请妥善保管、不要告知他人。若忘记密码，请联系人工客服处理。';
+  }
+  // 客服 / 帮助
+  if(has('客服')||has('人工')||has('帮助')||has('联系')||has('投诉')){
+    return '需要人工帮助可在「总览」页右上角退出旁找到客服入口，或发送邮件至 support@funbua.uk。我会继续帮你解答常见问题。';
+  }
+  return '我是 FUNBUA 智能助手，可以帮你了解充值、转账、余额、扫码收款、汇率与账户安全等问题。试着问我“怎么充值？”或“查一下我的余额”吧～';
+}
+let _chatBusy=false;
+function appendThinking(){
+  const body=document.getElementById('chatBody');
+  const msg=document.createElement('div');
+  msg.className='chat-msg bot';
+  msg.innerHTML='<div class="chat-avatar"><i class="fa-solid fa-robot"></i></div><div class="chat-bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>';
+  body.appendChild(msg);
+  body.scrollTop=body.scrollHeight;
+  return msg;
+}
+function sendAssistant(){
+  if(_chatBusy)return;
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  appendChat('user',text);
+  _chatBusy=true;
+  const think=appendThinking();
+  const reply=assistantReply(text);
+  const delay=Math.min(1400,500+reply.length*10);
+  setTimeout(()=>{
+    think.remove();
+    streamReply(reply,()=>{_chatBusy=false;});
+  },delay);
+}
+function streamReply(full,done){
+  const msg=appendChat('bot','');
+  const bubble=msg.querySelector('.chat-bubble');
+  let i=0;const step=2;
+  (function tick(){
+    i=Math.min(full.length,i+step);
+    bubble.innerHTML=escapeHtml(full.slice(0,i)).replace(/\n/g,'<br>');
+    const body=document.getElementById('chatBody');body.scrollTop=body.scrollHeight;
+    if(i<full.length){setTimeout(tick,22);}else if(done){done();}
+  })();
+}
+function askAssistant(q){
+  const input=document.getElementById('chatInput');
+  input.value=q;
+  sendAssistant();
+}
+// 推荐问题：鼠标拖拽左右滑动（触摸/触控板用原生滚动）
+(function(){
+  const cq=document.getElementById('chatQuick');
+  if(!cq)return;
+  let isDown=false,startX=0,scrollStart=0,moved=false;
+  cq.addEventListener('mousedown',e=>{isDown=true;moved=false;startX=e.pageX;scrollStart=cq.scrollLeft;cq.style.cursor='grabbing'});
+  cq.addEventListener('mousemove',e=>{if(!isDown)return;const dx=e.pageX-startX;if(Math.abs(dx)>4)moved=true;cq.scrollLeft=scrollStart-dx});
+  window.addEventListener('mouseup',()=>{isDown=false;cq.style.cursor='grab'});
+  cq.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();}},true);
+})();
 
 // ===== 支付宝人工支付 · 聚焦教学指引（中文，分步 spotlight） =====
 let _guideSteps=null,_guideIdx=0,_guideEls=null;

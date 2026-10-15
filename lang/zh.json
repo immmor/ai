@@ -204,6 +204,8 @@
         "transferPwdHint": "请输入 6 位支付密码确认转账",
         "secureKeyboard": "安全键盘",
         "scanToPay": "扫码支付",
+        "scanQr": "扫码",
+        "collect": "收款",
         "totalBalance": "总余额",
         "processing": "处理中...",
         "loggingIn": "登录中...",
