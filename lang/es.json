@@ -248,8 +248,8 @@
         "loggedIn": "Sesión iniciada",
         "transferTo": "Transferir {amt} a {to}",
         "digitalAccount": "Cuenta digital",
-        "enterAmount": "Ingrese monto",
-        "enterAmountMin10": "Ingrese monto (mín ¥10)",
+        "enterAmount": "Pagar",
+        "enterAmountMin10": "Pagar (mín ¥10)",
         "flipHint": "Toca la tarjeta para voltear"
     },
     "tier": {

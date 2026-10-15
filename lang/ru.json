@@ -248,8 +248,8 @@
         "loggedIn": "Вошел в систему",
         "transferTo": "Перевести {amt} на {to}",
         "digitalAccount": "Цифровой счет",
-        "enterAmount": "Введите сумму",
-        "enterAmountMin10": "Введите сумму (мин ¥10)",
+        "enterAmount": "Оплатить",
+        "enterAmountMin10": "Оплатить (мин ¥10)",
         "flipHint": "Нажмите на карту, чтобы перевернуть"
     },
     "tier": {

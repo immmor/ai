@@ -248,8 +248,8 @@
         "loggedIn": "تم تسجيل الدخول",
         "transferTo": "تحويل {amt} إلى {to}",
         "digitalAccount": "الحساب الرقمي",
-        "enterAmount": "أدخل المبلغ",
-        "enterAmountMin10": "أدخل المبلغ (الحد الأدنى ¥10)",
+        "enterAmount": "ادفع",
+        "enterAmountMin10": "ادفع (الحد الأدنى ¥10)",
         "flipHint": "انقر على البطاقة للقلب"
     },
     "tier": {

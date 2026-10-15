@@ -247,8 +247,8 @@
         "loggedIn": "Logged in",
         "transferTo": "Transfer {amt} to {to}",
         "digitalAccount": "Digital Account",
-        "enterAmount": "Enter amount",
-        "enterAmountMin10": "Enter amount (min ¥10)",
+        "enterAmount": "Pay",
+        "enterAmountMin10": "Pay (min ¥10)",
         "flipHint": "Tap card to flip"
     },
     "tier": {

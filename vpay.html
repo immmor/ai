@@ -612,8 +612,8 @@ body{
           <button class="amount-btn" id="customAlipayBtn" onclick="showCustomAlipayAmt()" data-i18n="amount.custom">自定义</button>
           <div style="grid-column:1/-1;font-size:12px;color:#ed8936;margin-top:8px;line-height:1.6;text-align:center" data-i18n="amount.alipayNote">请诚实付款，否则将取消这项支付资格，并且商品可能涨价。</div>
         </div>
-        <input type="number" class="amount-input hidden" id="customAmtInput" placeholder="输入金额" data-i18n-placeholder="vpay.enterAmount">
-        <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="输入金额(最低¥10)" data-i18n-placeholder="vpay.enterAmountMin10">
+        <input type="number" class="amount-input hidden" id="customAmtInput" placeholder="支付" data-i18n-placeholder="vpay.enterAmount">
+        <input type="number" class="amount-input hidden" id="customAlipayInput" placeholder="支付(最低¥10)" data-i18n-placeholder="vpay.enterAmountMin10">
 
         <button class="btn btn-primary pay-btn" onclick="handlePay()"><i class="fa-solid fa-arrow-right"></i> <span id="payBtnText">支付 $5</span></button>
       </div>
@@ -893,6 +893,7 @@ function selectMethod(m){
   document.getElementById('amtGridAlipay').classList.toggle('hidden',m!=='alipay_static');
   document.getElementById('customAmtInput').classList.add('hidden');
   document.getElementById('customAlipayInput').classList.add('hidden');
+  if(m==='alipay_static'){selectAlipayAmt(10)}else{alipayAmount=null}
   updatePayBtn()
 }
 function toggleMethodDropdown(){
@@ -928,7 +929,7 @@ function selectCny(a){cnyAmount=a;document.querySelectorAll('#amtGridCny .amount
 function showCustomAmt(){cnyAmount=null;document.querySelectorAll('#amtGridCny .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAmtInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
 function selectAlipayAmt(a){alipayAmount=a;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));document.getElementById('customAlipayInput').classList.add('hidden');updatePayBtn()}
 function showCustomAlipayAmt(){alipayAmount=null;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAlipayInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
-function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=t('vpay.payBtn',{amount:'$'+creditAmount});else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):'输入金额'}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):'输入金额'}}
+function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=t('vpay.payBtn',{amount:'$'+creditAmount});else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):t('vpay.payBtn',{amount:''}).trim()}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):t('vpay.payBtn',{amount:''}).trim()}}
 
 async function handlePay(){
   if(!currentUser||!currentUser.username)return;
@@ -1081,7 +1082,7 @@ async function loadRecentOrders(){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
           const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?t('orders.paid'):item.status==='failed'?t('orders.failed'):t('orders.pending');
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
+          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
           return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?t('records.out'):t('records.in')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
@@ -1108,7 +1109,7 @@ function renderOrders(orders){
   if(!orders.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>${t('vpay.noOrders')}</p></div>`;pg.style.display='none';return}
   list.innerHTML=orders.map(o=>{
     const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>充值 ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
+    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
   }).join('');
   pg.style.display=totalOrderPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=orderPage+' / '+totalOrderPages;document.getElementById('ordersPrev').disabled=orderPage<=1;document.getElementById('ordersNext').disabled=orderPage>=totalOrderPages
 }
@@ -1435,7 +1436,7 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     </div>
     <div style="text-align:center;margin-bottom:14px"><a class="guide-link" onclick="startAlipayFocusGuide()"><i class="fa-solid fa-circle-question"></i> ${t('alipayGuide.viewGuide')}</a></div>
     <div style="display:flex;gap:10px">
-      <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>确认充值</button>
+      <button id="confirmRechargeBtn" style="flex:6;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:not-allowed;font-size:14px;font-weight:600;opacity:0.5" disabled>${t('staticPay.confirmRecharge')}</button>
       <button onclick="copyOrderNo();openAlipayApp()" style="flex:3;padding:12px;background:#00b894;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">${t('orders.alipay')}</button>
       <button id="closeStaticPayBtn" style="flex:2;padding:12px;background:#666;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">${t('staticPay.close')}</button>
     </div>`;
@@ -1473,7 +1474,7 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
   const COOLDOWN_TIME=86400000;
   if(lastRechargeTime&&(now-parseInt(lastRechargeTime))<COOLDOWN_TIME){
     const remaining=COOLDOWN_TIME-(now-parseInt(lastRechargeTime));
-    btn.textContent='冷却中，请稍后再试';
+    btn.textContent=t('vpay.cooldown');
     btn.style.background='#666';
     btn.disabled=true;
     return;

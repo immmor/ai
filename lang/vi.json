@@ -248,8 +248,8 @@
         "loggedIn": "Đã đăng nhập",
         "transferTo": "Chuyển {amt} cho {to}",
         "digitalAccount": "Tài khoản kỹ thuật số",
-        "enterAmount": "Nhập số tiền",
-        "enterAmountMin10": "Nhập số tiền (tối thiểu ¥10)",
+        "enterAmount": "Thanh toán",
+        "enterAmountMin10": "Thanh toán (tối thiểu ¥10)",
         "flipHint": "Nhấn vào thẻ để lật"
     },
     "tier": {

@@ -248,8 +248,8 @@
         "loggedIn": "로그인됨",
         "transferTo": "{to}님에게 {amt} 전송",
         "digitalAccount": "디지털 계정",
-        "enterAmount": "금액 입력",
-        "enterAmountMin10": "금액 입력(최소 ¥10)",
+        "enterAmount": "결제",
+        "enterAmountMin10": "결제(최소 ¥10)",
         "flipHint": "카드를 탭하여 뒤집기"
     },
     "tier": {

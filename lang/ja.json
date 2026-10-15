@@ -248,8 +248,8 @@
         "loggedIn": "ログイン済み",
         "transferTo": "{to} に {amt} を送金",
         "digitalAccount": "デジタルアカウント",
-        "enterAmount": "金額を入力",
-        "enterAmountMin10": "金額を入力（最小¥10）",
+        "enterAmount": "支払",
+        "enterAmountMin10": "支払（最小¥10）",
         "flipHint": "カードをタップして裏返す"
     },
     "tier": {

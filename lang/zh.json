@@ -247,8 +247,8 @@
         "loggedIn": "已登录",
         "transferTo": "向 {to} 转账 {amt}",
         "digitalAccount": "数字账户",
-        "enterAmount": "输入金额",
-        "enterAmountMin10": "输入金额(最低¥10)",
+        "enterAmount": "支付",
+        "enterAmountMin10": "支付(最低¥10)",
         "flipHint": "点击卡片翻面"
     },
     "tier": {
