@@ -195,6 +195,8 @@
         "transferRecords": "سجلات التحويل",
         "recipient": "المستلم",
         "amountCny": "المبلغ (CNY)",
+        "message": "رسالة",
+        "messagePlaceholder": "رسالة اختيارية إلى المستلم",
         "send": "إرسال",
         "setPayPwd": "تعيين كلمة مرور الدفع",
         "setPayPwdHint": "عند أول استخدام للتحويل، يرجى تعيين كلمة مرور دفع مكونة من 6 أرقام لتأكيد كل تحويل. احتفظ بها بأمان.",
@@ -290,7 +292,11 @@
         "cameraHint": " (تحقق من الأذونات أو استخدم https/localhost)",
         "recipientFilled": "تم تعبئة المستلم: ",
         "recognized": "تم التعرف: ",
-        "close": "إغلاق"
+        "close": "إغلاق",
+        "chooseImage": "اختر رمز QR من الجهاز",
+        "decoding": "جارٍ التعرف على الصورة…",
+        "noQRFound": "لم يتم العثور على رمز QR، جرب صورة أخرى",
+        "decodeError": "تعذرت قراءة الصورة"
     },
     "collect": {
         "title": "استلام",

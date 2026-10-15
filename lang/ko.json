@@ -195,6 +195,8 @@
         "transferRecords": "송금 기록",
         "recipient": "수신자",
         "amountCny": "금액 (CNY)",
+        "message": "메시지",
+        "messagePlaceholder": "받는 사람에게 메시지 (선택)",
         "send": "보내기",
         "setPayPwd": "결제 비밀번호 설정",
         "setPayPwdHint": "송금 기능을 처음 사용하는 경우 각 송금 확인용 6자리 결제 비밀번호를 설정하세요. 안전하게 보관하세요.",
@@ -290,7 +292,11 @@
         "cameraHint": " (권한을 확인하거나 https/localhost 사용)",
         "recipientFilled": "받는 사람 입력됨: ",
         "recognized": "인식됨: ",
-        "close": "닫기"
+        "close": "닫기",
+        "chooseImage": "로컬 QR 코드 선택",
+        "decoding": "이미지 인식 중…",
+        "noQRFound": "QR 코드를 찾지 못했습니다. 다른 이미지를 시도하세요",
+        "decodeError": "이미지 읽기 실패"
     },
     "collect": {
         "title": "받기",

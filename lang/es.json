@@ -195,6 +195,8 @@
         "transferRecords": "Registros de transferencia",
         "recipient": "Destinatario",
         "amountCny": "Monto (CNY)",
+        "message": "Mensaje",
+        "messagePlaceholder": "Mensaje opcional para el destinatario",
         "send": "Enviar",
         "setPayPwd": "Configurar contraseña de pago",
         "setPayPwdHint": "La primera vez que use la transferencia, configure una contraseña de pago de 6 dígitos para confirmar cada transferencia. Guárdela bien.",
@@ -290,7 +292,11 @@
         "cameraHint": " (revisa los permisos o usa https/localhost)",
         "recipientFilled": "Destinatario rellenado: ",
         "recognized": "Reconocido: ",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "chooseImage": "Elegir código QR local",
+        "decoding": "Reconociendo imagen…",
+        "noQRFound": "No se encontró un código QR, prueba otra imagen",
+        "decodeError": "No se pudo leer la imagen"
     },
     "collect": {
         "title": "Recibir",

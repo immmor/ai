@@ -195,6 +195,8 @@
         "transferRecords": "Lịch sử chuyển tiền",
         "recipient": "Người nhận",
         "amountCny": "Số tiền (CNY)",
+        "message": "Tin nhắn",
+        "messagePlaceholder": "Tin nhắn cho người nhận (tùy chọn)",
         "send": "Gửi",
         "setPayPwd": "Thiết lập mật khẩu thanh toán",
         "setPayPwdHint": "Lần đầu sử dụng chuyển tiền, vui lòng thiết lập mật khẩu thanh toán 6 chữ số để xác nhận mỗi lần chuyển. Hãy giữ an toàn.",
@@ -290,7 +292,11 @@
         "cameraHint": " (kiểm tra quyền hoặc dùng https/localhost)",
         "recipientFilled": "Đã điền người nhận: ",
         "recognized": "Đã nhận diện: ",
-        "close": "Đóng"
+        "close": "Đóng",
+        "chooseImage": "Chọn mã QR từ thiết bị",
+        "decoding": "Đang nhận diện ảnh…",
+        "noQRFound": "Không tìm thấy mã QR, thử ảnh khác",
+        "decodeError": "Đọc ảnh thất bại"
     },
     "collect": {
         "title": "Nhận",

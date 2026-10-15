@@ -194,6 +194,8 @@
         "transferRecords": "转账记录",
         "recipient": "收款人",
         "amountCny": "金额 (CNY)",
+        "message": "留言信息",
+        "messagePlaceholder": "选填，给收款人留言（可选）",
         "send": "发送",
         "setPayPwd": "设置支付密码",
         "setPayPwdHint": "首次使用转账功能需设置 6 位数字支付密码，用于确认每一笔转账，请妥善保管。",
@@ -289,7 +291,11 @@
         "cameraHint": "（请检查权限或使用 https/localhost）",
         "recipientFilled": "已填入收款人：",
         "recognized": "已识别：",
-        "close": "关闭"
+        "close": "关闭",
+        "chooseImage": "选择本地二维码",
+        "decoding": "正在识别图片…",
+        "noQRFound": "未识别到二维码，请换一张试试",
+        "decodeError": "图片识别失败"
     },
     "collect": {
         "title": "收款",

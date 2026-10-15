@@ -194,6 +194,8 @@
         "transferRecords": "Transfer Records",
         "recipient": "Recipient",
         "amountCny": "Amount (CNY)",
+        "message": "Message",
+        "messagePlaceholder": "Optional message to recipient",
         "send": "Send",
         "setPayPwd": "Set Payment Password",
         "setPayPwdHint": "First time using transfer, please set a 6-digit payment password to confirm each transfer. Keep it safe.",
@@ -289,7 +291,11 @@
         "cameraHint": " (check permissions or use https/localhost)",
         "recipientFilled": "Recipient filled: ",
         "recognized": "Recognized: ",
-        "close": "Close"
+        "close": "Close",
+        "chooseImage": "Choose local QR code",
+        "decoding": "Recognizing image…",
+        "noQRFound": "No QR code found, try another image",
+        "decodeError": "Failed to read image"
     },
     "collect": {
         "title": "Receive",

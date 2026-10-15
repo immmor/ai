@@ -195,6 +195,8 @@
         "transferRecords": "送金記録",
         "recipient": "受取人",
         "amountCny": "金額 (CNY)",
+        "message": "メッセージ",
+        "messagePlaceholder": "受取人へのメッセージ（任意）",
         "send": "送信",
         "setPayPwd": "支払パスワード設定",
         "setPayPwdHint": "初めての送金には6桁の支払パスワードの設定が必要です。各送金の確認に使用します。大切に保管してください。",
@@ -290,7 +292,11 @@
         "cameraHint": "（権限を確認するか https/localhost を使用してください）",
         "recipientFilled": "受取人を入力しました：",
         "recognized": "認識しました：",
-        "close": "閉じる"
+        "close": "閉じる",
+        "chooseImage": "ローカルのQRコードを選択",
+        "decoding": "画像を認識中…",
+        "noQRFound": "QRコードが見つかりませんでした。別の画像をお試しください",
+        "decodeError": "画像の読み取りに失敗しました"
     },
     "collect": {
         "title": "受け取り",
