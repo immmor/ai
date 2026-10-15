@@ -1166,9 +1166,10 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     document.body.style.overflow=origOverflow;
     loadOrders();
   };
-  // 首次打开支付弹窗时自动跑一次聚焦指引（localStorage 记忆，只看一次）
-  if(!localStorage.getItem('alipay_pay_guide')){
-    localStorage.setItem('alipay_pay_guide','1');
+  // 前 5 次打开支付弹窗自动跑聚焦指引（localStorage 计数记忆）
+  var gc=parseInt(localStorage.getItem('alipay_pay_guide_count')||'0',10);
+  if(gc<5){
+    localStorage.setItem('alipay_pay_guide_count',String(gc+1));
     setTimeout(startAlipayFocusGuide,350);
   }
 }
