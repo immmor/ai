@@ -5,6 +5,7 @@
         "recharge": "Recargar",
         "orders": "Pedidos",
         "transfer": "Transferir",
+        "assistant": "Asistente",
         "records": "Registros",
         "logout": "Cerrar sesión"
     },
@@ -205,6 +206,8 @@
         "transferPwdHint": "Ingrese la contraseña de pago de 6 dígitos para confirmar la transferencia",
         "secureKeyboard": "Teclado seguro",
         "scanToPay": "Escanea para pagar",
+        "scanQr": "Escanear",
+        "collect": "Recibir",
         "totalBalance": "Saldo total",
         "processing": "Procesando...",
         "loggingIn": "Iniciando sesión...",
@@ -264,5 +267,31 @@
         "platinum": "Cuenta digital Platino",
         "blackgold": "Cuenta digital Oro Negro",
         "diamond": "Cuenta digital Diamante"
+    },
+    "assistant": {
+        "title": "Asistente IA",
+        "welcome": "Hola, soy el Asistente IA de FUNBUA 👋\nPregúntame sobre recargas, transferencias, saldo, escaneo y recepción, o toca una pregunta rápida abajo.",
+        "q1": "¿Cómo recargar?",
+        "q2": "¿Cómo transferir?",
+        "q3": "Consultar mi saldo",
+        "q4": "¿Cómo funcionan el escaneo y la recepción?",
+        "inputPlaceholder": "Escribe tu pregunta…"
+    },
+    "scan": {
+        "title": "Escanear",
+        "starting": "Iniciando cámara…",
+        "notSupported": "Cámara no compatible aquí (usa https o localhost).",
+        "waiting": "Coloca el código QR en el marco y espera la detección…",
+        "cameraError": "No se puede acceder a la cámara: ",
+        "cameraHint": " (revisa los permisos o usa https/localhost)",
+        "recipientFilled": "Destinatario rellenado: ",
+        "recognized": "Reconocido: ",
+        "close": "Cerrar"
+    },
+    "collect": {
+        "title": "Recibir",
+        "myCode": "Mi código de recepción",
+        "copyInfo": "Copiar info de recepción",
+        "alt": "Código de recepción"
     }
 }

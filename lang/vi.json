@@ -5,6 +5,7 @@
         "recharge": "Nạp tiền",
         "orders": "Đơn hàng",
         "transfer": "Chuyển tiền",
+        "assistant": "Trợ lý",
         "records": "Lịch sử",
         "logout": "Đăng xuất"
     },
@@ -205,6 +206,8 @@
         "transferPwdHint": "Nhập mật khẩu thanh toán 6 chữ số để xác nhận chuyển tiền",
         "secureKeyboard": "Bàn phím bảo mật",
         "scanToPay": "Quét để thanh toán",
+        "scanQr": "Quét",
+        "collect": "Nhận",
         "totalBalance": "Tổng số dư",
         "processing": "Đang xử lý...",
         "loggingIn": "Đang đăng nhập...",
@@ -264,5 +267,31 @@
         "platinum": "Tài khoản số Bạch kim",
         "blackgold": "Tài khoản số Vàng đen",
         "diamond": "Tài khoản số Kim cương"
+    },
+    "assistant": {
+        "title": "Trợ lý AI",
+        "welcome": "Xin chào, tôi là Trợ lý AI FUNBUA 👋\nHãy hỏi tôi về nạp tiền, chuyển khoản, số dư, quét nhận tiền, hoặc chạm vào câu hỏi nhanh bên dưới.",
+        "q1": "Làm sao để nạp tiền?",
+        "q2": "Làm sao để chuyển khoản?",
+        "q3": "Kiểm tra số dư của tôi",
+        "q4": "Cách dùng quét và nhận tiền?",
+        "inputPlaceholder": "Nhập câu hỏi của bạn…"
+    },
+    "scan": {
+        "title": "Quét",
+        "starting": "Đang khởi động camera…",
+        "notSupported": "Camera không được hỗ trợ ở đây (mở qua https hoặc localhost).",
+        "waiting": "Đặt mã QR vào khung và chờ nhận diện…",
+        "cameraError": "Không thể truy cập camera: ",
+        "cameraHint": " (kiểm tra quyền hoặc dùng https/localhost)",
+        "recipientFilled": "Đã điền người nhận: ",
+        "recognized": "Đã nhận diện: ",
+        "close": "Đóng"
+    },
+    "collect": {
+        "title": "Nhận",
+        "myCode": "Mã nhận tiền của tôi",
+        "copyInfo": "Sao chép thông tin nhận",
+        "alt": "Mã nhận tiền"
     }
 }

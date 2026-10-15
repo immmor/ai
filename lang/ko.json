@@ -5,6 +5,7 @@
         "recharge": "충전",
         "orders": "주문",
         "transfer": "송금",
+        "assistant": "어시스턴트",
         "records": "기록",
         "logout": "로그아웃"
     },
@@ -205,6 +206,8 @@
         "transferPwdHint": "송금 확인을 위해 6자리 결제 비밀번호 입력",
         "secureKeyboard": "보안 키보드",
         "scanToPay": "결제 스캔",
+        "scanQr": "스캔",
+        "collect": "받기",
         "totalBalance": "총 잔액",
         "processing": "처리 중...",
         "loggingIn": "로그인 중...",
@@ -264,5 +267,31 @@
         "platinum": "플래티넘 디지털 계좌",
         "blackgold": "블랙골드 디지털 계좌",
         "diamond": "다이아몬드 디지털 계좌"
+    },
+    "assistant": {
+        "title": "AI 비서",
+        "welcome": "안녕하세요, FUNBUA AI 비서입니다 👋\n충전, 송금, 잔액, 스캔 수령 등에 대해 물어보거나 아래 빠른 질문을 탭하세요.",
+        "q1": "충전은 어떻게 하나요?",
+        "q2": "송금은 어떻게 하나요?",
+        "q3": "내 잔액 확인",
+        "q4": "스캔 및 수령은 어떻게 쓰나요?",
+        "inputPlaceholder": "질문을 입력하세요…"
+    },
+    "scan": {
+        "title": "스캔",
+        "starting": "카메라 시작 중…",
+        "notSupported": "이 환경에서는 카메라를 지원하지 않습니다(https 또는 localhost로 열어주세요).",
+        "waiting": "QR 코드를 프레임에 넣고 인식 대기 중…",
+        "cameraError": "카메라에 접근할 수 없습니다: ",
+        "cameraHint": " (권한을 확인하거나 https/localhost 사용)",
+        "recipientFilled": "받는 사람 입력됨: ",
+        "recognized": "인식됨: ",
+        "close": "닫기"
+    },
+    "collect": {
+        "title": "받기",
+        "myCode": "내 받기 코드",
+        "copyInfo": "받기 정보 복사",
+        "alt": "받기 코드"
     }
 }

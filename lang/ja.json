@@ -5,6 +5,7 @@
         "recharge": "チャージ",
         "orders": "注文",
         "transfer": "送金",
+        "assistant": "アシスタント",
         "records": "記録",
         "logout": "ログアウト"
     },
@@ -205,6 +206,8 @@
         "transferPwdHint": "送金確認のため6桁の支払パスワードを入力",
         "secureKeyboard": "セキュアキーボード",
         "scanToPay": "スキャンして支払い",
+        "scanQr": "スキャン",
+        "collect": "受け取り",
         "totalBalance": "総残高",
         "processing": "処理中...",
         "loggingIn": "ログイン中...",
@@ -264,5 +267,31 @@
         "platinum": "プラチナデジタル口座",
         "blackgold": "ブラックゴールドデジタル口座",
         "diamond": "ダイヤモンドデジタル口座"
+    },
+    "assistant": {
+        "title": "AIアシスタント",
+        "welcome": "こんにちは、FUNBUAのAIアシスタントです 👋\nチャージ、送金、残高、スキャン受取などについて聞くか、下のクイック質問をタップしてください。",
+        "q1": "どうやってチャージする？",
+        "q2": "どうやって送金する？",
+        "q3": "残高を確認",
+        "q4": "スキャンと受取の使い方は？",
+        "inputPlaceholder": "質問を入力…"
+    },
+    "scan": {
+        "title": "スキャン",
+        "starting": "カメラを起動中…",
+        "notSupported": "この環境ではカメラがサポートされていません（https または localhost で開いてください）。",
+        "waiting": "QRコードを枠内に入れて認識を待っています…",
+        "cameraError": "カメラにアクセスできません：",
+        "cameraHint": "（権限を確認するか https/localhost を使用してください）",
+        "recipientFilled": "受取人を入力しました：",
+        "recognized": "認識しました：",
+        "close": "閉じる"
+    },
+    "collect": {
+        "title": "受け取り",
+        "myCode": "マイ受取コード",
+        "copyInfo": "受取情報をコピー",
+        "alt": "受取コード"
     }
 }

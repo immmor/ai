@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "Recharge",
         "transfer": "Transfer",
+        "assistant": "Assistant",
         "orders": "Orders",
         "records": "Records",
         "logout": "Logout"
@@ -204,6 +205,8 @@
         "transferPwdHint": "Enter 6-digit payment password to confirm transfer",
         "secureKeyboard": "Secure Keyboard",
         "scanToPay": "Scan to Pay",
+        "scanQr": "Scan",
+        "collect": "Receive",
         "totalBalance": "Total Balance",
         "processing": "Processing...",
         "loggingIn": "Logging in...",
@@ -263,5 +266,31 @@
         "platinum": "Platinum Digital Account",
         "blackgold": "Black Gold Digital Account",
         "diamond": "Diamond Digital Account"
+    },
+    "assistant": {
+        "title": "AI Assistant",
+        "welcome": "Hi, I'm the FUNBUA AI Assistant 👋\nAsk me about recharge, transfer, balance, scan-to-receive, or tap a quick question below.",
+        "q1": "How to recharge?",
+        "q2": "How to transfer?",
+        "q3": "Check my balance",
+        "q4": "How do scan & receive work?",
+        "inputPlaceholder": "Type your question…"
+    },
+    "scan": {
+        "title": "Scan",
+        "starting": "Starting camera…",
+        "notSupported": "Camera not supported here (open via https or localhost).",
+        "waiting": "Place the QR code in the frame and wait for detection…",
+        "cameraError": "Cannot access camera: ",
+        "cameraHint": " (check permissions or use https/localhost)",
+        "recipientFilled": "Recipient filled: ",
+        "recognized": "Recognized: ",
+        "close": "Close"
+    },
+    "collect": {
+        "title": "Receive",
+        "myCode": "My payment code",
+        "copyInfo": "Copy receive info",
+        "alt": "Receive QR code"
     }
 }

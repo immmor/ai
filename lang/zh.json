@@ -4,6 +4,7 @@
     "nav": {
         "recharge": "充值",
         "transfer": "转账",
+        "assistant": "助手",
         "records": "记录",
         "orders": "订单",
         "logout": "退出登录"
@@ -265,5 +266,31 @@
         "platinum": "铂金数字账户",
         "blackgold": "黑金数字账户",
         "diamond": "钻石数字账户"
+    },
+    "assistant": {
+        "title": "智能助手",
+        "welcome": "你好，我是 FUNBUA 智能助手 👋\n可以问我充值、转账、余额、扫码收款等问题，或直接点下面的快捷问题。",
+        "q1": "怎么充值？",
+        "q2": "怎么转账？",
+        "q3": "查一下我的余额",
+        "q4": "扫码和收款怎么用？",
+        "inputPlaceholder": "输入你的问题…"
+    },
+    "scan": {
+        "title": "扫一扫",
+        "starting": "正在启动摄像头…",
+        "notSupported": "当前环境不支持摄像头（请使用 https 或 localhost 打开）",
+        "waiting": "将二维码放入框内，正在等待识别…",
+        "cameraError": "无法访问摄像头：",
+        "cameraHint": "（请检查权限或使用 https/localhost）",
+        "recipientFilled": "已填入收款人：",
+        "recognized": "已识别：",
+        "close": "关闭"
+    },
+    "collect": {
+        "title": "收款",
+        "myCode": "我的收款码",
+        "copyInfo": "复制收款信息",
+        "alt": "收款码"
     }
 }

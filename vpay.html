@@ -329,13 +329,14 @@ body{
   body.theme-light .chat-bubble{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.1)}
 /* Assistant Chat */
 #pageAssistant{display:flex;flex-direction:column;flex:1;min-height:0}
-.chat-card{display:flex;flex-direction:column;gap:14px;padding:18px 18px 6px;flex:1;min-height:0}
+.chat-card{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
 .chat-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
 .chat-msg{display:flex;gap:10px;align-items:flex-start;max-width:90%}
 .chat-msg.user{flex-direction:row-reverse;align-self:flex-end}
 .chat-avatar{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:rgba(108,92,231,0.18);color:#a29bfe;display:flex;align-items:center;justify-content:center;font-size:15px}
 .chat-msg.user .chat-avatar{background:rgba(255,255,255,0.08);color:#fff}
 .chat-bubble{background:rgba(255,255,255,0.06);border:1px solid var(--panel-border);padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.6;color:var(--text-main);word-break:break-word}
+.chat-welcome{white-space:pre-line}
 .chat-msg.user .chat-bubble{background:linear-gradient(135deg,#6c5ce7,#8a7bff);border-color:transparent;color:#fff}
 .chat-quick{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:14px 0 4px;border-top:1px solid var(--panel-border);cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .chat-quick::-webkit-scrollbar{display:none}
@@ -407,13 +408,13 @@ body{
 <div class="modal-overlay" id="scanModal">
   <div class="modal-box" style="width:380px">
     <button class="modal-close" onclick="closeScan()"><i class="fa-solid fa-times"></i></button>
-    <h3 style="text-align:left;margin-bottom:14px">扫一扫</h3>
+    <h3 style="text-align:left;margin-bottom:14px" data-i18n="scan.title">扫一扫</h3>
     <div class="scan-viewport">
       <video id="scanVideo" playsinline autoplay muted></video>
       <div class="scan-frame"></div>
     </div>
-    <p id="scanStatus" style="font-size:13px;color:var(--text-muted);text-align:center;margin:12px 0 4px">将二维码放入框内，正在等待识别…</p>
-    <button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer;margin-top:8px" onclick="closeScan()">关闭</button>
+    <p id="scanStatus" style="font-size:13px;color:var(--text-muted);text-align:center;margin:12px 0 4px" data-i18n="scan.waiting">将二维码放入框内，正在等待识别…</p>
+    <button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer;margin-top:8px" onclick="closeScan()" data-i18n="scan.close">关闭</button>
   </div>
 </div>
 
@@ -476,7 +477,7 @@ body{
         <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="vpay.overview">总览</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="nav.recharge">充值</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="nav.transfer">转账</span></a></li>
-        <li class="nav-item"><a class="nav-link" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i> <span>助手</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i> <span data-i18n="nav.assistant">助手</span></a></li>
       </ul>
     </div>
     <div class="user-profile" id="userProfile">
@@ -533,8 +534,8 @@ body{
           <div class="quick-actions">
             <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
             <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
-            <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span>扫码</span></button>
-            <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span>收款</span></button>
+            <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span data-i18n="vpay.scanQr">扫码</span></button>
+            <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span data-i18n="vpay.collect">收款</span></button>
           </div>
 
           <div style="margin-top:30px">
@@ -650,8 +651,8 @@ body{
         </div>
         <button class="btn btn-primary transfer-send-btn" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
         <div class="transfer-quick" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px">
-          <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span>扫码</span></button>
-          <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span>收款</span></button>
+          <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span data-i18n="vpay.scanQr">扫码</span></button>
+          <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span data-i18n="vpay.collect">收款</span></button>
         </div>
       </div>
 
@@ -669,7 +670,7 @@ body{
     <!-- ============ ASSISTANT ============ -->
     <div id="pageAssistant" class="hidden">
       <header class="header">
-        <div><h1>智能助手</h1></div>
+        <div><h1 data-i18n="assistant.title">智能助手</h1></div>
         <div class="actions">
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
           <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
@@ -680,17 +681,18 @@ body{
         <div class="chat-body" id="chatBody">
           <div class="chat-msg bot">
             <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
-            <div class="chat-bubble">你好，我是 FUNBUA 智能助手 👋<br>可以问我充值、转账、余额、扫码收款等问题，或直接点下面的快捷问题。</div>
+            <div class="chat-bubble chat-welcome" data-i18n="assistant.welcome">你好，我是 FUNBUA 智能助手 👋
+可以问我充值、转账、余额、扫码收款等问题，或直接点下面的快捷问题。</div>
           </div>
         </div>
         <div class="chat-quick" id="chatQuick">
-          <button class="chat-chip" onclick="askAssistant(this.textContent)">怎么充值？</button>
-          <button class="chat-chip" onclick="askAssistant(this.textContent)">怎么转账？</button>
-          <button class="chat-chip" onclick="askAssistant(this.textContent)">查一下我的余额</button>
-          <button class="chat-chip" onclick="askAssistant(this.textContent)">扫码和收款怎么用？</button>
+          <button class="chat-chip" data-i18n="assistant.q1" data-q="怎么充值？" onclick="askAssistant(this)">怎么充值？</button>
+          <button class="chat-chip" data-i18n="assistant.q2" data-q="怎么转账？" onclick="askAssistant(this)">怎么转账？</button>
+          <button class="chat-chip" data-i18n="assistant.q3" data-q="查一下我的余额" onclick="askAssistant(this)">查一下我的余额</button>
+          <button class="chat-chip" data-i18n="assistant.q4" data-q="扫码和收款怎么用？" onclick="askAssistant(this)">扫码和收款怎么用？</button>
         </div>
         <div class="chat-input">
-          <input type="text" id="chatInput" placeholder="输入你的问题…" onkeydown="if(event.key==='Enter')sendAssistant()">
+          <input type="text" id="chatInput" data-i18n-placeholder="assistant.inputPlaceholder" placeholder="输入你的问题…" onkeydown="if(event.key==='Enter')sendAssistant()">
           <button class="chat-send" onclick="sendAssistant()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </div>
@@ -704,7 +706,7 @@ body{
   <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="vpay.overview">总览</span></button>
   <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
   <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
-  <button class="mobile-nav-item" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i><span>助手</span></button>
+  <button class="mobile-nav-item" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i><span data-i18n="nav.assistant">助手</span></button>
 </nav>
 
 <script src="vpay-tier.js"></script>
@@ -1159,9 +1161,9 @@ async function openScan(){
   const m=document.getElementById('scanModal');
   m.classList.add('show');
   const status=document.getElementById('scanStatus');
-  status.textContent='正在启动摄像头…';
+  status.textContent=t('scan.starting');
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    status.textContent='当前环境不支持摄像头（请使用 https 或 localhost 打开）';
+    status.textContent=t('scan.notSupported');
     return;
   }
   try{
@@ -1172,12 +1174,12 @@ async function openScan(){
     video.srcObject=stream;
     await video.play();
     _scanActive=true;
-    status.textContent='将二维码放入框内，正在等待识别…';
+    status.textContent=t('scan.waiting');
     _scanCanvas=_scanCanvas||document.createElement('canvas');
     scanLoop();
   }catch(e){
     console.error(e);
-    status.textContent='无法访问摄像头：'+(e&&e.message?e.message:e)+'（请检查权限或使用 https/localhost）';
+    status.textContent=t('scan.cameraError')+(e&&e.message?e.message:e)+t('scan.cameraHint');
   }
 }
 function scanLoop(){
@@ -1208,11 +1210,11 @@ function onScanResult(data){
       switchPage('transfer');
       const ti=document.getElementById('transferTo');
       if(ti)ti.value=user;
-      showToast('已填入收款人：'+user);
+      showToast(t('scan.recipientFilled')+user);
       return;
     }
   }
-  showToast('已识别：'+data);
+  showToast(t('scan.recognized')+data);
 }
 function closeScan(){stopScanStream();_scanActive=false;document.getElementById('scanModal').classList.remove('show')}
 function stopScanStream(){
@@ -1225,12 +1227,12 @@ function openCollect(){
   _collectPayload='funbua:collect?user='+encodeURIComponent(user);
   const content=
     '<div style="text-align:center">'+
-    '<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">我的收款码</div>'+
+    '<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">'+t('collect.myCode')+'</div>'+
     '<div style="font-size:16px;font-weight:600;margin-bottom:16px">'+escapeHtml(user)+'</div>'+
-    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(_collectPayload)+'" alt="收款码" style="width:220px;height:220px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">'+
-    '<button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer" onclick="copyCollect()">复制收款信息</button>'+
+    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(_collectPayload)+'" alt="'+t('collect.alt')+'" style="width:220px;height:220px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">'+
+    '<button class="btn-ghost" style="width:100%;padding:10px;border:1px solid var(--panel-border);border-radius:12px;cursor:pointer" onclick="copyCollect()">'+t('collect.copyInfo')+'</button>'+
     '</div>';
-  showQrModal('收款',content);
+  showQrModal(t('collect.title'),content);
 }
 function copyCollect(){copyText(_collectPayload)}
 
@@ -1321,8 +1323,9 @@ function streamReply(full,done){
     if(i<full.length){setTimeout(tick,22);}else if(done){done();}
   })();
 }
-function askAssistant(q){
+function askAssistant(el){
   const input=document.getElementById('chatInput');
+  const q=(typeof el==='string')?el:(el.getAttribute('data-q')||el.textContent);
   input.value=q;
   sendAssistant();
 }
