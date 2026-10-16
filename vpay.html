@@ -272,8 +272,8 @@ body{
 .pk-tip .safe{color:var(--accent-green)}
 .pk-close{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:4px 6px}
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.pk-key{height:52px;border:1px solid var(--panel-border);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font-size:22px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.pk-key:active{background:rgba(108,92,231,.35)}
+.pk-key{height:52px;border:1px solid var(--panel-border);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font-size:22px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,background .15s ease,box-shadow .15s ease}
+.pk-key:active,.pk-key.pressed{background:rgba(108,92,231,.35);transform:scale(.94);box-shadow:0 0 0 2px rgba(108,92,231,.5) inset}
 .kb-open .modal-overlay{align-items:flex-end;padding-bottom:330px}
 .kb-open .modal-box{max-height:calc(100vh - 330px);padding-bottom:16px}
 /* Empty state */
@@ -1067,7 +1067,7 @@ const pwdFields=Object.keys(pwdBuf);
 const $=id=>document.getElementById(id);
 let pwdFocus=null,pending=null;
 // 生成数字键盘
-$('pkGrid').innerHTML=[1,2,3,4,5,6,7,8,9,'',0,'del'].map(k=>k===''?'<span></span>':`<button class="pk-key" onclick="pwdKey('${k}')">${k==='del'?'<i class="fa-solid fa-delete-left"></i>':k}</button>`).join('');
+$('pkGrid').innerHTML=[1,2,3,4,5,6,7,8,9,'',0,'del'].map(k=>k===''?'<span></span>':`<button class="pk-key" onclick="pwdKey(this,'${k}')">${k==='del'?'<i class="fa-solid fa-delete-left"></i>':k}</button>`).join('');
 // 渲染 6 位密码点阵
 function renderPwd(id){
   const v=pwdBuf[id],el=$(id);
@@ -1083,7 +1083,8 @@ function pwdKb(show,id){
   $('transferPwdModal').classList.toggle('show',show&&id==='transferPwd');
   pwdFields.forEach(renderPwd);
 }
-function pwdKey(k){
+function pwdKey(el,k){
+  if(el){el.classList.add('pressed');setTimeout(()=>el.classList.remove('pressed'),160);}
   if(!pwdFocus)return;
   const v=pwdBuf[pwdFocus];
   pwdBuf[pwdFocus]=k==='del'?v.slice(0,-1):v.length<6?v+k:v;
