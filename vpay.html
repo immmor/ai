@@ -44,6 +44,19 @@ body{
 }
 .nav-link:hover,.nav-link.active{color:#fff;background:var(--panel-bg)}
 .nav-link.active i{color:#6c5ce7}
+.nav-link i,.mobile-nav-item i{display:inline-block;transition:transform .15s}
+.tab-anim-dashboard{animation:tabDash .55s ease}
+.tab-anim-recharge{animation:tabPlus .5s ease}
+.tab-anim-transfer{animation:tabTransfer .5s ease}
+.tab-anim-assistant{animation:tabBot .55s ease}
+/* 总览：饼图轻轻摆动 */
+@keyframes tabDash{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
+/* 充值：加号放大并转 90° */
+@keyframes tabPlus{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.3) rotate(90deg)}100%{transform:scale(1) rotate(0)}}
+/* 转账：双箭头水平翻转（交换方向） */
+@keyframes tabTransfer{0%,100%{transform:scaleX(1)}50%{transform:scaleX(-1)}}
+/* 助手：机器人上下轻颠 + 微摆 */
+@keyframes tabBot{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-8deg)}60%{transform:translateY(2px) rotate(6deg)}}
 .user-profile{display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--panel-border)}
 .sidebar-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:5px;border-radius:6px;transition:all .2s;font-size:14px;flex-shrink:0;margin-left:auto}
 .sidebar-logout:hover{color:var(--accent-red);background:rgba(255,118,117,0.1)}
@@ -865,6 +878,17 @@ function switchPage(page){
   const lm=document.getElementById('lang-dropdown-menu');if(lm)lm.classList.remove('show');
   if(ld&&curActions&&ld.parentElement!==curActions)curActions.appendChild(ld);
 }
+// Tab 图标点击小动画（每个图标不同）
+function popTabIcon(item){
+  const ic=item.querySelector('i');
+  if(!ic)return;
+  const cls='tab-anim-'+(item.dataset.page||'');
+  ic.classList.remove(cls);void ic.offsetWidth;ic.classList.add(cls);
+  ic.addEventListener('animationend',()=>ic.classList.remove(cls),{once:true});
+}
+document.querySelectorAll('#sidebarNav .nav-link, .mobile-nav-item').forEach(item=>{
+  item.addEventListener('click',()=>popTabIcon(item));
+});
 
 // Auth
 function showLogin(){
