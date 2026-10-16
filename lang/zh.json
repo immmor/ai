@@ -105,7 +105,12 @@
         "emptyPassword": "请输入登录密码以确认转账",
         "sameUser": "不能转账给自己",
         "success": "成功转账 {amount} 给 {to}！",
-        "failed": "转账失败，请稍后重试"
+        "failed": "转账失败，请稍后重试",
+        "wrongPassword": "支付密码错误，请重新输入",
+        "insufficientBalance": "余额不足或转账失败",
+        "needPayPwd": "请先设置6位支付密码",
+        "userNotFound": "用户不存在",
+        "msgTooLong": "留言不能超过50字"
     },
     "records": {
         "all": "全部",
@@ -114,8 +119,13 @@
         "loading": "加载中...",
         "noRecords": "暂无转账记录",
         "loadFailed": "加载失败，请重试",
-        "toLabel": "转给 {name}",
+        "toLabel": "发送至 {name}",
         "fromLabel": "来自 {name}",
+        "detail": "转账详情",
+        "direction": "类型",
+        "counterparty": "对方",
+        "amount": "金额",
+        "noMessage": "无",
         "time": "时间"
     },
     "staticPay": {
@@ -195,7 +205,7 @@
         "recipient": "收款人",
         "amountCny": "金额 (CNY)",
         "message": "留言信息",
-        "messagePlaceholder": "选填，给收款人留言（可选）",
+        "messagePlaceholder": "选填，给收款人留言（最多50字）",
         "send": "发送",
         "setPayPwd": "设置支付密码",
         "setPayPwdHint": "首次使用转账功能需设置 6 位数字支付密码，用于确认每一笔转账，请妥善保管。",
@@ -247,7 +257,7 @@
         "title": "FUNBUA - 尊享数字钱包",
         "guest": "未登录",
         "loggedIn": "已登录",
-        "transferTo": "向 {to} 转账 {amt}",
+        "transferTo": "向 {to} 转账 {amt}，",
         "digitalAccount": "数字账户",
         "enterAmount": "支付",
         "enterAmountMin10": "支付(最低¥10)",

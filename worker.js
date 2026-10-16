@@ -1789,7 +1789,7 @@ export default {
       if (path === '/api/transfer' && request.method === 'POST') {
         try {
           const params = await request.json();
-          const { from, to, amount, password } = params;
+          const { from, to, amount, password, message } = params;
 
           if (!from || !to) {
             return resJson({ code: 400, msg: '缺少 from 或 to 参数' }, 400);
@@ -1814,13 +1814,13 @@ export default {
             .bind(from)
             .first();
           if (!sender) {
-            return resJson({ code: 404, msg: '转出用户不存在' }, 404);
+            return resJson({ code: 404, msg: '转出用户不存在', key: 'transfer.userNotFound' }, 404);
           }
           if (!sender.pay_password) {
-            return resJson({ code: 403, msg: '请先设置6位支付密码' }, 403);
+            return resJson({ code: 403, msg: '请先设置6位支付密码', key: 'transfer.needPayPwd' }, 403);
           }
           if (String(sender.pay_password) !== String(password)) {
-            return resJson({ code: 401, msg: '支付密码错误，转账被拒绝' }, 401);
+            return resJson({ code: 401, msg: '支付密码错误，转账被拒绝', key: 'transfer.wrongPassword' }, 401);
           }
 
           // 校验收款用户是否存在
@@ -1829,11 +1829,13 @@ export default {
             .bind(to)
             .first();
           if (!recipient) {
-            return resJson({ code: 404, msg: '收款用户不存在' }, 404);
+            return resJson({ code: 404, msg: '收款用户不存在', key: 'transfer.userNotFound' }, 404);
           }
 
           // 确保转账流水表存在
-          await DB.prepare('CREATE TABLE IF NOT EXISTS transfers (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user TEXT, to_user TEXT, amount REAL, created_at TEXT)').run();
+          await DB.prepare('CREATE TABLE IF NOT EXISTS transfers (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user TEXT, to_user TEXT, amount REAL, created_at TEXT, message TEXT)').run();
+          // 兼容旧表：补加留言列
+          try { await DB.prepare('ALTER TABLE transfers ADD COLUMN message TEXT').run(); } catch (e) {}
 
           // 防双花：条件扣减，只有余额充足（balance >= amt）才会真正扣减
           const deduct = await DB
@@ -1841,7 +1843,7 @@ export default {
             .bind(amt, from, amt)
             .run();
           if (!deduct.success || deduct.meta.changes === 0) {
-            return resJson({ code: 400, msg: '余额不足或转账失败' }, 400);
+            return resJson({ code: 400, msg: '余额不足或转账失败', key: 'transfer.insufficientBalance' }, 400);
           }
 
           // 加款并写入转账流水（同一事务）；任一失败则整体回滚，避免资金或记录丢失
@@ -1849,7 +1851,7 @@ export default {
           const now = new Date().toISOString();
           const batch = await DB.batch([
             DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, to),
-            DB.prepare('INSERT INTO transfers (from_user, to_user, amount, created_at) VALUES (?, ?, ?, ?)').bind(from, to, amt, now)
+            DB.prepare('INSERT INTO transfers (from_user, to_user, amount, created_at, message) VALUES (?, ?, ?, ?, ?)').bind(from, to, amt, now, message ? String(message).slice(0,50) : '')
           ]);
           const addOk = batch[0].success && batch[0].meta.changes > 0;
           const insOk = batch[1].success;
@@ -1858,7 +1860,7 @@ export default {
               DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amt, to),
               DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, from)
             ]);
-            return resJson({ code: 500, msg: '转账失败，已撤销' }, 500);
+            return resJson({ code: 500, msg: '转账失败，已撤销', key: 'transfer.failed' }, 500);
           }
 
           const msgTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -1869,7 +1871,7 @@ export default {
           return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
           console.error('Transfer error:', err);
-          return resJson({ code: 500, msg: '转账失败', error: err.message }, 500);
+          return resJson({ code: 500, msg: '转账失败', key: 'transfer.failed', error: err.message }, 500);
         }
       }
 
@@ -1892,7 +1894,7 @@ export default {
           const pages = Math.max(1, Math.ceil(total / limit));
           const offset = (page - 1) * limit;
 
-          const rows = await DB.prepare(`SELECT from_user, to_user, amount, created_at FROM transfers ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+          const rows = await DB.prepare(`SELECT from_user, to_user, amount, created_at, message FROM transfers ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
             .bind(...params, limit, offset)
             .all();
 
@@ -1900,7 +1902,8 @@ export default {
             counterparty: r.from_user === username ? r.to_user : r.from_user,
             direction: r.from_user === username ? 'out' : 'in',
             amount: r.amount,
-            created_at: r.created_at
+            created_at: r.created_at,
+            message: r.message || ''
           }));
 
           return resJson({

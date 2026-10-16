@@ -105,7 +105,12 @@
         "emptyPassword": "Vui lòng nhập mật khẩu đăng nhập để xác nhận",
         "sameUser": "Không thể chuyển cho chính mình",
         "success": "Đã chuyển {amount} cho {to} thành công!",
-        "failed": "Chuyển tiền thất bại, vui lòng thử lại sau"
+        "failed": "Chuyển tiền thất bại, vui lòng thử lại sau",
+        "wrongPassword": "Sai mật khẩu thanh toán, vui lòng nhập lại",
+        "insufficientBalance": "Số dư không đủ hoặc chuyển tiền thất bại",
+        "needPayPwd": "Vui lòng thiết lập mật khẩu thanh toán 6 chữ số trước",
+        "userNotFound": "Không tìm thấy người dùng",
+        "msgTooLong": "Tin nhắn không được vượt quá 50 ký tự"
     },
     "records": {
         "all": "Tất cả",
@@ -114,8 +119,13 @@
         "loading": "Đang tải...",
         "noRecords": "Không có lịch sử chuyển tiền",
         "loadFailed": "Tải thất bại, vui lòng thử lại",
-        "toLabel": "Đến {name}",
+        "toLabel": "Đã gửi đến {name}",
         "fromLabel": "Từ {name}",
+        "detail": "Chi tiết chuyển tiền",
+        "direction": "Loại",
+        "counterparty": "Đối tác",
+        "amount": "Số tiền",
+        "noMessage": "Không",
         "time": "Thời gian"
     },
     "staticPay": {
@@ -196,7 +206,7 @@
         "recipient": "Người nhận",
         "amountCny": "Số tiền (CNY)",
         "message": "Tin nhắn",
-        "messagePlaceholder": "Tin nhắn cho người nhận (tùy chọn)",
+        "messagePlaceholder": "Tin nhắn cho người nhận (tối đa 50)",
         "send": "Gửi",
         "setPayPwd": "Thiết lập mật khẩu thanh toán",
         "setPayPwdHint": "Lần đầu sử dụng chuyển tiền, vui lòng thiết lập mật khẩu thanh toán 6 chữ số để xác nhận mỗi lần chuyển. Hãy giữ an toàn.",
@@ -248,7 +258,7 @@
         "title": "FUNBUA - Ví điện tử cao cấp",
         "guest": "Chưa đăng nhập",
         "loggedIn": "Đã đăng nhập",
-        "transferTo": "Chuyển {amt} cho {to}",
+        "transferTo": "Chuyển {amt} cho {to},",
         "digitalAccount": "Tài khoản kỹ thuật số",
         "enterAmount": "Thanh toán",
         "enterAmountMin10": "Thanh toán (tối thiểu ¥10)",

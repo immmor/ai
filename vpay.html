@@ -184,6 +184,10 @@ body{
 .asset-name h4,.tx-name h4{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .asset-name p,.tx-name p{font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .asset-name,.tx-name{min-width:0;overflow:hidden}
+.tx-msg{white-space:normal;word-break:break-word;margin-top:3px}
+.msg-counter{text-align:right;font-size:12px;color:var(--text-muted);margin-top:4px}
+.msg-counter.over{color:var(--accent-red)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 .asset-value,.tx-value{text-align:right}
 .asset-value h4,.tx-value h4{font-size:15px;font-weight:600}
 .asset-value p{font-size:12px}
@@ -227,7 +231,7 @@ body{
 .page-btn:disabled{opacity:0.3;cursor:not-allowed}
 .page-info{font-size:13px;color:var(--text-muted)}
 /* Toast */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(18,20,29,0.95);border:1px solid var(--panel-border);border-radius:12px;padding:14px 20px;font-size:14px;color:var(--text-main);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:9999;transition:all 0.3s ease;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;min-width:200px;max-width:90vw;text-align:right}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(18,20,29,0.95);border:1px solid var(--panel-border);border-radius:12px;padding:14px 20px;font-size:14px;color:var(--text-main);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:9999;transition:all 0.3s ease;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;min-width:200px;max-width:90vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast.success{border-color:var(--accent-green)}
 .toast.error{border-color:var(--accent-red)}
@@ -456,6 +460,15 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
     <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
     <h3 id="qrTitle" style="text-align:left" data-i18n="vpay.scanToPay">Scan to Pay</h3>
     <div id="qrContent"></div>
+  </div>
+</div>
+
+<!-- ============ 转账记录详情 ============ -->
+<div class="modal-overlay" id="recordDetailModal" onclick="if(event.target===this)closeRecordDetail()">
+  <div class="modal-box" style="width:360px;max-width:92vw">
+    <button class="modal-close" onclick="closeRecordDetail()"><i class="fa-solid fa-times"></i></button>
+    <h3 style="text-align:left" data-i18n="records.detail">转账详情</h3>
+    <div id="recordDetailContent"></div>
   </div>
 </div>
 
@@ -716,7 +729,8 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
         </div>
         <div class="input-group">
           <label style="color:#fff;font-size:14px" data-i18n="vpay.message">留言信息</label>
-          <input type="text" id="transferMsg" placeholder="选填，给收款人留言（可选）" data-i18n-placeholder="vpay.messagePlaceholder" maxlength="200">
+          <input type="text" id="transferMsg" placeholder="选填，给收款人留言（最多50字）" data-i18n-placeholder="vpay.messagePlaceholder" oninput="updateMsgCounter()">
+          <div class="msg-counter" id="msgCounter">0/50</div>
         </div>
         <button class="btn btn-primary transfer-send-btn" onclick="handleTransfer()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
         <div class="transfer-quick" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px">
@@ -1121,9 +1135,55 @@ function pwdKb(show,id){
   $('transferPwdModal').classList.toggle('show',show&&id==='transferPwd');
   pwdFields.forEach(renderPwd);
 }
+let _audioCtx=null;
+function playKeySound(type){
+  try{
+    _audioCtx=_audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(_audioCtx.state==='suspended')_audioCtx.resume();
+    const ctx=_audioCtx,tt=ctx.currentTime;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    if(type==='error'){
+      // 密码错误：低沉双声“嗡-嗡”（沿用低频长鸣，分两声）
+      o.type='sine';
+      // 第一声
+      o.frequency.setValueAtTime(105,tt);
+      o.frequency.exponentialRampToValueAtTime(88,tt+0.16);
+      g.gain.setValueAtTime(0.0001,tt);
+      g.gain.exponentialRampToValueAtTime(0.2,tt+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,tt+0.2);
+      // 第二声（稍低）
+      g.gain.setValueAtTime(0.0001,tt+0.24);
+      o.frequency.setValueAtTime(95,tt+0.24);
+      o.frequency.exponentialRampToValueAtTime(80,tt+0.4);
+      g.gain.exponentialRampToValueAtTime(0.2,tt+0.27);
+      g.gain.exponentialRampToValueAtTime(0.0001,tt+0.44);
+      o.start(tt);o.stop(tt+0.45);
+    }else if(type==='del'){
+      // 删除：低音单声“噗”（下滑）
+      o.type='sine';
+      o.frequency.setValueAtTime(150,tt);
+      o.frequency.exponentialRampToValueAtTime(105,tt+0.06);
+      g.gain.setValueAtTime(0.0001,tt);
+      g.gain.exponentialRampToValueAtTime(0.2,tt+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001,tt+0.1);
+      o.start(tt);o.stop(tt+0.11);
+    }else{
+      // 数字输入：低音上扬的“播”
+      o.type='sine';
+      o.frequency.setValueAtTime(190,tt);
+      o.frequency.exponentialRampToValueAtTime(250,tt+0.07);
+      g.gain.setValueAtTime(0.0001,tt);
+      g.gain.exponentialRampToValueAtTime(0.22,tt+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001,tt+0.09);
+      o.start(tt);o.stop(tt+0.1);
+    }
+  }catch(e){}
+}
 function pwdKey(el,k){
   if(el){el.classList.add('pressed');setTimeout(()=>el.classList.remove('pressed'),160);}
   if(!pwdFocus)return;
+  playKeySound(k==='del'?'del':'input');
   const v=pwdBuf[pwdFocus];
   pwdBuf[pwdFocus]=k==='del'?v.slice(0,-1):v.length<6?v+k:v;
   renderPwd(pwdFocus);
@@ -1166,23 +1226,25 @@ async function handleTransfer(pw){
   if(!currentUser)return;
   if(!pw){
     const to=$('transferTo').value.trim(),amt=parseFloat($('transferAmount').value),msg=$('transferMsg').value.trim();
+    if($('transferMsg').value.length>50)return showToast(t('transfer.msgTooLong'),'error');
     if(!to)return showToast(t('vpay.enterRecipient'),'error');
     if(!amt||amt<=0)return showToast(t('alert.invalidAmount'),'error');
     pending={to,amt,msg};pwdBuf.transferPwd='';
-    $('tpmText').innerHTML=t('vpay.transferTo',{to:'<b style="color:#fff">'+escapeHtml(to)+'</b>',amt:'<b style="color:#fff">¥'+escapeHtml(amt.toFixed(2))+'</b>'})+(msg?'<br><span style="font-size:12px;color:var(--text-muted)">'+escapeHtml(msg)+'</span>':'');
+    $('tpmText').innerHTML=t('vpay.transferTo',{to:'<b style="color:#fff">'+escapeHtml(to)+'</b>',amt:'<b style="color:#fff">¥'+escapeHtml(amt.toFixed(2))+'</b>'});
     return pwdKb(true,'transferPwd');
   }
   if(!/^\d{6}$/.test(pw)||!pending)return;
-  const {to,amt,msg}=pending;pending=null;
+  const {to,amt,msg}=pending;
   showLoading(t('vpay.processing'));
   try{
     const r=await(await fetch(API_BASE+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,message:msg,password:pw})})).json();
     hideLoading();
     if(r.code===200){
+      pending=null;
       showToast(t('vpay.transferSuccess'));
-      $('transferTo').value='';$('transferAmount').value='';$('transferMsg').value='';
+      $('transferTo').value='';$('transferAmount').value='';$('transferMsg').value='';updateMsgCounter();
       pwdBuf.transferPwd='';pwdKb(false);updateBalance();loadRecords();
-    }else{showToast(r.msg||t('transfer.failed'),'error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
+    }else{playKeySound('error');const ck={401:'transfer.wrongPassword',400:'transfer.insufficientBalance',403:'transfer.needPayPwd',404:'transfer.userNotFound'}[r.code]||'transfer.failed';showToast(t(r.key||ck),'error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
 }
 
@@ -1197,8 +1259,9 @@ async function loadRecentOrders(){
     ]);
     const ordersData=await ordersRes.json(),recordsData=await recordsRes.json();
     const orders=(ordersData.code===200?ordersData.data?.orders||[]:[]).map(o=>({type:'recharge',amount:o.amount,status:o.status,id:o.order_no||o.id,time:o.created_at||''}));
-    const records=(recordsData.code===200?recordsData.data?.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.counterparty||'',status:r.direction==='out'?'send':'receive',time:r.created_at||''}));
+    const records=(recordsData.code===200?recordsData.data?.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.counterparty||'',message:r.message||'',status:r.direction==='out'?'send':'receive',time:r.created_at||''}));
     const all=[...orders,...records].sort((a,b)=>b.time.localeCompare(a.time)).slice(0,5);
+    window._recentTransfers=[];
     if(all.length){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
@@ -1206,7 +1269,8 @@ async function loadRecentOrders(){
           return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isSend?t('records.out'):t('records.in')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.other||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
+          const idx=_recentTransfers.push({name:item.other||'',message:item.message||'',amount:item.amount,time:item.time,send:isSend})-1;
+          return `<div class="order-item" style="cursor:pointer" onclick="openTransferDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isSend?'records.toLabel':'records.fromLabel',{name:escapeHtml(item.other||'')})}</h4>${item.message?`<p class="tx-msg">${escapeHtml(item.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
       }).join('')
     }else list.innerHTML=`<div class="empty-state" style="padding:20px"><p>${t('vpay.noRecords')}</p></div>`
@@ -1252,13 +1316,45 @@ async function loadRecords(){
 function renderRecords(recs){
   const list=document.getElementById('recordsList'),pg=document.getElementById('recordsPagination');
   if(!recs.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>${t('vpay.noRecords')}</p></div>`;pg.style.display='none';return}
+  window._historyTransfers=[];
   list.innerHTML=recs.map(r=>{
     const isOut=r.direction==='out';
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="tx-name"><h4>${isOut?t('records.out'):t('records.in')} ¥${(r.amount||0).toFixed(2)}</h4><p>${r.counterparty||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
+    const idx=_historyTransfers.push({name:r.counterparty||'',message:r.message||'',amount:r.amount,time:r.created_at,send:isOut})-1;
+    return `<div class="order-item" style="cursor:pointer" onclick="openTransferDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isOut?'records.toLabel':'records.fromLabel',{name:escapeHtml(r.counterparty||'')})}</h4>${r.message?`<p class="tx-msg">${escapeHtml(r.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
   }).join('');
   pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
 }
 function changeRecordsPage(d){recordsPage+=d;if(recordsPage<1)recordsPage=1;if(recordsPage>totalRecordPages)recordsPage=totalRecordPages;loadRecords()}
+
+// 转账记录里用的箭头图标（与转账 tab 一致），颜色由外层 asset-icon 的 currentColor 决定
+// 留言计数器：实时显示 x/50，超出时标红并禁用发送按钮
+function updateMsgCounter(){
+  const el=$('transferMsg'),c=$('msgCounter'),btn=document.querySelector('.transfer-send-btn');
+  const len=(el&&el.value||'').length;
+  if(c)c.textContent=len+'/50';
+  const over=len>50;
+  if(c)c.classList.toggle('over',over);
+  if(btn)btn.disabled=over;
+}
+
+// 每条转账记录点击后弹出的详情
+window._recentTransfers=[];window._historyTransfers=[];
+function openTransferDetail(which,idx){
+  const rec=(which==='recent'?window._recentTransfers:window._historyTransfers)[idx];
+  if(!rec)return;
+  const dir=t(rec.send?'records.toLabel':'records.fromLabel',{name:escapeHtml(rec.name)});
+  const amt=(rec.send?'-':'+')+'¥'+(Number(rec.amount)||0).toFixed(2);
+  const amtColor=rec.send?'var(--accent-red)':'var(--accent-green)';
+  const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:13px 2px;border-bottom:1px solid var(--panel-border)"><span style="color:var(--text-muted);font-size:13px;flex-shrink:0">${l}</span><span style="font-weight:600;text-align:right;${c?('color:'+c):''};word-break:break-all">${v}</span></div>`;
+  document.getElementById('recordDetailContent').innerHTML=
+    row(t('records.direction'),dir)+
+    row(t('records.counterparty'),escapeHtml(rec.name||'-'))+
+    row(t('records.amount'),amt,amtColor)+
+    row(t('records.time'),escapeHtml(formatDate(rec.time)))+
+    row(t('vpay.message'),rec.message?escapeHtml(rec.message):(`<span style="color:var(--text-muted);font-weight:400">${t('records.noMessage')}</span>`));
+  document.getElementById('recordDetailModal').classList.add('show');
+}
+function closeRecordDetail(){document.getElementById('recordDetailModal').classList.remove('show')}
 
 // QR Modal
 function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}

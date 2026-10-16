@@ -105,7 +105,12 @@
         "emptyPassword": "Please enter your login password to confirm",
         "sameUser": "Cannot transfer to yourself",
         "success": "Successfully transferred {amount} to {to}!",
-        "failed": "Transfer failed, please try again later"
+        "failed": "Transfer failed, please try again later",
+        "wrongPassword": "Wrong payment password, please re-enter",
+        "insufficientBalance": "Insufficient balance or transfer failed",
+        "needPayPwd": "Please set a 6-digit payment password first",
+        "userNotFound": "User not found",
+        "msgTooLong": "Message cannot exceed 50 characters"
     },
     "records": {
         "all": "All",
@@ -114,8 +119,13 @@
         "loading": "Loading...",
         "noRecords": "No transfer records",
         "loadFailed": "Failed to load, please retry",
-        "toLabel": "To {name}",
+        "toLabel": "Sent to {name}",
         "fromLabel": "From {name}",
+        "detail": "Transfer Details",
+        "direction": "Type",
+        "counterparty": "Counterparty",
+        "amount": "Amount",
+        "noMessage": "None",
         "time": "Time"
     },
     "staticPay": {
@@ -195,7 +205,7 @@
         "recipient": "Recipient",
         "amountCny": "Amount (CNY)",
         "message": "Message",
-        "messagePlaceholder": "Optional message to recipient",
+        "messagePlaceholder": "Optional message to recipient (max 50)",
         "send": "Send",
         "setPayPwd": "Set Payment Password",
         "setPayPwdHint": "First time using transfer, please set a 6-digit payment password to confirm each transfer. Keep it safe.",
@@ -247,7 +257,7 @@
         "title": "FUNBUA - Premium Digital Wallet",
         "guest": "Guest",
         "loggedIn": "Logged in",
-        "transferTo": "Transfer {amt} to {to}",
+        "transferTo": "Transfer {amt} to {to},",
         "digitalAccount": "Digital Account",
         "enterAmount": "Pay",
         "enterAmountMin10": "Pay (min ¥10)",

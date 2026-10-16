@@ -105,7 +105,12 @@
         "emptyPassword": "Por favor ingrese su contraseña para confirmar",
         "sameUser": "No puedes transferirte a ti mismo",
         "success": "¡Transferencia de {amount} a {to} exitosa!",
-        "failed": "Transferencia fallida, intente nuevamente"
+        "failed": "Transferencia fallida, intente nuevamente",
+        "wrongPassword": "Contraseña de pago incorrecta, introdúzcala de nuevo",
+        "insufficientBalance": "Saldo insuficiente o transferencia fallida",
+        "needPayPwd": "Primero configure una contraseña de pago de 6 dígitos",
+        "userNotFound": "Usuario no encontrado",
+        "msgTooLong": "El mensaje no puede superar los 50 caracteres"
     },
     "records": {
         "all": "Todo",
@@ -114,8 +119,13 @@
         "loading": "Cargando...",
         "noRecords": "Sin registros de transferencia",
         "loadFailed": "Error al cargar, inténtalo de nuevo",
-        "toLabel": "A {name}",
+        "toLabel": "Enviado a {name}",
         "fromLabel": "De {name}",
+        "detail": "Detalles de transferencia",
+        "direction": "Tipo",
+        "counterparty": "Destinatario",
+        "amount": "Monto",
+        "noMessage": "Ninguno",
         "time": "Hora"
     },
     "staticPay": {
@@ -196,7 +206,7 @@
         "recipient": "Destinatario",
         "amountCny": "Monto (CNY)",
         "message": "Mensaje",
-        "messagePlaceholder": "Mensaje opcional para el destinatario",
+        "messagePlaceholder": "Mensaje opcional para el destinatario (máx. 50)",
         "send": "Enviar",
         "setPayPwd": "Configurar contraseña de pago",
         "setPayPwdHint": "La primera vez que use la transferencia, configure una contraseña de pago de 6 dígitos para confirmar cada transferencia. Guárdela bien.",
@@ -248,7 +258,7 @@
         "title": "FUNBUA - Monedero digital premium",
         "guest": "Invitado",
         "loggedIn": "Sesión iniciada",
-        "transferTo": "Transferir {amt} a {to}",
+        "transferTo": "Transferir {amt} a {to},",
         "digitalAccount": "Cuenta digital",
         "enterAmount": "Pagar",
         "enterAmountMin10": "Pagar (mín ¥10)",

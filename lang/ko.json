@@ -105,7 +105,12 @@
         "emptyPassword": "송금을 확인하려면 로그인 비밀번호를 입력하세요",
         "sameUser": "자기 자신에게는 송금할 수 없습니다",
         "success": "{to}님에게 {amount} 송금 완료!",
-        "failed": "송금에 실패했습니다. 나중에 다시 시도하세요"
+        "failed": "송금에 실패했습니다. 나중에 다시 시도하세요",
+        "wrongPassword": "결제 비밀번호가 틀렸습니다. 다시 입력하세요",
+        "insufficientBalance": "잔액 부족 또는 송금 실패",
+        "needPayPwd": "먼저 6자리 결제 비밀번호를 설정하세요",
+        "userNotFound": "사용자를 찾을 수 없습니다",
+        "msgTooLong": "메시지는 50자 이내로 입력하세요"
     },
     "records": {
         "all": "전체",
@@ -114,8 +119,13 @@
         "loading": "로딩 중...",
         "noRecords": "송금 내역이 없습니다",
         "loadFailed": "불러오기 실패, 다시 시도하세요",
-        "toLabel": "{name}님에게",
+        "toLabel": "{name}님에게 전송",
         "fromLabel": "{name}님으로부터",
+        "detail": "송금 상세",
+        "direction": "유형",
+        "counterparty": "상대방",
+        "amount": "금액",
+        "noMessage": "없음",
         "time": "시간"
     },
     "staticPay": {
@@ -196,7 +206,7 @@
         "recipient": "수신자",
         "amountCny": "금액 (CNY)",
         "message": "메시지",
-        "messagePlaceholder": "받는 사람에게 메시지 (선택)",
+        "messagePlaceholder": "받는 사람에게 메시지 (최대 50자)",
         "send": "보내기",
         "setPayPwd": "결제 비밀번호 설정",
         "setPayPwdHint": "송금 기능을 처음 사용하는 경우 각 송금 확인용 6자리 결제 비밀번호를 설정하세요. 안전하게 보관하세요.",
@@ -248,7 +258,7 @@
         "title": "FUNBUA - 프리미엄 디지털 지갑",
         "guest": "로그인 안 됨",
         "loggedIn": "로그인됨",
-        "transferTo": "{to}님에게 {amt} 전송",
+        "transferTo": "{to}님에게 {amt} 전송,",
         "digitalAccount": "디지털 계정",
         "enterAmount": "결제",
         "enterAmountMin10": "결제(최소 ¥10)",
