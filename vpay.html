@@ -57,7 +57,7 @@ body{
 .user-info h4{font-size:14px;font-weight:600}
 .user-info p{font-size:12px;color:var(--text-muted)}
 /* Main Content */
-.main-content{padding:40px 40px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
+.main-content{padding:40px 40px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
 /* Auth */
 .auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%;max-width:420px;margin:0 auto}
 .auth-page .brand{font-size:32px;margin-bottom:4px;justify-content:center}
@@ -360,7 +360,7 @@ body{
 /* Assistant Chat */
 #pageAssistant{display:flex;flex-direction:column;flex:1;min-height:0}
 .chat-card{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
-.chat-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
+.chat-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
 .chat-msg{display:flex;gap:10px;align-items:flex-start;max-width:90%}
 .chat-msg.user{flex-direction:row-reverse;align-self:flex-end}
 .chat-avatar{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:rgba(108,92,231,0.18);color:#a29bfe;display:flex;align-items:center;justify-content:center;font-size:15px}
@@ -368,7 +368,7 @@ body{
 .chat-bubble{background:rgba(255,255,255,0.06);border:1px solid var(--panel-border);padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.6;color:var(--text-main);word-break:break-word}
 .chat-welcome{white-space:pre-line}
 .chat-msg.user .chat-bubble{background:linear-gradient(135deg,#6c5ce7,#8a7bff);border-color:transparent;color:#fff}
-.chat-quick{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:14px 0 4px;border-top:1px solid var(--panel-border);cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chat-quick{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:14px 0 0;border-top:1px solid var(--panel-border);cursor:grab;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .chat-quick::-webkit-scrollbar{display:none}
 .chat-chip{flex-shrink:0;white-space:nowrap;background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.4);color:#a29bfe;padding:7px 12px;border-radius:999px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s}
 .chat-chip:hover{background:rgba(108,92,231,0.28);color:#fff}
