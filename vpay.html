@@ -950,6 +950,7 @@ function toggleBalance(){
   if(_balanceAnimating)return;
   balanceVisible=!balanceVisible;
   const eye=document.getElementById('balanceEye');
+  eye.classList.remove('closed'); // 眨眼期间统一显示睁眼，两种状态都用睁眼动画
   eye.classList.add('blinking');
   _balanceAnimating=true;
   setTimeout(()=>{
