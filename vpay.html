@@ -106,11 +106,11 @@ body{
 .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
 .card-balance-label{font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
 .card-balance-val{font-size:36px;font-weight:700;margin-top:5px;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px}
-.balance-amount{display:inline-block;min-width:4ch;font-variant-numeric:tabular-nums}
-#balanceDisplay.masked{position:relative;top:0.18em}
+.balance-amount{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+#balanceDisplay.masked{position:relative;top:0.12em}
 .balance-toggle{
   width:22px;height:22px;flex:none;padding:0;border:0;border-radius:50%;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;
   color:rgba(255,255,255,0.38);background:transparent;
   position:relative;top:2px;
   transition:color .2s,background .2s,transform .15s;
@@ -120,6 +120,26 @@ body{
 .balance-toggle:focus-visible{outline:2px solid rgba(108,92,231,0.9);outline-offset:2px}
 .balance-toggle.on{color:#8f7dff}
 .balance-toggle.on:hover{color:#a99cff;background:rgba(108,92,231,0.18)}
+.eye-icon{display:inline-block;transform-origin:center}
+.eye-open{display:block}
+.eye-closed{display:none}
+.balance-toggle.closed .eye-open{display:none}
+.balance-toggle.closed .eye-closed{display:block}
+.balance-toggle .eye-open{font-size:16px;line-height:1}
+.eye-svg{width:20px;height:20px}
+@keyframes eyeBlink{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.08)}}
+.balance-toggle.blinking .eye-icon{animation:eyeBlink .2s ease-in-out 2}
+/* 余额显示后的一道光（流光）——只作用在数字本身 */
+#balanceDisplay{display:inline-block;vertical-align:baseline} /* inline 元素 overflow 不裁剪，必须 inline-block 才能把光锁在框内 */
+#balanceDisplay.shimmer{position:relative;overflow:hidden}
+#balanceDisplay.shimmer::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,.9) 50%,transparent 100%);
+  transform:translateX(0);
+  animation:balanceSweep .9s ease-in-out;
+  pointer-events:none;
+}
+@keyframes balanceSweep{0%{left:-100%}100%{left:100%}}
 .card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
 .card-number{font-family:monospace;font-size:16px;letter-spacing:2px;color:rgba(255,255,255,0.7)}
 /* FUNBUA 与等级账户名之间的间距：letter-spacing 再补 2px，合计约 6px，想更宽/更窄改这个数 */
@@ -541,7 +561,7 @@ body{
             <div class="card-top">
               <div>
                 <div class="card-balance-label" data-i18n="vpay.totalBalance">Total Balance</div>
-                <div class="card-balance-val"><span class="balance-amount">¥ <span id="balanceDisplay" class="masked">****</span></span><button type="button" class="balance-toggle" id="balanceEye" onclick="toggleBalance()" aria-label="显示或隐藏余额" title="显示 / 隐藏余额"><i class="fa-regular fa-eye-slash"></i></button></div>
+                <div class="card-balance-val"><span class="balance-amount"><span class="rmb-symbol">¥</span><span id="balanceDisplay" class="masked">****</span></span><button type="button" class="balance-toggle closed" id="balanceEye" onclick="toggleBalance()" aria-label="显示或隐藏余额" title="显示 / 隐藏余额"><i class="fa-regular fa-eye eye-icon eye-open"></i><svg class="eye-svg eye-icon eye-closed" viewBox="0 0 40 28" aria-hidden="true"><path d="M5 11 Q20 22 35 11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="11" y1="15" x2="8.5" y2="20.5"/><line x1="20" y1="17.5" x2="20" y2="23.5"/><line x1="29" y1="15" x2="31.5" y2="20.5"/></g></svg></button></div>
               </div>
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8;cursor:pointer" onclick="showCardModal()"></i>
             </div>
@@ -896,10 +916,45 @@ function renderBalance(){
   const bd=document.getElementById('balanceDisplay');
   bd.textContent=balanceVisible?balanceVal.toFixed(2):'****';
   bd.classList.toggle('masked',!balanceVisible);
-  document.querySelector('#balanceEye i').className='fa-regular '+(balanceVisible?'fa-eye':'fa-eye-slash');
+  document.getElementById('balanceEye').classList.toggle('closed',!balanceVisible);
   document.getElementById('balanceEye').classList.toggle('on',balanceVisible);
 }
-function toggleBalance(){balanceVisible=!balanceVisible;renderBalance()}
+let _balanceAnimating=false,_balanceTypeTimer=null;
+function typeBalance(text){
+  const bd=document.getElementById('balanceDisplay');
+  bd.classList.remove('shimmer','masked');
+  bd.textContent='';
+  clearInterval(_balanceTypeTimer);
+  let i=0;
+  _balanceTypeTimer=setInterval(()=>{
+    i++;
+    bd.textContent=text.slice(0,i);
+    if(i>=text.length){
+      clearInterval(_balanceTypeTimer);
+      bd.classList.remove('shimmer');
+      void bd.offsetWidth;
+      bd.classList.add('shimmer');
+    }
+  },45);
+}
+function toggleBalance(){
+  if(_balanceAnimating)return;
+  balanceVisible=!balanceVisible;
+  const eye=document.getElementById('balanceEye');
+  eye.classList.add('blinking');
+  _balanceAnimating=true;
+  setTimeout(()=>{
+    eye.classList.remove('blinking');
+    _balanceAnimating=false;
+    renderBalance();
+    const bd=document.getElementById('balanceDisplay');
+    if(balanceVisible){
+      typeBalance(balanceVal.toFixed(2));
+    }else{
+      bd.classList.remove('shimmer');
+    }
+  },420);
+}
 async function updateBalance(){
   if(!currentUser)return;
   try{
