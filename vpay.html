@@ -70,7 +70,7 @@ body{
 .user-info h4{font-size:14px;font-weight:600}
 .user-info p{font-size:12px;color:var(--text-muted)}
 /* Main Content */
-.main-content{padding:40px 40px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
+.main-content{padding:40px 40px 14px;overflow:hidden auto;display:flex;flex-direction:column;gap:30px;height:85vh}
 /* Auth */
 .auth-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;padding:40px 24px;width:100%;max-width:420px;margin:0 auto}
 .auth-page .brand{font-size:32px;margin-bottom:4px;justify-content:center}
@@ -184,8 +184,7 @@ body{
 .asset-name h4,.tx-name h4{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .asset-name p,.tx-name p{font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .asset-name,.tx-name{min-width:0;overflow:hidden}
-.tx-name p.tx-msg{white-space:normal;word-break:break-word;overflow:visible;text-overflow:clip;margin-top:3px}
-.tx-msg{white-space:normal;word-break:break-word;overflow:visible;text-overflow:clip;margin-top:3px}
+.tx-msg{margin-top:3px}
 .msg-counter{text-align:right;font-size:12px;color:var(--text-muted);margin-top:4px}
 .msg-counter.over{color:var(--accent-red)}
 .btn:disabled{opacity:.55;cursor:not-allowed}
