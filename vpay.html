@@ -297,6 +297,9 @@ body{
 .pwd-label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
 .pwd-field{display:flex;gap:8px;margin-bottom:14px;cursor:pointer}
 .pwd-field i{flex:1;height:46px;border:1px solid var(--panel-border);border-radius:10px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center}
+.pwd-lock-msg{display:flex;align-items:center;gap:8px;justify-content:center;text-align:center;padding:14px 12px;border:1px solid var(--accent-red);background:rgba(255,118,117,.1);color:#ff7675;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:6px}
+.pwd-lock-msg i{font-size:15px}
+.pwd-lock-msg b{font-size:15px;font-weight:700}
 .pwd-field i.on::after{content:'';width:10px;height:10px;border-radius:50%;background:#fff}
 .pwd-field.active i{border-color:#6c5ce7}
 .pwd-field.active i.on::after{background:#a29bfe}
@@ -526,11 +529,13 @@ body{
 </div>
 
 <!-- ============ 转账确认（点击发送后弹出，输入支付密码） ============ -->
-<div class="modal-overlay" id="transferPwdModal">
+<div class="modal-overlay" id="transferPwdModal" onclick="if(event.target===this)closeTransferPwd()">
   <div class="modal-box">
+    <button class="modal-close" onclick="closeTransferPwd()"><i class="fa-solid fa-times"></i></button>
     <h3 style="text-align:left" data-i18n="transfer.confirm">确认转账</h3>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6"><span id="tpmText"></span><span data-i18n="vpay.transferPwdHint">请输入 6 位支付密码。</span></p>
     <div class="pwd-field" id="transferPwd" onclick="pwdKb(true,'transferPwd')"></div>
+    <div class="pwd-lock-msg" id="tpmLock" style="display:none"><i class="fa-solid fa-lock"></i> <span id="tpmLockText"></span></div>
   </div>
 </div>
 
@@ -1140,6 +1145,8 @@ const pwdBuf={setPwd1:'',setPwd2:'',transferPwd:''};
 const pwdFields=Object.keys(pwdBuf);
 const $=id=>document.getElementById(id);
 let pwdFocus=null,pending=null;
+// 转账支付密码连续输错锁定（3 次错误后锁定 60 秒）
+let pwdWrong=0,pwdLockUntil=0,pwdLockTimer=null;
 // 生成数字键盘
 $('pkGrid').innerHTML=[1,2,3,4,5,6,7,8,9,'',0,'del'].map(k=>k===''?'<span></span>':`<button class="pk-key" onclick="pwdKey(this,'${k}')">${k==='del'?'<i class="fa-solid fa-delete-left"></i>':k}</button>`).join('');
 // 渲染 6 位密码点阵
@@ -1154,9 +1161,13 @@ function pwdKb(show,id){
   $('pkTip').textContent=(id==='setPwd2')?t('vpay.reenterPayPwd'):t('vpay.enterPayPwd');
   $('pwdKeyboard').classList.toggle('show',show);
   document.body.classList.toggle('kb-open',show);
-  $('transferPwdModal').classList.toggle('show',show&&id==='transferPwd');
+  const sp=show&&id==='transferPwd';
+  if(sp){$('transferPwd').style.display='flex';$('tpmLock').style.display='none';}
+  $('transferPwdModal').classList.toggle('show',sp);
   pwdFields.forEach(renderPwd);
 }
+// 关闭转账密码弹窗（锁定期间也可关闭，倒计时在后台继续）
+function closeTransferPwd(){pwdKb(false);$('tpmLock').style.display='none';}
 let _audioCtx=null;
 function playKeySound(type){
   try{
@@ -1246,6 +1257,8 @@ async function submitPayPassword(){
 // 点发送：先校验并弹出密码框；输满 6 位后带密码提交
 async function handleTransfer(pw){
   if(!currentUser)return;
+  // 锁定中：禁止再次尝试，提示剩余秒数
+  if(Date.now()<pwdLockUntil)return showToast(t('transfer.locked',{seconds:Math.ceil((pwdLockUntil-Date.now())/1000)}),'error');
   if(!pw){
     const to=$('transferTo').value.trim(),amt=parseFloat($('transferAmount').value),msg=$('transferMsg').value.trim();
     if($('transferMsg').value.length>50)return showToast(t('transfer.msgTooLong'),'error');
@@ -1262,12 +1275,46 @@ async function handleTransfer(pw){
     const r=await(await fetch(API_BASE+'/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:currentUser.username,to,amount:amt,message:msg,password:pw})})).json();
     hideLoading();
     if(r.code===200){
-      pending=null;
+      pwdWrong=0;pending=null;
       showToast(t('vpay.transferSuccess'));
       $('transferTo').value='';$('transferAmount').value='';$('transferMsg').value='';updateMsgCounter();
       pwdBuf.transferPwd='';pwdKb(false);updateBalance();loadRecords();
-    }else{playKeySound('error');const ck={401:'transfer.wrongPassword',400:'transfer.insufficientBalance',403:'transfer.needPayPwd',404:'transfer.userNotFound'}[r.code]||'transfer.failed';showToast(t(r.key||ck),'error');pwdBuf.transferPwd='';renderPwd('transferPwd')}
+    }else{
+      playKeySound('error');
+      pwdBuf.transferPwd='';renderPwd('transferPwd');
+      if(r.code===401){
+        // 支付密码错误：累计次数，满 3 次锁定 60 秒
+        pwdWrong++;
+        if(pwdWrong>=3){startPwdLock();return;}
+        showToast(t('transfer.wrongPassword',{n:3-pwdWrong}),'error');
+        return;
+      }
+      const ck={400:'transfer.insufficientBalance',403:'transfer.needPayPwd',404:'transfer.userNotFound'}[r.code]||'transfer.failed';
+      showToast(t(r.key||ck),'error');
+    }
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
+}
+// 锁定转账密码输入 60 秒，并显示倒计时
+function startPwdLock(){
+  pwdLockUntil=Date.now()+60000;
+  pwdKb(false);                              // 收起键盘
+  $('transferPwd').style.display='none';     // 隐藏密码框，禁止输入
+  $('tpmLock').style.display='flex';
+  $('transferPwdModal').classList.add('show');
+  tickPwdLock();
+}
+function tickPwdLock(){
+  const remain=Math.ceil((pwdLockUntil-Date.now())/1000);
+  if(remain<=0){endPwdLock();return;}
+  $('tpmLockText').textContent=t('transfer.locked',{seconds:remain});
+  pwdLockTimer=setTimeout(tickPwdLock,1000);
+}
+function endPwdLock(){
+  clearTimeout(pwdLockTimer);pwdLockTimer=null;
+  pwdWrong=0;pwdLockUntil=0;
+  $('tpmLock').style.display='none';
+  $('transferPwd').style.display='flex';
+  $('transferPwdModal').classList.remove('show');
 }
 
 // Orders
