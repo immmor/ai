@@ -1391,7 +1391,7 @@ function openOrderDetail(which,idx){
     row(t('records.orderNo'),escapeHtml(o.order_no||o.id||'-'))+
     row(t('records.amount'),'+¥'+(Number(o.amount)||0).toFixed(2),'var(--accent-green)')+
     row(t('records.status'),'<span class="order-status '+sc+'">'+st+'</span>')+
-    row(t('records.time'),escapeHtml(formatDate(o.created_at)));
+    row(t('records.time'),escapeHtml(formatDate(o.created_at||o.time)));
   document.getElementById('recordDetailModal').classList.add('show');
 }
 function closeRecordDetail(){document.getElementById('recordDetailModal').classList.remove('show')}
