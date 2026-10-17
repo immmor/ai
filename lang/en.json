@@ -126,7 +126,10 @@
         "counterparty": "Counterparty",
         "amount": "Amount",
         "noMessage": "None",
-        "time": "Time"
+        "time": "Time",
+        "orderNo": "Order No.",
+        "status": "Status",
+        "rechargeDetail": "Recharge Details"
     },
     "staticPay": {
         "title": "{name} Manual Payment",

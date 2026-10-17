@@ -126,7 +126,10 @@
         "counterparty": "Destinatario",
         "amount": "Monto",
         "noMessage": "Ninguno",
-        "time": "Hora"
+        "time": "Hora",
+        "orderNo": "No. de pedido",
+        "status": "Estado",
+        "rechargeDetail": "Detalles de recarga"
     },
     "staticPay": {
         "title": "Pago manual de {name}",

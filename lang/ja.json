@@ -126,7 +126,10 @@
         "counterparty": "相手",
         "amount": "金額",
         "noMessage": "なし",
-        "time": "時間"
+        "time": "時間",
+        "orderNo": "注文番号",
+        "status": "ステータス",
+        "rechargeDetail": "チャージ詳細"
     },
     "staticPay": {
         "title": "{name}手動支払い",

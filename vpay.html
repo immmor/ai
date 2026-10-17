@@ -481,7 +481,7 @@ body{
 <div class="modal-overlay" id="recordDetailModal" onclick="if(event.target===this)closeRecordDetail()">
   <div class="modal-box" style="width:360px;max-width:92vw">
     <button class="modal-close" onclick="closeRecordDetail()"><i class="fa-solid fa-times"></i></button>
-    <h3 style="text-align:left" data-i18n="records.detail">转账详情</h3>
+    <h3 id="recordDetailTitle" style="text-align:left" data-i18n="records.detail">转账详情</h3>
     <div id="recordDetailContent"></div>
   </div>
 </div>
@@ -1283,12 +1283,13 @@ async function loadRecentOrders(){
     const orders=(ordersData.code===200?ordersData.data?.orders||[]:[]).map(o=>({type:'recharge',amount:o.amount,status:o.status,id:o.order_no||o.id,time:o.created_at||''}));
     const records=(recordsData.code===200?recordsData.data?.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.counterparty||'',message:r.message||'',status:r.direction==='out'?'send':'receive',time:r.created_at||''}));
     const all=[...orders,...records].sort((a,b)=>b.time.localeCompare(a.time)).slice(0,5);
-    window._recentTransfers=[];
+    window._recentTransfers=[];window._recentOrders=[];
     if(all.length){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
           const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?t('orders.paid'):item.status==='failed'?t('orders.failed'):t('orders.pending');
-          return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
+          const idx=_recentOrders.push(item)-1;
+          return `<div class="order-item" style="cursor:pointer" onclick="openOrderDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
           const idx=_recentTransfers.push({name:item.other||'',message:item.message||'',amount:item.amount,time:item.time,send:isSend})-1;
@@ -1314,9 +1315,11 @@ async function loadOrders(){
 function renderOrders(orders){
   const list=document.getElementById('ordersList'),pg=document.getElementById('ordersPagination');
   if(!orders.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>${t('vpay.noOrders')}</p></div>`;pg.style.display='none';return}
+  window._historyOrders=[];
   list.innerHTML=orders.map(o=>{
     const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
-    return `<div class="order-item"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
+    const idx=window._historyOrders.push(o)-1;
+    return `<div class="order-item" style="cursor:pointer" onclick="openOrderDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
   }).join('');
   pg.style.display=totalOrderPages>1?'flex':'none';document.getElementById('ordersInfo').textContent=orderPage+' / '+totalOrderPages;document.getElementById('ordersPrev').disabled=orderPage<=1;document.getElementById('ordersNext').disabled=orderPage>=totalOrderPages
 }
@@ -1360,7 +1363,7 @@ function updateMsgCounter(){
 }
 
 // 每条转账记录点击后弹出的详情
-window._recentTransfers=[];window._historyTransfers=[];
+window._recentTransfers=[];window._historyTransfers=[];window._recentOrders=[];window._historyOrders=[];
 function openTransferDetail(which,idx){
   const rec=(which==='recent'?window._recentTransfers:window._historyTransfers)[idx];
   if(!rec)return;
@@ -1368,12 +1371,27 @@ function openTransferDetail(which,idx){
   const amt=(rec.send?'-':'+')+'¥'+(Number(rec.amount)||0).toFixed(2);
   const amtColor=rec.send?'var(--accent-red)':'var(--accent-green)';
   const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:13px 2px;border-bottom:1px solid var(--panel-border)"><span style="color:var(--text-muted);font-size:13px;flex-shrink:0">${l}</span><span style="font-weight:600;text-align:right;${c?('color:'+c):''};word-break:break-all">${v}</span></div>`;
+  document.getElementById('recordDetailTitle').textContent=t('records.detail');
   document.getElementById('recordDetailContent').innerHTML=
     row(t('records.direction'),dir)+
     row(t('records.counterparty'),escapeHtml(rec.name||'-'))+
     row(t('records.amount'),amt,amtColor)+
     row(t('records.time'),escapeHtml(formatDate(rec.time)))+
     row(t('vpay.message'),rec.message?escapeHtml(rec.message):(`<span style="color:var(--text-muted);font-weight:400">${t('records.noMessage')}</span>`));
+  document.getElementById('recordDetailModal').classList.add('show');
+}
+function openOrderDetail(which,idx){
+  const o=(which==='recent'?window._recentOrders:window._historyOrders)[idx];
+  if(!o)return;
+  const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
+  const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:13px 2px;border-bottom:1px solid var(--panel-border)"><span style="color:var(--text-muted);font-size:13px;flex-shrink:0">${l}</span><span style="font-weight:600;text-align:right;${c?('color:'+c):''};word-break:break-all">${v}</span></div>`;
+  document.getElementById('recordDetailTitle').textContent=t('records.rechargeDetail');
+  document.getElementById('recordDetailContent').innerHTML=
+    row(t('records.direction'),t('nav.recharge'))+
+    row(t('records.orderNo'),escapeHtml(o.order_no||o.id||'-'))+
+    row(t('records.amount'),'+¥'+(Number(o.amount)||0).toFixed(2),'var(--accent-green)')+
+    row(t('records.status'),'<span class="order-status '+sc+'">'+st+'</span>')+
+    row(t('records.time'),escapeHtml(formatDate(o.created_at)));
   document.getElementById('recordDetailModal').classList.add('show');
 }
 function closeRecordDetail(){document.getElementById('recordDetailModal').classList.remove('show')}

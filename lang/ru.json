@@ -126,7 +126,10 @@
         "counterparty": "Контрагент",
         "amount": "Сумма",
         "noMessage": "Нет",
-        "time": "Время"
+        "time": "Время",
+        "orderNo": "Номер заказа",
+        "status": "Статус",
+        "rechargeDetail": "Детали пополнения"
     },
     "staticPay": {
         "title": "Ручная оплата {name}",

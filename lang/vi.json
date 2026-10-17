@@ -126,7 +126,10 @@
         "counterparty": "Đối tác",
         "amount": "Số tiền",
         "noMessage": "Không",
-        "time": "Thời gian"
+        "time": "Thời gian",
+        "orderNo": "Số đơn hàng",
+        "status": "Trạng thái",
+        "rechargeDetail": "Chi tiết nạp tiền"
     },
     "staticPay": {
         "title": "Thanh toán thủ công {name}",

@@ -126,7 +126,10 @@
         "counterparty": "الطرف الآخر",
         "amount": "المبلغ",
         "noMessage": "لا يوجد",
-        "time": "الوقت"
+        "time": "الوقت",
+        "orderNo": "رقم الطلب",
+        "status": "الحالة",
+        "rechargeDetail": "تفاصيل الشحن"
     },
     "staticPay": {
         "title": "دفع {name} اليدوي",

@@ -126,7 +126,10 @@
         "counterparty": "상대방",
         "amount": "금액",
         "noMessage": "없음",
-        "time": "시간"
+        "time": "시간",
+        "orderNo": "주문 번호",
+        "status": "상태",
+        "rechargeDetail": "충전 상세"
     },
     "staticPay": {
         "title": "{name} 수동 결제",
