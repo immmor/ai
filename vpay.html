@@ -44,20 +44,28 @@ body{
 }
 .nav-link:hover,.nav-link.active{color:#fff;background:var(--panel-bg)}
 .nav-link.active i{color:#6c5ce7}
+.nav-link.active .i-transfer{color:#6c5ce7}
 .nav-link i,.mobile-nav-item i{display:inline-block;transition:transform .15s}
 .tab-anim-dashboard{animation:tabDash .55s ease}
 .tab-anim-recharge{animation:tabPlus .5s ease}
-.tab-anim-transfer{animation:tabTransfer .5s ease}
+.tab-anim-transfer .tr-up{animation:trUp .45s ease}
+.tab-anim-transfer .tr-down{animation:trDown .45s ease}
 .tab-anim-assistant{animation:tabBot .55s ease}
+/* 转账：自绘上下双向箭头，随文字颜色；尺寸跟随各容器图标字号 */
+.i-transfer{width:1.15em;height:1.15em;vertical-align:-0.2em;stroke-width:2.6}
+.action-btn .i-transfer,.mobile-nav-item .i-transfer{font-size:18px}
+.nav-link .i-transfer{font-size:15px}
 /* 总览：饼图轻轻摆动 */
 @keyframes tabDash{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
 /* 充值：加号放大并转 90° */
 @keyframes tabPlus{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.3) rotate(90deg)}100%{transform:scale(1) rotate(0)}}
-/* 转账：双箭头水平翻转（交换方向） */
-@keyframes tabTransfer{0%,100%{transform:scaleX(1)}50%{transform:scaleX(-1)}}
+/* 转账：上箭头往上、下箭头往下各弹一下 */
+@keyframes trUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes trDown{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 /* 助手：机器人上下轻颠 + 微摆 */
 @keyframes tabBot{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-8deg)}60%{transform:translateY(2px) rotate(6deg)}}
 .user-profile{display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--panel-border)}
+.user-profile .avatar{flex-shrink:0}
 .sidebar-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:5px;border-radius:6px;transition:all .2s;font-size:14px;flex-shrink:0;margin-left:auto}
 .sidebar-logout:hover{color:var(--accent-red);background:rgba(255,118,117,0.1)}
 .user-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
@@ -67,7 +75,8 @@ body{
 .lang-menu div{padding:10px 4px;cursor:pointer}
 .lang-menu div:hover{background:#2a2a2a}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-purple);display:flex;align-items:center;justify-content:center;font-weight:bold}
-.user-info h4{font-size:14px;font-weight:600}
+.user-info{min-width:0}
+.user-info h4{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-info p{font-size:12px;color:var(--text-muted)}
 /* Main Content */
 .main-content{padding:40px 40px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
@@ -117,7 +126,10 @@ body{
   position:relative;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.2);backdrop-filter:blur(10px);
 }
 .crypto-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200px;height:200px;background:radial-gradient(circle,rgba(108,92,231,0.3) 0%,transparent 70%);pointer-events:none}
-.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.card-user{display:none;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-user-right{display:flex;align-items:center;gap:10px;min-width:0}
+.card-user-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-balance-label{font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
 .card-balance-val{font-size:36px;font-weight:700;margin-top:5px;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px}
 .balance-amount{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
@@ -159,8 +171,8 @@ body{
 @keyframes balanceSweep{0%{background-position:100% 0}100%{background-position:0% 0}}
 .card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
 .card-number{font-family:monospace;font-size:16px;letter-spacing:2px;color:rgba(255,255,255,0.7)}
-/* FUNBUA 与等级账户名之间的间距：letter-spacing 再补 2px，合计约 6px，想更宽/更窄改这个数 */
-#tierAccountLabel{margin-left:5px}
+/* 资产卡底部账户等级名（已去掉 FUNBUA 前缀，正常左对齐） */
+#tierAccountLabel{margin-left:0}
 /* Quick Actions */
 .quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}
 .action-btn{
@@ -169,6 +181,7 @@ body{
   color:#fff;cursor:pointer;transition:all 0.3s;font-size:12px;font-family:inherit;
 }
 .action-btn i{font-size:18px;color:#a29bfe}
+.action-btn .i-transfer{color:#a29bfe}
 .action-btn:hover{background:rgba(108,92,231,0.2);border-color:#6c5ce7;transform:translateY(-2px)}
 /* Sections */
 .section-title{font-size:18px;font-weight:600;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
@@ -321,6 +334,7 @@ body{
   .mobile-nav-item.active{color:#6c5ce7}
   .mobile-nav-item i{font-size:18px}
   .quick-actions{grid-template-columns:repeat(2,1fr)}
+  .card-user{display:flex}
   .amount-grid{grid-template-columns:repeat(3,1fr)}
 }
   /* ===== 白天模式：与站点共享 localStorage('theme')，URL ?theme= 可覆盖 ===== */
@@ -378,15 +392,14 @@ body{
   body.theme-light .chat-avatar{background:rgba(108,92,231,0.12);color:#6c5ce7}
   body.theme-light .chat-msg.user .chat-avatar{background:rgba(0,0,0,0.06);color:var(--text-main)}
   body.theme-light .chat-bubble{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.1)}
-/* 收款码 · 简洁卡片 */
-.collect-card{background:#fff;border-radius:20px;padding:26px 24px 22px;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.4)}
-.collect-name{font-size:18px;font-weight:700;color:#15161d;margin-bottom:4px}
-.collect-sub{font-size:13px;color:#6b6f7a;margin-bottom:18px}
+/* 收款码 · 与扫码弹窗风格统一（去掉白卡/边框，直接落在 modal 上；二维码图自带白底保留） */
+.collect-card{text-align:center}
+.collect-name{font-size:18px;font-weight:700;color:var(--text-main);margin-bottom:4px}
+.collect-sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
 .collect-qr{display:inline-block;background:#fff;border-radius:16px;padding:14px;box-shadow:0 8px 22px rgba(108,92,231,.18),inset 0 0 0 1px rgba(0,0,0,.05)}
 .collect-qr img{display:block;width:220px;height:220px;border-radius:10px}
-.collect-copy{width:100%;border:none;border-radius:14px;padding:13px;margin-top:8px;cursor:pointer;background:var(--primary-purple);color:#fff;font-size:15px;font-weight:600;font-family:inherit;box-shadow:0 8px 20px rgba(108,92,231,.4);transition:transform .15s}
-.collect-copy:active{transform:scale(.97)}
-body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
+.collect-copy{width:100%;border:1px solid var(--panel-border);border-radius:12px;padding:10px;margin-top:8px;cursor:pointer;background:transparent;color:var(--text-muted);font-size:14px;font-family:inherit;transition:.2s}
+.collect-copy:hover{color:#fff;background:var(--panel-bg)}
 /* Assistant Chat */
 #pageAssistant{display:flex;flex-direction:column;flex:1;min-height:0}
 .chat-card{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
@@ -457,7 +470,7 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
   </div>
 </div>
 <div class="modal-overlay" id="qrModal">
-  <div class="modal-box" style="width:340px;max-width:92vw">
+  <div class="modal-box" style="width:380px;max-width:92vw">
     <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
     <h3 id="qrTitle" style="text-align:left" data-i18n="vpay.scanToPay">Scan to Pay</h3>
     <div id="qrContent"></div>
@@ -555,7 +568,7 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
       <ul class="nav-menu" id="sidebarNav">
         <li class="nav-item"><a class="nav-link active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="vpay.overview">总览</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="nav.recharge">充值</span></a></li>
-        <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="nav.transfer">转账</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-page="transfer" onclick="switchPage('transfer')"><svg class="i-transfer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="tr-up"><path d="M7 20V7"/><path d="M3 11l4-4 4 4"/></g><g class="tr-down"><path d="M17 4v13"/><path d="M13 13l4 4 4-4"/></g></svg> <span data-i18n="nav.transfer">转账</span></a></li>
         <li class="nav-item"><a class="nav-link" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i> <span data-i18n="nav.assistant">助手</span></a></li>
       </ul>
     </div>
@@ -597,6 +610,12 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
       <div class="dashboard-grid">
         <div class="left-column">
           <div class="crypto-card">
+            <div class="card-user">
+              <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
+              <div class="card-user-right">
+                <span class="card-user-name" id="cardUserName" data-i18n="vpay.guest">未登录</span>
+              </div>
+            </div>
             <div class="card-top">
               <div>
                 <div class="card-balance-label" data-i18n="vpay.totalBalance">Total Balance</div>
@@ -605,14 +624,14 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
               <i class="fa-regular fa-credit-card" style="font-size:32px;opacity:0.8;cursor:pointer" onclick="showCardModal()"></i>
             </div>
             <div class="card-bottom">
-              <div class="card-number">FUNBUA<span id="tierAccountLabel"></span></div>
+              <div class="card-number"><span id="tierAccountLabel"></span></div>
               <div style="font-size:11px;color:var(--text-muted);opacity:0.7;margin-left:auto"><span data-i18n="vpay.exchangePrefix">1 USD = ¥</span><span id="dashboardRate">6.7</span></div>
             </div>
           </div>
 
           <div class="quick-actions">
             <button class="action-btn" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
-            <button class="action-btn" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
+            <button class="action-btn" onclick="switchPage('transfer')"><svg class="i-transfer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="tr-up"><path d="M7 20V7"/><path d="M3 11l4-4 4 4"/></g><g class="tr-down"><path d="M17 4v13"/><path d="M13 13l4 4 4-4"/></g></svg><span data-i18n="nav.transfer">转账</span></button>
             <button class="action-btn" onclick="openScan()"><i class="fa-solid fa-camera"></i><span data-i18n="vpay.scanQr">扫码</span></button>
             <button class="action-btn" onclick="openCollect()"><i class="fa-solid fa-qrcode"></i><span data-i18n="vpay.collect">收款</span></button>
           </div>
@@ -791,7 +810,7 @@ body.theme-light .collect-card{box-shadow:0 14px 40px rgba(0,0,0,.16)}
 <nav class="mobile-nav hidden" id="mobileNav">
   <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="vpay.overview">总览</span></button>
   <button class="mobile-nav-item" data-page="recharge" onclick="switchPage('recharge')"><i class="fa-solid fa-circle-plus"></i><span data-i18n="nav.recharge">充值</span></button>
-  <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="nav.transfer">转账</span></button>
+  <button class="mobile-nav-item" data-page="transfer" onclick="switchPage('transfer')"><svg class="i-transfer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="tr-up"><path d="M7 20V7"/><path d="M3 11l4-4 4 4"/></g><g class="tr-down"><path d="M17 4v13"/><path d="M13 13l4 4 4-4"/></g></svg><span data-i18n="nav.transfer">转账</span></button>
   <button class="mobile-nav-item" data-page="assistant" onclick="switchPage('assistant')"><i class="fa-solid fa-robot"></i><span data-i18n="nav.assistant">助手</span></button>
 </nav>
 
@@ -840,6 +859,7 @@ function updateDynamicI18n(){
   if(typeof updatePayBtn==='function')updatePayBtn();
   if(currentUser){
     const un=document.getElementById('userName');if(un)un.textContent=maskUsername(currentUser.username)||t('vpay.guest');
+    const cun=document.getElementById('cardUserName');if(cun)cun.textContent=maskUsername(currentUser.username)||t('vpay.guest');
     renderTierStatus();
     // 资产卡底部 "FUNBUA ____" 随语言重刷
     if(window.VpayTier)VpayTier.setAccountLabel(VpayTier.tierOf(balanceVal));
@@ -895,7 +915,7 @@ function switchPage(page){
 }
 // Tab 图标点击小动画（每个图标不同）
 function popTabIcon(item){
-  const ic=item.querySelector('i');
+  const ic=item.querySelector('i, svg');
   if(!ic)return;
   const cls='tab-anim-'+(item.dataset.page||'');
   ic.classList.remove(cls);void ic.offsetWidth;ic.classList.add(cls);
@@ -941,8 +961,7 @@ function handleLogout(){
 }
 
 function maskUsername(name){
-  if(!name||name.length<=6)return name||'用户';
-  return name.slice(0,6)+'*';
+  return name||'用户';
 }
 function enterMain(){
   payPasswordReady=false;
@@ -950,9 +969,11 @@ function enterMain(){
   document.getElementById('appContainer').classList.remove('hidden');
   document.getElementById('mobileNav').classList.remove('hidden');
   document.getElementById('userName').textContent=maskUsername(currentUser.username)||t('vpay.guest');
+  document.getElementById('cardUserName').textContent=maskUsername(currentUser.username)||t('vpay.guest');
   if(window.VpayTier)VpayTier.apply(balanceVal);
   renderTierStatus();
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
+  const ca=document.getElementById('cardAvatar');if(ca)ca.textContent=(currentUser.username||'U')[0].toUpperCase();
   // 不可信用户隐藏支付宝人工支付
   if(currentUser.not_trusted==='yes'){
     const alipayOpt=document.querySelector('.method-option[data-method="alipay_static"]');
@@ -1470,7 +1491,7 @@ function openCollect(){
     '<div class="collect-card">'+
       '<div class="collect-name">'+escapeHtml(user)+'</div>'+
       '<div class="collect-sub">'+t('vpay.scanToPay')+'</div>'+
-      '<div class="collect-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(_collectPayload)+'" alt="'+t('collect.alt')+'" onerror="this.style.opacity=.25"></div>'+
+      '<div class="collect-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data='+encodeURIComponent(_collectPayload)+'" alt="'+t('collect.alt')+'" onerror="this.style.opacity=.25"></div>'+
       '<button class="collect-copy" onclick="copyCollect()"><i class="fa-solid fa-copy"></i> '+t('collect.copyInfo')+'</button>'+
     '</div>';
   showQrModal(t('collect.title'),content);
