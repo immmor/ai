@@ -19,6 +19,8 @@
   --accent-red:#ff7675;
   --qr-paper:#15171f;
   --qr-ink:#a29bfe;
+  --shimmer-base:rgba(255,255,255,.5);
+  --shimmer-hi:#ffffff;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 body{
@@ -161,8 +163,8 @@ body{
 #balanceDisplay{display:inline-block;vertical-align:baseline}
 #balanceDisplay.shimmer{
   color:transparent;
-  background-color:var(--text-main);
-  background-image:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.95) 50%,transparent 65%);
+  background-color:var(--shimmer-base);
+  background-image:linear-gradient(110deg,transparent 35%,var(--shimmer-hi) 50%,transparent 65%);
   background-repeat:no-repeat;
   background-size:250% 100%;
   background-position:100% 0;
@@ -363,6 +365,8 @@ body{
     --panel-border:rgba(0,0,0,0.1);
     --text-main:#1a1c23;
     --text-muted:#5f6370;
+    --shimmer-base:var(--text-main);
+    --shimmer-hi:#ffffff;
     --card-gradient:linear-gradient(135deg,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.01) 100%);
   }
   body.theme-light{
