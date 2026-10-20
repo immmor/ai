@@ -5,6 +5,15 @@ const t = (d) => JSON.stringify(Object.fromEntries(LK.map(k => [k, d[k] ?? '']))
 const NP = { cn:'[系统通知]', en:'[System Notification]', jp:'[システム通知]', kr:'[시스템 알림]', es:'[Notificación del Sistema]', vi:'[Thông báo Hệ thống]', ar:'[إشعار النظام]', ru:'[Системное уведомление]' };
 const nt = (d) => t(Object.fromEntries(LK.map(k => [k, `${NP[k]} ${d[k] ?? ''}`])));
 
+// 同步确保 messages 表带 ref_type / ref_id 列（用于把“收款消息”关联到具体转账流水）。
+// 用 await 在真正插入前执行，避免 waitUntil 时序导致列尚不存在而插入失败。
+const ensureMsgRefCols = async (DB) => {
+  try {
+    await DB.prepare('ALTER TABLE messages ADD COLUMN ref_type TEXT').run();
+    await DB.prepare('ALTER TABLE messages ADD COLUMN ref_id INTEGER').run();
+  } catch (e) { /* 列已存在时忽略 */ }
+};
+
 // 给管理员(immmor)推送外部通知：POST 表单（title/body/group/ttl）。不依赖 ctx，调用处直接 await
 const notifyAdmin = async (title, body) => {
   const url = 'https://notify.funbua.uk/W6qUt6AoVEN6nQYVnNnuQq';
@@ -1994,9 +2003,12 @@ export default {
             .bind('immmor', `💰 用户 ${from} 向 ${to} 转账 ¥${amt}`, msgTime).run();
           await notifyAdmin('用户转账', `💰 用户 ${from} 向 ${to} 转账 ¥${amt}`);
           // 给收款方发消息（关联该笔转账流水，便于前端标记未读/已读）
+          await ensureMsgRefCols(DB);
           const recvContent = message ? `💰 ${from} 向您转账 ¥${amt}（留言：${String(message).slice(0,50)}）` : `💰 ${from} 向您转账 ¥${amt}`;
-          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read, ref_type, ref_id) VALUES (?, ?, ?, 0, ?, ?)')
-            .bind(to, recvContent, msgTime, 'transfer', transferId).run();
+          try {
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read, ref_type, ref_id) VALUES (?, ?, ?, 0, ?, ?)')
+              .bind(to, recvContent, msgTime, 'transfer', transferId).run();
+          } catch (e) { console.error('收款方消息插入失败:', e); }
 
           return resJson({ code: 200, msg: '转账成功', from, to, amount: amt });
         } catch (err) {
@@ -3061,7 +3073,9 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (!username) {
             return resJson({ code: 400, msg: '请传入username参数' }, 400);
           }
-          
+
+          await ensureMsgRefCols(DB);
+
           let messages;
           
           if (all === 'true') {

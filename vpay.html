@@ -1554,13 +1554,16 @@ async function loadRecentOrders(){
   if(!currentUser)return;
   const list=document.getElementById('recentOrders');
   try{
-    const [ordersRes,recordsRes]=await Promise.all([
+    const [ordersRes,recordsRes,msgRes]=await Promise.all([
       fetch(API_LEGACY+`/api/orders?username=${currentUser.username}&page=1&limit=5`),
-      fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=1&limit=5`)
+      fetch(API_BASE+`/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=1&limit=5`),
+      fetch(API_BASE+`/api/messages?username=${encodeURIComponent(currentUser.username)}`)
     ]);
-    const ordersData=await ordersRes.json(),recordsData=await recordsRes.json();
+    const ordersData=await ordersRes.json(),recordsData=await recordsRes.json(),msgData=await msgRes.json();
     const orders=(ordersData.code===200?ordersData.data?.orders||[]:[]).map(o=>({type:'recharge',amount:o.amount,status:o.status,id:o.order_no||o.id,time:o.created_at||''}));
-    const records=(recordsData.code===200?recordsData.data?.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.counterparty||'',message:r.message||'',status:r.direction==='out'?'send':'receive',time:r.created_at||''}));
+    const records=(recordsData.code===200?recordsData.data?.records||[]:[]).map(r=>({type:'transfer',amount:r.amount,other:r.counterparty||'',message:r.message||'',status:r.direction==='out'?'send':'receive',time:r.created_at||'',id:r.id}));
+    const unreadMap={};
+    (msgData.code===200?(msgData.data?.messages||[]):[]).forEach(m=>{ if(!m.is_read&&m.ref_type==='transfer'&&m.ref_id!=null)unreadMap[m.ref_id]=m.id; });
     const all=[...orders,...records].sort((a,b)=>b.time.localeCompare(a.time)).slice(0,5);
     window._recentTransfers=[];window._recentOrders=[];
     if(all.length){
@@ -1571,8 +1574,10 @@ async function loadRecentOrders(){
           return `<div class="order-item" style="cursor:pointer" onclick="openOrderDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
           const isSend=item.status==='send';
-          const idx=_recentTransfers.push({name:item.other||'',message:item.message||'',amount:item.amount,time:item.time,send:isSend})-1;
-          return `<div class="order-item" style="cursor:pointer" onclick="openTransferDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isSend?'records.toLabel':'records.fromLabel',{name:escapeHtml(item.other||'')})}</h4>${item.message?`<p class="tx-msg">${escapeHtml(item.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
+          const unreadMsgId=(!isSend&&unreadMap[item.id])?unreadMap[item.id]:null;
+          const badge=unreadMsgId?`<span class="unread-dot">新</span>`:'';
+          const idx=_recentTransfers.push({name:item.other||'',message:item.message||'',amount:item.amount,time:item.time,send:isSend,id:item.id,unreadMsgId})-1;
+          return `<div class="order-item${unreadMsgId?' unread':''}" style="cursor:pointer" onclick="openTransferDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isSend?'records.toLabel':'records.fromLabel',{name:escapeHtml(item.other||'')})}${badge}</h4>${item.message?`<p class="tx-msg">${escapeHtml(item.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
       }).join('')
     }else list.innerHTML=`<div class="empty-state" style="padding:20px"><p>${t('vpay.noRecords')}</p></div>`
