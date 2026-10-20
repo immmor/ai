@@ -237,6 +237,35 @@ body{
 .amount-btn .sub{font-size:11px;color:var(--text-muted);margin-top:2px}
 .amount-input{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);color:var(--text-main);font-size:20px;font-weight:600;font-family:inherit;text-align:center;outline:none;margin-bottom:16px}
 .amount-input:focus{border-color:#6c5ce7}
+/* 转账记录未读标记 */
+.unread-dot{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--accent-red);color:#fff;font-size:11px;font-weight:600;vertical-align:middle}
+/* ===== 理财 ===== */
+.finance-entry{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;border-radius:16px;background:var(--panel-bg);border:1px solid var(--panel-border);cursor:pointer;transition:.2s}
+.finance-entry:hover{border-color:#6c5ce7;transform:translateY(-2px)}
+.finance-entry-icon{width:44px;height:44px;border-radius:12px;background:rgba(108,92,231,.15);color:#a29bfe;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.finance-entry-text{flex:1;min-width:0}
+.finance-entry-title{font-size:15px;font-weight:600}
+.finance-entry-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
+.finance-entry-arrow{color:var(--text-muted);font-size:14px}
+.finance-hero{display:flex;align-items:center;gap:14px}
+.finance-hero-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.finance-hero-title{font-size:18px;font-weight:700}
+.finance-hero-sub{font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.5}
+.finance-earn{margin:12px 2px 0;text-align:center;font-size:13px;color:var(--accent-green);font-weight:600}
+.finance-earn-block{text-align:center;margin:10px 0 4px;font-size:13px;color:var(--text-muted)}
+.finance-earn-block b{display:block;font-size:22px;color:var(--accent-green);font-weight:700;margin-top:4px}
+.finance-deposit-btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s}
+.finance-deposit-btn:hover{opacity:.92}
+.finance-deposit-btn.disabled{opacity:.45;pointer-events:none}
+.finance-tip{font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.6}
+.finance-status-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(108,92,231,.15);color:#a29bfe;font-size:12px;font-weight:600;margin-bottom:14px}
+.finance-status-badge.matured{background:rgba(0,184,148,.15);color:var(--accent-green)}
+.finance-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--panel-border);font-size:14px}
+.finance-row:last-of-type{border-bottom:none}
+.finance-row span{color:var(--text-muted)}
+.finance-row b{font-weight:600}
+.finance-row-total b{color:#a29bfe;font-size:16px}
+.finance-countdown{font-size:13px;color:var(--text-muted);margin:12px 0 2px;text-align:center}
 .amount-input::placeholder{color:var(--text-muted);font-weight:400;font-size:16px}
 /* Method Dropdown */
 .method-select-wrapper{position:relative;margin-bottom:20px}
@@ -587,6 +616,16 @@ body{
     </div>
   </div>
 
+  <!-- ============ 理财支付密码（复用转账安全键盘） ============ -->
+  <div class="modal-overlay" id="financePwdModal" onclick="if(event.target===this)closeFinancePwd()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeFinancePwd()"><i class="fa-solid fa-times"></i></button>
+      <h3 style="text-align:left" id="financePwdTitle">输入支付密码</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6"><span id="financePwdText"></span>请输入 6 位支付密码。</p>
+      <div class="pwd-field" id="financePwd" onclick="pwdKb(true,'financePwd')"></div>
+    </div>
+  </div>
+
   <div class="app-container hidden" id="appContainer">
     <!-- Sidebar -->
   <aside class="sidebar">
@@ -663,12 +702,55 @@ body{
             <button class="action-btn" onclick="openCollect()"><svg class="ic-ico ic-collect" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" fill="var(--qr-paper)"/><g fill="var(--qr-ink)"><path d="M2 2h8v8H2z"/><path d="M14 2h8v8H14z"/><path d="M2 14h8v8H2z"/><path d="M14 14h6v6H14z"/></g><g fill="var(--qr-paper)"><path d="M4 4h4v4H4z"/><path d="M16 4h4v4H16z"/><path d="M4 16h4v4H4z"/><path d="M15.5 15.5h3v3H15.5z"/></g><g fill="var(--qr-ink)"><path d="M5 5h2v2H5z"/><path d="M17 5h2v2H17z"/><path d="M5 17h2v2H5z"/><path d="M16.75 16.75h1.5v1.5H16.75z"/></g><g class="qr-data" fill="var(--qr-ink)"><rect class="m m1" x="12" y="2" width="2" height="2" rx=".3"/><rect class="m m2" x="10" y="4" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="6" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="8" width="2" height="2" rx=".3"/><rect class="m m1" x="4" y="10" width="2" height="2" rx=".3"/><rect class="m m2" x="8" y="10" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="10" width="2" height="2" rx=".3"/><rect class="m m4" x="16" y="10" width="2" height="2" rx=".3"/><rect class="m m1" x="20" y="10" width="2" height="2" rx=".3"/><rect class="m m2" x="2" y="12" width="2" height="2" rx=".3"/><rect class="m m3" x="6" y="12" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="12" width="2" height="2" rx=".3"/><rect class="m m1" x="14" y="12" width="2" height="2" rx=".3"/><rect class="m m2" x="18" y="12" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="14" width="2" height="2" rx=".3"/><rect class="m m4" x="20" y="14" width="2" height="2" rx=".3"/><rect class="m m1" x="10" y="16" width="2" height="2" rx=".3"/><rect class="m m2" x="12" y="18" width="2" height="2" rx=".3"/><rect class="m m3" x="20" y="18" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="20" width="2" height="2" rx=".3"/><rect class="m m1" x="14" y="20" width="2" height="2" rx=".3"/><rect class="m m2" x="18" y="20" width="2" height="2" rx=".3"/></g></svg><span data-i18n="vpay.collect">收款</span></button>
           </div>
 
+          <div class="finance-entry" onclick="switchPage('finance')">
+            <div class="finance-entry-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+            <div class="finance-entry-text">
+              <div class="finance-entry-title">定期理财</div>
+              <div class="finance-entry-sub">1 年期 · 年化 4% · 到期还本付息</div>
+            </div>
+            <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
+          </div>
+
           <div style="margin-top:30px">
             <div class="section-title"><span data-i18n="vpay.recentOrders">近期订单</span></div>
             <div class="order-list" id="recentOrders"></div>
           </div>
         </div>
     </div>
+    </div>
+
+    <!-- ============ FINANCE ============ -->
+    <div id="pageFinance" class="hidden">
+      <header class="header">
+        <div><h1>定期理财</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
+        </div>
+      </header>
+
+      <div class="crypto-card" id="financeDepositForm" style="padding:20px">
+        <div class="finance-hero">
+          <div class="finance-hero-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+          <div>
+            <div class="finance-hero-title">FUNBUA 定期存款</div>
+            <div class="finance-hero-sub">期限 1 年 · 年化收益 4% · 到期一次性还本付息</div>
+          </div>
+        </div>
+        <div class="section-title" style="margin:18px 0 10px;font-size:14px">存入金额（¥）</div>
+        <input class="amount-input" id="financeAmountInput" type="number" min="1" step="1" placeholder="输入存入金额" inputmode="decimal" oninput="onFinanceAmountInput()">
+        <div class="amount-grid" id="financeAmtGrid" style="grid-template-columns:repeat(4,1fr)">
+          <button class="amount-btn" data-amount="2000" onclick="selectFinanceAmt(2000)">¥2000</button>
+          <button class="amount-btn" data-amount="5000" onclick="selectFinanceAmt(5000)">¥5000</button>
+          <button class="amount-btn" data-amount="10000" onclick="selectFinanceAmt(10000)">¥10000</button>
+          <button class="amount-btn" data-amount="20000" onclick="selectFinanceAmt(20000)">¥20000</button>
+        </div>
+        <div class="finance-earn" id="financeEarnPreview">预计 1 年收益 ¥0.00（年化 4%）</div>
+        <button class="finance-deposit-btn" id="financeDepositBtn" onclick="startFinanceDeposit()">存入定期</button>
+        <div class="finance-tip">存入后该笔资金将被锁定，满 1 年方可赎回；赎回时返还本金 + 4% 利息。最低存入 ¥2000。可同时持有多笔。</div>
+      </div>
+
+      <div id="financeList"></div>
     </div>
 
     <!-- ============ RECHARGE ============ -->
@@ -897,6 +979,7 @@ initI18n().then(initApp);
 async function initI18n(){await loadTranslations();applyTranslations();updateDynamicI18n();}
 
 const API_BASE='https://api.funbua.uk',API_LEGACY='https://funbua.uk',USD_TO_CNY=6.7,USDT_RATE=6.7;
+const FINANCE_API=API_BASE;
 let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
     orderPage=1,totalOrderPages=1,recordsPage=1,totalRecordPages=1;
 
@@ -917,14 +1000,136 @@ function formatDate(d){
   return `${y}-${m}-${dd} ${h}:${mi}`;
 }
 
+// ===== 理财（定期存款：1年期 / 年化4% / 到期手动赎回） =====
+let financeAmount=0;
+function updateFinanceEarnPreview(){
+  const el=document.getElementById('financeEarnPreview');if(!el)return;
+  const earn=financeAmount>0?financeAmount*0.04:0;
+  el.textContent='预计 1 年收益 ¥'+earn.toFixed(2)+'（年化 4%）';
+}
+function selectFinanceAmt(a){
+  financeAmount=a;
+  const inp=document.getElementById('financeAmountInput');if(inp)inp.value=a;
+  document.querySelectorAll('#financeAmtGrid .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));
+  updateFinanceEarnPreview();
+}
+function onFinanceAmountInput(){
+  const inp=document.getElementById('financeAmountInput');
+  financeAmount=parseFloat(inp.value)||0;
+  document.querySelectorAll('#financeAmtGrid .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==inp.value));
+  updateFinanceEarnPreview();
+}
+async function loadFinanceStatus(){
+  if(!currentUser)return;
+  try{
+    const r=await(await fetch(FINANCE_API+`/api/finance/status?username=${encodeURIComponent(currentUser.username)}`)).json();
+    if(r.code!==200)return;
+    const list=document.getElementById('financeList');
+    if(r.deposits&&r.deposits.length){
+      list.classList.remove('hidden');
+      list.innerHTML=r.deposits.map(d=>{
+        const principal=+d.principal,interest=+d.interest,total=+d.projectedTotal;
+        const start=formatDate(d.startTime),maturity=formatDate(d.maturityTime);
+        let badge,cd,btnAttr='';
+        if(d.matured){
+          badge='<div class="finance-status-badge matured">已到期</div>';
+          cd='<div class="finance-countdown">可赎回本金与利息</div>';
+        }else{
+          badge='<div class="finance-status-badge">进行中</div>';
+          const days=Math.max(0,Math.ceil((new Date(d.maturityTime).getTime()-Date.now())/86400000));
+          cd='<div class="finance-countdown">剩余约 '+days+' 天到期</div>';
+          btnAttr='disabled class="finance-deposit-btn disabled"';
+        }
+        return '<div class="crypto-card" style="padding:18px;margin-top:14px">'
+          +badge
+          +'<div class="finance-row"><span>本金</span><b>¥'+principal.toFixed(2)+'</b></div>'
+          +'<div class="finance-row"><span>年化利率</span><b>4%</b></div>'
+          +'<div class="finance-row"><span>起存日期</span><b>'+start+'</b></div>'
+          +'<div class="finance-row"><span>到期日期</span><b>'+maturity+'</b></div>'
+          +'<div class="finance-earn-block"><span>预计 1 年收益</span><b>¥'+interest.toFixed(2)+'</b></div>'
+          +'<div class="finance-row finance-row-total"><span>预计到期总额</span><b>¥'+total.toFixed(2)+'</b></div>'
+          +cd
+          +(d.matured?'<button class="finance-deposit-btn" onclick="startFinanceRedeem('+d.id+')">赎回</button>':'<button '+btnAttr+'>赎回</button>')
+          +'</div>';
+      }).join('');
+    }else{
+      list.classList.add('hidden');
+      list.innerHTML='';
+    }
+    financeAmount=0;
+    const inp=document.getElementById('financeAmountInput');if(inp)inp.value='';
+    document.querySelectorAll('#financeAmtGrid .amount-btn').forEach(b=>b.classList.remove('active'));
+    updateFinanceEarnPreview();
+  }catch(e){}
+}
+function startFinanceDeposit(){
+  if(!currentUser)return showToast('请先登录','error');
+  if(!financeAmount||financeAmount<=0)return showToast('请输入存入金额','error');
+  if(financeAmount<2000)return showToast('最低存入金额为 ¥2000','error');
+  openFinancePwd('deposit');
+}
+let financeRedeemId=null;
+function startFinanceRedeem(id){
+  if(!currentUser)return showToast('请先登录','error');
+  financeRedeemId=id;
+  openFinancePwd('redeem');
+}
+let financePwdAction=null;
+function openFinancePwd(action){
+  financePwdAction=action;
+  pwdBuf.financePwd='';
+  document.getElementById('financePwdText').textContent=action==='redeem'?'赎回需验证支付密码：':'存入定期需验证支付密码：';
+  document.getElementById('financePwdModal').classList.add('show');
+  pwdKb(true,'financePwd');
+}
+function closeFinancePwd(){
+  pwdKb(false);
+  document.getElementById('financePwdModal').classList.remove('show');
+  financePwdAction=null;
+}
+async function handleFinancePwd(pw){
+  if(!/^\d{6}$/.test(pw))return;
+  const action=financePwdAction;
+  financePwdAction=null;
+  pwdBuf.financePwd='';
+  document.getElementById('financePwdModal').classList.remove('show');
+  pwdKb(false);
+  if(action==='deposit')await doFinanceDeposit(pw);
+  else if(action==='redeem')await doFinanceRedeem(pw,financeRedeemId);
+}
+async function doFinanceDeposit(pwd){
+  if(!currentUser)return showToast('请先登录','error');
+  if(!financeAmount||financeAmount<=0)return showToast('请输入存入金额','error');
+  if(financeAmount<2000)return showToast('最低存入金额为 ¥2000','error');
+  showLoading('存入中...');
+  try{
+    const r=await(await fetch(FINANCE_API+'/api/finance/deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:financeAmount,payPassword:pwd})})).json();
+    hideLoading();
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast('存入成功，定期已开启');loadFinanceStatus();}
+    else showToast(r.msg||'存入失败','error');
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+async function doFinanceRedeem(pwd,id){
+  if(!currentUser)return showToast('请先登录','error');
+  if(id==null)return showToast('参数错误','error');
+  showLoading('赎回中...');
+  try{
+    const r=await(await fetch(FINANCE_API+'/api/finance/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,payPassword:pwd,id})})).json();
+    hideLoading();
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast('赎回成功，已返还 ¥'+(+r.total).toFixed(2));loadFinanceStatus();}
+    else showToast(r.msg||'赎回失败','error');
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+
 // Page switching
 function switchPage(page){
   currentPage=page;
   pwdKb(false);
+  const fpm=document.getElementById('financePwdModal');if(fpm)fpm.classList.remove('show');
   // Sidebar nav
   document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
   // Content pages
-  ['Dashboard','Recharge','Transfer','Assistant'].forEach(p=>{
+  ['Dashboard','Recharge','Transfer','Assistant','Finance'].forEach(p=>{
     const el=document.getElementById('page'+p);
     if(el)el.classList.toggle('hidden',p.toLowerCase()!==page.toLowerCase())
   });
@@ -932,6 +1137,7 @@ function switchPage(page){
   document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
+  if(page==='finance'&&currentUser)loadFinanceStatus()
   if(page==='recharge'&&currentUser)loadOrders();
   if(page==='transfer'&&currentUser){pwdBuf.transferPwd='';loadRecords();ensurePayPassword();}
   // 把语言切换控件移到当前 tab 的 header 右上角（退出按钮右边）
@@ -1163,7 +1369,7 @@ async function handlePay(){
 let payPasswordReady=false;
 
 // ===== 安全数字键盘（设置支付密码 / 转账共用） =====
-const pwdBuf={setPwd1:'',setPwd2:'',transferPwd:''};
+const pwdBuf={setPwd1:'',setPwd2:'',transferPwd:'',financePwd:''};
 const pwdFields=Object.keys(pwdBuf);
 const $=id=>document.getElementById(id);
 let pwdFocus=null,pending=null;
@@ -1246,6 +1452,7 @@ function pwdKey(el,k){
   // 输满 6 位：设置流程跳确认框，转账流程提交
   if(pwdFocus==='setPwd1'&&!pwdBuf.setPwd2)pwdKb(true,'setPwd2','请再次输入支付密码');
   else if(pwdFocus==='transferPwd')handleTransfer(pwdBuf.transferPwd);
+  else if(pwdFocus==='financePwd')handleFinancePwd(pwdBuf.financePwd);
 }
 function showPayPwdModal(){
   pwdFields.forEach(k=>pwdBuf[k]='');
@@ -1399,22 +1606,32 @@ async function loadRecords(){
   if(!currentUser)return;
   const list=document.getElementById('recordsList');list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-spinner fa-spin"></i></div><p>${t('orders.loading')}</p></div>`;
   try{
-    const r=await(await fetch(`https://api.funbua.uk/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=${recordsPage}&limit=5`)).json();
-    if(r.code===200){
-      const rec=r.data?.records||[];
-      totalRecordPages=Math.max(1,(r.data?.pagination?.pages)||1);
-      renderRecords(rec);
+    const [tr,mr]=await Promise.all([
+      (await fetch(API_BASE+`/api/transfers?username=${encodeURIComponent(currentUser.username)}&page=${recordsPage}&limit=5`)).json(),
+      (await fetch(API_BASE+`/api/messages?username=${encodeURIComponent(currentUser.username)}`)).json()
+    ]);
+    if(tr.code===200){
+      const rec=tr.data?.records||[];
+      totalRecordPages=Math.max(1,(tr.data?.pagination?.pages)||1);
+      const unreadMap={};
+      (mr.code===200?(mr.data?.messages||[]):[]).forEach(m=>{
+        if(!m.is_read&&m.ref_type==='transfer'&&m.ref_id!=null)unreadMap[m.ref_id]=m.id;
+      });
+      renderRecords(rec,unreadMap);
     }else list.innerHTML=`<div class="empty-state"><p>${t('vpay.noRecords')}</p></div>`
   }catch(e){list.innerHTML=`<div class="empty-state"><p>${t('alert.networkError')}</p></div>`}
 }
-function renderRecords(recs){
+function renderRecords(recs,unreadMap){
+  unreadMap=unreadMap||{};
   const list=document.getElementById('recordsList'),pg=document.getElementById('recordsPagination');
   if(!recs.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-paper-plane"></i></div><p>${t('vpay.noRecords')}</p></div>`;pg.style.display='none';return}
   window._historyTransfers=[];
   list.innerHTML=recs.map(r=>{
     const isOut=r.direction==='out';
-    const idx=_historyTransfers.push({name:r.counterparty||'',message:r.message||'',amount:r.amount,time:r.created_at,send:isOut})-1;
-    return `<div class="order-item" style="cursor:pointer" onclick="openTransferDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isOut?'records.toLabel':'records.fromLabel',{name:escapeHtml(r.counterparty||'')})}</h4>${r.message?`<p class="tx-msg">${escapeHtml(r.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
+    const unreadMsgId=(!isOut&&unreadMap[r.id])?unreadMap[r.id]:null;
+    const idx=_historyTransfers.push({name:r.counterparty||'',message:r.message||'',amount:r.amount,time:r.created_at,send:isOut,id:r.id,unreadMsgId})-1;
+    const badge=unreadMsgId?`<span class="unread-dot">新</span>`:'';
+    return `<div class="order-item" style="cursor:pointer" onclick="openTransferDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isOut?'records.toLabel':'records.fromLabel',{name:escapeHtml(r.counterparty||'')})}${badge}</h4>${r.message?`<p class="tx-msg">${escapeHtml(r.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
   }).join('');
   pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
 }
@@ -1436,6 +1653,7 @@ window._recentTransfers=[];window._historyTransfers=[];window._recentOrders=[];w
 function openTransferDetail(which,idx){
   const rec=(which==='recent'?window._recentTransfers:window._historyTransfers)[idx];
   if(!rec)return;
+  if(rec.unreadMsgId)markTransferMessageRead(rec.unreadMsgId);
   const dir=t(rec.send?'records.toLabel':'records.fromLabel',{name:escapeHtml(rec.name)});
   const amt=(rec.send?'-':'+')+'¥'+(Number(rec.amount)||0).toFixed(2);
   const amtColor=rec.send?'var(--accent-red)':'var(--accent-green)';
@@ -1448,6 +1666,13 @@ function openTransferDetail(which,idx){
     row(t('records.time'),escapeHtml(formatDate(rec.time)))+
     row(t('vpay.message'),rec.message?escapeHtml(rec.message):(`<span style="color:var(--text-muted);font-weight:400">${t('records.noMessage')}</span>`));
   document.getElementById('recordDetailModal').classList.add('show');
+}
+async function markTransferMessageRead(messageId){
+  if(!currentUser)return;
+  try{
+    await(await fetch(API_BASE+'/api/messages/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId,username:currentUser.username})})).json();
+    loadRecords();
+  }catch(e){}
 }
 function openOrderDetail(which,idx){
   const o=(which==='recent'?window._recentOrders:window._historyOrders)[idx];
