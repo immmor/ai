@@ -622,8 +622,8 @@ body{
   <div class="modal-overlay" id="financePwdModal" onclick="if(event.target===this)closeFinancePwd()">
     <div class="modal-box">
       <button class="modal-close" onclick="closeFinancePwd()"><i class="fa-solid fa-times"></i></button>
-      <h3 style="text-align:left" id="financePwdTitle">输入支付密码</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6"><span id="financePwdText"></span>请输入 6 位支付密码。</p>
+      <h3 style="text-align:left" id="financePwdTitle" data-i18n="finance.pwdTitle">输入支付密码</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6"><span id="financePwdText"></span><span data-i18n="vpay.enterPayPwd">请输入 6 位支付密码。</span></p>
       <div class="pwd-field" id="financePwd" onclick="pwdKb(true,'financePwd')"></div>
     </div>
   </div>
@@ -707,8 +707,8 @@ body{
           <div class="finance-entry" onclick="switchPage('finance')">
             <div class="finance-entry-icon"><i class="fa-solid fa-piggy-bank"></i></div>
             <div class="finance-entry-text">
-              <div class="finance-entry-title">定期理财</div>
-              <div class="finance-entry-sub">1 年期 · 年化 4% · 到期还本付息</div>
+              <div class="finance-entry-title" data-i18n="finance.menu">定期理财</div>
+              <div class="finance-entry-sub" data-i18n="finance.entrySub">1 年期 · 年化 4% · 到期还本付息</div>
             </div>
             <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
           </div>
@@ -724,7 +724,7 @@ body{
     <!-- ============ FINANCE ============ -->
     <div id="pageFinance" class="hidden">
       <header class="header">
-        <div><h1>定期理财</h1></div>
+        <div><h1 data-i18n="finance.menu">定期理财</h1></div>
         <div class="actions">
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
           <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
@@ -735,12 +735,12 @@ body{
         <div class="finance-hero">
           <div class="finance-hero-icon"><i class="fa-solid fa-piggy-bank"></i></div>
           <div>
-            <div class="finance-hero-title">FUNBUA 定期存款</div>
-            <div class="finance-hero-sub">期限 1 年 · 年化收益 4% · 到期一次性还本付息</div>
+            <div class="finance-hero-title" data-i18n="finance.depositTitle">FUNBUA 定期存款</div>
+            <div class="finance-hero-sub" data-i18n="finance.depositSub">期限 1 年 · 年化收益 4% · 到期一次性还本付息</div>
           </div>
         </div>
-        <div class="section-title" style="margin:18px 0 10px;font-size:14px">存入金额（¥）</div>
-        <input class="amount-input" id="financeAmountInput" type="number" min="1" step="1" placeholder="输入存入金额" inputmode="decimal" oninput="onFinanceAmountInput()">
+        <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="finance.amountLabel">存入金额（¥）</div>
+        <input class="amount-input" id="financeAmountInput" type="number" min="1" step="1" placeholder="输入存入金额" data-i18n-placeholder="finance.amountPlaceholder" inputmode="decimal" oninput="onFinanceAmountInput()">
         <div class="amount-grid" id="financeAmtGrid" style="grid-template-columns:repeat(4,1fr)">
           <button class="amount-btn" data-amount="2000" onclick="selectFinanceAmt(2000)">¥2000</button>
           <button class="amount-btn" data-amount="5000" onclick="selectFinanceAmt(5000)">¥5000</button>
@@ -748,8 +748,8 @@ body{
           <button class="amount-btn" data-amount="20000" onclick="selectFinanceAmt(20000)">¥20000</button>
         </div>
         <div class="finance-earn" id="financeEarnPreview">预计 1 年收益 ¥0.00（年化 4%）</div>
-        <button class="finance-deposit-btn" id="financeDepositBtn" onclick="startFinanceDeposit()">存入定期</button>
-        <div class="finance-tip">存入后该笔资金将被锁定，满 1 年方可赎回；赎回时返还本金 + 4% 利息。最低存入 ¥2000。可同时持有多笔。</div>
+        <button class="finance-deposit-btn" id="financeDepositBtn" onclick="startFinanceDeposit()" data-i18n="finance.depositBtn">存入定期</button>
+        <div class="finance-tip" data-i18n="finance.tip">存入后该笔资金将被锁定，满 1 年方可赎回；赎回时返还本金 + 4% 利息。最低存入 ¥2000。可同时持有多笔。</div>
       </div>
 
       <div id="financeList"></div>
@@ -1007,7 +1007,7 @@ let financeAmount=0;
 function updateFinanceEarnPreview(){
   const el=document.getElementById('financeEarnPreview');if(!el)return;
   const earn=financeAmount>0?financeAmount*0.04:0;
-  el.textContent='预计 1 年收益 ¥'+earn.toFixed(2)+'（年化 4%）';
+  el.textContent=t('finance.earnPreview',{amount:earn.toFixed(2)});
 }
 function selectFinanceAmt(a){
   financeAmount=a;
@@ -1034,24 +1034,24 @@ async function loadFinanceStatus(){
         const start=formatDate(d.startTime),maturity=formatDate(d.maturityTime);
         let badge,cd,btnAttr='';
         if(d.matured){
-          badge='<div class="finance-status-badge matured">已到期</div>';
-          cd='<div class="finance-countdown">可赎回本金与利息</div>';
+          badge='<div class="finance-status-badge matured">'+t('finance.statusMatured')+'</div>';
+          cd='<div class="finance-countdown">'+t('finance.redeemableNow')+'</div>';
         }else{
-          badge='<div class="finance-status-badge">进行中</div>';
+          badge='<div class="finance-status-badge">'+t('finance.statusActive')+'</div>';
           const days=Math.max(0,Math.ceil((new Date(d.maturityTime).getTime()-Date.now())/86400000));
-          cd='<div class="finance-countdown">剩余约 '+days+' 天到期</div>';
+          cd='<div class="finance-countdown">'+t('finance.countdownDays',{days})+'</div>';
           btnAttr='disabled class="finance-deposit-btn disabled"';
         }
         return '<div class="crypto-card" style="padding:18px;margin-top:14px">'
           +badge
-          +'<div class="finance-row"><span>本金</span><b>¥'+principal.toFixed(2)+'</b></div>'
-          +'<div class="finance-row"><span>年化利率</span><b>4%</b></div>'
-          +'<div class="finance-row"><span>起存日期</span><b>'+start+'</b></div>'
-          +'<div class="finance-row"><span>到期日期</span><b>'+maturity+'</b></div>'
-          +'<div class="finance-earn-block"><span>预计 1 年收益</span><b>¥'+interest.toFixed(2)+'</b></div>'
-          +'<div class="finance-row finance-row-total"><span>预计到期总额</span><b>¥'+total.toFixed(2)+'</b></div>'
+          +'<div class="finance-row"><span>'+t('finance.principal')+'</span><b>¥'+principal.toFixed(2)+'</b></div>'
+          +'<div class="finance-row"><span>'+t('finance.rate')+'</span><b>4%</b></div>'
+          +'<div class="finance-row"><span>'+t('finance.startDate')+'</span><b>'+start+'</b></div>'
+          +'<div class="finance-row"><span>'+t('finance.maturityDate')+'</span><b>'+maturity+'</b></div>'
+          +'<div class="finance-earn-block"><span>'+t('finance.interest')+'</span><b>¥'+interest.toFixed(2)+'</b></div>'
+          +'<div class="finance-row finance-row-total"><span>'+t('finance.projectedTotal')+'</span><b>¥'+total.toFixed(2)+'</b></div>'
           +cd
-          +(d.matured?'<button class="finance-deposit-btn" onclick="startFinanceRedeem('+d.id+')">赎回</button>':'<button '+btnAttr+'>赎回</button>')
+          +(d.matured?'<button class="finance-deposit-btn" onclick="startFinanceRedeem('+d.id+')">'+t('finance.redeemBtn')+'</button>':'<button '+btnAttr+'>'+t('finance.redeemBtn')+'</button>')
           +'</div>';
       }).join('');
     }else{
@@ -1065,14 +1065,14 @@ async function loadFinanceStatus(){
   }catch(e){}
 }
 function startFinanceDeposit(){
-  if(!currentUser)return showToast('请先登录','error');
-  if(!financeAmount||financeAmount<=0)return showToast('请输入存入金额','error');
-  if(financeAmount<2000)return showToast('最低存入金额为 ¥2000','error');
+  if(!currentUser)return showToast(t('finance.loginFirst'),'error');
+  if(!financeAmount||financeAmount<=0)return showToast(t('finance.enterAmount'),'error');
+  if(financeAmount<2000)return showToast(t('finance.minAmount'),'error');
   openFinancePwd('deposit');
 }
 let financeRedeemId=null;
 function startFinanceRedeem(id){
-  if(!currentUser)return showToast('请先登录','error');
+  if(!currentUser)return showToast(t('finance.loginFirst'),'error');
   financeRedeemId=id;
   openFinancePwd('redeem');
 }
@@ -1080,7 +1080,7 @@ let financePwdAction=null;
 function openFinancePwd(action){
   financePwdAction=action;
   pwdBuf.financePwd='';
-  document.getElementById('financePwdText').textContent=action==='redeem'?'赎回需验证支付密码：':'存入定期需验证支付密码：';
+  document.getElementById('financePwdText').textContent=action==='redeem'?t('finance.redeemPwdHint'):t('finance.depositPwdHint');
   document.getElementById('financePwdModal').classList.add('show');
   pwdKb(true,'financePwd');
 }
@@ -1100,26 +1100,26 @@ async function handleFinancePwd(pw){
   else if(action==='redeem')await doFinanceRedeem(pw,financeRedeemId);
 }
 async function doFinanceDeposit(pwd){
-  if(!currentUser)return showToast('请先登录','error');
-  if(!financeAmount||financeAmount<=0)return showToast('请输入存入金额','error');
-  if(financeAmount<2000)return showToast('最低存入金额为 ¥2000','error');
-  showLoading('存入中...');
+  if(!currentUser)return showToast(t('finance.loginFirst'),'error');
+  if(!financeAmount||financeAmount<=0)return showToast(t('finance.enterAmount'),'error');
+  if(financeAmount<2000)return showToast(t('finance.minAmount'),'error');
+  showLoading(t('finance.depositLoading'));
   try{
     const r=await(await fetch(FINANCE_API+'/api/finance/deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:financeAmount,payPassword:pwd})})).json();
     hideLoading();
-    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast('存入成功，定期已开启');loadFinanceStatus();}
-    else showToast(r.msg||'存入失败','error');
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('finance.depositSuccess'));loadFinanceStatus();}
+    else showToast(r.msg||t('finance.depositFailed'),'error');
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
 async function doFinanceRedeem(pwd,id){
-  if(!currentUser)return showToast('请先登录','error');
-  if(id==null)return showToast('参数错误','error');
-  showLoading('赎回中...');
+  if(!currentUser)return showToast(t('finance.loginFirst'),'error');
+  if(id==null)return showToast(t('finance.paramError'),'error');
+  showLoading(t('finance.redeemLoading'));
   try{
     const r=await(await fetch(FINANCE_API+'/api/finance/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,payPassword:pwd,id})})).json();
     hideLoading();
-    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast('赎回成功，已返还 ¥'+(+r.total).toFixed(2));loadFinanceStatus();}
-    else showToast(r.msg||'赎回失败','error');
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('finance.redeemSuccess',{total:(+r.total).toFixed(2)}));loadFinanceStatus();}
+    else showToast(r.msg||t('finance.redeemFailed'),'error');
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
 
