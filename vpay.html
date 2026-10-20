@@ -237,11 +237,10 @@ body{
 .amount-btn .sub{font-size:11px;color:var(--text-muted);margin-top:2px}
 .amount-input{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);color:var(--text-main);font-size:20px;font-weight:600;font-family:inherit;text-align:center;outline:none;margin-bottom:16px}
 .amount-input:focus{border-color:#6c5ce7}
-/* 转账记录未读标记 */
-.unread-dot{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--accent-red);color:#fff;font-size:11px;font-weight:600;vertical-align:middle}
-/* 未读收款记录：整行高亮区分已读 */
-.order-item.unread{background:rgba(108,92,231,.12);box-shadow:inset 3px 0 0 #6c5ce7;border-radius:12px}
-.order-item.unread .tx-name h4{font-weight:700}
+/* 转账记录未读标记：红点 */
+.unread-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-red);margin-left:6px;vertical-align:middle}
+/* 未读收款记录：仅改背景色区分已读 */
+.order-item.unread{background:rgba(108,92,231,.22);border-radius:12px}
 /* ===== 理财 ===== */
 .finance-entry{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;border-radius:16px;background:var(--panel-bg);border:1px solid var(--panel-border);cursor:pointer;transition:.2s}
 .finance-entry:hover{border-color:#6c5ce7;transform:translateY(-2px)}
@@ -1575,7 +1574,7 @@ async function loadRecentOrders(){
         }else{
           const isSend=item.status==='send';
           const unreadMsgId=(!isSend&&unreadMap[item.id])?unreadMap[item.id]:null;
-          const badge=unreadMsgId?`<span class="unread-dot">新</span>`:'';
+          const badge=unreadMsgId?`<span class="unread-dot"></span>`:'';
           const idx=_recentTransfers.push({name:item.other||'',message:item.message||'',amount:item.amount,time:item.time,send:isSend,id:item.id,unreadMsgId})-1;
           return `<div class="order-item${unreadMsgId?' unread':''}" style="cursor:pointer" onclick="openTransferDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isSend?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isSend?'records.toLabel':'records.fromLabel',{name:escapeHtml(item.other||'')})}${badge}</h4>${item.message?`<p class="tx-msg">${escapeHtml(item.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><h4 style="color:${isSend?'var(--accent-red)':'var(--accent-green)'}">${isSend?'-':'+'}¥${(item.amount||0).toFixed(2)}</h4></div></div>`
         }
@@ -1638,7 +1637,7 @@ function renderRecords(recs,unreadMap){
     const isOut=r.direction==='out';
     const unreadMsgId=(!isOut&&unreadMap[r.id])?unreadMap[r.id]:null;
     const idx=_historyTransfers.push({name:r.counterparty||'',message:r.message||'',amount:r.amount,time:r.created_at,send:isOut,id:r.id,unreadMsgId})-1;
-    const badge=unreadMsgId?`<span class="unread-dot">新</span>`:'';
+    const badge=unreadMsgId?`<span class="unread-dot"></span>`:'';
     return `<div class="order-item${unreadMsgId?' unread':''}" style="cursor:pointer" onclick="openTransferDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:${isOut?'rgba(255,118,117,0.15)':'rgba(0,184,148,0.15)'};color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'<i class="fa-solid fa-arrow-up"></i>':'<i class="fa-solid fa-arrow-down"></i>'}</div><div class="tx-name"><h4>${t(isOut?'records.toLabel':'records.fromLabel',{name:escapeHtml(r.counterparty||'')})}${badge}</h4>${r.message?`<p class="tx-msg">${escapeHtml(r.message)}</p>`:''}</div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(r.created_at)}</p><h4 style="color:${isOut?'var(--accent-red)':'var(--accent-green)'}">${isOut?'-':'+'}¥${(r.amount||0).toFixed(2)}</h4></div></div>`
   }).join('');
   pg.style.display=totalRecordPages>1?'flex':'none';document.getElementById('recordsInfo').textContent=recordsPage+' / '+totalRecordPages;document.getElementById('recordsPrev').disabled=recordsPage<=1;document.getElementById('recordsNext').disabled=recordsPage>=totalRecordPages
