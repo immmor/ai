@@ -372,6 +372,12 @@
         "loading": "대출 중...",
         "success": "대출 성공, ¥{amount} 입금됨",
         "failed": "대출 실패",
-        "pwdHint": "대출 신청 시 결제 비밀번호 확인 필요: "
+        "pwdHint": "대출 신청 시 결제 비밀번호 확인 필요: ",
+        "recordsTitle": "대출 기록",
+        "recordAmount": "대출 금액",
+        "recordTime": "신청 시각",
+        "recordStatus": "상태",
+        "statusApproved": "지급완료",
+        "noRecords": "대출 기록이 없습니다"
     }
 }

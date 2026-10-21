@@ -372,6 +372,12 @@
         "loading": "Solicitando préstamo...",
         "success": "Préstamo exitoso, ¥{amount} acreditados",
         "failed": "Préstamo fallido",
-        "pwdHint": "Verifique la contraseña de pago para solicitar el préstamo: "
+        "pwdHint": "Verifique la contraseña de pago para solicitar el préstamo: ",
+        "recordsTitle": "Registros de préstamo",
+        "recordAmount": "Monto del préstamo",
+        "recordTime": "Solicitado el",
+        "recordStatus": "Estado",
+        "statusApproved": "Desembolsado",
+        "noRecords": "Sin registros de préstamo"
     }
 }

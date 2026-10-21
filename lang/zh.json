@@ -371,6 +371,12 @@
         "loading": "贷款中...",
         "success": "贷款成功，已到账 ¥{amount}",
         "failed": "贷款失败",
-        "pwdHint": "申请贷款需验证支付密码："
+        "pwdHint": "申请贷款需验证支付密码：",
+        "recordsTitle": "贷款记录",
+        "recordAmount": "贷款金额",
+        "recordTime": "申请时间",
+        "recordStatus": "状态",
+        "statusApproved": "已放款",
+        "noRecords": "暂无贷款记录"
     }
 }

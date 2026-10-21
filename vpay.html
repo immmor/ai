@@ -797,6 +797,11 @@ body{
         <div class="finance-tip" id="loanTip" data-i18n="loan.tip">贷款额度为当前余额的 50%，最低可贷 ¥500；余额不足 ¥1000 时不可贷款。贷款金额将直接存入余额。</div>
         <button class="finance-deposit-btn" id="loanBtn" onclick="startLoan()" data-i18n="loan.btn">申请贷款</button>
       </div>
+
+      <div style="margin-top:22px">
+        <div class="section-title" style="margin-bottom:10px;font-size:14px" data-i18n="loan.recordsTitle">贷款记录</div>
+        <div id="loanRecords"></div>
+      </div>
     </div>
 
     <!-- ============ RECHARGE ============ -->
@@ -1179,6 +1184,7 @@ function loadLoanStatus(){
   const btn=document.getElementById('loanBtn'),tip=document.getElementById('loanTip');
   if(limit<500){btn.disabled=true;btn.classList.add('disabled');tip.textContent=t('loan.tipNoEligible');}
   else{btn.disabled=false;btn.classList.remove('disabled');tip.textContent=t('loan.tip');}
+  loadLoanRecords();
 }
 function selectLoanAmt(a){
   loanAmount=a;
@@ -1202,9 +1208,30 @@ async function doLoan(pwd){
   try{
     const r=await(await fetch(FINANCE_API+'/api/loan/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:loanAmount,payPassword:pwd})})).json();
     hideLoading();
-    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('loan.success',{amount:(+r.amount).toFixed(2)}));loanAmount=0;const inp=document.getElementById('loanAmountInput');if(inp)inp.value='';document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.remove('active'));loadLoanStatus();}
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('loan.success',{amount:(+r.amount).toFixed(2)}));loanAmount=0;const inp=document.getElementById('loanAmountInput');if(inp)inp.value='';document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.remove('active'));loadLoanStatus();loadLoanRecords();}
     else showToast(r.msg||t('loan.failed'),'error');
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+
+async function loadLoanRecords(){
+  if(!currentUser)return;
+  try{
+    const r=await(await fetch(FINANCE_API+`/api/loan/records?username=${encodeURIComponent(currentUser.username)}`)).json();
+    if(r.code!==200)return;
+    const box=document.getElementById('loanRecords');
+    if(r.records&&r.records.length){
+      box.innerHTML=r.records.map(d=>{
+        const time=formatDate(d.createdAt);
+        return '<div class="crypto-card" style="padding:14px;margin-top:12px">'
+          +'<div class="finance-row"><span>'+t('loan.recordAmount')+'</span><b style="color:var(--accent-green)">¥'+d.amount.toFixed(2)+'</b></div>'
+          +'<div class="finance-row"><span>'+t('loan.recordTime')+'</span><b>'+time+'</b></div>'
+          +'<div class="finance-row"><span>'+t('loan.recordStatus')+'</span><b>'+t('loan.statusApproved')+'</b></div>'
+          +'</div>';
+      }).join('');
+    }else{
+      box.innerHTML='<div class="finance-tip" data-i18n="loan.noRecords">暂无贷款记录</div>';
+    }
+  }catch(e){}
 }
 
 // Page switching
@@ -1224,7 +1251,7 @@ function switchPage(page){
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
   if(page==='finance'&&currentUser)loadFinanceStatus()
-  if(page==='loan'&&currentUser)loadLoanStatus()
+  if(page==='loan'&&currentUser){loadLoanStatus();loadLoanRecords();}
   if(page==='recharge'&&currentUser)loadOrders();
   if(page==='transfer'&&currentUser){pwdBuf.transferPwd='';loadRecords();ensurePayPassword();}
   // 把语言切换控件移到当前 tab 的 header 右上角（退出按钮右边）

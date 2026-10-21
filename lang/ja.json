@@ -372,6 +372,12 @@
         "loading": "貸付処理中...",
         "success": "貸付成功、¥{amount} を残高に加算しました",
         "failed": "貸付失敗",
-        "pwdHint": "貸付申し込みには支払いパスワードの確認が必要："
+        "pwdHint": "貸付申し込みには支払いパスワードの確認が必要：",
+        "recordsTitle": "贷款記録",
+        "recordAmount": "贷款金額",
+        "recordTime": "申請日時",
+        "recordStatus": "ステータス",
+        "statusApproved": "融資済み",
+        "noRecords": "贷款記録はありません"
     }
 }

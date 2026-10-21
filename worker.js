@@ -2363,10 +2363,38 @@ export default {
           const add = await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, username).run();
           if (!add.success || add.meta.changes === 0) return resJson({ code: 500, msg: '贷款失败' }, 500);
           const u2 = await DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+          const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          try {
+            await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT)').run();
+            await DB.prepare('INSERT INTO loan_record (username, amount, created_at, status) VALUES (?, ?, ?, ?)').bind(username, amt, nowTime, 'approved').run();
+            // 给管理员发消息
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`, nowTime).run();
+            await notifyAdmin('用户贷款', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`);
+          } catch (e) { console.error('Loan record/admin notify error:', e); }
           return resJson({ code: 200, msg: '贷款成功', amount: amt, limit, balance: u2.balance });
         } catch (err) {
           console.error('Loan apply error:', err);
           return resJson({ code: 500, msg: '贷款失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 贷款记录查询 ==========
+      if (path === '/api/loan/records' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+          await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT)').run();
+          const rows = await DB.prepare('SELECT * FROM loan_record WHERE username = ? ORDER BY created_at DESC').bind(username).all();
+          const records = (rows.results || []).map(r => ({
+            id: r.id,
+            amount: +r.amount,
+            createdAt: r.created_at,
+            status: r.status
+          }));
+          return resJson({ code: 200, records });
+        } catch (err) {
+          console.error('Loan records error:', err);
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
         }
       }
 

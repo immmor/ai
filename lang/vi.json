@@ -372,6 +372,12 @@
         "loading": "Đang vay...",
         "success": "Vay thành công, đã cộng ¥{amount} vào số dư",
         "failed": "Vay thất bại",
-        "pwdHint": "Xác nhận mật khẩu thanh toán để đăng ký vay: "
+        "pwdHint": "Xác nhận mật khẩu thanh toán để đăng ký vay: ",
+        "recordsTitle": "Lịch sử vay",
+        "recordAmount": "Số tiền vay",
+        "recordTime": "Thời gian vay",
+        "recordStatus": "Trạng thái",
+        "statusApproved": "Đã giải ngân",
+        "noRecords": "Chưa có lịch sử vay"
     }
 }

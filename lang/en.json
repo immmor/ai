@@ -371,6 +371,12 @@
         "loading": "Loaning...",
         "success": "Loan successful, ¥{amount} credited",
         "failed": "Loan failed",
-        "pwdHint": "Verify payment password to apply for loan: "
+        "pwdHint": "Verify payment password to apply for loan: ",
+        "recordsTitle": "Loan Records",
+        "recordAmount": "Loan Amount",
+        "recordTime": "Applied At",
+        "recordStatus": "Status",
+        "statusApproved": "Disbursed",
+        "noRecords": "No loan records yet"
     }
 }
