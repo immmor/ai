@@ -2372,7 +2372,7 @@ export default {
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN interest REAL').run(); } catch (e) {}
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN total_repaid REAL').run(); } catch (e) {}
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN term_days INTEGER').run(); } catch (e) {}
-            const LOAN_TERM_RATES = { 90: 0.10, 180: 0.11, 365: 0.12, 730: 0.14, 1095: 0.16 };
+            const LOAN_TERM_RATES = { 30: 0.10, 90: 0.10, 180: 0.11, 365: 0.12, 730: 0.14, 1095: 0.16 };
             const termDays = LOAN_TERM_RATES[days] != null ? (parseInt(days, 10) || 365) : 365;
             const termRate = LOAN_TERM_RATES[termDays] != null ? LOAN_TERM_RATES[termDays] : 0.10;
             const dueTime = new Date(Date.now() + termDays * 86400000).toISOString().slice(0, 19).replace('T', ' ');
