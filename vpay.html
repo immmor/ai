@@ -790,7 +790,7 @@ body{
         </div>
         <div class="finance-row" style="margin-top:16px"><span data-i18n="loan.currentBalance">当前余额</span><b id="loanBalance">¥0.00</b></div>
         <div class="finance-row"><span data-i18n="loan.availableLimit">可用贷款额度</span><b id="loanLimit" style="color:var(--accent-green)">¥0.00</b></div>
-        <div class="finance-row"><span data-i18n="loan.rate">年利率</span><b>10%</b></div>
+        <div class="finance-row"><span data-i18n="loan.rate">年利率</span><b id="loanRateVal">12%</b></div>
         <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="loan.amountLabel">贷款金额（¥）</div>
         <input class="amount-input" id="loanAmountInput" type="number" min="1" step="1" placeholder="输入贷款金额" data-i18n-placeholder="loan.amountPlaceholder" inputmode="decimal" oninput="onLoanAmountInput()">
         <div class="amount-grid" id="loanAmtGrid" style="grid-template-columns:repeat(4,1fr)">
@@ -799,6 +799,8 @@ body{
           <button class="amount-btn" data-amount="2000" onclick="selectLoanAmt(2000)">¥2000</button>
           <button class="amount-btn" data-amount="5000" onclick="selectLoanAmt(5000)">¥5000</button>
         </div>
+        <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="loan.term">借款期限</div>
+        <div class="amount-grid" id="loanTermGrid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr))"></div>
         <div class="finance-tip" id="loanTip" data-i18n="loan.tip">贷款额度为当前余额的 50%，最低可贷 ¥500；余额不足 ¥1000 时不可贷款。贷款金额将直接存入余额。</div>
         <button class="finance-deposit-btn" id="loanBtn" onclick="startLoan()" data-i18n="loan.btn">申请贷款</button>
       </div>
@@ -1183,6 +1185,15 @@ async function doFinanceRedeem(pwd,id){
 // ===== 贷款（额度=余额50%，最低¥500，不足则不可贷） =====
 let loanAmount=0;
 let loanRepayId=0;
+let loanTermDays=365;
+let loanRate=0.10;
+const LOAN_TERMS=[
+  {days:90,months:3,rate:0.10},
+  {days:180,months:6,rate:0.11},
+  {days:365,months:12,rate:0.12},
+  {days:730,months:24,rate:0.14},
+  {days:1095,months:36,rate:0.16}
+];
 function loadLoanStatus(){
   if(!currentUser)return;
   const bal=balanceVal||0;
@@ -1190,8 +1201,14 @@ function loadLoanStatus(){
   document.getElementById('loanBalance').textContent='¥'+bal.toFixed(2);
   document.getElementById('loanLimit').textContent='¥'+limit.toFixed(2);
   const btn=document.getElementById('loanBtn'),tip=document.getElementById('loanTip');
-  if(limit<500){btn.disabled=true;btn.classList.add('disabled');tip.textContent=t('loan.tipNoEligible');}
-  else{btn.disabled=false;btn.classList.remove('disabled');tip.textContent=t('loan.tip');}
+  if(limit<500){btn.disabled=true;btn.classList.add('disabled');tip.textContent=t('loan.tipNoEligible');tip.style.textAlign='center';}
+  else{btn.disabled=false;btn.classList.remove('disabled');tip.textContent=t('loan.tip');tip.style.textAlign='';}
+  const tg=document.getElementById('loanTermGrid');
+  if(tg&&!tg.dataset.built){
+    tg.innerHTML=LOAN_TERMS.map(tm=>`<button class="amount-btn" data-days="${tm.days}" onclick="selectLoanTerm(${tm.days})">${tm.months} ${t('loan.monthUnit')} · ${t('loan.annualAbbr')} ${Math.round(tm.rate*1000)/10}%</button>`).join('');
+    tg.dataset.built='1';
+  }
+  selectLoanTerm(loanTermDays);
   loadLoanRecords();
 }
 function selectLoanAmt(a){
@@ -1204,6 +1221,12 @@ function onLoanAmountInput(){
   loanAmount=parseFloat(inp.value)||0;
   document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==inp.value));
 }
+function selectLoanTerm(d){
+  const tm=LOAN_TERMS.find(x=>x.days===Number(d))||LOAN_TERMS[LOAN_TERMS.length-1];
+  loanTermDays=tm.days;loanRate=tm.rate;
+  document.querySelectorAll('#loanTermGrid .amount-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.days)===tm.days));
+  const rv=document.getElementById('loanRateVal');if(rv)rv.textContent=Math.round(tm.rate*1000)/10+'%';
+}
 function startLoan(){
   if(!currentUser)return showToast(t('loan.loginFirst'),'error');
   if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
@@ -1214,7 +1237,7 @@ async function doLoan(pwd){
   if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
   showLoading(t('loan.loading'));
   try{
-    const r=await(await fetch(FINANCE_API+'/api/loan/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:loanAmount,payPassword:pwd})})).json();
+    const r=await(await fetch(FINANCE_API+'/api/loan/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:loanAmount,payPassword:pwd,days:loanTermDays})})).json();
     hideLoading();
     if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('loan.success',{amount:(+r.amount).toFixed(2)}));loanAmount=0;const inp=document.getElementById('loanAmountInput');if(inp)inp.value='';document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.remove('active'));loadLoanStatus();loadLoanRecords();}
     else showToast(r.msg||t('loan.failed'),'error');
@@ -1266,7 +1289,7 @@ async function loadLoanRecords(){
             +'<div class="finance-row"><span>'+t('loan.dueDate')+'</span><b>'+formatDate(d.dueAt||'')+'</b></div>'
             +'<div class="finance-row"><span>'+t('loan.accruedInterest')+'</span><b>¥'+interest.toFixed(2)+'</b></div>'
             +'<div class="finance-row finance-row-total"><span>'+t('loan.repayTotal')+'</span><b>¥'+total.toFixed(2)+'</b></div>'
-            +(due>Date.now()?'<div class="finance-tip">'+t('loan.earlyRepayNote')+'</div>':'')
+            +(due>Date.now()?'<div class="finance-tip" style="text-align:center">'+t('loan.earlyRepayNote')+'</div>':'')
             +'<button class="finance-deposit-btn" onclick="startLoanRepay('+d.id+')">'+t('loan.repayBtn')+'</button>';
         }
         return '<div class="crypto-card" style="padding:14px;margin-top:12px">'
@@ -1980,7 +2003,6 @@ async function onScanFileSelected(input){
 }
 // ===== 收款码 =====
 async function openCollect(){
-  await playBtnIcon('.ic-collect','anim-collect',900);
   const user=currentUser?currentUser.username:'';
   _collectPayload='funbua:collect?user='+encodeURIComponent(user);
   const content=
@@ -1991,6 +2013,7 @@ async function openCollect(){
       '<button class="collect-copy" onclick="copyCollect()"><i class="fa-solid fa-copy"></i> '+t('collect.copyInfo')+'</button>'+
     '</div>';
   showQrModal(t('collect.title'),content);
+  playBtnIcon('.ic-collect','anim-collect',900);
 }
 function copyCollect(){copyText(_collectPayload)}
 

@@ -2347,7 +2347,7 @@ export default {
       // ========== 贷款：可用额度 = 当前余额的 50%，最低 ¥500；不足则不可贷 ==========
       if (path === '/api/loan/apply' && request.method === 'POST') {
         try {
-          const { username, amount, payPassword } = await request.json();
+          const { username, amount, payPassword, days } = await request.json();
           if (!username || amount === undefined || amount === null || payPassword === undefined) return resJson({ code: 400, msg: '参数不完整' }, 400);
           const amt = parseFloat(amount);
           if (isNaN(amt) || amt <= 0) return resJson({ code: 400, msg: '贷款金额必须大于0' }, 400);
@@ -2371,9 +2371,12 @@ export default {
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN repaid_at TEXT').run(); } catch (e) {}
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN interest REAL').run(); } catch (e) {}
             try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN total_repaid REAL').run(); } catch (e) {}
-            const LOAN_RATE = 0.10;
-            const dueTime = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 19).replace('T', ' ');
-            await DB.prepare('INSERT INTO loan_record (username, amount, created_at, status, rate, due_at) VALUES (?, ?, ?, ?, ?, ?)').bind(username, amt, nowTime, 'active', LOAN_RATE, dueTime).run();
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN term_days INTEGER').run(); } catch (e) {}
+            const LOAN_TERM_RATES = { 90: 0.10, 180: 0.11, 365: 0.12, 730: 0.14, 1095: 0.16 };
+            const termDays = LOAN_TERM_RATES[days] != null ? (parseInt(days, 10) || 365) : 365;
+            const termRate = LOAN_TERM_RATES[termDays] != null ? LOAN_TERM_RATES[termDays] : 0.10;
+            const dueTime = new Date(Date.now() + termDays * 86400000).toISOString().slice(0, 19).replace('T', ' ');
+            await DB.prepare('INSERT INTO loan_record (username, amount, created_at, status, rate, due_at, term_days) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(username, amt, nowTime, 'active', termRate, dueTime, termDays).run();
             // 给管理员发消息
             await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`, nowTime).run();
             await notifyAdmin('用户贷款', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`);
@@ -2396,6 +2399,7 @@ export default {
             id: r.id,
             amount: +r.amount,
             rate: r.rate != null ? +r.rate : 0.10,
+            termDays: r.term_days != null ? +r.term_days : null,
             createdAt: r.created_at,
             dueAt: r.due_at,
             status: r.status,

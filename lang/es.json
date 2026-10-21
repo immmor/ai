@@ -367,7 +367,7 @@
         "availableLimit": "Límite de préstamo disponible",
         "amountLabel": "Monto del préstamo (¥)",
         "amountPlaceholder": "Ingrese el monto del préstamo",
-        "tip": "Tasa anual 10%, plazo 1 año; pago anticipado permitido, interés por días reales. Capital e interés se devuelven juntos al vencimiento o al pagar. El monto prestado se acredita a su saldo directamente.",
+        "tip": "La tasa anual varía según el plazo; pago anticipado permitido, interés por días reales. Capital e interés se devuelven juntos al vencimiento o al pagar. El monto prestado se acredita a su saldo directamente.",
         "tipNoEligible": "Actualmente no cumples los requisitos para el préstamo. Mantén tu cuenta activa e inténtalo más tarde.",
         "btn": "Solicitar préstamo",
         "loginFirst": "Inicie sesión primero",
@@ -391,11 +391,14 @@
         "repayDate": "Devuelto el",
         "repaid": "Devuelto",
         "repayBtn": "Devolver",
-        "earlyRepayNote": "Pago anticipado permitido; interés por días reales (10% anual)",
+        "earlyRepayNote": "Pago anticipado permitido; interés por días reales.",
         "repayPwdHint": "Verifique la contraseña de pago para devolver: ",
         "repaySuccess": "Devuelto con éxito, ¥{amount} deducidos (capital ¥{principal}, interés ¥{interest})",
         "repayFailed": "Fallo al devolver",
         "repayLoading": "Devolviendo...",
-        "insufficientRepay": "Saldo insuficiente para devolver"
+        "insufficientRepay": "Saldo insuficiente para devolver",
+        "term": "Plazo",
+        "monthUnit": "meses",
+        "annualAbbr": "anual"
     }
 }

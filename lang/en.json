@@ -366,7 +366,7 @@
         "availableLimit": "Available loan limit",
         "amountLabel": "Loan amount (¥)",
         "amountPlaceholder": "Enter loan amount",
-        "tip": "Annual rate 10%, term 1 year; early repayment allowed with interest by actual days. Principal and interest are repaid in one go at maturity or on repayment. The loaned amount is credited to your balance directly.",
+        "tip": "The annual rate varies by loan term; early repayment is allowed with interest calculated by actual days held. Principal and interest are repaid in one go at maturity or on repayment. The loaned amount is credited to your balance directly.",
         "tipNoEligible": "You are not currently eligible for a loan. Please keep your account active and try again later.",
         "btn": "Apply for loan",
         "loginFirst": "Please log in first",
@@ -390,11 +390,14 @@
         "repayDate": "Repaid On",
         "repaid": "Repaid",
         "repayBtn": "Repay",
-        "earlyRepayNote": "Early repayment allowed; interest is calculated by actual days (10% p.a.)",
+        "earlyRepayNote": "Early repayment allowed; interest is calculated by actual days held.",
         "repayPwdHint": "Verify payment password to repay: ",
         "repaySuccess": "Repaid successfully, ¥{amount} deducted (principal ¥{principal}, interest ¥{interest})",
         "repayFailed": "Repayment failed",
         "repayLoading": "Repaying...",
-        "insufficientRepay": "Insufficient balance to repay"
+        "insufficientRepay": "Insufficient balance to repay",
+        "term": "Loan Term",
+        "monthUnit": "months",
+        "annualAbbr": "p.a."
     }
 }

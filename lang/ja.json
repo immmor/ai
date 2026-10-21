@@ -367,7 +367,7 @@
         "availableLimit": "利用可能な貸付限度額",
         "amountLabel": "貸付金額（¥）",
         "amountPlaceholder": "貸付金額を入力",
-        "tip": "年利率10%、期間1年。繰上返済に対応し、利息は実日数で計算します。満期または返済時に元本と利息を一括返済します。貸付額はそのまま残高に加算されます。",
+        "tip": "年利は借入期間によって異なります。繰上返済に対応し、利息は実日数で計算します。満期または返済時に元本と利息を一括返済します。貸付額はそのまま残高に加算されます。",
         "tipNoEligible": "現在貸付の条件を満たしていません。アカウントを活用してから再度お申し込みください。",
         "btn": "貸付を申し込む",
         "loginFirst": "まずログインしてください",
@@ -391,11 +391,14 @@
         "repayDate": "返済日",
         "repaid": "返済済み",
         "repayBtn": "返済する",
-        "earlyRepayNote": "繰上返済対応、利息は実日数で計算（年10%）",
+        "earlyRepayNote": "繰上返済対応、利息は実日数で計算します。",
         "repayPwdHint": "返済には支払いパスワードの確認が必要：",
         "repaySuccess": "返済成功、¥{amount} を控除（元本 ¥{principal}、利息 ¥{interest}）",
         "repayFailed": "返済失敗",
         "repayLoading": "返済処理中...",
-        "insufficientRepay": "残高不足で返済できません"
+        "insufficientRepay": "残高不足で返済できません",
+        "term": "借款期間",
+        "monthUnit": "ヶ月",
+        "annualAbbr": "年利"
     }
 }

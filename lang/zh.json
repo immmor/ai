@@ -366,7 +366,7 @@
         "availableLimit": "可用贷款额度",
         "amountLabel": "贷款金额（¥）",
         "amountPlaceholder": "输入贷款金额",
-        "tip": "年化利率 10%，期限 1 年；支持提前还款，利息按实际持有天数计算，到期或还款时一次性还本付息。贷款金额直接存入余额。",
+        "tip": "年化利率随借款期限不同而变化；支持提前还款，利息按实际持有天数计算，到期或还款时一次性还本付息。贷款金额直接存入余额。",
         "tipNoEligible": "当前暂不符合贷款条件，请保持账户活跃后再来申请。",
         "btn": "申请贷款",
         "loginFirst": "请先登录",
@@ -390,11 +390,14 @@
         "repayDate": "还款日期",
         "repaid": "已还清",
         "repayBtn": "还款",
-        "earlyRepayNote": "支持提前还款，利息按实际天数计算（年化10%）",
+        "earlyRepayNote": "支持提前还款，利息按实际持有天数计算。",
         "repayPwdHint": "还款需验证支付密码：",
         "repaySuccess": "还款成功，已扣除 ¥{amount}（本金 ¥{principal}，利息 ¥{interest}）",
         "repayFailed": "还款失败",
         "repayLoading": "还款中...",
-        "insufficientRepay": "余额不足，无法还款"
+        "insufficientRepay": "余额不足，无法还款",
+        "term": "借款期限",
+        "monthUnit": "个月",
+        "annualAbbr": "年化"
     }
 }
