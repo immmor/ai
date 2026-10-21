@@ -2005,15 +2005,19 @@ async function onScanFileSelected(input){
 async function openCollect(){
   const user=currentUser?currentUser.username:'';
   _collectPayload='funbua:collect?user='+encodeURIComponent(user);
+  const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=320x320&data='+encodeURIComponent(_collectPayload);
+  // 点击瞬间即开始预载二维码（后台加载，不等弹窗出现）
+  const pre=new Image();pre.src=qrUrl;
   const content=
     '<div class="collect-card">'+
       '<div class="collect-name">'+escapeHtml(user)+'</div>'+
       '<div class="collect-sub">'+t('vpay.scanToPay')+'</div>'+
-      '<div class="collect-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data='+encodeURIComponent(_collectPayload)+'" alt="'+t('collect.alt')+'" onerror="this.style.opacity=.25"></div>'+
+      '<div class="collect-qr"><img src="'+qrUrl+'" alt="'+t('collect.alt')+'" onerror="this.style.opacity=.25"></div>'+
       '<button class="collect-copy" onclick="copyCollect()"><i class="fa-solid fa-copy"></i> '+t('collect.copyInfo')+'</button>'+
     '</div>';
+  // 先让按钮动画完整跑完，再弹收款码窗口（此时二维码多已就绪，即时显示）
+  await playBtnIcon('.ic-collect','anim-collect',900);
   showQrModal(t('collect.title'),content);
-  playBtnIcon('.ic-collect','anim-collect',900);
 }
 function copyCollect(){copyText(_collectPayload)}
 
