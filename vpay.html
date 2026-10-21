@@ -232,6 +232,9 @@ body{
 .order-status.paid{background:rgba(0,184,148,0.15);color:var(--accent-green)}
 .order-status.failed{background:rgba(255,118,117,0.15);color:var(--accent-red)}
 .amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+#loanTermGrid{grid-template-columns:repeat(2,1fr)}
+@media (min-width:560px){#loanTermGrid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:980px){#loanTermGrid{grid-template-columns:repeat(6,1fr)}}
 .amount-btn{padding:12px 8px;border-radius:12px;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-main);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:all 0.2s;text-align:center}
 .amount-btn:hover{border-color:rgba(108,92,231,0.3)}
 .amount-btn.active{border-color:#6c5ce7;background:rgba(108,92,231,0.15);box-shadow:0 0 0 1px rgba(108,92,231,0.3)}
@@ -800,7 +803,7 @@ body{
           <button class="amount-btn" data-amount="5000" onclick="selectLoanAmt(5000)">¥5000</button>
         </div>
         <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="loan.term">借款期限</div>
-        <div class="amount-grid" id="loanTermGrid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr))"></div>
+        <div class="amount-grid" id="loanTermGrid"></div>
         <div class="finance-tip" id="loanTip" data-i18n="loan.tip">贷款额度为当前余额的 50%，最低可贷 ¥500；余额不足 ¥1000 时不可贷款。贷款金额将直接存入余额。</div>
         <button class="finance-deposit-btn" id="loanBtn" onclick="startLoan()" data-i18n="loan.btn">申请贷款</button>
       </div>
