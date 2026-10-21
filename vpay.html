@@ -327,6 +327,16 @@ body{
 .history-del:hover{background:rgba(231,76,60,.2);color:#e74c3c}
 .modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;transition:color 0.2s}
 .modal-close:hover{color:#fff}
+/* 用户条款确认 */
+.terms-body{max-height:280px;overflow-y:auto;padding:14px;margin:6px 0;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel-bg)}
+.terms-sec{margin-bottom:14px}
+.terms-sec:last-child{margin-bottom:0}
+.terms-h{font-weight:700;color:var(--text-main);margin-bottom:5px}
+.terms-p{font-size:13px;color:var(--text-muted);line-height:1.65}
+.terms-checks{display:flex;flex-direction:column;gap:11px;margin:4px 0 14px}
+.terms-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text-main);cursor:pointer;line-height:1.5}
+.terms-check input{margin-top:2px;width:17px;height:17px;flex:none;accent-color:#6c5ce7;cursor:pointer}
+.terms-check input:disabled{cursor:not-allowed}
 /* Scan Modal */
 .scan-viewport{position:relative;width:100%;aspect-ratio:1/1;background:#0b0c12;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .scan-viewport video{width:100%;height:100%;object-fit:cover}
@@ -536,6 +546,18 @@ body{
     <button class="modal-close" onclick="closeQrModal()"><i class="fa-solid fa-times"></i></button>
     <h3 id="qrTitle" style="text-align:left" data-i18n="vpay.scanToPay">Scan to Pay</h3>
     <div id="qrContent"></div>
+  </div>
+</div>
+
+<!-- ============ 用户条款确认 ============ -->
+<div class="modal-overlay" id="termsModal">
+  <div class="modal-box" style="width:440px;max-width:92vw">
+    <button class="modal-close" onclick="closeTermsModal()"><i class="fa-solid fa-times"></i></button>
+    <h3 id="termsTitle" style="text-align:left"></h3>
+    <div class="terms-body" id="termsBody" onscroll="onTermsScroll()"></div>
+    <div class="finance-tip" id="termsScrollHint" style="text-align:center"></div>
+    <div class="terms-checks" id="termsChecks"></div>
+    <button class="finance-deposit-btn disabled" id="termsAcceptBtn" disabled onclick="acceptTerms()"></button>
   </div>
 </div>
 
@@ -985,6 +1007,7 @@ body{
 </nav>
 
 <script src="vpay-tier.js"></script>
+<script src="terms.js"></script>
 <script>
 // ===== 多语言 i18n =====
 const _urlLang=new URLSearchParams(location.search).get('lang');
@@ -1128,7 +1151,7 @@ function startFinanceDeposit(){
   if(!currentUser)return showToast(t('finance.loginFirst'),'error');
   if(!financeAmount||financeAmount<=0)return showToast(t('finance.enterAmount'),'error');
   if(financeAmount<2000)return showToast(t('finance.minAmount'),'error');
-  openFinancePwd('deposit');
+  openTerms('finance',()=>openFinancePwd('deposit'));
 }
 let financeRedeemId=null;
 function startFinanceRedeem(id){
@@ -1234,7 +1257,7 @@ function selectLoanTerm(d){
 function startLoan(){
   if(!currentUser)return showToast(t('loan.loginFirst'),'error');
   if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
-  openFinancePwd('loan');
+  openTerms('loan',()=>openFinancePwd('loan'));
 }
 async function doLoan(pwd){
   if(!currentUser)return showToast(t('loan.loginFirst'),'error');
