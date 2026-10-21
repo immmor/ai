@@ -2365,8 +2365,15 @@ export default {
           const u2 = await DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
           const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
           try {
-            await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT)').run();
-            await DB.prepare('INSERT INTO loan_record (username, amount, created_at, status) VALUES (?, ?, ?, ?)').bind(username, amt, nowTime, 'approved').run();
+            await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT, rate REAL, due_at TEXT, repaid_at TEXT, interest REAL, total_repaid REAL)').run();
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN rate REAL').run(); } catch (e) {}
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN due_at TEXT').run(); } catch (e) {}
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN repaid_at TEXT').run(); } catch (e) {}
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN interest REAL').run(); } catch (e) {}
+            try { await DB.prepare('ALTER TABLE loan_record ADD COLUMN total_repaid REAL').run(); } catch (e) {}
+            const LOAN_RATE = 0.10;
+            const dueTime = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 19).replace('T', ' ');
+            await DB.prepare('INSERT INTO loan_record (username, amount, created_at, status, rate, due_at) VALUES (?, ?, ?, ?, ?, ?)').bind(username, amt, nowTime, 'active', LOAN_RATE, dueTime).run();
             // 给管理员发消息
             await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`, nowTime).run();
             await notifyAdmin('用户贷款', `💸 用户 ${username} 申请贷款 ¥${amt}（当前余额 ¥${u2.balance}）`);
@@ -2383,18 +2390,60 @@ export default {
         try {
           const username = url.searchParams.get('username');
           if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
-          await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT)').run();
+          await DB.prepare('CREATE TABLE IF NOT EXISTS loan_record (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, amount REAL, created_at TEXT, status TEXT, rate REAL, due_at TEXT, repaid_at TEXT, interest REAL, total_repaid REAL)').run();
           const rows = await DB.prepare('SELECT * FROM loan_record WHERE username = ? ORDER BY created_at DESC').bind(username).all();
           const records = (rows.results || []).map(r => ({
             id: r.id,
             amount: +r.amount,
+            rate: r.rate != null ? +r.rate : 0.10,
             createdAt: r.created_at,
-            status: r.status
+            dueAt: r.due_at,
+            status: r.status,
+            repaidAt: r.repaid_at,
+            interest: r.interest != null ? +r.interest : null,
+            totalRepaid: r.total_repaid != null ? +r.total_repaid : null
           }));
           return resJson({ code: 200, records });
         } catch (err) {
           console.error('Loan records error:', err);
           return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 贷款还款（支持提前还款，利息按实际天数计，年化10%） ==========
+      if (path === '/api/loan/repay' && request.method === 'POST') {
+        try {
+          const { username, loanId, payPassword } = await request.json();
+          if (!username || loanId === undefined || loanId === null || payPassword === undefined) return resJson({ code: 400, msg: '参数不完整' }, 400);
+          const user = await DB.prepare('SELECT username, balance, pay_password FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+          if (!user.pay_password) return resJson({ code: 403, msg: '请先设置6位支付密码' }, 403);
+          if (String(user.pay_password) !== String(payPassword)) return resJson({ code: 401, msg: '支付密码错误' }, 401);
+          const loan = await DB.prepare('SELECT * FROM loan_record WHERE id = ? AND username = ?').bind(loanId, username).first();
+          if (!loan) return resJson({ code: 404, msg: '贷款记录不存在' }, 404);
+          if (loan.status === 'repaid') return resJson({ code: 400, msg: '该笔贷款已还清' }, 400);
+          const principal = +loan.amount;
+          const rate = loan.rate != null ? +loan.rate : 0.10;
+          const start = new Date(loan.created_at).getTime();
+          const due = loan.due_at ? new Date(loan.due_at).getTime() : start + 365 * 86400000;
+          const end = Math.min(Date.now(), due);
+          const days = Math.max(0, Math.floor((end - start) / 86400000));
+          const interest = Math.round(principal * rate * days / 365 * 100) / 100;
+          const total = Math.round((principal + interest) * 100) / 100;
+          const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          if (+user.balance < total) return resJson({ code: 400, msg: '余额不足，无法还款（需 ¥' + total + '）' }, 400);
+          const upd = await DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(total, username).run();
+          if (!upd.success || upd.meta.changes === 0) return resJson({ code: 500, msg: '还款失败' }, 500);
+          await DB.prepare("UPDATE loan_record SET status='repaid', repaid_at=?, interest=?, total_repaid=? WHERE id=?").bind(nowTime, interest, total, loanId).run();
+          try {
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `💸 用户 ${username} 还款 ¥${total}（本金 ¥${principal}，利息 ¥${interest}）`, nowTime).run();
+            await notifyAdmin('用户还款', `💸 用户 ${username} 还款 ¥${total}（本金 ¥${principal}，利息 ¥${interest}）`);
+          } catch (e) { console.error('Loan repay admin notify error:', e); }
+          const u3 = await DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+          return resJson({ code: 200, msg: '还款成功', amount: total, principal, interest, balance: u3.balance, limit: Math.floor(+u3.balance * 0.5) });
+        } catch (err) {
+          console.error('Loan repay error:', err);
+          return resJson({ code: 500, msg: '还款失败', error: err.message }, 500);
         }
       }
 

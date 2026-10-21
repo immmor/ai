@@ -199,6 +199,7 @@
     },
     "vpay": {
         "overview": "Tổng quan",
+        "back": "Quay lại",
         "assetsOverview": "Tổng quan tài sản của tôi",
         "recentOrders": "Đơn hàng gần đây",
         "notLoggedIn": "Chưa đăng nhập",
@@ -353,7 +354,9 @@
         "depositLoading": "Đang gửi...",
         "redeemLoading": "Đang tất toán...",
         "depositFailed": "Gửi thất bại",
-        "redeemFailed": "Tất toán thất bại"
+        "redeemFailed": "Tất toán thất bại",
+        "recordsTitle": "Lịch sử gửi tiết kiệm",
+        "noRecords": "Chưa có lịch sử gửi tiết kiệm"
     },
     "loan": {
         "menu": "Vay",
@@ -364,7 +367,7 @@
         "availableLimit": "Hạn mức vay khả dụng",
         "amountLabel": "Số tiền vay (¥)",
         "amountPlaceholder": "Nhập số tiền vay",
-        "tip": "Số tiền vay được cộng trực tiếp vào số dư, tối thiểu ¥500 mỗi lần.",
+        "tip": "Lãi suất năm 10%, kỳ hạn 1 năm; hỗ trợ trả trước, lãi tính theo số ngày thực tế. Gốc và lãi được trả một lần khi đáo hạn hoặc trả nợ. Số tiền vay được cộng trực tiếp vào số dư.",
         "tipNoEligible": "Hiện bạn chưa đủ điều kiện vay. Hãy duy trì tài khoản còn hoạt động và thử lại sau.",
         "btn": "Đăng ký vay",
         "loginFirst": "Vui lòng đăng nhập trước",
@@ -378,6 +381,21 @@
         "recordTime": "Thời gian vay",
         "recordStatus": "Trạng thái",
         "statusApproved": "Đã giải ngân",
-        "noRecords": "Chưa có lịch sử vay"
+        "noRecords": "Chưa có lịch sử vay",
+        "rate": "Lãi suất năm",
+        "startDate": "Ngày vay",
+        "dueDate": "Ngày đáo hạn",
+        "accruedInterest": "Lãi phát sinh",
+        "repayTotal": "Tổng phải trả",
+        "repaidTotal": "Đã trả tổng cộng",
+        "repayDate": "Ngày trả",
+        "repaid": "Đã trả xong",
+        "repayBtn": "Trả nợ",
+        "earlyRepayNote": "Hỗ trợ trả trước, lãi tính theo số ngày thực tế (10%/năm)",
+        "repayPwdHint": "Xác nhận mật khẩu thanh toán để trả nợ: ",
+        "repaySuccess": "Trả nợ thành công, đã trừ ¥{amount} (gốc ¥{principal}, lãi ¥{interest})",
+        "repayFailed": "Trả nợ thất bại",
+        "repayLoading": "Đang trả nợ...",
+        "insufficientRepay": "Số dư không đủ để trả nợ"
     }
 }

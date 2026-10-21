@@ -198,6 +198,7 @@
     },
     "vpay": {
         "overview": "总览",
+        "back": "返回",
         "assetsOverview": "我的资产总览",
         "recentOrders": "近期订单",
         "notLoggedIn": "未登录",
@@ -352,7 +353,9 @@
         "depositLoading": "存入中...",
         "redeemLoading": "赎回中...",
         "depositFailed": "存入失败",
-        "redeemFailed": "赎回失败"
+        "redeemFailed": "赎回失败",
+        "recordsTitle": "理财记录",
+        "noRecords": "暂无理财记录"
     },
     "loan": {
         "menu": "贷款",
@@ -363,7 +366,7 @@
         "availableLimit": "可用贷款额度",
         "amountLabel": "贷款金额（¥）",
         "amountPlaceholder": "输入贷款金额",
-        "tip": "贷款金额将直接存入余额，单笔最低 ¥500。",
+        "tip": "年化利率 10%，期限 1 年；支持提前还款，利息按实际持有天数计算，到期或还款时一次性还本付息。贷款金额直接存入余额。",
         "tipNoEligible": "当前暂不符合贷款条件，请保持账户活跃后再来申请。",
         "btn": "申请贷款",
         "loginFirst": "请先登录",
@@ -377,6 +380,21 @@
         "recordTime": "申请时间",
         "recordStatus": "状态",
         "statusApproved": "已放款",
-        "noRecords": "暂无贷款记录"
+        "noRecords": "暂无贷款记录",
+        "rate": "年利率",
+        "startDate": "起贷日期",
+        "dueDate": "到期日期",
+        "accruedInterest": "已产生利息",
+        "repayTotal": "应还总额",
+        "repaidTotal": "已还总额",
+        "repayDate": "还款日期",
+        "repaid": "已还清",
+        "repayBtn": "还款",
+        "earlyRepayNote": "支持提前还款，利息按实际天数计算（年化10%）",
+        "repayPwdHint": "还款需验证支付密码：",
+        "repaySuccess": "还款成功，已扣除 ¥{amount}（本金 ¥{principal}，利息 ¥{interest}）",
+        "repayFailed": "还款失败",
+        "repayLoading": "还款中...",
+        "insufficientRepay": "余额不足，无法还款"
     }
 }

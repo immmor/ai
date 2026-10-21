@@ -199,6 +199,7 @@
     },
     "vpay": {
         "overview": "Resumen",
+        "back": "Atrás",
         "assetsOverview": "Resumen de mis activos",
         "recentOrders": "Pedidos recientes",
         "notLoggedIn": "No ha iniciado sesión",
@@ -353,7 +354,9 @@
         "depositLoading": "Depositando...",
         "redeemLoading": "Rescatando...",
         "depositFailed": "Depósito fallido",
-        "redeemFailed": "Rescate fallido"
+        "redeemFailed": "Rescate fallido",
+        "recordsTitle": "Registros de depósito",
+        "noRecords": "Sin registros de depósito"
     },
     "loan": {
         "menu": "Préstamo",
@@ -364,7 +367,7 @@
         "availableLimit": "Límite de préstamo disponible",
         "amountLabel": "Monto del préstamo (¥)",
         "amountPlaceholder": "Ingrese el monto del préstamo",
-        "tip": "El monto prestado se acredita directamente a tu saldo, mín ¥500 por solicitud.",
+        "tip": "Tasa anual 10%, plazo 1 año; pago anticipado permitido, interés por días reales. Capital e interés se devuelven juntos al vencimiento o al pagar. El monto prestado se acredita a su saldo directamente.",
         "tipNoEligible": "Actualmente no cumples los requisitos para el préstamo. Mantén tu cuenta activa e inténtalo más tarde.",
         "btn": "Solicitar préstamo",
         "loginFirst": "Inicie sesión primero",
@@ -378,6 +381,21 @@
         "recordTime": "Solicitado el",
         "recordStatus": "Estado",
         "statusApproved": "Desembolsado",
-        "noRecords": "Sin registros de préstamo"
+        "noRecords": "Sin registros de préstamo",
+        "rate": "Tasa anual",
+        "startDate": "Fecha de préstamo",
+        "dueDate": "Fecha de vencimiento",
+        "accruedInterest": "Interés generado",
+        "repayTotal": "Total a devolver",
+        "repaidTotal": "Total devuelto",
+        "repayDate": "Devuelto el",
+        "repaid": "Devuelto",
+        "repayBtn": "Devolver",
+        "earlyRepayNote": "Pago anticipado permitido; interés por días reales (10% anual)",
+        "repayPwdHint": "Verifique la contraseña de pago para devolver: ",
+        "repaySuccess": "Devuelto con éxito, ¥{amount} deducidos (capital ¥{principal}, interés ¥{interest})",
+        "repayFailed": "Fallo al devolver",
+        "repayLoading": "Devolviendo...",
+        "insufficientRepay": "Saldo insuficiente para devolver"
     }
 }

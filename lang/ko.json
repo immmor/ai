@@ -199,6 +199,7 @@
     },
     "vpay": {
         "overview": "개요",
+        "back": "뒤로",
         "assetsOverview": "내 자산 개요",
         "recentOrders": "최근 주문",
         "notLoggedIn": "로그인 안 됨",
@@ -353,7 +354,9 @@
         "depositLoading": "입금 중...",
         "redeemLoading": "해지 중...",
         "depositFailed": "입금 실패",
-        "redeemFailed": "해지 실패"
+        "redeemFailed": "해지 실패",
+        "recordsTitle": "재테크 기록",
+        "noRecords": "재테크 기록이 없습니다"
     },
     "loan": {
         "menu": "대출",
@@ -364,7 +367,7 @@
         "availableLimit": "사용 가능한 대출 한도",
         "amountLabel": "대출 금액 (¥)",
         "amountPlaceholder": "대출 금액 입력",
-        "tip": "대출 금액은 잔액에 바로 입금됩니다. 1회 최소 ¥500.",
+        "tip": "연금리 10%, 기간 1년. 중도 상환이 가능하며 이자는 실제 보유 일수로 계산됩니다. 만기 또는 상환 시 원금과 이자를 일괄 상환합니다. 대출 금액은 잔액에 바로 입금됩니다.",
         "tipNoEligible": "현재 대출 조건을 충족하지 않습니다. 계정을 유지하신 후 다시 신청해 주세요.",
         "btn": "대출 신청",
         "loginFirst": "먼저 로그인해 주세요",
@@ -378,6 +381,21 @@
         "recordTime": "신청 시각",
         "recordStatus": "상태",
         "statusApproved": "지급완료",
-        "noRecords": "대출 기록이 없습니다"
+        "noRecords": "대출 기록이 없습니다",
+        "rate": "연금리",
+        "startDate": "대출일",
+        "dueDate": "만기일",
+        "accruedInterest": "발생 이자",
+        "repayTotal": "상환 총액",
+        "repaidTotal": "상환 완료액",
+        "repayDate": "상환일",
+        "repaid": "상환 완료",
+        "repayBtn": "상환",
+        "earlyRepayNote": "중도 상환 가능, 이자는 실제 일수 기준 계산 (연 10%)",
+        "repayPwdHint": "상환 시 결제 비밀번호 확인 필요: ",
+        "repaySuccess": "상환 성공, ¥{amount} 차감됨 (원금 ¥{principal}, 이자 ¥{interest})",
+        "repayFailed": "상환 실패",
+        "repayLoading": "상환 중...",
+        "insufficientRepay": "잔액 부족으로 상환 불가"
     }
 }

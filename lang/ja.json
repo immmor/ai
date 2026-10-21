@@ -199,6 +199,7 @@
     },
     "vpay": {
         "overview": "総覧",
+        "back": "戻る",
         "assetsOverview": "私の資産総覧",
         "recentOrders": "最近の注文",
         "notLoggedIn": "未ログイン",
@@ -353,7 +354,9 @@
         "depositLoading": "預け入れ中...",
         "redeemLoading": "解約中...",
         "depositFailed": "預け入れ失敗",
-        "redeemFailed": "解約失敗"
+        "redeemFailed": "解約失敗",
+        "recordsTitle": "積立記録",
+        "noRecords": "積立記録はありません"
     },
     "loan": {
         "menu": "ローン",
@@ -364,7 +367,7 @@
         "availableLimit": "利用可能な貸付限度額",
         "amountLabel": "貸付金額（¥）",
         "amountPlaceholder": "貸付金額を入力",
-        "tip": "貸付額はそのまま残高に加算されます。1回最小 ¥500。",
+        "tip": "年利率10%、期間1年。繰上返済に対応し、利息は実日数で計算します。満期または返済時に元本と利息を一括返済します。貸付額はそのまま残高に加算されます。",
         "tipNoEligible": "現在貸付の条件を満たしていません。アカウントを活用してから再度お申し込みください。",
         "btn": "貸付を申し込む",
         "loginFirst": "まずログインしてください",
@@ -378,6 +381,21 @@
         "recordTime": "申請日時",
         "recordStatus": "ステータス",
         "statusApproved": "融資済み",
-        "noRecords": "贷款記録はありません"
+        "noRecords": "贷款記録はありません",
+        "rate": "年利率",
+        "startDate": "貸付日",
+        "dueDate": "返済期日",
+        "accruedInterest": "発生利息",
+        "repayTotal": "返済総額",
+        "repaidTotal": "返済済額",
+        "repayDate": "返済日",
+        "repaid": "返済済み",
+        "repayBtn": "返済する",
+        "earlyRepayNote": "繰上返済対応、利息は実日数で計算（年10%）",
+        "repayPwdHint": "返済には支払いパスワードの確認が必要：",
+        "repaySuccess": "返済成功、¥{amount} を控除（元本 ¥{principal}、利息 ¥{interest}）",
+        "repayFailed": "返済失敗",
+        "repayLoading": "返済処理中...",
+        "insufficientRepay": "残高不足で返済できません"
     }
 }

@@ -50,6 +50,7 @@ body{
 .nav-link.active i{color:#6c5ce7}
 .nav-link.active .i-transfer{color:#6c5ce7}
 .nav-link i,.mobile-nav-item i{display:inline-block;transition:transform .15s}
+.nav-back-icon{color:#6c5ce7}
 .tab-anim-dashboard{animation:tabDash .55s ease}
 .tab-anim-recharge{animation:tabPlus .5s ease}
 .tab-anim-transfer .tr-up{animation:trUp .45s ease}
@@ -763,7 +764,10 @@ body{
         <div class="finance-tip" data-i18n="finance.tip">存入后该笔资金将被锁定，满 1 年方可赎回；赎回时返还本金 + 4% 利息。最低存入 ¥2000。可同时持有多笔。</div>
       </div>
 
-      <div id="financeList"></div>
+      <div style="margin-top:22px">
+        <div class="section-title" style="margin-bottom:10px;font-size:14px" data-i18n="finance.recordsTitle">理财记录</div>
+        <div id="financeList"></div>
+      </div>
     </div>
 
     <!-- ============ LOAN ============ -->
@@ -786,6 +790,7 @@ body{
         </div>
         <div class="finance-row" style="margin-top:16px"><span data-i18n="loan.currentBalance">当前余额</span><b id="loanBalance">¥0.00</b></div>
         <div class="finance-row"><span data-i18n="loan.availableLimit">可用贷款额度</span><b id="loanLimit" style="color:var(--accent-green)">¥0.00</b></div>
+        <div class="finance-row"><span data-i18n="loan.rate">年利率</span><b>10%</b></div>
         <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="loan.amountLabel">贷款金额（¥）</div>
         <input class="amount-input" id="loanAmountInput" type="number" min="1" step="1" placeholder="输入贷款金额" data-i18n-placeholder="loan.amountPlaceholder" inputmode="decimal" oninput="onLoanAmountInput()">
         <div class="amount-grid" id="loanAmtGrid" style="grid-template-columns:repeat(4,1fr)">
@@ -1013,6 +1018,7 @@ function applyTranslations(){
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.placeholder=t(el.getAttribute('data-i18n-placeholder')));
   document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.getAttribute('data-i18n-title')));
   document.documentElement.lang=currentLang;
+  updateNavBack();
 }
 function updateDynamicI18n(){
   const cr=document.getElementById('creem-exchange-rate');if(cr)cr.textContent=t('vpay.exchangePrefix')+USD_TO_CNY;
@@ -1104,8 +1110,8 @@ async function loadFinanceStatus(){
           +'</div>';
       }).join('');
     }else{
-      list.classList.add('hidden');
-      list.innerHTML='';
+      list.classList.remove('hidden');
+      list.innerHTML='<div class="finance-tip" style="text-align:center" data-i18n="finance.noRecords">暂无理财记录</div>';
     }
     financeAmount=0;
     const inp=document.getElementById('financeAmountInput');if(inp)inp.value='';
@@ -1129,7 +1135,7 @@ let financePwdAction=null;
 function openFinancePwd(action){
   financePwdAction=action;
   pwdBuf.financePwd='';
-  document.getElementById('financePwdText').textContent=action==='redeem'?t('finance.redeemPwdHint'):action==='loan'?t('loan.pwdHint'):t('finance.depositPwdHint');
+  document.getElementById('financePwdText').textContent=action==='redeem'?t('finance.redeemPwdHint'):action==='loan'?t('loan.pwdHint'):action==='loanRepay'?t('loan.repayPwdHint'):t('finance.depositPwdHint');
   document.getElementById('financePwdModal').classList.add('show');
   pwdKb(true,'financePwd');
 }
@@ -1148,6 +1154,7 @@ async function handleFinancePwd(pw){
   if(action==='deposit')await doFinanceDeposit(pw);
   else if(action==='redeem')await doFinanceRedeem(pw,financeRedeemId);
   else if(action==='loan')await doLoan(pw);
+  else if(action==='loanRepay')await doLoanRepay(pw);
 }
 async function doFinanceDeposit(pwd){
   if(!currentUser)return showToast(t('finance.loginFirst'),'error');
@@ -1175,6 +1182,7 @@ async function doFinanceRedeem(pwd,id){
 
 // ===== 贷款（额度=余额50%，最低¥500，不足则不可贷） =====
 let loanAmount=0;
+let loanRepayId=0;
 function loadLoanStatus(){
   if(!currentUser)return;
   const bal=balanceVal||0;
@@ -1213,6 +1221,24 @@ async function doLoan(pwd){
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
 
+function startLoanRepay(id){
+  if(!currentUser)return showToast(t('loan.loginFirst'),'error');
+  if(!id)return;
+  loanRepayId=id;
+  openFinancePwd('loanRepay');
+}
+async function doLoanRepay(pwd){
+  if(!currentUser)return showToast(t('loan.loginFirst'),'error');
+  if(!loanRepayId)return;
+  showLoading(t('loan.repayLoading'));
+  try{
+    const r=await(await fetch(FINANCE_API+'/api/loan/repay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,loanId:loanRepayId,payPassword:pwd})})).json();
+    hideLoading();
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('loan.repaySuccess',{amount:(+r.amount).toFixed(2),principal:(+r.principal).toFixed(2),interest:(+r.interest).toFixed(2)}));loanRepayId=0;loadLoanStatus();loadLoanRecords();}
+    else showToast(r.msg||t('loan.repayFailed'),'error');
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+
 async function loadLoanRecords(){
   if(!currentUser)return;
   try{
@@ -1221,15 +1247,35 @@ async function loadLoanRecords(){
     const box=document.getElementById('loanRecords');
     if(r.records&&r.records.length){
       box.innerHTML=r.records.map(d=>{
-        const time=formatDate(d.createdAt);
+        const rate=d.rate||0.10;
+        const start=new Date(d.createdAt).getTime();
+        const due=d.dueAt?new Date(d.dueAt).getTime():start+365*86400000;
+        const isRepaid=d.status==='repaid';
+        let info='';
+        if(isRepaid){
+          info='<div class="finance-row finance-row-total"><span>'+t('loan.repaidTotal')+'</span><b>¥'+(+d.totalRepaid).toFixed(2)+'</b></div>'
+            +'<div class="finance-row"><span>'+t('loan.repayDate')+'</span><b>'+formatDate(d.repaidAt)+'</b></div>'
+            +'<div class="finance-row"><span>'+t('loan.recordStatus')+'</span><b style="color:var(--accent-green)">'+t('loan.repaid')+'</b></div>';
+        }else{
+          const end=Math.min(Date.now(),due);
+          const days=Math.max(0,Math.floor((end-start)/86400000));
+          const interest=Math.round(d.amount*rate*days/365*100)/100;
+          const total=Math.round((d.amount+interest)*100)/100;
+          info='<div class="finance-row"><span>'+t('loan.rate')+'</span><b>'+Math.round(rate*1000)/10+'%</b></div>'
+            +'<div class="finance-row"><span>'+t('loan.startDate')+'</span><b>'+formatDate(d.createdAt)+'</b></div>'
+            +'<div class="finance-row"><span>'+t('loan.dueDate')+'</span><b>'+formatDate(d.dueAt||'')+'</b></div>'
+            +'<div class="finance-row"><span>'+t('loan.accruedInterest')+'</span><b>¥'+interest.toFixed(2)+'</b></div>'
+            +'<div class="finance-row finance-row-total"><span>'+t('loan.repayTotal')+'</span><b>¥'+total.toFixed(2)+'</b></div>'
+            +(due>Date.now()?'<div class="finance-tip">'+t('loan.earlyRepayNote')+'</div>':'')
+            +'<button class="finance-deposit-btn" onclick="startLoanRepay('+d.id+')">'+t('loan.repayBtn')+'</button>';
+        }
         return '<div class="crypto-card" style="padding:14px;margin-top:12px">'
           +'<div class="finance-row"><span>'+t('loan.recordAmount')+'</span><b style="color:var(--accent-green)">¥'+d.amount.toFixed(2)+'</b></div>'
-          +'<div class="finance-row"><span>'+t('loan.recordTime')+'</span><b>'+time+'</b></div>'
-          +'<div class="finance-row"><span>'+t('loan.recordStatus')+'</span><b>'+t('loan.statusApproved')+'</b></div>'
+          +info
           +'</div>';
       }).join('');
     }else{
-      box.innerHTML='<div class="finance-tip" data-i18n="loan.noRecords">暂无贷款记录</div>';
+      box.innerHTML='<div class="finance-tip" style="text-align:center" data-i18n="loan.noRecords">暂无贷款记录</div>';
     }
   }catch(e){}
 }
@@ -1248,6 +1294,7 @@ function switchPage(page){
   });
   // Mobile nav
   document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  updateNavBack();
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
   if(page==='finance'&&currentUser)loadFinanceStatus()
@@ -1259,6 +1306,14 @@ function switchPage(page){
   const curActions=document.querySelector('#page'+page.charAt(0).toUpperCase()+page.slice(1)+' .header .actions');
   const lm=document.getElementById('lang-dropdown-menu');if(lm)lm.classList.remove('show');
   if(ld&&curActions&&ld.parentElement!==curActions)curActions.appendChild(ld);
+}
+function updateNavBack(){
+  const onSub = currentPage==='finance' || currentPage==='loan';
+  document.querySelectorAll('#sidebarNav [data-page="dashboard"], #mobileNav [data-page="dashboard"]').forEach(item=>{
+    const span=item.querySelector('span'), icon=item.querySelector('i');
+    if(span) span.textContent = onSub ? t('vpay.back') : t('vpay.overview');
+    if(icon) icon.className = onSub ? 'fa-solid fa-arrow-left nav-back-icon' : 'fa-solid fa-chart-pie';
+  });
 }
 // Tab 图标点击小动画（每个图标不同）
 function popTabIcon(item){
