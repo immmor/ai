@@ -319,9 +319,9 @@
         "alt": "受取コード"
     },
     "finance": {
-        "menu": "定期預金",
+        "menu": "資産運用",
         "entrySub": "1年定期 · 年利4% · 満期時に元利払い",
-        "depositTitle": "FUNBUA 定期預金",
+        "depositTitle": "定期預金",
         "depositSub": "1年定期 · 年利4% · 満期時に元金と利息を一括支払い",
         "amountLabel": "預入金額（¥）",
         "amountPlaceholder": "預入金額を入力",
@@ -354,5 +354,24 @@
         "redeemLoading": "解約中...",
         "depositFailed": "預け入れ失敗",
         "redeemFailed": "解約失敗"
+    },
+    "loan": {
+        "menu": "ローン",
+        "entrySub": "限度額 = 残高の 50% · 最小 ¥500",
+        "title": "ローン",
+        "sub": "アカウントに専用の貸付限度額を設定（1回最小 ¥500）",
+        "currentBalance": "現在の残高",
+        "availableLimit": "利用可能な貸付限度額",
+        "amountLabel": "貸付金額（¥）",
+        "amountPlaceholder": "貸付金額を入力",
+        "tip": "貸付額はそのまま残高に加算されます。1回最小 ¥500。",
+        "tipNoEligible": "現在貸付の条件を満たしていません。アカウントを活用してから再度お申し込みください。",
+        "btn": "貸付を申し込む",
+        "loginFirst": "まずログインしてください",
+        "enterAmount": "貸付金額を入力してください",
+        "loading": "貸付処理中...",
+        "success": "貸付成功、¥{amount} を残高に加算しました",
+        "failed": "貸付失敗",
+        "pwdHint": "貸付申し込みには支払いパスワードの確認が必要："
     }
 }

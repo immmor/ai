@@ -319,9 +319,9 @@
         "alt": "받기 코드"
     },
     "finance": {
-        "menu": "정기 예금",
+        "menu": "재테크",
         "entrySub": "1년 만기 · 연 4% · 만기 시 원리금 지급",
-        "depositTitle": "FUNBUA 정기 예금",
+        "depositTitle": "정기 예금",
         "depositSub": "1년 만기 · 연 4% 수익 · 만기 시 원금과 이자를 일시 지급",
         "amountLabel": "입금 금액 (¥)",
         "amountPlaceholder": "입금 금액 입력",
@@ -354,5 +354,24 @@
         "redeemLoading": "해지 중...",
         "depositFailed": "입금 실패",
         "redeemFailed": "해지 실패"
+    },
+    "loan": {
+        "menu": "대출",
+        "entrySub": "한도 = 잔액의 50% · 최소 ¥500",
+        "title": "대출",
+        "sub": "계정에 전용 대출 한도가 설정되며, 1회 최소 ¥500",
+        "currentBalance": "현재 잔액",
+        "availableLimit": "사용 가능한 대출 한도",
+        "amountLabel": "대출 금액 (¥)",
+        "amountPlaceholder": "대출 금액 입력",
+        "tip": "대출 금액은 잔액에 바로 입금됩니다. 1회 최소 ¥500.",
+        "tipNoEligible": "현재 대출 조건을 충족하지 않습니다. 계정을 유지하신 후 다시 신청해 주세요.",
+        "btn": "대출 신청",
+        "loginFirst": "먼저 로그인해 주세요",
+        "enterAmount": "대출 금액을 입력해 주세요",
+        "loading": "대출 중...",
+        "success": "대출 성공, ¥{amount} 입금됨",
+        "failed": "대출 실패",
+        "pwdHint": "대출 신청 시 결제 비밀번호 확인 필요: "
     }
 }

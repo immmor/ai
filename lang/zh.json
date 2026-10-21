@@ -318,9 +318,9 @@
         "alt": "收款码"
     },
     "finance": {
-        "menu": "定期理财",
+        "menu": "理财",
         "entrySub": "1 年期 · 年化 4% · 到期还本付息",
-        "depositTitle": "FUNBUA 定期存款",
+        "depositTitle": "定期存款",
         "depositSub": "期限 1 年 · 年化收益 4% · 到期一次性还本付息",
         "amountLabel": "存入金额（¥）",
         "amountPlaceholder": "输入存入金额",
@@ -353,5 +353,24 @@
         "redeemLoading": "赎回中...",
         "depositFailed": "存入失败",
         "redeemFailed": "赎回失败"
+    },
+    "loan": {
+        "menu": "贷款",
+        "entrySub": "额度为余额的 50% · 最低 ¥500",
+        "title": "贷款",
+        "sub": "为账户核定专属贷款额度，单笔最低 ¥500",
+        "currentBalance": "当前余额",
+        "availableLimit": "可用贷款额度",
+        "amountLabel": "贷款金额（¥）",
+        "amountPlaceholder": "输入贷款金额",
+        "tip": "贷款金额将直接存入余额，单笔最低 ¥500。",
+        "tipNoEligible": "当前暂不符合贷款条件，请保持账户活跃后再来申请。",
+        "btn": "申请贷款",
+        "loginFirst": "请先登录",
+        "enterAmount": "请输入贷款金额",
+        "loading": "贷款中...",
+        "success": "贷款成功，已到账 ¥{amount}",
+        "failed": "贷款失败",
+        "pwdHint": "申请贷款需验证支付密码："
     }
 }

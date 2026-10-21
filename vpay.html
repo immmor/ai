@@ -244,6 +244,8 @@ body{
 /* ===== 理财 ===== */
 .finance-entry{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;border-radius:16px;background:var(--panel-bg);border:1px solid var(--panel-border);cursor:pointer;transition:.2s}
 .finance-entry:hover{border-color:#6c5ce7;transform:translateY(-2px)}
+.finance-entry-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.finance-entry-row .finance-entry{margin-top:0}
 .finance-entry-icon{width:44px;height:44px;border-radius:12px;background:rgba(108,92,231,.15);color:#a29bfe;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .finance-entry-text{flex:1;min-width:0}
 .finance-entry-title{font-size:15px;font-weight:600}
@@ -704,13 +706,22 @@ body{
             <button class="action-btn" onclick="openCollect()"><svg class="ic-ico ic-collect" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" fill="var(--qr-paper)"/><g fill="var(--qr-ink)"><path d="M2 2h8v8H2z"/><path d="M14 2h8v8H14z"/><path d="M2 14h8v8H2z"/><path d="M14 14h6v6H14z"/></g><g fill="var(--qr-paper)"><path d="M4 4h4v4H4z"/><path d="M16 4h4v4H16z"/><path d="M4 16h4v4H4z"/><path d="M15.5 15.5h3v3H15.5z"/></g><g fill="var(--qr-ink)"><path d="M5 5h2v2H5z"/><path d="M17 5h2v2H17z"/><path d="M5 17h2v2H5z"/><path d="M16.75 16.75h1.5v1.5H16.75z"/></g><g class="qr-data" fill="var(--qr-ink)"><rect class="m m1" x="12" y="2" width="2" height="2" rx=".3"/><rect class="m m2" x="10" y="4" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="6" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="8" width="2" height="2" rx=".3"/><rect class="m m1" x="4" y="10" width="2" height="2" rx=".3"/><rect class="m m2" x="8" y="10" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="10" width="2" height="2" rx=".3"/><rect class="m m4" x="16" y="10" width="2" height="2" rx=".3"/><rect class="m m1" x="20" y="10" width="2" height="2" rx=".3"/><rect class="m m2" x="2" y="12" width="2" height="2" rx=".3"/><rect class="m m3" x="6" y="12" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="12" width="2" height="2" rx=".3"/><rect class="m m1" x="14" y="12" width="2" height="2" rx=".3"/><rect class="m m2" x="18" y="12" width="2" height="2" rx=".3"/><rect class="m m3" x="12" y="14" width="2" height="2" rx=".3"/><rect class="m m4" x="20" y="14" width="2" height="2" rx=".3"/><rect class="m m1" x="10" y="16" width="2" height="2" rx=".3"/><rect class="m m2" x="12" y="18" width="2" height="2" rx=".3"/><rect class="m m3" x="20" y="18" width="2" height="2" rx=".3"/><rect class="m m4" x="10" y="20" width="2" height="2" rx=".3"/><rect class="m m1" x="14" y="20" width="2" height="2" rx=".3"/><rect class="m m2" x="18" y="20" width="2" height="2" rx=".3"/></g></svg><span data-i18n="vpay.collect">收款</span></button>
           </div>
 
-          <div class="finance-entry" onclick="switchPage('finance')">
-            <div class="finance-entry-icon"><i class="fa-solid fa-piggy-bank"></i></div>
-            <div class="finance-entry-text">
-              <div class="finance-entry-title" data-i18n="finance.menu">定期理财</div>
-              <div class="finance-entry-sub" data-i18n="finance.entrySub">1 年期 · 年化 4% · 到期还本付息</div>
+          <div class="finance-entry-row">
+            <div class="finance-entry" onclick="switchPage('finance')">
+              <div class="finance-entry-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+              <div class="finance-entry-text">
+                <div class="finance-entry-title" data-i18n="finance.menu">定期理财</div>
+              </div>
+              <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
             </div>
-            <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
+
+            <div class="finance-entry" onclick="switchPage('loan')">
+              <div class="finance-entry-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+              <div class="finance-entry-text">
+                <div class="finance-entry-title" data-i18n="loan.menu">贷款</div>
+              </div>
+              <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
+            </div>
           </div>
 
           <div style="margin-top:30px">
@@ -753,6 +764,39 @@ body{
       </div>
 
       <div id="financeList"></div>
+    </div>
+
+    <!-- ============ LOAN ============ -->
+    <div id="pageLoan" class="hidden">
+      <header class="header">
+        <div><h1 data-i18n="loan.menu">贷款</h1></div>
+        <div class="actions">
+          <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
+        </div>
+      </header>
+
+      <div class="crypto-card" id="loanForm" style="padding:20px">
+        <div class="finance-hero">
+          <div class="finance-hero-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+          <div>
+            <div class="finance-hero-title" data-i18n="loan.title">FUNBUA 贷款</div>
+            <div class="finance-hero-sub" data-i18n="loan.sub">可用额度 = 当前余额的 50%，最低 ¥500</div>
+          </div>
+        </div>
+        <div class="finance-row" style="margin-top:16px"><span data-i18n="loan.currentBalance">当前余额</span><b id="loanBalance">¥0.00</b></div>
+        <div class="finance-row"><span data-i18n="loan.availableLimit">可用贷款额度</span><b id="loanLimit" style="color:var(--accent-green)">¥0.00</b></div>
+        <div class="section-title" style="margin:18px 0 10px;font-size:14px" data-i18n="loan.amountLabel">贷款金额（¥）</div>
+        <input class="amount-input" id="loanAmountInput" type="number" min="1" step="1" placeholder="输入贷款金额" data-i18n-placeholder="loan.amountPlaceholder" inputmode="decimal" oninput="onLoanAmountInput()">
+        <div class="amount-grid" id="loanAmtGrid" style="grid-template-columns:repeat(4,1fr)">
+          <button class="amount-btn" data-amount="500" onclick="selectLoanAmt(500)">¥500</button>
+          <button class="amount-btn" data-amount="1000" onclick="selectLoanAmt(1000)">¥1000</button>
+          <button class="amount-btn" data-amount="2000" onclick="selectLoanAmt(2000)">¥2000</button>
+          <button class="amount-btn" data-amount="5000" onclick="selectLoanAmt(5000)">¥5000</button>
+        </div>
+        <div class="finance-tip" id="loanTip" data-i18n="loan.tip">贷款额度为当前余额的 50%，最低可贷 ¥500；余额不足 ¥1000 时不可贷款。贷款金额将直接存入余额。</div>
+        <button class="finance-deposit-btn" id="loanBtn" onclick="startLoan()" data-i18n="loan.btn">申请贷款</button>
+      </div>
     </div>
 
     <!-- ============ RECHARGE ============ -->
@@ -1080,7 +1124,7 @@ let financePwdAction=null;
 function openFinancePwd(action){
   financePwdAction=action;
   pwdBuf.financePwd='';
-  document.getElementById('financePwdText').textContent=action==='redeem'?t('finance.redeemPwdHint'):t('finance.depositPwdHint');
+  document.getElementById('financePwdText').textContent=action==='redeem'?t('finance.redeemPwdHint'):action==='loan'?t('loan.pwdHint'):t('finance.depositPwdHint');
   document.getElementById('financePwdModal').classList.add('show');
   pwdKb(true,'financePwd');
 }
@@ -1098,6 +1142,7 @@ async function handleFinancePwd(pw){
   pwdKb(false);
   if(action==='deposit')await doFinanceDeposit(pw);
   else if(action==='redeem')await doFinanceRedeem(pw,financeRedeemId);
+  else if(action==='loan')await doLoan(pw);
 }
 async function doFinanceDeposit(pwd){
   if(!currentUser)return showToast(t('finance.loginFirst'),'error');
@@ -1123,6 +1168,45 @@ async function doFinanceRedeem(pwd,id){
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
 
+// ===== 贷款（额度=余额50%，最低¥500，不足则不可贷） =====
+let loanAmount=0;
+function loadLoanStatus(){
+  if(!currentUser)return;
+  const bal=balanceVal||0;
+  const limit=Math.floor(bal*0.5);
+  document.getElementById('loanBalance').textContent='¥'+bal.toFixed(2);
+  document.getElementById('loanLimit').textContent='¥'+limit.toFixed(2);
+  const btn=document.getElementById('loanBtn'),tip=document.getElementById('loanTip');
+  if(limit<500){btn.disabled=true;btn.classList.add('disabled');tip.textContent=t('loan.tipNoEligible');}
+  else{btn.disabled=false;btn.classList.remove('disabled');tip.textContent=t('loan.tip');}
+}
+function selectLoanAmt(a){
+  loanAmount=a;
+  const inp=document.getElementById('loanAmountInput');if(inp)inp.value=a;
+  document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==a));
+}
+function onLoanAmountInput(){
+  const inp=document.getElementById('loanAmountInput');
+  loanAmount=parseFloat(inp.value)||0;
+  document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==inp.value));
+}
+function startLoan(){
+  if(!currentUser)return showToast(t('loan.loginFirst'),'error');
+  if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
+  openFinancePwd('loan');
+}
+async function doLoan(pwd){
+  if(!currentUser)return showToast(t('loan.loginFirst'),'error');
+  if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
+  showLoading(t('loan.loading'));
+  try{
+    const r=await(await fetch(FINANCE_API+'/api/loan/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,amount:loanAmount,payPassword:pwd})})).json();
+    hideLoading();
+    if(r.code===200){balanceVal=r.balance||balanceVal;renderBalance();if(window.VpayTier)VpayTier.apply(balanceVal);showToast(t('loan.success',{amount:(+r.amount).toFixed(2)}));loanAmount=0;const inp=document.getElementById('loanAmountInput');if(inp)inp.value='';document.querySelectorAll('#loanAmtGrid .amount-btn').forEach(b=>b.classList.remove('active'));loadLoanStatus();}
+    else showToast(r.msg||t('loan.failed'),'error');
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+
 // Page switching
 function switchPage(page){
   currentPage=page;
@@ -1131,7 +1215,7 @@ function switchPage(page){
   // Sidebar nav
   document.querySelectorAll('#sidebarNav .nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
   // Content pages
-  ['Dashboard','Recharge','Transfer','Assistant','Finance'].forEach(p=>{
+  ['Dashboard','Recharge','Transfer','Assistant','Finance','Loan'].forEach(p=>{
     const el=document.getElementById('page'+p);
     if(el)el.classList.toggle('hidden',p.toLowerCase()!==page.toLowerCase())
   });
@@ -1140,6 +1224,7 @@ function switchPage(page){
   // Refresh data
   if(page==='dashboard'&&currentUser){updateBalance();loadRecentOrders()}
   if(page==='finance'&&currentUser)loadFinanceStatus()
+  if(page==='loan'&&currentUser)loadLoanStatus()
   if(page==='recharge'&&currentUser)loadOrders();
   if(page==='transfer'&&currentUser){pwdBuf.transferPwd='';loadRecords();ensurePayPassword();}
   // 把语言切换控件移到当前 tab 的 header 右上角（退出按钮右边）

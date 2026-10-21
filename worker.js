@@ -2344,6 +2344,32 @@ export default {
         }
       }
 
+      // ========== 贷款：可用额度 = 当前余额的 50%，最低 ¥500；不足则不可贷 ==========
+      if (path === '/api/loan/apply' && request.method === 'POST') {
+        try {
+          const { username, amount, payPassword } = await request.json();
+          if (!username || amount === undefined || amount === null || payPassword === undefined) return resJson({ code: 400, msg: '参数不完整' }, 400);
+          const amt = parseFloat(amount);
+          if (isNaN(amt) || amt <= 0) return resJson({ code: 400, msg: '贷款金额必须大于0' }, 400);
+          const user = await DB.prepare('SELECT username, balance, pay_password FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+          if (!user.pay_password) return resJson({ code: 403, msg: '请先设置6位支付密码' }, 403);
+          if (String(user.pay_password) !== String(payPassword)) return resJson({ code: 401, msg: '支付密码错误' }, 401);
+          const balance = +user.balance;
+          const limit = Math.floor(balance * 0.5);
+          if (limit < 500) return resJson({ code: 400, msg: '当前余额不足，暂不可贷款（需余额≥¥1000）' }, 400);
+          if (amt < 500) return resJson({ code: 400, msg: '最低贷款额度为 ¥500' }, 400);
+          if (amt > limit) return resJson({ code: 400, msg: '贷款金额不能超过可用额度 ¥' + limit }, 400);
+          const add = await DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amt, username).run();
+          if (!add.success || add.meta.changes === 0) return resJson({ code: 500, msg: '贷款失败' }, 500);
+          const u2 = await DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+          return resJson({ code: 200, msg: '贷款成功', amount: amt, limit, balance: u2.balance });
+        } catch (err) {
+          console.error('Loan apply error:', err);
+          return resJson({ code: 500, msg: '贷款失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 修改用户完整信息接口 ==========
       if (path === '/api/user/edit' && request.method === 'POST') {
         try {

@@ -319,9 +319,9 @@
         "alt": "Mã nhận tiền"
     },
     "finance": {
-        "menu": "Gửi tiết kiệm",
+        "menu": "Tài chính",
         "entrySub": "Kỳ hạn 1 năm · 4%/năm · trả gốc và lãi khi đáo hạn",
-        "depositTitle": "Gửi tiết kiệm FUNBUA",
+        "depositTitle": "Gửi tiết kiệm",
         "depositSub": "Kỳ hạn 1 năm · Lãi suất 4%/năm · trả gốc và lãi một lần khi đáo hạn",
         "amountLabel": "Số tiền gửi (¥)",
         "amountPlaceholder": "Nhập số tiền gửi",
@@ -354,5 +354,24 @@
         "redeemLoading": "Đang tất toán...",
         "depositFailed": "Gửi thất bại",
         "redeemFailed": "Tất toán thất bại"
+    },
+    "loan": {
+        "menu": "Vay",
+        "entrySub": "Hạn mức = 50% số dư · tối thiểu ¥500",
+        "title": "Vay",
+        "sub": "Hạn mức vay riêng được thiết lập cho tài khoản, tối thiểu ¥500 mỗi lần",
+        "currentBalance": "Số dư hiện tại",
+        "availableLimit": "Hạn mức vay khả dụng",
+        "amountLabel": "Số tiền vay (¥)",
+        "amountPlaceholder": "Nhập số tiền vay",
+        "tip": "Số tiền vay được cộng trực tiếp vào số dư, tối thiểu ¥500 mỗi lần.",
+        "tipNoEligible": "Hiện bạn chưa đủ điều kiện vay. Hãy duy trì tài khoản còn hoạt động và thử lại sau.",
+        "btn": "Đăng ký vay",
+        "loginFirst": "Vui lòng đăng nhập trước",
+        "enterAmount": "Vui lòng nhập số tiền vay",
+        "loading": "Đang vay...",
+        "success": "Vay thành công, đã cộng ¥{amount} vào số dư",
+        "failed": "Vay thất bại",
+        "pwdHint": "Xác nhận mật khẩu thanh toán để đăng ký vay: "
     }
 }

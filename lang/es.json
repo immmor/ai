@@ -319,9 +319,9 @@
         "alt": "Código de recepción"
     },
     "finance": {
-        "menu": "Depósito a plazo",
+        "menu": "Finanzas",
         "entrySub": "Plazo de 1 año · 4% anual · capital e intereses al vencimiento",
-        "depositTitle": "Depósito a plazo FUNBUA",
+        "depositTitle": "Depósito a plazo",
         "depositSub": "Plazo de 1 año · 4% anual · capital e intereses pagados al vencimiento",
         "amountLabel": "Monto a depositar (¥)",
         "amountPlaceholder": "Ingrese el monto a depositar",
@@ -354,5 +354,24 @@
         "redeemLoading": "Rescatando...",
         "depositFailed": "Depósito fallido",
         "redeemFailed": "Rescate fallido"
+    },
+    "loan": {
+        "menu": "Préstamo",
+        "entrySub": "Límite = 50% del saldo · mín ¥500",
+        "title": "Préstamo",
+        "sub": "Se asigna un límite de préstamo exclusivo a tu cuenta, mín ¥500 por solicitud",
+        "currentBalance": "Saldo actual",
+        "availableLimit": "Límite de préstamo disponible",
+        "amountLabel": "Monto del préstamo (¥)",
+        "amountPlaceholder": "Ingrese el monto del préstamo",
+        "tip": "El monto prestado se acredita directamente a tu saldo, mín ¥500 por solicitud.",
+        "tipNoEligible": "Actualmente no cumples los requisitos para el préstamo. Mantén tu cuenta activa e inténtalo más tarde.",
+        "btn": "Solicitar préstamo",
+        "loginFirst": "Inicie sesión primero",
+        "enterAmount": "Ingrese un monto de préstamo",
+        "loading": "Solicitando préstamo...",
+        "success": "Préstamo exitoso, ¥{amount} acreditados",
+        "failed": "Préstamo fallido",
+        "pwdHint": "Verifique la contraseña de pago para solicitar el préstamo: "
     }
 }

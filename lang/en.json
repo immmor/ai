@@ -155,11 +155,11 @@
         "viewGuide": "View guide",
         "stepCount": "Step {cur} / {total}",
         "step1Title": "① Copy the order number & add a remark",
-        "step1Text": "This is your unique top-up order number. When paying, you MUST enter it in Alipay's “Remark / Note” field — without it we cannot confirm your top-up. Tap “Copy” on the right to copy it.",
+        "step1Text": "This is your unique top-up order number. When paying, you MUST enter it in Alipay's "Remark / Note" field — without it we cannot confirm your top-up. Tap "Copy" on the right to copy it.",
         "step2Title": "② Scan to pay",
-        "step2Text": "Scan this QR code with the Alipay App, or tap the green “Alipay” button in the popup to open it directly. Pay the exact amount shown (min ¥10, amount must match).",
+        "step2Text": "Scan this QR code with the Alipay App, or tap the green "Alipay" button in the popup to open it directly. Pay the exact amount shown (min ¥10, amount must match).",
         "step3Title": "③ Confirm top-up",
-        "step3Text": "After paying, wait for the 30s countdown to finish, then tap “Confirm Top-up” to submit. Note: each account can confirm only one top-up every 24 hours — top up enough at once; the order number is single-use, do not pay twice.",
+        "step3Text": "After paying, wait for the 30s countdown to finish, then tap "Confirm Top-up" to submit. Note: each account can confirm only one top-up every 24 hours — top up enough at once; the order number is single-use, do not pay twice.",
         "skip": "Skip",
         "prev": "Prev",
         "next": "Next",
@@ -318,9 +318,9 @@
         "alt": "Receive QR code"
     },
     "finance": {
-        "menu": "Fixed Deposit",
+        "menu": "Finance",
         "entrySub": "1-year term · 4% annualized · principal & interest at maturity",
-        "depositTitle": "FUNBUA Fixed Deposit",
+        "depositTitle": "Fixed Deposit",
         "depositSub": "1-year term · 4% annual return · principal & interest paid at maturity",
         "amountLabel": "Deposit amount (¥)",
         "amountPlaceholder": "Enter deposit amount",
@@ -353,5 +353,24 @@
         "redeemLoading": "Redeeming...",
         "depositFailed": "Deposit failed",
         "redeemFailed": "Redemption failed"
+    },
+    "loan": {
+        "menu": "Loan",
+        "entrySub": "Limit = 50% of balance · min ¥500",
+        "title": "Loan",
+        "sub": "An exclusive loan limit is set for your account, min ¥500 per application",
+        "currentBalance": "Current balance",
+        "availableLimit": "Available loan limit",
+        "amountLabel": "Loan amount (¥)",
+        "amountPlaceholder": "Enter loan amount",
+        "tip": "The loaned amount is credited to your balance directly, min ¥500 per application.",
+        "tipNoEligible": "You are not currently eligible for a loan. Please keep your account active and try again later.",
+        "btn": "Apply for loan",
+        "loginFirst": "Please log in first",
+        "enterAmount": "Please enter a loan amount",
+        "loading": "Loaning...",
+        "success": "Loan successful, ¥{amount} credited",
+        "failed": "Loan failed",
+        "pwdHint": "Verify payment password to apply for loan: "
     }
 }
