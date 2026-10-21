@@ -83,6 +83,73 @@ async function redis(env, ...args) {
   return data.result; // 不存在的 key 返回 null
 }
 
+// ===== Redis 布隆过滤器（登录/注册「是否已注册」快速预检，减少 DB 查询）=====
+// 位数组持久化在 Upstash Redis 的 bitmap（bf_user）里；只保证「肯定不存在」可信，
+// 「可能存在」必须回 DB 确认。标准布隆不支持删除；误判只会假阳性，不会假阴性。
+const BF_M = 1 << 20;            // 位数组 ~104万 bit ≈ 128KB；配合 BF_K=7 误判率约 1%
+const BF_K = 7;                  // 哈希函数个数（按目标误判率 p≈1% 取 -ln(p)/ln2）
+const bfHash = (x, seed) => {
+  let h = (0x811c9dc5 ^ seed) >>> 0;
+  for (let i = 0; i < x.length; i++) { h ^= x.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
+};
+const bfPositions = (key) => {
+  const h1 = bfHash(key, 0), h2 = bfHash(key, 0x9e3779b9);
+  const out = [];
+  for (let i = 0; i < BF_K; i++) out.push(((h1 + i * h2) >>> 0) % BF_M);
+  return out;
+};
+// 写：一次 BITFIELD SET 把 k 个位置置 1
+const BFAdd = async (env, name, key) => {
+  const ps = bfPositions(key);
+  const args = ['BITFIELD', name];
+  for (const p of ps) args.push('SET', 'u1', p, 1);
+  try { await redis(env, ...args); } catch (e) {}
+};
+// 读：一次 BITFIELD GET 取 k 位；全 1=可能存在，有 0=肯定不存在。Redis 异常时保守返回 true（回 DB）
+const BFMaybe = async (env, name, key) => {
+  const ps = bfPositions(key);
+  const args = ['BITFIELD', name];
+  for (const p of ps) args.push('GET', 'u1', p);
+  try {
+    const res = await redis(env, ...args);
+    const arr = Array.isArray(res) ? res : (res && res.result);
+    return Array.isArray(arr) ? arr.every(v => v === 1) : true;
+  } catch (e) {
+    return true;
+  }
+};
+// 仅在回填完成后启用「肯定不存在即拒绝」优化（避免上线初期误拒老用户）
+const bfEnabled = async (env) => {
+  try { return (await redis(env, 'GET', 'bf_user_init')) === '1'; } catch (e) { return false; }
+};
+
+// ===== Redis 滑动窗口限流（防爆破 / 刷接口）=====
+// 维度 key 自定义（如按 IP、用户名、邮箱）；windowSec 秒内请求数 > limit 即拒绝。
+// 用 ZSET 记录每次请求时间戳，滑动剔除窗口外记录；Redis 异常时 fail-open 放行，不阻断业务。
+const rateLimit = async (env, key, limit, windowSec) => {
+  const rk = 'ratelimit:' + key;
+  const now = Date.now();
+  const min = now - windowSec * 1000;
+  try {
+    await redis(env, 'ZREMRANGEBYSCORE', rk, '-inf', min);   // 剔除窗口外旧记录
+    const count = await redis(env, 'ZCARD', rk);             // 当前窗口内计数
+    if (count >= limit) {
+      const oldest = await redis(env, 'ZRANGE', rk, 0, 0, 'WITHSCORES');
+      let retryAfter = windowSec;
+      if (Array.isArray(oldest) && oldest[1] != null) {
+        retryAfter = Math.max(1, Math.ceil((Number(oldest[1]) + windowSec * 1000 - now) / 1000));
+      }
+      return { allowed: false, retryAfter, limit, remaining: 0 };
+    }
+    await redis(env, 'ZADD', rk, now, now + ':' + Math.random().toString(36).slice(2, 8));
+    await redis(env, 'EXPIRE', rk, windowSec + 1);
+    return { allowed: true, retryAfter: 0, limit, remaining: limit - count - 1 };
+  } catch (e) {
+    return { allowed: true, retryAfter: 0, limit, remaining: -1 };
+  }
+};
+
 // ========== 可插拔 AI 对话（默认 Agnes AI，非流式） ==========
 // 接入新模型：在 AI_PROVIDERS 中新增一项即可，无需改动 callAI 与路由。
 // 每个 provider 需提供：
@@ -508,6 +575,17 @@ export default {
           return resJson({ success: false, message: '请输入有效的邮箱地址！' }, 400);
         }
 
+        // 滑动窗口限流：同一邮箱 / 同一 IP 10 分钟内最多发 5 / 10 次验证码，防刷接口
+        const sendIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+        const rlEmail = await rateLimit(env, 'sendcode:email:' + email, 5, 600);
+        if (!rlEmail.allowed) {
+          return resJson({ success: false, message: `验证码发送过于频繁，请 ${rlEmail.retryAfter} 秒后再试！` }, 429);
+        }
+        const rlSendIp = await rateLimit(env, 'sendcode:ip:' + sendIp, 10, 600);
+        if (!rlSendIp.allowed) {
+          return resJson({ success: false, message: `请求过于频繁，请 ${rlSendIp.retryAfter} 秒后再试！` }, 429);
+        }
+
         // 频率限制：验证码 key 本身带 60s TTL，只要它还存活（TTL>0）就说明 60 秒内已发送过
         const ttl = await redis(env, 'TTL', `verify_code_${email}`);
         if (ttl > 0) {
@@ -596,11 +674,34 @@ export default {
         return resJson({ success: true, message: '验证成功！' });
       }
 
+      // ========== 布隆过滤器回填（运维调用一次：把已存在用户名写入 bf_user；跑完置 bf_user_init=1 启用拒绝优化） ==========
+      if (path === '/api/bf-backfill' && request.method === 'POST') {
+        const bk = request.headers.get('x-bf-key');
+        if (!env.BF_BACKFILL_KEY || bk !== env.BF_BACKFILL_KEY) {
+          return resJson({ success: false, message: 'forbidden' }, 403);
+        }
+        const cursor = parseInt(url.searchParams.get('cursor') || '0', 10) || 0;
+        const rows = await DB.prepare('SELECT rowid, username FROM user WHERE rowid > ? ORDER BY rowid LIMIT 500').bind(cursor).all();
+        const list = (rows && rows.results) || [];
+        for (const r of list) { if (r.username) await BFAdd(env, 'bf_user', r.username); }
+        const done = list.length < 500;
+        if (done) { try { await redis(env, 'SET', 'bf_user_init', '1'); } catch (e) {} }
+        const next = done ? null : (list.length ? list[list.length - 1].rowid : cursor);
+        return resJson({ success: true, processed: list.length, nextCursor: next, done });
+      }
+
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
       if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
         const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, fromGithub, web3Address, sliderVerified, textVerified, audioVerified, faceDescriptor } = params;
         
+        // 滑动窗口限流：同一 IP 1 小时内最多注册 5 次，防批量注册/机器刷号
+        const regIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+        const rlReg = await rateLimit(env, 'register:ip:' + regIp, 5, 3600);
+        if (!rlReg.allowed) {
+          return resJson({ success: false, message: `注册过于频繁，请 ${rlReg.retryAfter} 秒后再试！` }, 429);
+        }
+
         // 统一用小写处理 web3 地址
         const web3AddressLower = web3Address ? web3Address.toLowerCase() : '';
         
@@ -884,6 +985,7 @@ export default {
             await DB.prepare('UPDATE user SET invited_by = ? WHERE username = ?').bind(inviterUsername, username).run();
           }
           
+          await BFAdd(env, 'bf_user', username); // 注册成功写入布隆过滤器，供后续登录快速预检
           return resJson({ 
             success: true, 
             message: finalBalance > 0 ? '注册成功！获得邀请奖励2元' : '注册成功！', 
@@ -900,8 +1002,27 @@ export default {
         const params = await request.json();
         const { username, password } = params;
 
+        // 滑动窗口限流：同一用户名 5 分钟内最多 10 次、同一 IP 5 分钟内最多 30 次，防爆破/撞库
+        const loginIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+        const rlUser = await rateLimit(env, 'login:user:' + username, 10, 300);
+        if (!rlUser.allowed) {
+          return resJson({ success: false, message: `登录尝试过于频繁，请 ${rlUser.retryAfter} 秒后再试！` }, 429);
+        }
+        const rlLoginIp = await rateLimit(env, 'login:ip:' + loginIp, 30, 300);
+        if (!rlLoginIp.allowed) {
+          return resJson({ success: false, message: `请求过于频繁，请 ${rlLoginIp.retryAfter} 秒后再试！` }, 429);
+        }
+
         if (!username || !password) {
           return resJson({ success: false, message: '用户名和密码不能为空！' }, 400);
+        }
+
+        // 布隆过滤器快速预检：仅回填完成后启用，肯定未注册直接拒绝，省一次 DB 查询
+        if (await bfEnabled(env)) {
+          const bfPresent = await BFMaybe(env, 'bf_user', username);
+          if (!bfPresent) {
+            return resJson({ success: false, message: '用户名或密码错误' }, 401);
+          }
         }
 
         await ensureCardColumn(DB);
@@ -911,6 +1032,8 @@ export default {
           .first();
 
         if (user) {
+          // 自愈：把已存在用户补进布隆过滤器（覆盖上线前老用户 / 漏写情况）
+          await BFAdd(env, 'bf_user', username);
           // 生成登录鉴权 token（p_token），每次登录刷新并持久化，供后续受保护接口校验
           const pToken = await newPToken(DB, username);
           const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
@@ -943,6 +1066,17 @@ export default {
         const params = await request.json();
         const { username, descriptor } = params;
         if (!username) return resJson({ success: false, message: '请提供用户名！' }, 400);
+        // 滑动窗口限流：防刷脸爆破（与密码登录同维度）
+        const faceIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+        const rlUser = await rateLimit(env, 'login:user:' + username, 10, 300);
+        if (!rlUser.allowed) return resJson({ success: false, message: `登录尝试过于频繁，请 ${rlUser.retryAfter} 秒后再试！` }, 429);
+        const rlFaceIp = await rateLimit(env, 'login:ip:' + faceIp, 30, 300);
+        if (!rlFaceIp.allowed) return resJson({ success: false, message: `请求过于频繁，请 ${rlFaceIp.retryAfter} 秒后再试！` }, 429);
+        // 布隆过滤器快速预检（仅回填完成后启用）
+        if (await bfEnabled(env)) {
+          const bfPresent = await BFMaybe(env, 'bf_user', username);
+          if (!bfPresent) return resJson({ success: false, message: '用户不存在' }, 401);
+        }
         if (!Array.isArray(descriptor) || descriptor.length !== 128 || !descriptor.every(n => typeof n === 'number')) {
           return resJson({ success: false, message: '人脸特征数据无效！' }, 400);
         }
@@ -974,6 +1108,7 @@ export default {
         await DB.prepare('UPDATE user SET login_info = ? WHERE username = ?').bind(updatedLoginInfo, username).run();
         const pricePlan = u.price_plan ? JSON.parse(u.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
         const cardNumber = u.card_number || await ensureCardNumber(DB, u.rowid);
+        await BFAdd(env, 'bf_user', username); // 自愈：补进布隆过滤器
         return resJson({ success: true, message: '刷脸登录成功！', userInfo: { id: u.rowid, username: u.username, balance: u.balance, v_token: u.v_token, p_token: pToken, v_expire_date: u.v_expire_date, not_trusted: u.not_trusted || '', vorders: u.vorders, invite_code: u.invite_code, invited_user: u.invited_user, rebates: u.rebates, card_number: cardNumber }, pricePlan });
       }
 
@@ -1497,7 +1632,7 @@ export default {
         
         return result 
           ? resJson({ code: 200, msg: '查询成功', data: result }) 
-          : resJson({ code: 404, msg: '用户不存在' }, 404);
+          : resJson({ code: 404, msg: '用户不存在', data: null });
       }
 
       // ========== 生成5位随机字符串 ==========

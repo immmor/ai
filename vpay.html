@@ -1661,7 +1661,7 @@ function openTransferDetail(which,idx){
   const rec=(which==='recent'?window._recentTransfers:window._historyTransfers)[idx];
   if(!rec)return;
   if(rec.unreadMsgId)markTransferMessageRead(rec.unreadMsgId);
-  const dir=t(rec.send?'records.toLabel':'records.fromLabel',{name:escapeHtml(rec.name)});
+  const dir=t(rec.send?'nav.transfer':'vpay.collect');
   const amt=(rec.send?'-':'+')+'¥'+(Number(rec.amount)||0).toFixed(2);
   const amtColor=rec.send?'var(--accent-red)':'var(--accent-green)';
   const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:13px 2px;border-bottom:1px solid var(--panel-border)"><span style="color:var(--text-muted);font-size:13px;flex-shrink:0">${l}</span><span style="font-weight:600;text-align:right;${c?('color:'+c):''};word-break:break-all">${v}</span></div>`;
