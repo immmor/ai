@@ -689,6 +689,7 @@
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
                 <a href="#football" class="menu-item" onclick="showPage('football')">游戏管理</a>
                 <a href="#withdraw" class="menu-item" onclick="showPage('withdraw')">提现管理</a>
+                <a href="#realname" class="menu-item" onclick="showPage('realname')">认证管理</a>
             </nav>
         </aside>
 
@@ -1428,6 +1429,38 @@
                                 </tr>
                             </thead>
                             <tbody id="rebateTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- 认证管理 -->
+                <div id="realnamePage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>实名认证审核</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="realnameStatusFilter" onchange="loadRealnames()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                    <option value="">全部</option>
+                                    <option value="pending">待审核</option>
+                                    <option value="approved">已通过</option>
+                                    <option value="rejected">已拒绝</option>
+                                </select>
+                                <button class="add-btn" onclick="loadRealnames()" style="background-color: #667eea;">刷新</button>
+                            </div>
+                        </div>
+                        <table id="realnameTable">
+                            <thead>
+                                <tr>
+                                    <th>用户</th>
+                                    <th>姓名</th>
+                                    <th>身份证号</th>
+                                    <th>人像面</th>
+                                    <th>国徽面</th>
+                                    <th>状态</th>
+                                    <th>提交时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="realnameTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -2553,7 +2586,8 @@
                 'settings': '系统设置',
                 'messages': '消息管理',
                 'football': '游戏管理',
-                'withdraw': '提现管理'
+                'withdraw': '提现管理',
+                'realname': '认证管理'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
@@ -5000,6 +5034,72 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             if (res.success) {
                 alert(res.message);
                 loadWithdrawals();
+            } else {
+                alert(res.message || '操作失败');
+            }
+        }
+
+        // ========== 实名认证审核（认证管理） ==========
+        async function loadRealnames() {
+            const tbody = document.getElementById('realnameTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">加载中...</td></tr>';
+            const status = document.getElementById('realnameStatusFilter')?.value || '';
+            const url = `/api/realname/list${status ? '?status=' + status : ''}`;
+            const res = await newApiRequest(url, 'GET');
+            if (res.success && res.data) {
+                renderRealnames(res.data);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">加载失败: ${res.message || '未知错误'}</td></tr>`;
+            }
+        }
+
+        function renderRealnames(list) {
+            const tbody = document.getElementById('realnameTableBody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">暂无实名认证申请</td></tr>';
+                return;
+            }
+            const statusMap = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+            const statusColor = { pending: '#e53e3e', approved: '#48bb78', rejected: '#a0aec0' };
+            tbody.innerHTML = list.map(r => {
+                const front = r.idFront ? `<img src="${r.idFront}" style="width:90px;height:56px;object-fit:cover;border-radius:6px;" alt="人像面">` : '-';
+                const back = r.idBack ? `<img src="${r.idBack}" style="width:90px;height:56px;object-fit:cover;border-radius:6px;" alt="国徽面">` : '-';
+                const actions = r.status === 'pending'
+                    ? `<button class="add-btn" style="background:#48bb78;" data-username="${escHtml(r.username)}" onclick="reviewRealname(this,'approve')">通过</button> <button class="delete-btn" data-username="${escHtml(r.username)}" onclick="reviewRealname(this,'reject')">拒绝</button>`
+                    : '-';
+                return `
+                <tr>
+                    <td>${escHtml(r.username)}</td>
+                    <td>${escHtml(r.name)}</td>
+                    <td>${escHtml(r.idNumber)}</td>
+                    <td>${front}</td>
+                    <td>${back}</td>
+                    <td style="color:${statusColor[r.status] || '#000'}">${statusMap[r.status] || r.status}</td>
+                    <td>${r.submittedAt || ''}</td>
+                    <td>${actions}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function reviewRealname(btn, action) {
+            const username = btn.dataset.username;
+            if (action === 'approve') {
+                if (!confirm('确认通过该实名认证？')) return;
+            } else {
+                const reason = prompt('请输入拒绝原因（将展示给用户）：', '');
+                if (reason === null) return;
+                const trimmed = reason.trim();
+                if (!trimmed) { alert('请填写拒绝原因'); return; }
+                if (!confirm(`确认拒绝该实名认证？\n原因：${trimmed}`)) return;
+                window._realnameRejectReason = trimmed;
+            }
+            const body = { username, action, operator: currentUserInfo?.username || 'admin' };
+            if (action === 'reject' && window._realnameRejectReason) body.reject_reason = window._realnameRejectReason;
+            const res = await newApiRequest('/api/realname/review', 'POST', body);
+            window._realnameRejectReason = null;
+            if (res.success) {
+                alert(res.message);
+                loadRealnames();
             } else {
                 alert(res.message || '操作失败');
             }

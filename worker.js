@@ -4330,7 +4330,67 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           if (!row || !row.value) return resJson({ success: true, verified: false, status: 'none' });
           let data = {};
           try { data = JSON.parse(row.value || '{}'); } catch {}
-          return resJson({ success: true, verified: data.status === 'approved', status: data.status || 'pending', name: data.name, idNumber: data.idNumber });
+          return resJson({ success: true, verified: data.status === 'approved', status: data.status || 'pending', name: data.name, idNumber: data.idNumber, idFront: data.idFront, idBack: data.idBack });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 实名认证：后台列表 ==========
+      if (path === '/api/realname/list' && request.method === 'GET') {
+        try {
+          const status = url.searchParams.get('status') || '';
+          const rows = await DB.prepare("SELECT key, value FROM link WHERE key LIKE 'realname_%' ORDER BY rowid DESC LIMIT 500").all();
+          const list = [];
+          for (const row of (rows.results || [])) {
+            let data = {};
+            try { data = JSON.parse(row.value || '{}'); } catch (e) {}
+            if (status && (data.status || 'pending') !== status) continue;
+            list.push({
+              username: String(row.key).replace('realname_', ''),
+              name: data.name || '',
+              idNumber: data.idNumber || '',
+              idFront: data.idFront || '',
+              idBack: data.idBack || '',
+              status: data.status || 'pending',
+              submittedAt: data.submittedAt || ''
+            });
+          }
+          return resJson({ success: true, data: list });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // ========== 实名认证：后台审核（通过/拒绝） ==========
+      if (path === '/api/realname/review' && request.method === 'POST') {
+        try {
+          const { username, action, operator, reject_reason } = await request.json();
+          if (!username || !['approve', 'reject'].includes(action)) return resJson({ success: false, message: '参数错误' }, 400);
+          const key = `realname_${username}`;
+          const row = await DB.prepare('SELECT value FROM link WHERE key = ?').bind(key).first();
+          if (!row || !row.value) return resJson({ success: false, message: '无实名记录' }, 404);
+          let data = {};
+          try { data = JSON.parse(row.value || '{}'); } catch (e) {}
+          if (data.status && data.status !== 'pending') return resJson({ success: false, message: '该申请已处理' }, 400);
+
+          const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const msgNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+          data.status = action === 'approve' ? 'approved' : 'rejected';
+          data.reviewed_at = now;
+          data.reviewer = operator || 'admin';
+          if (action === 'reject') data.reject_reason = (reject_reason || '').toString().trim();
+          await DB.prepare('INSERT OR REPLACE INTO link (key, value) VALUES (?, ?)').bind(key, JSON.stringify(data)).run();
+
+          if (action === 'approve') {
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(username, '✅ 您的实名认证已通过审核', msgNow).run();
+          } else {
+            const reasonLine = data.reject_reason ? `（原因：${data.reject_reason}）` : '';
+            await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind(username, `❌ 您的实名认证未通过${reasonLine}`, msgNow).run();
+          }
+          return resJson({ success: true, message: action === 'approve' ? '已通过' : '已拒绝' });
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
         }

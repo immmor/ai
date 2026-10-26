@@ -117,6 +117,10 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .id-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;pointer-events:none}
 .id-placeholder i{font-size:22px;opacity:.7}
 .id-upload.has-image .id-placeholder{display:none}
+.realname-status{font-size:12px;margin:-8px 0 12px;color:var(--text-muted)}
+.realname-status.ok{color:var(--accent-green)}
+.realname-status.pending{color:#fdcb6e}
+.realname-status.rejected{color:#ff7675}
 /* Main Content */
 .main-content{padding:40px 40px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
 /* Auth */
@@ -712,6 +716,7 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
       <button class="modal-close" onclick="closeRealName()"><i class="fa-solid fa-times"></i></button>
       <h3 style="text-align:left">实名认证</h3>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">请填写真实姓名与证件号，并上传身份证正反面照片。</p>
+      <p class="realname-status" id="realNameStatus"></p>
       <div class="input-group"><input type="text" id="realNameInput" placeholder="真实姓名" autocomplete="off"></div>
       <div class="input-group"><input type="text" id="realIdInput" placeholder="身份证号" autocomplete="off"></div>
       <div class="id-upload-row">
@@ -1546,7 +1551,35 @@ function openRealName(){
     const prev=document.getElementById(id+'Prev');if(prev)prev.src='';
     const box=document.getElementById(id+'Box');if(box)box.classList.remove('has-image');
   });
+  const statusEl=document.getElementById('realNameStatus');
+  if(statusEl){statusEl.textContent='';statusEl.className='realname-status';}
   document.getElementById('realNameModal').classList.add('show');
+  loadRealNameHistory();
+}
+function fillIdPreview(id,dataUrl){
+  if(!dataUrl)return;
+  const el=document.getElementById(id);
+  const prev=document.getElementById(id+'Prev');
+  const box=document.getElementById(id+'Box');
+  if(el)el._dataUrl=dataUrl;
+  if(prev)prev.src=dataUrl;
+  if(box)box.classList.add('has-image');
+}
+async function loadRealNameHistory(){
+  try{
+    const r=await(await fetch(API_BASE+'/api/realname?username='+encodeURIComponent(currentUser.username))).json();
+    if(!r.success||!r.status||r.status==='none')return;
+    if(r.name)document.getElementById('realNameInput').value=r.name;
+    if(r.idNumber)document.getElementById('realIdInput').value=r.idNumber;
+    fillIdPreview('realIdFront',r.idFront);
+    fillIdPreview('realIdBack',r.idBack);
+    const statusEl=document.getElementById('realNameStatus');
+    if(statusEl){
+      if(r.status==='approved'){statusEl.textContent='已通过认证';statusEl.className='realname-status ok';realNameVerified=true;}
+      else if(r.status==='pending'){statusEl.textContent='审核中（已显示上次提交内容，可重新提交）';statusEl.className='realname-status pending';}
+      else if(r.status==='rejected'){statusEl.textContent='上次未通过，请修改后重新提交';statusEl.className='realname-status rejected';}
+    }
+  }catch(e){}
 }
 function closeRealName(){
   document.getElementById('realNameModal').classList.remove('show');
