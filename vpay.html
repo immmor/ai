@@ -1483,7 +1483,7 @@ async function handleLogin(){
 
 function handleLogout(){
   if(confirm(t('alert.logoutConfirm'))){
-    localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;balanceVisible=false;pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
+    localStorage.removeItem('vpay_user');currentUser=null;payPasswordReady=false;balanceVisible=false;realNameVerified=false;realNameStatus='none';pwdFields.forEach(k=>pwdBuf[k]='');pwdKb(false);
     document.getElementById('appContainer').classList.add('hidden');
     document.getElementById('mobileNav').classList.add('hidden');
     document.getElementById('authFullscreen').classList.remove('hidden');
@@ -1492,6 +1492,7 @@ function handleLogout(){
 }
 
 let realNameVerified=false;
+let realNameStatus='none';
 function openUserMenu(el){
   const menu=document.getElementById('userMenu');
   const overlay=document.getElementById('userMenuOverlay');
@@ -1499,9 +1500,13 @@ function openUserMenu(el){
   const small=window.matchMedia('(max-width:768px)').matches;
   const r=el.getBoundingClientRect();
   const w=240;
-  let left=r.left;
+  // 水平：大屏在侧边栏内左右居中；无侧边栏（小屏）时以名字为中心
+  const sb=document.querySelector('.sidebar');
+  const sbr=sb?sb.getBoundingClientRect():null;
+  const anchor=(sbr&&sbr.width>0)?sbr:r;
+  let left=anchor.left + anchor.width/2 - w/2;
+  if(left<8)left=8;
   if(left+w>window.innerWidth-8)left=window.innerWidth-8-w;
-  left=Math.max(8,left);
   menu.classList.remove('from-top','from-bottom');
   menu.style.width=w+'px';
   menu.style.left=left+'px';
@@ -1520,7 +1525,9 @@ function openUserMenu(el){
   const un=currentUser?maskUsername(currentUser.username):t('vpay.guest');
   document.getElementById('userMenuName').textContent=un;
   const tag=document.getElementById('realNameTag');
-  if(realNameVerified){tag.textContent='已认证';tag.classList.add('verified');}
+  if(realNameStatus==='approved'){tag.textContent='已认证';tag.classList.add('verified');}
+  else if(realNameStatus==='pending'){tag.textContent='审核中';tag.classList.remove('verified');}
+  else if(realNameStatus==='rejected'){tag.textContent='未通过';tag.classList.remove('verified');}
   else{tag.textContent='未认证';tag.classList.remove('verified');}
   overlay.classList.add('show');
   requestAnimationFrame(()=>menu.classList.add('show'));
@@ -1569,6 +1576,7 @@ async function loadRealNameHistory(){
   try{
     const r=await(await fetch(API_BASE+'/api/realname?username='+encodeURIComponent(currentUser.username))).json();
     if(!r.success||!r.status||r.status==='none')return;
+    realNameStatus=r.status;
     if(r.name)document.getElementById('realNameInput').value=r.name;
     if(r.idNumber)document.getElementById('realIdInput').value=r.idNumber;
     fillIdPreview('realIdFront',r.idFront);
@@ -1576,8 +1584,8 @@ async function loadRealNameHistory(){
     const statusEl=document.getElementById('realNameStatus');
     if(statusEl){
       if(r.status==='approved'){statusEl.textContent='已通过认证';statusEl.className='realname-status ok';realNameVerified=true;}
-      else if(r.status==='pending'){statusEl.textContent='审核中（已显示上次提交内容，可重新提交）';statusEl.className='realname-status pending';}
-      else if(r.status==='rejected'){statusEl.textContent='上次未通过，请修改后重新提交';statusEl.className='realname-status rejected';}
+      else if(r.status==='pending'){statusEl.textContent='审核中（已显示上次提交内容，可重新提交）';statusEl.className='realname-status pending';realNameVerified=false;}
+      else if(r.status==='rejected'){statusEl.textContent='上次未通过，请修改后重新提交';statusEl.className='realname-status rejected';realNameVerified=false;}
     }
   }catch(e){}
 }
@@ -1607,7 +1615,7 @@ async function submitRealName(){
   try{
     const r=await(await fetch(API_BASE+'/api/realname',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,name,idNumber:id,idFront:front,idBack:back})})).json();
     hideLoading();
-    if(r.success){realNameVerified=true;closeRealName();showToast(r.message||'实名认证已提交');}
+    if(r.success){realNameVerified=false;realNameStatus='pending';closeRealName();showToast(r.message||'实名认证已提交');}
     else showToast(r.message||'提交失败','error');
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
@@ -1631,7 +1639,7 @@ function enterMain(){
     const alipayOpt=document.querySelector('.method-option[data-method="alipay_static"]');
     if(alipayOpt)alipayOpt.style.display='none';
   }
-  updateBalance();loadRecentOrders();switchPage('dashboard')
+  updateBalance();loadRecentOrders();switchPage('dashboard');loadRealNameHistory()
 }
 
 // Balance（默认隐藏金额，点眼睛切换）
