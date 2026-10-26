@@ -80,9 +80,43 @@ body{
 .lang-menu div{padding:10px 4px;cursor:pointer}
 .lang-menu div:hover{background:#2a2a2a}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--primary-purple);display:flex;align-items:center;justify-content:center;font-weight:bold}
-.user-info{min-width:0}
+.user-info{min-width:0;cursor:pointer}
 .user-info h4{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-info p{font-size:12px;color:var(--text-muted)}
+.card-user-name{cursor:pointer}
+/* 用户名菜单：贴在名字处 上拉框(大屏,名字上方)/下拉框(小屏,名字下方) */
+.user-menu-overlay{display:none;position:fixed;inset:0;background:transparent;z-index:10002}
+.user-menu-overlay.show{display:block}
+.user-menu{
+  position:fixed;z-index:10003;
+  width:240px;max-width:calc(100vw - 16px);
+  background:var(--panel-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--panel-border);border-radius:14px;padding:8px;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.user-menu.from-top{transform:translateY(10px);transform-origin:bottom center}
+.user-menu.from-bottom{transform:translateY(-10px);transform-origin:top center}
+.user-menu.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.user-menu-header{display:flex;align-items:center;gap:12px;padding:6px 6px 12px;border-bottom:1px solid var(--panel-border);margin-bottom:6px}
+.user-menu-name{font-size:15px;font-weight:600}
+.user-menu-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
+.user-menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;background:none;border:none;color:var(--text-main);font-size:14px;font-family:inherit;cursor:pointer;border-radius:10px;text-align:left}
+.user-menu-item:hover{background:rgba(255,255,255,.06)}
+.user-menu-item>i{color:#a29bfe;width:18px;text-align:center}
+.user-menu-tag{margin-left:auto;font-size:12px;color:var(--text-muted);padding:2px 10px;border-radius:20px;background:rgba(255,255,255,.06);white-space:nowrap}
+.user-menu-tag.verified{color:var(--accent-green);background:rgba(0,184,148,.12)}
+body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32px rgba(0,0,0,.15);}
+/* 实名认证：身份证正反面（卡片式上传区） */
+.id-upload-row{display:flex;gap:12px;margin:6px 0 16px}
+.id-upload{position:relative;flex:1;min-width:0;aspect-ratio:1.58/1;background:var(--panel-bg);border:1px dashed var(--panel-border);border-radius:12px;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s}
+.id-upload:hover{border-color:#6c5ce7;background:rgba(108,92,231,.06)}
+.id-upload.has-image{border-style:solid}
+.id-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.id-upload.has-image .id-preview{display:block}
+.id-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;pointer-events:none}
+.id-placeholder i{font-size:22px;opacity:.7}
+.id-upload.has-image .id-placeholder{display:none}
 /* Main Content */
 .main-content{padding:40px 40px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:30px;height:85vh}
 /* Auth */
@@ -656,6 +690,46 @@ body{
     </div>
   </div>
 
+  <!-- ============ 用户名菜单：大屏上拉框 / 小屏下拉框 ============ -->
+  <div class="user-menu-overlay" id="userMenuOverlay" onclick="closeUserMenu()"></div>
+  <div class="user-menu" id="userMenu">
+    <div class="user-menu-header">
+      <div>
+        <div class="user-menu-name" id="userMenuName">未登录</div>
+        <div class="user-menu-sub" id="userMenuSub">点击实名认证解锁更多服务</div>
+      </div>
+    </div>
+    <button class="user-menu-item" onclick="openRealName()">
+      <i class="fa-solid fa-id-card"></i>
+      <span>实名认证</span>
+      <span class="user-menu-tag" id="realNameTag">未认证</span>
+    </button>
+  </div>
+
+  <!-- ============ 实名认证 ============ -->
+  <div class="modal-overlay" id="realNameModal" onclick="if(event.target===this)closeRealName()">
+    <div class="modal-box" style="width:380px;max-width:92vw">
+      <button class="modal-close" onclick="closeRealName()"><i class="fa-solid fa-times"></i></button>
+      <h3 style="text-align:left">实名认证</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">请填写真实姓名与证件号，并上传身份证正反面照片。</p>
+      <div class="input-group"><input type="text" id="realNameInput" placeholder="真实姓名" autocomplete="off"></div>
+      <div class="input-group"><input type="text" id="realIdInput" placeholder="身份证号" autocomplete="off"></div>
+      <div class="id-upload-row">
+        <label class="id-upload" id="realIdFrontBox">
+          <input type="file" id="realIdFront" accept="image/*" hidden onchange="previewId(this,'realIdFrontPrev','realIdFrontBox')">
+          <img class="id-preview" id="realIdFrontPrev" alt="人像面预览">
+          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span>人像面</span></span>
+        </label>
+        <label class="id-upload" id="realIdBackBox">
+          <input type="file" id="realIdBack" accept="image/*" hidden onchange="previewId(this,'realIdBackPrev','realIdBackBox')">
+          <img class="id-preview" id="realIdBackPrev" alt="国徽面预览">
+          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span>国徽面</span></span>
+        </label>
+      </div>
+      <button class="btn btn-primary" onclick="submitRealName()"><i class="fa-solid fa-shield-halved"></i> 提交认证</button>
+    </div>
+  </div>
+
   <div class="app-container hidden" id="appContainer">
     <!-- Sidebar -->
   <aside class="sidebar">
@@ -670,7 +744,7 @@ body{
     </div>
     <div class="user-profile" id="userProfile">
       <div class="avatar" id="userAvatar">U</div>
-      <div class="user-info">
+      <div class="user-info" onclick="openUserMenu(this)">
         <h4 id="userName" data-i18n="vpay.guest">未登录</h4>
         <p id="userStatus" data-i18n="vpay.loggedIn">请登录账户</p>
       </div>
@@ -709,7 +783,7 @@ body{
             <div class="card-user">
               <div class="brand"><i class="fa-solid fa-gem"></i><span>FUNBUA</span></div>
               <div class="card-user-right">
-                <span class="card-user-name" id="cardUserName" data-i18n="vpay.guest">未登录</span>
+                <span class="card-user-name" id="cardUserName" data-i18n="vpay.guest" onclick="openUserMenu(this)">未登录</span>
               </div>
             </div>
             <div class="card-top">
@@ -1410,6 +1484,99 @@ function handleLogout(){
     document.getElementById('authFullscreen').classList.remove('hidden');
     document.getElementById('username').value='';document.getElementById('password').value='';
   }
+}
+
+let realNameVerified=false;
+function openUserMenu(el){
+  const menu=document.getElementById('userMenu');
+  const overlay=document.getElementById('userMenuOverlay');
+  if(menu.classList.contains('show')){closeUserMenu();return;}
+  const small=window.matchMedia('(max-width:768px)').matches;
+  const r=el.getBoundingClientRect();
+  const w=240;
+  let left=r.left;
+  if(left+w>window.innerWidth-8)left=window.innerWidth-8-w;
+  left=Math.max(8,left);
+  menu.classList.remove('from-top','from-bottom');
+  menu.style.width=w+'px';
+  menu.style.left=left+'px';
+  menu.style.right='auto';
+  if(small){
+    // 小屏：下拉框（名字下方）
+    menu.classList.add('from-bottom');
+    menu.style.top=(r.bottom+8)+'px';
+    menu.style.bottom='auto';
+  }else{
+    // 大屏：上拉框（名字上方）
+    menu.classList.add('from-top');
+    menu.style.bottom=(window.innerHeight - r.top + 8)+'px';
+    menu.style.top='auto';
+  }
+  const un=currentUser?maskUsername(currentUser.username):t('vpay.guest');
+  document.getElementById('userMenuName').textContent=un;
+  const tag=document.getElementById('realNameTag');
+  if(realNameVerified){tag.textContent='已认证';tag.classList.add('verified');}
+  else{tag.textContent='未认证';tag.classList.remove('verified');}
+  overlay.classList.add('show');
+  requestAnimationFrame(()=>menu.classList.add('show'));
+  setTimeout(()=>document.addEventListener('click',_closeUserMenuOutside,true),0);
+}
+function _closeUserMenuOutside(e){
+  const menu=document.getElementById('userMenu');
+  if(!menu.classList.contains('show'))return;
+  if(menu.contains(e.target))return;
+  const trigger=e.target.closest('.user-info,.card-user-name');
+  if(trigger)return;
+  closeUserMenu();
+}
+function closeUserMenu(){
+  const menu=document.getElementById('userMenu');
+  const overlay=document.getElementById('userMenuOverlay');
+  menu.classList.remove('show');
+  overlay.classList.remove('show');
+  document.removeEventListener('click',_closeUserMenuOutside,true);
+}
+function openRealName(){
+  closeUserMenu();
+  if(!currentUser){showToast(t('finance.loginFirst'),'error');return;}
+  document.getElementById('realNameInput').value='';
+  document.getElementById('realIdInput').value='';
+  ['realIdFront','realIdBack'].forEach(id=>{
+    const el=document.getElementById(id);el.value='';el._dataUrl='';
+    const prev=document.getElementById(id+'Prev');if(prev)prev.src='';
+    const box=document.getElementById(id+'Box');if(box)box.classList.remove('has-image');
+  });
+  document.getElementById('realNameModal').classList.add('show');
+}
+function closeRealName(){
+  document.getElementById('realNameModal').classList.remove('show');
+}
+function previewId(input,prevId,boxId){
+  const img=document.getElementById(prevId);
+  const box=document.getElementById(boxId);
+  const file=input.files&&input.files[0];
+  if(!file){input._dataUrl='';if(img)img.src='';if(box)box.classList.remove('has-image');return;}
+  const r=new FileReader();
+  r.onload=()=>{input._dataUrl=r.result;if(img)img.src=r.result;if(box)box.classList.add('has-image');};
+  r.readAsDataURL(file);
+}
+async function submitRealName(){
+  if(!currentUser){closeRealName();showToast(t('finance.loginFirst'),'error');return;}
+  const name=document.getElementById('realNameInput').value.trim();
+  const id=document.getElementById('realIdInput').value.trim();
+  const front=document.getElementById('realIdFront')._dataUrl;
+  const back=document.getElementById('realIdBack')._dataUrl;
+  if(!name){showToast('请输入真实姓名','error');return;}
+  if(!/^\d{17}[\dXx]$/.test(id)){showToast('请输入有效的身份证号','error');return;}
+  if(!front){showToast('请上传身份证正面','error');return;}
+  if(!back){showToast('请上传身份证反面','error');return;}
+  showLoading('提交中...');
+  try{
+    const r=await(await fetch(API_BASE+'/api/realname',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,name,idNumber:id,idFront:front,idBack:back})})).json();
+    hideLoading();
+    if(r.success){realNameVerified=true;closeRealName();showToast(r.message||'实名认证已提交');}
+    else showToast(r.message||'提交失败','error');
+  }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
 }
 
 function maskUsername(name){
