@@ -400,5 +400,28 @@
         "term": "Plazo",
         "monthUnit": "meses",
         "annualAbbr": "anual"
+    },
+    "realname": {
+        "title": "Verificación de identidad",
+        "desc": "Introduce tu nombre real y número de documento, y sube fotos de ambas caras de tu documento.",
+        "namePlaceholder": "Nombre real",
+        "idPlaceholder": "Número de documento",
+        "front": "Cara con foto",
+        "back": "Cara del emblema",
+        "submit": "Enviar verificación",
+        "menuSub": "Completa la verificación para desbloquear más servicios",
+        "verified": "Verificado",
+        "reviewing": "En revisión",
+        "rejected": "Rechazado",
+        "notVerified": "No verificado",
+        "statusApproved": "Verificado",
+        "statusPending": "En revisión (mostrando tu último envío; puedes reenviar)",
+        "statusRejected": "El último envío fue rechazado; corrige y vuelve a enviar",
+        "enterName": "Introduce tu nombre real",
+        "invalidId": "Introduce un número de documento válido",
+        "uploadFront": "Sube el anverso de tu documento",
+        "uploadBack": "Sube el reverso de tu documento",
+        "pendingLoan": "Verificación en revisión; el servicio de préstamo no está disponible",
+        "needVerify": "Completa primero la verificación de identidad (requerida para usar el préstamo)"
     }
 }

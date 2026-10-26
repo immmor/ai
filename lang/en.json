@@ -399,5 +399,28 @@
         "term": "Loan Term",
         "monthUnit": "months",
         "annualAbbr": "p.a."
+    },
+    "realname": {
+        "title": "Real-name Verification",
+        "desc": "Enter your real name and ID number, and upload photos of both sides of your ID card.",
+        "namePlaceholder": "Real name",
+        "idPlaceholder": "ID number",
+        "front": "Photo side (with photo)",
+        "back": "Emblem side",
+        "submit": "Submit verification",
+        "menuSub": "Complete verification to unlock more services",
+        "verified": "Verified",
+        "reviewing": "Under review",
+        "rejected": "Rejected",
+        "notVerified": "Unverified",
+        "statusApproved": "Verified",
+        "statusPending": "Under review (showing your last submission; you may resubmit)",
+        "statusRejected": "Last submission was rejected; please revise and resubmit",
+        "enterName": "Please enter your real name",
+        "invalidId": "Please enter a valid ID number",
+        "uploadFront": "Please upload the front of your ID",
+        "uploadBack": "Please upload the back of your ID",
+        "pendingLoan": "Verification under review; loan service is unavailable",
+        "needVerify": "Please complete real-name verification first (required before using the loan service)"
     }
 }

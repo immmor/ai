@@ -400,5 +400,28 @@
         "term": "대출 기간",
         "monthUnit": "개월",
         "annualAbbr": "연"
+    },
+    "realname": {
+        "title": "실명 인증",
+        "desc": "실명과 주민등록번호를 입력하고 신분증 앞뒷면 사진을 업로드하세요.",
+        "namePlaceholder": "실명",
+        "idPlaceholder": "주민등록번호",
+        "front": "사진 면(사진 포함)",
+        "back": "국장면",
+        "submit": "인증 제출",
+        "menuSub": "실명 인증을 완료하면 더 많은 서비스를 이용할 수 있습니다",
+        "verified": "인증완료",
+        "reviewing": "심사 중",
+        "rejected": "미통과",
+        "notVerified": "미인증",
+        "statusApproved": "인증완료",
+        "statusPending": "심사 중(이전 제출 내용 표시 중, 재제출 가능)",
+        "statusRejected": "이전 제출이 반려되었습니다. 수정 후 다시 제출하세요",
+        "enterName": "실명을 입력하세요",
+        "invalidId": "유효한 주민등록번호를 입력하세요",
+        "uploadFront": "신분증 앞면을 업로드하세요",
+        "uploadBack": "신분증 뒷면을 업로드하세요",
+        "pendingLoan": "실명 인증 심사 중에는 대출 서비스를 이용할 수 없습니다",
+        "needVerify": "대출 서비스 이용을 위해 먼저 실명 인증을 완료하세요"
     }
 }

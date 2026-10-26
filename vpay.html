@@ -700,13 +700,13 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
     <div class="user-menu-header">
       <div>
         <div class="user-menu-name" id="userMenuName">未登录</div>
-        <div class="user-menu-sub" id="userMenuSub">点击实名认证解锁更多服务</div>
+        <div class="user-menu-sub" id="userMenuSub" data-i18n="realname.menuSub">点击实名认证解锁更多服务</div>
       </div>
     </div>
     <button class="user-menu-item" onclick="openRealName()">
       <i class="fa-solid fa-id-card"></i>
-      <span>实名认证</span>
-      <span class="user-menu-tag" id="realNameTag">未认证</span>
+      <span data-i18n="realname.title">实名认证</span>
+      <span class="user-menu-tag" id="realNameTag" data-i18n="realname.notVerified">未认证</span>
     </button>
   </div>
 
@@ -714,24 +714,24 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
   <div class="modal-overlay" id="realNameModal" onclick="if(event.target===this)closeRealName()">
     <div class="modal-box" style="width:380px;max-width:92vw">
       <button class="modal-close" onclick="closeRealName()"><i class="fa-solid fa-times"></i></button>
-      <h3 style="text-align:left">实名认证</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">请填写真实姓名与证件号，并上传身份证正反面照片。</p>
+      <h3 style="text-align:left" data-i18n="realname.title">实名认证</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6" data-i18n="realname.desc">请填写真实姓名与证件号，并上传身份证正反面照片。</p>
       <p class="realname-status" id="realNameStatus"></p>
-      <div class="input-group"><input type="text" id="realNameInput" placeholder="真实姓名" autocomplete="off"></div>
-      <div class="input-group"><input type="text" id="realIdInput" placeholder="身份证号" autocomplete="off"></div>
+      <div class="input-group"><input type="text" id="realNameInput" data-i18n-placeholder="realname.namePlaceholder" placeholder="真实姓名" autocomplete="off"></div>
+      <div class="input-group"><input type="text" id="realIdInput" data-i18n-placeholder="realname.idPlaceholder" placeholder="身份证号" autocomplete="off"></div>
       <div class="id-upload-row">
         <label class="id-upload" id="realIdFrontBox">
           <input type="file" id="realIdFront" accept="image/*" hidden onchange="previewId(this,'realIdFrontPrev','realIdFrontBox')">
           <img class="id-preview" id="realIdFrontPrev" alt="人像面预览">
-          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span>人像面</span></span>
+          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span data-i18n="realname.front">人像面</span></span>
         </label>
         <label class="id-upload" id="realIdBackBox">
           <input type="file" id="realIdBack" accept="image/*" hidden onchange="previewId(this,'realIdBackPrev','realIdBackBox')">
           <img class="id-preview" id="realIdBackPrev" alt="国徽面预览">
-          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span>国徽面</span></span>
+          <span class="id-placeholder"><i class="fa-solid fa-id-card"></i><span data-i18n="realname.back">国徽面</span></span>
         </label>
       </div>
-      <button class="btn btn-primary" onclick="submitRealName()"><i class="fa-solid fa-shield-halved"></i> 提交认证</button>
+      <button class="btn btn-primary" onclick="submitRealName()"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="realname.submit">提交认证</span></button>
     </div>
   </div>
 
@@ -820,7 +820,7 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
               <i class="fa-solid fa-chevron-right finance-entry-arrow"></i>
             </div>
 
-            <div class="finance-entry" onclick="switchPage('loan')">
+            <div class="finance-entry" onclick="if(requireVerified())switchPage('loan')">
               <div class="finance-entry-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
               <div class="finance-entry-text">
                 <div class="finance-entry-title" data-i18n="loan.menu">贷款</div>
@@ -1335,6 +1335,7 @@ function selectLoanTerm(d){
 }
 function startLoan(){
   if(!currentUser)return showToast(t('loan.loginFirst'),'error');
+  if(!requireVerified())return;
   if(!loanAmount||loanAmount<=0)return showToast(t('loan.enterAmount'),'error');
   openTerms('loan',()=>openFinancePwd('loan'));
 }
@@ -1525,10 +1526,10 @@ function openUserMenu(el){
   const un=currentUser?maskUsername(currentUser.username):t('vpay.guest');
   document.getElementById('userMenuName').textContent=un;
   const tag=document.getElementById('realNameTag');
-  if(realNameStatus==='approved'){tag.textContent='已认证';tag.classList.add('verified');}
-  else if(realNameStatus==='pending'){tag.textContent='审核中';tag.classList.remove('verified');}
-  else if(realNameStatus==='rejected'){tag.textContent='未通过';tag.classList.remove('verified');}
-  else{tag.textContent='未认证';tag.classList.remove('verified');}
+  if(realNameStatus==='approved'){tag.textContent=t('realname.verified');tag.classList.add('verified');}
+  else if(realNameStatus==='pending'){tag.textContent=t('realname.reviewing');tag.classList.remove('verified');}
+  else if(realNameStatus==='rejected'){tag.textContent=t('realname.rejected');tag.classList.remove('verified');}
+  else{tag.textContent=t('realname.notVerified');tag.classList.remove('verified');}
   overlay.classList.add('show');
   requestAnimationFrame(()=>menu.classList.add('show'));
   setTimeout(()=>document.addEventListener('click',_closeUserMenuOutside,true),0);
@@ -1583,9 +1584,9 @@ async function loadRealNameHistory(){
     fillIdPreview('realIdBack',r.idBack);
     const statusEl=document.getElementById('realNameStatus');
     if(statusEl){
-      if(r.status==='approved'){statusEl.textContent='已通过认证';statusEl.className='realname-status ok';realNameVerified=true;}
-      else if(r.status==='pending'){statusEl.textContent='审核中（已显示上次提交内容，可重新提交）';statusEl.className='realname-status pending';realNameVerified=false;}
-      else if(r.status==='rejected'){statusEl.textContent='上次未通过，请修改后重新提交';statusEl.className='realname-status rejected';realNameVerified=false;}
+      if(r.status==='approved'){statusEl.textContent=t('realname.statusApproved');statusEl.className='realname-status ok';realNameVerified=true;}
+      else if(r.status==='pending'){statusEl.textContent=t('realname.statusPending');statusEl.className='realname-status pending';realNameVerified=false;}
+      else if(r.status==='rejected'){statusEl.textContent=t('realname.statusRejected');statusEl.className='realname-status rejected';realNameVerified=false;}
     }
   }catch(e){}
 }
@@ -1607,10 +1608,10 @@ async function submitRealName(){
   const id=document.getElementById('realIdInput').value.trim();
   const front=document.getElementById('realIdFront')._dataUrl;
   const back=document.getElementById('realIdBack')._dataUrl;
-  if(!name){showToast('请输入真实姓名','error');return;}
-  if(!/^\d{17}[\dXx]$/.test(id)){showToast('请输入有效的身份证号','error');return;}
-  if(!front){showToast('请上传身份证正面','error');return;}
-  if(!back){showToast('请上传身份证反面','error');return;}
+  if(!name){showToast(t('realname.enterName'),'error');return;}
+  if(!/^\d{17}[\dXx]$/.test(id)){showToast(t('realname.invalidId'),'error');return;}
+  if(!front){showToast(t('realname.uploadFront'),'error');return;}
+  if(!back){showToast(t('realname.uploadBack'),'error');return;}
   showLoading('提交中...');
   try{
     const r=await(await fetch(API_BASE+'/api/realname',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:currentUser.username,name,idNumber:id,idFront:front,idBack:back})})).json();
@@ -1618,6 +1619,14 @@ async function submitRealName(){
     if(r.success){realNameVerified=false;realNameStatus='pending';closeRealName();showToast(r.message||'实名认证已提交');}
     else showToast(r.message||'提交失败','error');
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error');}
+}
+
+// 贷款等服务需实名认证通过（approved）方可使用；未通过则提示并引导去认证
+function requireVerified(){
+  if(realNameStatus==='approved')return true;
+  if(realNameStatus==='pending'){showToast(t('realname.pendingLoan'),'error');}
+  else{showToast(t('realname.needVerify'),'error');openRealName();}
+  return false;
 }
 
 function maskUsername(name){

@@ -399,5 +399,28 @@
         "term": "借款期限",
         "monthUnit": "个月",
         "annualAbbr": "年化"
+    },
+    "realname": {
+        "title": "实名认证",
+        "desc": "请填写真实姓名与证件号，并上传身份证正反面照片。",
+        "namePlaceholder": "真实姓名",
+        "idPlaceholder": "身份证号",
+        "front": "人像面（有照片）",
+        "back": "国徽面",
+        "submit": "提交认证",
+        "menuSub": "点击实名认证解锁更多服务",
+        "verified": "已认证",
+        "reviewing": "审核中",
+        "rejected": "未通过",
+        "notVerified": "未认证",
+        "statusApproved": "已通过认证",
+        "statusPending": "审核中（已显示上次提交内容，可重新提交）",
+        "statusRejected": "上次未通过，请修改后重新提交",
+        "enterName": "请输入真实姓名",
+        "invalidId": "请输入有效的身份证号",
+        "uploadFront": "请上传身份证正面",
+        "uploadBack": "请上传身份证反面",
+        "pendingLoan": "实名认证审核中，暂无法使用贷款服务",
+        "needVerify": "请先完成实名认证（认证通过后方可使用贷款服务）"
     }
 }

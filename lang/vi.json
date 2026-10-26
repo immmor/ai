@@ -400,5 +400,28 @@
         "term": "Kỳ hạn",
         "monthUnit": "tháng",
         "annualAbbr": "năm"
+    },
+    "realname": {
+        "title": "Xác minh danh tính",
+        "desc": "Nhập họ tên thật và số CMND, và tải lên ảnh hai mặt giấy tờ.",
+        "namePlaceholder": "Họ tên thật",
+        "idPlaceholder": "Số CMND",
+        "front": "Mặt có ảnh",
+        "back": "Mặt mang huy hiệu",
+        "submit": "Gửi xác minh",
+        "menuSub": "Hoàn tất xác minh để mở khóa thêm dịch vụ",
+        "verified": "Đã xác minh",
+        "reviewing": "Đang xem xét",
+        "rejected": "Bị từ chối",
+        "notVerified": "Chưa xác minh",
+        "statusApproved": "Đã xác minh",
+        "statusPending": "Đang xem xét (hiển thị lần gửi trước; bạn có thể gửi lại)",
+        "statusRejected": "Lần gửi trước bị từ chối; vui lòng chỉnh sửa và gửi lại",
+        "enterName": "Vui lòng nhập họ tên thật",
+        "invalidId": "Vui lòng nhập số CMND hợp lệ",
+        "uploadFront": "Vui lòng tải lên mặt trước giấy tờ",
+        "uploadBack": "Vui lòng tải lên mặt sau giấy tờ",
+        "pendingLoan": "Xác minh đang xem xét; dịch vụ vay không khả dụng",
+        "needVerify": "Vui lòng hoàn tất xác minh danh tính trước (bắt buộc trước khi dùng dịch vụ vay)"
     }
 }

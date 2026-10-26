@@ -400,5 +400,28 @@
         "term": "借款期間",
         "monthUnit": "ヶ月",
         "annualAbbr": "年利"
+    },
+    "realname": {
+        "title": "実名認証",
+        "desc": "本名と身分証番号を入力し、身分証の両面の写真をアップロードしてください。",
+        "namePlaceholder": "本名",
+        "idPlaceholder": "身分証番号",
+        "front": "写真面（写真付き）",
+        "back": "国章面",
+        "submit": "認証を送信",
+        "menuSub": "実名認証を完了すると、より多くのサービスが利用できます",
+        "verified": "認証済み",
+        "reviewing": "審査中",
+        "rejected": "否認",
+        "notVerified": "未認証",
+        "statusApproved": "認証済み",
+        "statusPending": "審査中（前回の送信内容を表示中。再送信可能）",
+        "statusRejected": "前回の申請は否認されました。修正して再送信してください",
+        "enterName": "本名を入力してください",
+        "invalidId": "有効な身分証番号を入力してください",
+        "uploadFront": "身分証の表面をアップロードしてください",
+        "uploadBack": "身分証の裏面をアップロードしてください",
+        "pendingLoan": "実名認証審査中のため、ローンサービスはご利用いただけません",
+        "needVerify": "ローンサービスを利用するには、まず実名認証を完了してください"
     }
 }
