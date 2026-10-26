@@ -402,12 +402,13 @@
         "annualAbbr": "anual"
     },
     "realname": {
-        "title": "Verificación de identidad",
+        "title": "Verificación",
         "desc": "Introduce tu nombre real y número de documento, y sube fotos de ambas caras de tu documento.",
         "namePlaceholder": "Nombre real",
         "idPlaceholder": "Número de documento",
-        "front": "Cara con foto",
+        "front": "Cara",
         "back": "Cara del emblema",
+        "imageTooLarge": "La imagen es demasiado grande ({size} KB). ¿Comprimirla a menos de {max} KB antes de subirla?",
         "submit": "Enviar verificación",
         "menuSub": "Completa la verificación para desbloquear más servicios",
         "verified": "Verificado",

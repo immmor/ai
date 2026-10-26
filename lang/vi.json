@@ -402,12 +402,13 @@
         "annualAbbr": "năm"
     },
     "realname": {
-        "title": "Xác minh danh tính",
+        "title": "Xác thực",
         "desc": "Nhập họ tên thật và số CMND, và tải lên ảnh hai mặt giấy tờ.",
         "namePlaceholder": "Họ tên thật",
         "idPlaceholder": "Số CMND",
-        "front": "Mặt có ảnh",
+        "front": "Mặt",
         "back": "Mặt mang huy hiệu",
+        "imageTooLarge": "Ảnh quá lớn ({size} KB). Có nén ảnh xuống dưới {max} KB trước khi tải lên không?",
         "submit": "Gửi xác minh",
         "menuSub": "Hoàn tất xác minh để mở khóa thêm dịch vụ",
         "verified": "Đã xác minh",

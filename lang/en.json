@@ -401,12 +401,13 @@
         "annualAbbr": "p.a."
     },
     "realname": {
-        "title": "Real-name Verification",
+        "title": "Verification",
         "desc": "Enter your real name and ID number, and upload photos of both sides of your ID card.",
         "namePlaceholder": "Real name",
         "idPlaceholder": "ID number",
-        "front": "Photo side (with photo)",
+        "front": "Photo side",
         "back": "Emblem side",
+        "imageTooLarge": "Image is too large ({size} KB). Compress it to under {max} KB before uploading?",
         "submit": "Submit verification",
         "menuSub": "Complete verification to unlock more services",
         "verified": "Verified",

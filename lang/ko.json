@@ -402,12 +402,13 @@
         "annualAbbr": "연"
     },
     "realname": {
-        "title": "실명 인증",
+        "title": "인증",
         "desc": "실명과 주민등록번호를 입력하고 신분증 앞뒷면 사진을 업로드하세요.",
         "namePlaceholder": "실명",
         "idPlaceholder": "주민등록번호",
-        "front": "사진 면(사진 포함)",
+        "front": "사진 면",
         "back": "국장면",
+        "imageTooLarge": "이미지가 너무 큽니다（{size} KB）. {max} KB 이하로 압축한 후 업로드할까요？",
         "submit": "인증 제출",
         "menuSub": "실명 인증을 완료하면 더 많은 서비스를 이용할 수 있습니다",
         "verified": "인증완료",

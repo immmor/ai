@@ -402,12 +402,13 @@
         "annualAbbr": "年利"
     },
     "realname": {
-        "title": "実名認証",
+        "title": "認証",
         "desc": "本名と身分証番号を入力し、身分証の両面の写真をアップロードしてください。",
         "namePlaceholder": "本名",
         "idPlaceholder": "身分証番号",
-        "front": "写真面（写真付き）",
+        "front": "写真面",
         "back": "国章面",
+        "imageTooLarge": "画像が大きすぎます（{size} KB）。{max} KB 以内に圧縮してからアップロードしますか？",
         "submit": "認証を送信",
         "menuSub": "実名認証を完了すると、より多くのサービスが利用できます",
         "verified": "認証済み",
