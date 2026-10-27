@@ -2787,14 +2787,16 @@
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
-                    <td>${user.fetch_link ? user.fetch_link.substring(0, 50) + '...' : '-'}</td>
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.fetch_link || '-'}</div>
+                    </td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>¥${user.balance || 0}</td>
                     <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
-                    <td style="vertical-align: top; max-width: 320px;">
+                    <td style="vertical-align: top; max-width: 420px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.survey || '-'}</div>
                     </td>
                     <td>${user.security_answer || '-'}</td>
@@ -2802,8 +2804,8 @@
                     <td>${formatDateTime(user.free_expire_date)}</td>
                     <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
-                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
-                        ${user.vorders || '[]'}
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.vorders || '[]'}</div>
                     </td>
                     <td>${user.remark || '-'}</td>
                     <td style="min-width: 200px;">
@@ -3174,14 +3176,16 @@
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
-                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.fetch_link || '-'}">${user.fetch_link ? user.fetch_link.substring(0, 50) + '...' : '-'}</td>
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.fetch_link || '-'}</div>
+                    </td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>¥${user.balance || 0}</td>
                     <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
-                    <td style="vertical-align: top; max-width: 320px;">
+                    <td style="vertical-align: top; max-width: 420px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.survey || '-'}</div>
                     </td>
                     <td>${user.security_answer || '-'}</td>
@@ -3189,8 +3193,8 @@
                     <td>${formatDateTime(user.free_expire_date)}</td>
                     <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
-                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
-                        ${user.vorders || '[]'}
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.vorders || '[]'}</div>
                     </td>
                     <td>${user.remark || '-'}</td>
                     <td style="min-width: 200px;">
