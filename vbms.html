@@ -382,16 +382,6 @@
             min-width: 2000px;
         }
 
-        /* 用户列表所有单元格统一限制高度：内容过长时内部滚动，避免整行被拉高 */
-        #usersTable td {
-            max-width: 320px;
-            max-height: 120px;
-            overflow: auto;
-            word-break: break-all;
-            white-space: pre-wrap;
-            vertical-align: top;
-        }
-
         #ordersTable {
             min-width: 1000px;
         }
@@ -2791,7 +2781,7 @@
                     <td>${user.password || '-'}</td>
                     <td style="min-width: 130px;">${user.v_expire_date && new Date(user.v_expire_date) > new Date() ? 'VIP' : '普通用户'}</td>
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
-                    <td title="${user.v_token || '-'}">${user.v_token || '-'}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
                     <td>${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
@@ -2804,13 +2794,15 @@
                     <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
-                    <td>${user.survey || '-'}</td>
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.survey || '-'}</div>
+                    </td>
                     <td>${user.security_answer || '-'}</td>
                     <td>${user.source || '-'}</td>
                     <td>${formatDateTime(user.free_expire_date)}</td>
                     <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
-                    <td title="${user.vorders || '[]'}">
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
                     </td>
                     <td>${user.remark || '-'}</td>
@@ -3176,26 +3168,28 @@
                     <td>${user.password || '-'}</td>
                     <td style="min-width: 130px;">${user.v_expire_date && new Date(user.v_expire_date) > new Date() ? 'VIP' : '普通用户'}</td>
                     <td style="min-width: 120px;">${user.v_expire_date ? new Date(user.v_expire_date).toLocaleDateString() : '-'}</td>
-                    <td title="${user.v_token || '-'}">${user.v_token || '-'}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.v_token || '-'}">${user.v_token || '-'}</td>
                     <td>${user.invite_code || '-'}</td>
                     <td>${user.invited_user ? user.invited_user.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.v_link_clash ? user.v_link_clash.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.v_link_v2ray ? user.v_link_v2ray.substring(0, 40) + '...' : '-'}</td>
                     <td>${user.login_info ? user.login_info.substring(0, 50) + '...' : '-'}</td>
-                    <td title="${user.fetch_link || '-'}">${user.fetch_link ? user.fetch_link.substring(0, 50) + '...' : '-'}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.fetch_link || '-'}">${user.fetch_link ? user.fetch_link.substring(0, 50) + '...' : '-'}</td>
                     <td>${user.not_trusted}</td>
                     <td>${user.price_plan ? user.price_plan.substring(0, 30) + '...' : '-'}</td>
                     <td>¥${user.balance || 0}</td>
                     <td>${user.monthly_quota ? (user.monthly_quota / 1024).toFixed(1) + ' GB' : '-'}</td>
                     <td>${successCount}</td>
                     <td>¥${successAmount.toFixed(2)}</td>
-                    <td>${user.survey || '-'}</td>
+                    <td style="vertical-align: top; max-width: 320px;">
+                        <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.survey || '-'}</div>
+                    </td>
                     <td>${user.security_answer || '-'}</td>
                     <td>${user.source || '-'}</td>
                     <td>${formatDateTime(user.free_expire_date)}</td>
                     <td>${user.last_checkin || '-'}</td>
                     <td>${user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true ? '是' : '否'}</td>
-                    <td title="${user.vorders || '[]'}">
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${user.vorders || '[]'}">
                         ${user.vorders || '[]'}
                     </td>
                     <td>${user.remark || '-'}</td>
