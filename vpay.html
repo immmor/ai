@@ -1806,19 +1806,9 @@ function selectAlipayAmt(a){alipayAmount=a;document.querySelectorAll('#amtGridAl
 function showCustomAlipayAmt(){alipayAmount=null;document.querySelectorAll('#amtGridAlipay .amount-btn').forEach(b=>b.classList.remove('active'));const i=document.getElementById('customAlipayInput');i.classList.remove('hidden');i.value='';i.focus();i.oninput=()=>updatePayBtn();updatePayBtn()}
 function updatePayBtn(){const btn=document.getElementById('payBtnText');if(payMethod==='creem')btn.textContent=t('vpay.payBtn',{amount:'$'+creditAmount});else if(payMethod==='alipay_static'){const a=alipayAmount||document.getElementById('customAlipayInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):t('vpay.payBtn',{amount:''}).trim()}else{const a=cnyAmount||document.getElementById('customAmtInput').value;btn.textContent=a?t('vpay.payBtn',{amount:'¥'+a}):t('vpay.payBtn',{amount:''}).trim()}}
 
-// 禁用/启用主支付按钮（防止重复点击）
-function setPayBtnDisabled(disabled){
-  const btn=document.querySelector('.pay-btn');
-  if(!btn)return;
-  btn.disabled=disabled;
-  if(disabled){btn.style.opacity='0.5';btn.style.cursor='not-allowed';}
-  else{btn.style.opacity='';btn.style.cursor='';}
-}
-
 async function handlePay(){
   if(!currentUser||!currentUser.username)return;
   showLoading(t('vpay.processing'));
-  setPayBtnDisabled(true);
   if(payMethod==='creem'){
     const orderNo=currentUser.username+'_'+Date.now();
     try{
@@ -1827,18 +1817,18 @@ async function handlePay(){
       if(r.code===200&&r.data?.checkout_url){
         localStorage.setItem('creditCardOrder_'+orderNo,JSON.stringify({username:currentUser.username,amount:creditAmount*USDT_RATE,order_no:orderNo}));
         window.location.href=r.data.checkout_url;
-      }else{setPayBtnDisabled(false);showToast(r.msg||t('vpay.payFailed'),'error')}
-    }catch(e){hideLoading();setPayBtnDisabled(false);showToast(t('alert.networkError'),'error')}
+      }else showToast(r.msg||t('vpay.payFailed'),'error')
+    }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
   }else if(payMethod==='alipay_static'){
     const a=alipayAmount||parseFloat(document.getElementById('customAlipayInput').value);
-    if(!a||a<=0){setPayBtnDisabled(false);hideLoading();return showToast(t('alert.invalidAmount'),'error')}
-    if(a<10){setPayBtnDisabled(false);hideLoading();return showToast(t('vpay.minAlipay10'),'error')}
+    if(!a||a<=0){hideLoading();return showToast(t('alert.invalidAmount'),'error')}
+    if(a<10){hideLoading();return showToast(t('vpay.minAlipay10'),'error')}
     // 保持 loading，订单创建完成后再由 showStaticPayment 隐藏
     showStaticPayment('alipay_static',a);
   }else{
     const a=cnyAmount||parseFloat(document.getElementById('customAmtInput').value);
-    if(!a||a<=0){setPayBtnDisabled(false);hideLoading();return showToast(t('alert.invalidAmount'),'error')}
-    if(a<100){setPayBtnDisabled(false);hideLoading();return showToast(t('vpay.minUsdt100'),'error')}
+    if(!a||a<=0){hideLoading();return showToast(t('alert.invalidAmount'),'error')}
+    if(a<100){hideLoading();return showToast(t('vpay.minUsdt100'),'error')}
     const ua=(a/USDT_RATE).toFixed(2),addr='TKxnwudYzov8ztHchjE6VZCCGAuDft8jQV';
     try{
       const r=await(await fetch(`https://tronusdt.xyz/?way=pay&jump=-&product=wallet_recharge&name=${addr}&type=usdt&value=${ua}`)).json();
@@ -1851,7 +1841,7 @@ async function handlePay(){
           const or=await(await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})).json();
           orderOk=or.success===true;
         }catch(e){ orderOk=false; }
-        if(!orderOk){ setPayBtnDisabled(false); showToast(t('vpay.createOrderFailed'),'error'); return; }
+        if(!orderOk){ showToast(t('vpay.createOrderFailed'),'error'); return; }
         showQrModal('USDT 支付',
           `<div style="margin-bottom:12px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">${t('usdt.send')}</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('tron:'+addr+'?amount='+ua)}" alt="USDT QR Code" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">
@@ -1862,8 +1852,8 @@ async function handlePay(){
             <div style="text-align:right;margin-top:8px"><button onclick="copyText('${addr}')" style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:#a29bfe;cursor:pointer;font-size:13px;font-family:inherit;padding:4px 8px;border-radius:4px;transition:background 0.2s" onmouseover="this.style.background='rgba(108,92,231,0.1)'" onmouseout="this.style.background='transparent'"><i class="fa-solid fa-copy"></i> ${t('usdt.copyAddress')}</button></div>
           </div>
           <div style="font-size:12px;color:var(--text-muted);line-height:1.6;text-align:center">${t('usdt.autoConfirm')}</div>`)
-      }else{setPayBtnDisabled(false);showToast(t('vpay.createOrderFailed'),'error')}
-    }catch(e){hideLoading();setPayBtnDisabled(false);showToast(t('alert.networkError'),'error')}
+      }else showToast(t('vpay.createOrderFailed'),'error')
+    }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
   }
 }
 
@@ -2199,7 +2189,7 @@ function closeRecordDetail(){document.getElementById('recordDetailModal').classL
 
 // QR Modal
 function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
-function closeQrModal(){document.getElementById('qrModal').classList.remove('show');setPayBtnDisabled(false)}
+function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast(t('staticPay.copied')))}
 
 // ===== 扫一扫（调用摄像头 + jsQR 解码） =====
@@ -2610,7 +2600,6 @@ async function showStaticPayment(paymentType,amount){
   const ok=await createStaticOrderRecord(paymentType,amount,orderNo);
   hideLoading();
   if(!ok){
-    setPayBtnDisabled(false);
     showToast(t('vpay.createOrderFailed'),'error');
     return;
   }
@@ -2653,13 +2642,11 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     document.body.removeChild(overlay);
     document.body.removeChild(container);
     document.body.style.overflow=origOverflow;
-    setPayBtnDisabled(false);
   });
   document.getElementById('closeStaticPayBtn').onclick=function(){
     document.body.removeChild(overlay);
     document.body.removeChild(container);
     document.body.style.overflow=origOverflow;
-    setPayBtnDisabled(false);
     loadOrders();
   };
   // 前 5 次打开支付弹窗自动跑聚焦指引（localStorage 计数记忆）
@@ -2725,7 +2712,12 @@ function openAlipayApp(){
 
 function copyOrderNo(){
   const el=document.querySelector('div[style*="monospace"]');
-  if(el)navigator.clipboard.writeText(el.textContent.trim()).then(()=>showToast(t('staticPay.copied')));
+  if(el){
+    navigator.clipboard.writeText(el.textContent.trim()).then(()=>{
+      const b=document.getElementById('copyOrderBtn');
+      if(b)b.textContent=t('staticPay.copied');
+    });
+  }
 }
 
 // Init
