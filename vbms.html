@@ -837,7 +837,7 @@
                                 <button class="add-btn" style="background-color: #667eea;" onclick="toggleFixedColumns('usersTable')">固定</button>
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterUsers()" style="background-color: #667eea;">搜索</button>
-                                <button class="add-btn" onclick="document.getElementById('userSearchInput').value=''; loadUsers();" style="background-color: #4299e1;">刷新</button>
+                                <button class="add-btn" onclick="userSearchKeyword=''; document.getElementById('userSearchInput').value=''; loadUsers(1);" style="background-color: #4299e1;">刷新</button>
                                 <span id="searchResultInfo" style="color: #666;"></span>
                             </div>
                         </div>
@@ -877,6 +877,7 @@
                                 <!-- 用户数据将通过JavaScript动态生成 -->
                             </tbody>
                         </table>
+                        <div id="userPagination"></div>
                     </div>
                 </div>
 
@@ -2590,6 +2591,11 @@
                 'realname': '认证管理'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
+
+            // 进入用户管理页时按需加载当前页（分页，不再一次性拉全部）
+            if (pageName === 'users') {
+                loadUsers(userPage);
+            }
             
         }
 
@@ -2668,6 +2674,11 @@
         
         // 用户数据存储
         let usersData = [];
+        let userPage = 1;
+        let userPageSize = 20;
+        let userTotal = 0;
+        let userPages = 0;
+        let userSearchKeyword = '';
         let ordersData = [];
         let usersSortCol = '';
         let usersSortDir = 'asc';
@@ -2675,17 +2686,31 @@
         let ordersSortDir = 'asc';
         
         // 加载用户列表
-        async function loadUsers() {
+        async function loadUsers(page) {
+            userPage = page || 1;
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;">加载中...</td></tr>';
-            
-            const result = await apiRequest('/api/users?page=1&limit=9999', 'GET');
-            
+            tbody.innerHTML = '<tr><td colspan="27" style="text-align:center;">加载中...</td></tr>';
+
+            const search = userSearchKeyword ? '&search=' + encodeURIComponent(userSearchKeyword) : '';
+            // 派生列（用户类型 / 成功支付次数 / 成功支付金额）前端按当前页排序，其余交给后端
+            const derivedSortCols = ['user_type', 'success_count', 'success_amount'];
+            const sort = (usersSortCol && !derivedSortCols.includes(usersSortCol))
+                ? '&sort=' + encodeURIComponent(usersSortCol) + '&order=' + usersSortDir
+                : '';
+            const result = await apiRequest('/api/users?page=' + userPage + '&limit=' + userPageSize + search + sort, 'GET');
+
             if (result.code === 200) {
                 usersData = result.data.users || [];
+                const p = result.data.pagination || {};
+                userTotal = p.total || 0;
+                userPages = p.pages || 1;
+                userPage = p.page || userPage;
                 renderUsers();
+                renderUserPagination();
+                const info = document.getElementById('searchResultInfo');
+                if (info) info.textContent = userSearchKeyword ? ('共 ' + userTotal + ' 条') : '';
             } else {
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="27" style="text-align:center;color:red;">加载失败: ${result.msg || '未知错误'}</td></tr>`;
             }
         }
         
@@ -2700,11 +2725,13 @@
             document.querySelectorAll('.sort-indicator').forEach(el => el.className = 'sort-indicator');
             const indicator = document.querySelector(`.sort-indicator[data-col="${col}"]`);
             if (indicator) indicator.classList.add(usersSortDir);
-            renderUsers();
+            loadUsers(1);
         }
 
+        // 仅对派生列（用户类型 / 成功支付次数 / 金额）做前端排序；其余列由后端排序
         function applyUserSort(data) {
-            if (!usersSortCol) return data;
+            const derived = ['user_type', 'success_count', 'success_amount'];
+            if (!usersSortCol || !derived.includes(usersSortCol)) return data;
             return [...data].sort((a, b) => {
                 let valA, valB;
                 switch (usersSortCol) {
@@ -2720,9 +2747,6 @@
                         valA = ordersData.filter(o => o.username === a.username && o.status === 'paid').reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
                         valB = ordersData.filter(o => o.username === b.username && o.status === 'paid').reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
                         break;
-                    default:
-                        valA = a[usersSortCol] || '';
-                        valB = b[usersSortCol] || '';
                 }
                 if (typeof valA === 'number') return usersSortDir === 'asc' ? valA - valB : valB - valA;
                 return usersSortDir === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
@@ -2767,7 +2791,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (usersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="23" style="text-align:center;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="27" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
             applyUserSort(usersData).forEach(user => {
@@ -3139,27 +3163,54 @@
         // 删除用户
         async function deleteUser(id) {
             if (confirm('确定要删除这个用户吗？')) {
-                usersData = usersData.filter(u => u.id !== id);
-                renderUsers();
+                // 前端演示：实际删除需后端接口支持，这里仅刷新当前页
                 alert('用户已删除（前端演示，需要后端接口支持）');
+                loadUsers(userPage);
             }
         }
-        
-        function filterUsers() {
-            const keyword = document.getElementById('userSearchInput').value.trim().toLowerCase();
-            const filtered = usersData.filter(u => {
-                const autoRewnDisplay = (u.auto_rewn === 1 || u.auto_rewn === '1' || u.auto_rewn === true) ? '是' : '否';
-                // 搜索内容包括：用户信息 JSON 字符串 + 自动续费状态显示
-                const str = JSON.stringify(u).toLowerCase() + autoRewnDisplay.toLowerCase();
-                return str.includes(keyword);
+
+        // ===== 用户列表分页 =====
+        function renderUserPagination() {
+            const el = document.getElementById('userPagination');
+            if (!el) return;
+            if (userTotal === 0) { el.innerHTML = ''; return; }
+            const wrap = 'display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 4px;font-size:14px;color:#4a5568;';
+            const btn = 'padding:6px 12px;border:1px solid #e2e8f0;background:#fff;border-radius:6px;cursor:pointer;';
+            const btnDis = 'padding:6px 12px;border:1px solid #e2e8f0;background:#f7fafc;color:#cbd5e0;border-radius:6px;cursor:not-allowed;';
+            const input = 'width:60px;padding:6px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;';
+            const sel = 'padding:6px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;';
+            let html = '<div style="' + wrap + '">';
+            html += '<div>共 ' + userTotal + ' 条 · 第 ' + userPage + ' / ' + userPages + ' 页</div>';
+            html += '<div style="display:flex;align-items:center;gap:8px;">';
+            html += '<button style="' + (userPage <= 1 ? btnDis : btn) + '" ' + (userPage <= 1 ? 'disabled' : 'onclick="goUserPage(' + (userPage - 1) + ')"') + '>上一页</button>';
+            html += '<input type="number" min="1" max="' + userPages + '" value="' + userPage + '" style="' + input + '" onchange="goUserPage(this.value)">';
+            html += '<button style="' + (userPage >= userPages ? btnDis : btn) + '" ' + (userPage >= userPages ? 'disabled' : 'onclick="goUserPage(' + (userPage + 1) + ')"') + '>下一页</button>';
+            html += '<select style="' + sel + '" onchange="changeUserPageSize(this.value)">';
+            [10, 20, 50, 100].forEach(function (sz) {
+                html += '<option value="' + sz + '"' + (sz === userPageSize ? ' selected' : '') + '>' + sz + ' 条/页</option>';
             });
-            const resultInfo = document.getElementById('searchResultInfo');
-            if (keyword) {
-                resultInfo.textContent = `共${filtered.length}`;
-            } else {
-                resultInfo.textContent = '';
-            }
-            renderFilteredUsers(filtered);
+            html += '</select>';
+            html += '</div></div>';
+            el.innerHTML = html;
+        }
+
+        function goUserPage(p) {
+            p = parseInt(p) || 1;
+            if (p < 1) p = 1;
+            if (p > userPages) p = userPages;
+            loadUsers(p);
+        }
+
+        function changeUserPageSize(sz) {
+            userPageSize = parseInt(sz) || 20;
+            userPage = 1;
+            loadUsers(1);
+        }
+
+        function filterUsers() {
+            userSearchKeyword = document.getElementById('userSearchInput').value.trim();
+            userPage = 1;
+            loadUsers(1);
         }
 
         function renderFilteredUsers(data) {

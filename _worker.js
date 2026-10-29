@@ -928,25 +928,50 @@ export default {
         }
       }
 
-      // 路由匹配：/api/users 获取所有用户列表接口
+      // 路由匹配：/api/users 获取用户列表（支持分页 / 搜索 / 排序）
       if (url.pathname === '/api/users' && request.method === 'GET') {
         try {
-          const page = parseInt(url.searchParams.get('page')) || 1;
-          const limit = parseInt(url.searchParams.get('limit')) || 50;
+          const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1);
+          // 上限放宽到 10000：列表 UI 仅用 10~100 分页；统计类调用（limit=9999）仍需全量
+          const limit = Math.min(10000, Math.max(1, parseInt(url.searchParams.get('limit')) || 50));
           const offset = (page - 1) * limit;
-          
+          const search = (url.searchParams.get('search') || '').trim();
+
+          // 可排序字段白名单，防止 SQL 注入
+          const sortWhitelist = {
+            id:'id', username:'username', password:'password', v_expire_date:'v_expire_date',
+            v_token:'v_token', invite_code:'invite_code', invited_user:'invited_user',
+            v_link_clash:'v_link_clash', v_link_v2ray:'v_link_v2ray', login_info:'login_info',
+            fetch_link:'fetch_link', price_plan:'price_plan', balance:'balance', monthly_quota:'monthly_quota',
+            survey:'survey', security_answer:'security_answer', source:'source',
+            free_expire_date:'free_expire_date', last_checkin:'last_checkin', auto_rewn:'auto_rewn', remark:'remark'
+          };
+          const reqSort = url.searchParams.get('sort');
+          const reqOrder = (url.searchParams.get('order') || 'asc').toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+          const sortCol = sortWhitelist[reqSort] || 'rowid';
+          const orderBy = sortCol === 'rowid' ? 'rowid DESC' : (sortCol + ' ' + reqOrder);
+
+          let where = '';
+          const params = [];
+          if (search) {
+            where = ' WHERE username LIKE ? OR invite_code LIKE ? OR invited_user LIKE ? OR source LIKE ? OR remark LIKE ?';
+            const like = '%' + search + '%';
+            params.push(like, like, like, like, like);
+          }
+
           // 获取用户总数
           const countResult = await env.DB
-            .prepare('SELECT COUNT(*) as total FROM user')
+            .prepare('SELECT COUNT(*) as total FROM user' + where)
+            .bind(...params)
             .first();
           const total = countResult ? countResult.total : 0;
-          
+
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user ORDER BY rowid DESC LIMIT ? OFFSET ?')
-            .bind(limit, offset)
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user' + where + ' ORDER BY ' + orderBy + ' LIMIT ? OFFSET ?')
+            .bind(...params, limit, offset)
             .all();
-          
+
           return jsonResponse({
             code: 200,
             msg: '查询成功',
