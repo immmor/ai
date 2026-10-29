@@ -1823,7 +1823,7 @@ async function handlePay(){
     const a=alipayAmount||parseFloat(document.getElementById('customAlipayInput').value);
     if(!a||a<=0){hideLoading();return showToast(t('alert.invalidAmount'),'error')}
     if(a<10){hideLoading();return showToast(t('vpay.minAlipay10'),'error')}
-    hideLoading();
+    // 保持 loading，订单创建完成后再由 showStaticPayment 隐藏
     showStaticPayment('alipay_static',a);
   }else{
     const a=cnyAmount||parseFloat(document.getElementById('customAmtInput').value);
@@ -2598,6 +2598,7 @@ async function showStaticPayment(paymentType,amount){
   const orderNo=currentUser.username.split('@')[0]+'_'+getNowFormat();
   // 先创建订单，未创建成功则不弹出支付界面
   const ok=await createStaticOrderRecord(paymentType,amount,orderNo);
+  hideLoading();
   if(!ok){
     showToast(t('vpay.createOrderFailed'),'error');
     return;
