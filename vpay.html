@@ -1835,7 +1835,13 @@ async function handlePay(){
       hideLoading();
       if(r.oid){
         localStorage.setItem('usdtOrder_'+r.oid,JSON.stringify({username:currentUser.username,rmbAmount:a,usdtAmount:ua,order_no:r.oid}));
-        try{await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})}catch(e){}
+        // 先创建订单记录，未创建成功则不显示支付二维码
+        let orderOk=false;
+        try{
+          const or=await(await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:r.oid,username:currentUser.username,amount:a,payment_type:'usdt'})})).json();
+          orderOk=or.success===true;
+        }catch(e){ orderOk=false; }
+        if(!orderOk){ showToast(t('vpay.createOrderFailed'),'error'); return; }
         showQrModal('USDT 支付',
           `<div style="margin-bottom:12px;text-align:left"><div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">${t('usdt.send')}</div><div style="font-size:28px;font-weight:800;color:var(--accent-green)">${ua} USDT</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px">≈ ¥${a}</div></div>
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('tron:'+addr+'?amount='+ua)}" alt="USDT QR Code" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 16px;display:block">
@@ -2586,10 +2592,16 @@ function closeAlipayFocusGuide(){
 // Static Payment (Alipay Manual Review)
 const getNowFormat=()=>new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/[\/\s:]/g,'');
 
-function showStaticPayment(paymentType,amount){
+async function showStaticPayment(paymentType,amount){
   const paymentName=t('orders.alipay');
   const imagePath='static/pay/zfb.jpg';
   const orderNo=currentUser.username.split('@')[0]+'_'+getNowFormat();
+  // 先创建订单，未创建成功则不弹出支付界面
+  const ok=await createStaticOrderRecord(paymentType,amount,orderNo);
+  if(!ok){
+    showToast(t('vpay.createOrderFailed'),'error');
+    return;
+  }
   showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType);
 }
 
@@ -2625,7 +2637,6 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     </div>`;
   document.body.appendChild(overlay);
   document.body.appendChild(container);
-  createStaticOrderRecord(paymentType,amount,orderNo);
   startRechargeTimer(document.getElementById('confirmRechargeBtn'),orderNo,amount,paymentType,function(){
     document.body.removeChild(overlay);
     document.body.removeChild(container);
@@ -2647,8 +2658,9 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
 
 async function createStaticOrderRecord(paymentType,amount,orderNo){
   try{
-    await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType,status:'pending',description:'Wallet Top-up (Manual Review)'})});
-  }catch(e){}
+    const r=await(await fetch(API_LEGACY+'/api/order/create-static',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:amount,payment_type:paymentType,status:'pending',description:'Wallet Top-up (Manual Review)'})})).json();
+    return r.success===true;
+  }catch(e){ return false; }
 }
 
 function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){

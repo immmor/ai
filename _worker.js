@@ -33,6 +33,20 @@ export default {
       }
     }
     
+    // 工具函数：创建订单（先创建订单，失败抛错以阻断后续操作）
+    async function createOrder(orderData) {
+      if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
+        throw new Error('Supabase 未配置，无法创建订单');
+      }
+      const response = await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, createSupabaseConfig('POST', orderData));
+      if (!response.ok) {
+        let detail = '';
+        try { detail = await response.text(); } catch (e) {}
+        throw new Error(`订单创建失败 (HTTP ${response.status}): ${detail}`);
+      }
+      try { return await response.json(); } catch (e) { return null; }
+    }
+
     // 工具函数：返回JSON响应
     function jsonResponse(data, status = 200) {
       return new Response(JSON.stringify(data), {
@@ -257,25 +271,29 @@ export default {
           
           const payUrl = `${apiUrl}?${finalQueryString}`;
           
-          // 记录订单到Supabase
+          // 1) 先创建订单，未创建成功则直接报错，不发送消息、不返回支付链接
+          if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
+            return jsonResponse({ code: 500, msg: '订单服务未配置' }, 500);
+          }
           try {
-            if (env.SUPABASE_URL && env.SUPABASE_KEY) {
-              await supabaseFetch('orders', createSupabaseConfig('POST', {
-                order_no: finalOrderNo,
-                username: params.username,
-                amount: amount,
-                payment_type: epayType,
-                status: 'pending',
-                description: description
-              }));
-            }
+            await createOrder({
+              order_no: finalOrderNo,
+              username: params.username,
+              amount: amount,
+              payment_type: epayType,
+              status: 'pending',
+              description: description
+            });
           } catch (error) {
-            console.error('Supabase订单记录失败:', error);
-            // 忽略错误，继续流程
+            console.error('订单创建失败，终止流程:', error);
+            return jsonResponse({ code: 500, msg: '订单创建失败，请重试' }, 500);
           }
 
-          await sendAdminMessage(`📝 新订单：${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}），订单号 ${finalOrderNo}`);
-          await notifyAdmin('新订单', `${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}）\n订单号 ${finalOrderNo}`);
+          // 2) 订单创建成功后再发送通知（失败不影响主流程）
+          try {
+            await sendAdminMessage(`📝 新订单：${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}），订单号 ${finalOrderNo}`);
+            await notifyAdmin('新订单', `${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}）\n订单号 ${finalOrderNo}`);
+          } catch (e) { console.error('通知发送失败:', e); }
 
           return jsonResponse({
             code: 200,
@@ -396,6 +414,22 @@ export default {
             success_url: `https://funbua.uk/api/pay/creem-notify?order_no=${encodeURIComponent(order_no)}&username=${encodeURIComponent(username)}&amount=${cnyAmount}`
           };
           
+          // 1) 先创建订单，未创建成功不创建 Creem 结账、不发送消息
+          try {
+            await createOrder({
+              order_no: order_no,
+              username: username,
+              amount: cnyAmount,
+              payment_type: 'creem',
+              status: 'pending',
+              description: `信用卡支付 $${usdAmount}`
+            });
+          } catch (err) {
+            console.error('Creem 订单创建失败:', err);
+            return jsonResponse({ code: 500, msg: '订单创建失败: ' + err.message }, 500);
+          }
+
+          // 2) 订单创建成功后，再调用 Creem 创建结账
           const response = await fetch(creemBaseUrl, {
             method: 'POST',
             headers: {
@@ -404,27 +438,17 @@ export default {
             },
             body: JSON.stringify(checkoutData)
           });
-          
+
           console.log('Creem.io response status:', response.status);
           const checkoutResult = await response.json();
           console.log('Creem.io response:', checkoutResult);
-          
-          if (response.ok && checkoutResult.id) {
-            const orderRes = await supabaseFetch('orders', createSupabaseConfig('POST', {
-              order_no: order_no,
-              username: username,
-              amount: cnyAmount,
-              payment_type: 'creem',
-              status: 'pending',
-              description: `信用卡支付 $${usdAmount}`
-            }));
-            if (orderRes && orderRes.error) {
-              console.error('Supabase订单记录失败:', orderRes.error);
-              return jsonResponse({ code: 500, msg: '订单记录失败: ' + (orderRes.error.message || JSON.stringify(orderRes.error)), error: orderRes }, 500);
-            }
 
-            await sendAdminMessage(`📝 新订单：${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}，订单号 ${order_no}`);
-            await notifyAdmin('新订单', `${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}\n订单号 ${order_no}`);
+          if (response.ok && checkoutResult.id) {
+            // 3) 发送通知（失败不影响主流程）
+            try {
+              await sendAdminMessage(`📝 新订单：${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}，订单号 ${order_no}`);
+              await notifyAdmin('新订单', `${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}\n订单号 ${order_no}`);
+            } catch (e) { console.error('通知发送失败:', e); }
 
             return jsonResponse({
               code: 200,
@@ -647,11 +671,19 @@ export default {
             return jsonResponse({ success: false, message: '订单数据不完整' }, 400);
           }
           
-          // 保存订单到Supabase
-          await supabaseFetch('orders', createSupabaseConfig('POST', orderData));
+          // 1) 先创建订单，未创建成功不发送消息、不返回成功
+          try {
+            await createOrder(orderData);
+          } catch (err) {
+            console.error('静态订单创建失败:', err);
+            return jsonResponse({ success: false, message: '订单创建失败: ' + err.message }, 500);
+          }
 
-          await sendAdminMessage(`📝 新订单：${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}），订单号 ${orderData.order_no}`);
-          await notifyAdmin('新订单', `${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}）\n订单号 ${orderData.order_no}`);
+          // 2) 订单创建成功后再发送通知（失败不影响主流程）
+          try {
+            await sendAdminMessage(`📝 新订单：${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}），订单号 ${orderData.order_no}`);
+            await notifyAdmin('新订单', `${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}）\n订单号 ${orderData.order_no}`);
+          } catch (e) { console.error('通知发送失败:', e); }
 
           return jsonResponse({ success: true, message: '静态订单创建成功' });
         } catch (err) {
