@@ -403,8 +403,8 @@
             "title": "请在此手写签名",
             "placeholder": "在此手写签名",
             "clear": "清除",
-            "fullscreen": "全屏签名",
-            "done": "完成签名"
+            "fullscreen": "全屏",
+            "done": "完成"
         }
     },
     "realname": {

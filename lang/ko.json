@@ -404,8 +404,8 @@
             "title": "여기에 서명해 주세요",
             "placeholder": "여기에 서명",
             "clear": "지우기",
-            "fullscreen": "전체 화면 서명",
-            "done": "서명 완료"
+            "fullscreen": "전체 화면",
+            "done": "완료"
         }
     },
     "realname": {

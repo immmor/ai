@@ -404,8 +404,8 @@
             "title": "ここに署名してください",
             "placeholder": "ここに署名",
             "clear": "クリア",
-            "fullscreen": "全画面で署名",
-            "done": "署名完了"
+            "fullscreen": "全画面",
+            "done": "完了"
         }
     },
     "realname": {
