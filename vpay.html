@@ -390,7 +390,6 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .sign-canvas-wrap.sign-fullscreen{position:fixed;inset:0;z-index:10000;border-radius:0;display:flex;flex-direction:column;background:#fff}
 .sign-canvas-wrap.sign-fullscreen .sign-stage{flex:1;height:auto}
 .sign-canvas-wrap.sign-fullscreen .sign-toolbar{order:2;border-top:1px solid var(--panel-border);border-bottom:none}
-.sign-canvas-wrap.sign-fullscreen #signFullBtn{display:none}
 /* Scan Modal */
 .scan-viewport{position:relative;width:100%;aspect-ratio:1/1;background:#0b0c12;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .scan-viewport video{width:100%;height:100%;object-fit:cover}
@@ -617,7 +616,6 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
         <div class="sign-toolbar">
           <button class="sign-mini-btn" type="button" onclick="clearSignature()" data-i18n="loan.sign.clear">清除</button>
           <span class="sign-flex-spacer"></span>
-          <button class="sign-mini-btn" id="signFullBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.fullscreen">全屏</button>
           <button class="sign-mini-btn" id="signDoneBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.done">完成</button>
         </div>
         <div class="sign-stage" id="signStage">
