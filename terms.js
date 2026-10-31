@@ -388,7 +388,7 @@ function initSignPad(){
   window.addEventListener('pointerup',signPointerUp);
   window.addEventListener('resize',function(){
     const sw=document.getElementById('termsSignWrap');
-    if(sw&&sw.style.display!=='none'){ resizeSignCanvas(); renderSign(); }
+    if(sw&&sw.style.display!=='none'){ fitSignStageFullscreen(); resizeSignCanvas(); renderSign(); }
   });
 }
 function signPos(e,canvas){
@@ -456,8 +456,33 @@ function clearSignature(){
   resizeSignCanvas();renderSign();
   updateTermsAccept();
 }
+let _signAspect=0;
+// 全屏时按外层签名区的宽高比，把画布等比缩放并居中（避免拉伸变形）
+function fitSignStageFullscreen(){
+  const wrap=document.getElementById('signCanvasWrap');
+  const stage=document.getElementById('signStage');
+  if(!wrap||!stage||!wrap.classList.contains('sign-fullscreen'))return;
+  const toolbar=wrap.querySelector('.sign-toolbar');
+  const availW=wrap.clientWidth;
+  const availH=wrap.clientHeight-((toolbar&&toolbar.offsetHeight)||0);
+  let w=availW,h=(_signAspect>0)?(w/_signAspect):availH;
+  if(_signAspect>0&&h>availH){ h=availH;w=h*_signAspect; }
+  stage.style.width=w+'px';
+  stage.style.height=h+'px';
+}
 function toggleSignFullscreen(){
   const wrap=document.getElementById('signCanvasWrap');if(!wrap)return;
+  const stage=document.getElementById('signStage');
+  const entering=!wrap.classList.contains('sign-fullscreen');
+  if(entering&&stage){
+    const hh=stage.clientHeight||180;
+    _signAspect=stage.clientWidth/hh;
+  }
   wrap.classList.toggle('sign-fullscreen');
+  if(entering){
+    fitSignStageFullscreen();
+  }else if(stage){
+    stage.style.width='';stage.style.height='';
+  }
   requestAnimationFrame(function(){ resizeSignCanvas(); renderSign(); });
 }
