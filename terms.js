@@ -313,7 +313,7 @@ function getTermsContent(type){
   const c=(TERMS_CONTENT[type]||{});
   return c[currentLang]||c.zh||{title:'',accept:'同意并继续',scrollHint:'请滚动阅读至底部后，再勾选同意以下条款',sections:[],checks:[]};
 }
-let _termsAccept=null,_termsChecked=[],_termsScrolled=false;
+let _termsAccept=null,_termsChecked=[],_termsScrolled=false,_termsSignRequired=false;
 function openTerms(type,onAccept){
   const c=getTermsContent(type);
   _termsAccept=onAccept;
@@ -327,7 +327,20 @@ function openTerms(type,onAccept){
   const hint=document.getElementById('termsScrollHint');hint.textContent=c.scrollHint;hint.style.display='block';
   const btn=document.getElementById('termsAcceptBtn');btn.textContent=c.accept;
   btn.disabled=true;btn.classList.add('disabled');
+  const signWrap=document.getElementById('termsSignWrap');
+  if(type==='loan'){
+    signWrap.style.display='';
+    initSignPad();
+    signStrokes=[];hasSignature=false;
+    const ph=document.getElementById('signPlaceholder');if(ph)ph.style.display='';
+    const sw=document.getElementById('signCanvasWrap');if(sw)sw.classList.remove('sign-fullscreen');
+    _termsSignRequired=true;
+  }else{
+    signWrap.style.display='none';
+    _termsSignRequired=false;
+  }
   document.getElementById('termsModal').classList.add('show');
+  if(type==='loan'){ resizeSignCanvas(); renderSign(); }
 }
 function onTermsScroll(){
   const b=document.getElementById('termsBody');
@@ -345,12 +358,100 @@ function onTermsCheck(i,checked){
 function updateTermsAccept(){
   const allChecked=_termsChecked.length>0&&_termsChecked.every(Boolean);
   const btn=document.getElementById('termsAcceptBtn');
-  const ok=_termsScrolled&&allChecked;
+  const ok=_termsScrolled&&allChecked&&(!_termsSignRequired||hasSignature);
   btn.disabled=!ok;btn.classList.toggle('disabled',!ok);
 }
 function acceptTerms(){
   const cb=_termsAccept;_termsAccept=null;
   document.getElementById('termsModal').classList.remove('show');
+  if(_termsSignRequired && hasSignature){
+    try{ window.__loanSignature=document.getElementById('signCanvas').toDataURL('image/png'); }catch(e){ window.__loanSignature=''; }
+  }else{ window.__loanSignature=''; }
   if(cb)cb();
 }
 function closeTermsModal(){document.getElementById('termsModal').classList.remove('show')}
+
+// ===== 贷款手写签名 =====
+let signStrokes=[],hasSignature=false,_signInit=false,signDrawing=false,signLast=null;
+function initSignPad(){
+  if(_signInit)return;_signInit=true;
+  const canvas=document.getElementById('signCanvas');if(!canvas)return;
+  canvas.style.touchAction='none';
+  canvas.addEventListener('pointerdown',signPointerDown);
+  canvas.addEventListener('pointermove',signPointerMove);
+  window.addEventListener('pointerup',signPointerUp);
+  window.addEventListener('resize',function(){
+    const sw=document.getElementById('termsSignWrap');
+    if(sw&&sw.style.display!=='none'){ resizeSignCanvas(); renderSign(); }
+  });
+}
+function signPos(e,canvas){
+  const r=canvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};
+}
+function signPointerDown(e){
+  const wrap=document.getElementById('signCanvasWrap');
+  // 小屏签名时自动进入全屏，避免误触与遮挡
+  if(window.innerWidth<=640 && wrap && !wrap.classList.contains('sign-fullscreen')){
+    e.preventDefault();
+    toggleSignFullscreen();
+    return;
+  }
+  e.preventDefault();
+  const canvas=document.getElementById('signCanvas');
+  signDrawing=true;
+  const p=signPos(e,canvas);
+  signStrokes.push([p]);signLast=p;hasSignature=true;
+  const ph=document.getElementById('signPlaceholder');if(ph)ph.style.display='none';
+  updateTermsAccept();
+}
+function signPointerMove(e){
+  if(!signDrawing)return;
+  e.preventDefault();
+  const canvas=document.getElementById('signCanvas');
+  const ctx=canvas.getContext('2d');
+  const p=signPos(e,canvas);
+  const stroke=signStrokes[signStrokes.length-1];
+  if(!stroke)return;
+  stroke.push(p);
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#111';
+  ctx.beginPath();ctx.moveTo(signLast.x*w,signLast.y*h);ctx.lineTo(p.x*w,p.y*h);ctx.stroke();
+  signLast=p;
+}
+function signPointerUp(){ signDrawing=false;signLast=null; }
+function resizeSignCanvas(){
+  const canvas=document.getElementById('signCanvas');if(!canvas)return;
+  const stage=document.getElementById('signStage');if(!stage)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=stage.clientWidth||300,h=stage.clientHeight||180;
+  canvas.width=Math.max(1,Math.floor(w*dpr));
+  canvas.height=Math.max(1,Math.floor(h*dpr));
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);ctx.scale(dpr,dpr);
+}
+function renderSign(){
+  const canvas=document.getElementById('signCanvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
+  if(!signStrokes.length)return;
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#111';
+  signStrokes.forEach(function(stroke){
+    if(stroke.length<1)return;
+    ctx.beginPath();ctx.moveTo(stroke[0].x*w,stroke[0].y*h);
+    for(let i=1;i<stroke.length;i++)ctx.lineTo(stroke[i].x*w,stroke[i].y*h);
+    ctx.stroke();
+  });
+}
+function clearSignature(){
+  signStrokes=[];hasSignature=false;
+  const ph=document.getElementById('signPlaceholder');if(ph)ph.style.display='';
+  resizeSignCanvas();renderSign();
+  updateTermsAccept();
+}
+function toggleSignFullscreen(){
+  const wrap=document.getElementById('signCanvasWrap');if(!wrap)return;
+  wrap.classList.toggle('sign-fullscreen');
+  requestAnimationFrame(function(){ resizeSignCanvas(); renderSign(); });
+}
