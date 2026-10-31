@@ -463,8 +463,9 @@ function fitSignStageFullscreen(){
   const stage=document.getElementById('signStage');
   if(!wrap||!stage||!wrap.classList.contains('sign-fullscreen'))return;
   const toolbar=wrap.querySelector('.sign-toolbar');
-  const availW=wrap.clientWidth;
-  const availH=wrap.clientHeight-((toolbar&&toolbar.offsetHeight)||0);
+  const pad=16;
+  const availW=Math.max(120,wrap.clientWidth-pad*2);
+  const availH=Math.max(80,wrap.clientHeight-((toolbar&&toolbar.offsetHeight)||0)-pad*2);
   let w=availW,h=(_signAspect>0)?(w/_signAspect):availH;
   if(_signAspect>0&&h>availH){ h=availH;w=h*_signAspect; }
   stage.style.width=w+'px';
