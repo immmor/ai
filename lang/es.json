@@ -399,7 +399,14 @@
         "insufficientRepay": "Saldo insuficiente para devolver",
         "term": "Plazo",
         "monthUnit": "meses",
-        "annualAbbr": "anual"
+        "annualAbbr": "anual",
+        "sign": {
+            "title": "Por favor firme aquí",
+            "placeholder": "Firme aquí",
+            "clear": "Borrar",
+            "fullscreen": "Firmar en pantalla completa",
+            "done": "Hecho"
+        }
     },
     "realname": {
         "title": "Verificación",

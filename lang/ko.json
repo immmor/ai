@@ -399,7 +399,14 @@
         "insufficientRepay": "잔액 부족으로 상환 불가",
         "term": "대출 기간",
         "monthUnit": "개월",
-        "annualAbbr": "연"
+        "annualAbbr": "연",
+        "sign": {
+            "title": "여기에 서명해 주세요",
+            "placeholder": "여기에 서명",
+            "clear": "지우기",
+            "fullscreen": "전체 화면 서명",
+            "done": "서명 완료"
+        }
     },
     "realname": {
         "title": "인증",

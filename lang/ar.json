@@ -399,7 +399,14 @@
         "insufficientRepay": "الرصيد غير كافٍ للسداد",
         "term": "مدة القرض",
         "monthUnit": "شهر",
-        "annualAbbr": "سنويًا"
+        "annualAbbr": "سنويًا",
+        "sign": {
+            "title": "يرجى التوقيع هنا",
+            "placeholder": "وقّع هنا",
+            "clear": "مسح",
+            "fullscreen": "توقيع ملء الشاشة",
+            "done": "تم"
+        }
     },
     "realname": {
         "title": "المصادقة",

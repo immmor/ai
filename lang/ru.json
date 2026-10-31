@@ -399,7 +399,14 @@
         "insufficientRepay": "Недостаточно средств для погашения",
         "term": "Срок",
         "monthUnit": "мес.",
-        "annualAbbr": "год."
+        "annualAbbr": "год.",
+        "sign": {
+            "title": "Пожалуйста, подпишите здесь",
+            "placeholder": "Подпишите здесь",
+            "clear": "Очистить",
+            "fullscreen": "Подпись на весь экран",
+            "done": "Готово"
+        }
     },
     "realname": {
         "title": "Верификация",

@@ -399,7 +399,14 @@
         "insufficientRepay": "残高不足で返済できません",
         "term": "借款期間",
         "monthUnit": "ヶ月",
-        "annualAbbr": "年利"
+        "annualAbbr": "年利",
+        "sign": {
+            "title": "ここに署名してください",
+            "placeholder": "ここに署名",
+            "clear": "クリア",
+            "fullscreen": "全画面で署名",
+            "done": "署名完了"
+        }
     },
     "realname": {
         "title": "認証",

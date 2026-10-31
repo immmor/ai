@@ -398,7 +398,14 @@
         "insufficientRepay": "余额不足，无法还款",
         "term": "借款期限",
         "monthUnit": "个月",
-        "annualAbbr": "年化"
+        "annualAbbr": "年化",
+        "sign": {
+            "title": "请在此手写签名",
+            "placeholder": "在此手写签名",
+            "clear": "清除",
+            "fullscreen": "全屏签名",
+            "done": "完成签名"
+        }
     },
     "realname": {
         "title": "实名认证",

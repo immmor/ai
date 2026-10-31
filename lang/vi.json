@@ -399,7 +399,14 @@
         "insufficientRepay": "Số dư không đủ để trả nợ",
         "term": "Kỳ hạn",
         "monthUnit": "tháng",
-        "annualAbbr": "năm"
+        "annualAbbr": "năm",
+        "sign": {
+            "title": "Vui lòng ký tại đây",
+            "placeholder": "Ký tại đây",
+            "clear": "Xóa",
+            "fullscreen": "Ký toàn màn hình",
+            "done": "Xong"
+        }
     },
     "realname": {
         "title": "Xác thực",

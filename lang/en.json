@@ -398,7 +398,14 @@
         "insufficientRepay": "Insufficient balance to repay",
         "term": "Loan Term",
         "monthUnit": "months",
-        "annualAbbr": "p.a."
+        "annualAbbr": "p.a.",
+        "sign": {
+            "title": "Please sign here",
+            "placeholder": "Sign here",
+            "clear": "Clear",
+            "fullscreen": "Fullscreen sign",
+            "done": "Done"
+        }
     },
     "realname": {
         "title": "Verification",

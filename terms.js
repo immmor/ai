@@ -340,13 +340,19 @@ function openTerms(type,onAccept){
     _termsSignRequired=false;
   }
   document.getElementById('termsModal').classList.add('show');
+  // 内容未超出可视区域（无需滚动）时，直接视为已读，避免卡死
+  if(body.scrollHeight<=body.clientHeight+2){
+    _termsScrolled=true;
+    document.querySelectorAll('#termsChecks input').forEach(inp=>inp.disabled=false);
+    updateTermsAccept();
+  }
   if(type==='loan'){ resizeSignCanvas(); renderSign(); }
 }
 function onTermsScroll(){
   const b=document.getElementById('termsBody');
   if(b.scrollTop+b.clientHeight>=b.scrollHeight-6){
     _termsScrolled=true;
-    const h=document.getElementById('termsScrollHint');if(h)h.style.display='none';
+    // 提示保持原样，不消失、不改文本
     document.querySelectorAll('#termsChecks input').forEach(inp=>inp.disabled=false);
     updateTermsAccept();
   }
