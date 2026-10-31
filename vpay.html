@@ -372,7 +372,7 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .terms-sec:last-child{margin-bottom:0}
 .terms-h{font-weight:700;color:var(--text-main);margin-bottom:5px}
 .terms-p{font-size:13px;color:var(--text-muted);line-height:1.65}
-.terms-checks{display:flex;flex-direction:column;gap:11px;margin:4px 0 14px}
+.terms-checks{display:flex;flex-direction:column;gap:11px;margin:12px 0 8px}
 .terms-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text-main);cursor:pointer;line-height:1.5}
 .terms-check input{margin-top:2px;width:17px;height:17px;flex:none;accent-color:#6c5ce7;cursor:pointer}
 .terms-check input:disabled{cursor:not-allowed}
@@ -386,13 +386,11 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .sign-stage{position:relative;height:180px;background:#fff;touch-action:none}
 .sign-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
 .sign-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:14px;pointer-events:none}
-.sign-done-btn{margin:10px;width:calc(100% - 20px)}
-.sign-canvas-wrap:not(.sign-fullscreen) .sign-done-btn{display:none}
+.sign-canvas-wrap:not(.sign-fullscreen) #signDoneBtn{display:none}
 .sign-canvas-wrap.sign-fullscreen{position:fixed;inset:0;z-index:10000;border-radius:0;display:flex;flex-direction:column;background:#fff}
 .sign-canvas-wrap.sign-fullscreen .sign-stage{flex:1;height:auto}
 .sign-canvas-wrap.sign-fullscreen .sign-toolbar{order:2;border-top:1px solid var(--panel-border);border-bottom:none}
 .sign-canvas-wrap.sign-fullscreen #signFullBtn{display:none}
-.sign-canvas-wrap.sign-fullscreen .sign-done-btn{display:block;order:3}
 /* Scan Modal */
 .scan-viewport{position:relative;width:100%;aspect-ratio:1/1;background:#0b0c12;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .scan-viewport video{width:100%;height:100%;object-fit:cover}
@@ -620,12 +618,12 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
           <button class="sign-mini-btn" type="button" onclick="clearSignature()" data-i18n="loan.sign.clear">清除</button>
           <span class="sign-flex-spacer"></span>
           <button class="sign-mini-btn" id="signFullBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.fullscreen">全屏签名</button>
+          <button class="sign-mini-btn" id="signDoneBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.done">完成签名</button>
         </div>
         <div class="sign-stage" id="signStage">
           <canvas id="signCanvas" class="sign-canvas"></canvas>
           <span class="sign-placeholder" id="signPlaceholder" data-i18n="loan.sign.placeholder">在此手写签名</span>
         </div>
-        <button class="btn-primary sign-done-btn" id="signDoneBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.done">完成签名</button>
       </div>
     </div>
     <button class="finance-deposit-btn disabled" id="termsAcceptBtn" disabled onclick="acceptTerms()"></button>
