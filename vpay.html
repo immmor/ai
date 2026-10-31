@@ -614,18 +614,18 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
     <div class="finance-tip" id="termsScrollHint" style="text-align:center"></div>
     <div class="terms-checks" id="termsChecks"></div>
     <div id="termsSignWrap" class="terms-sign-wrap" style="display:none">
-      <div class="section-title" style="font-size:14px;margin:14px 0 8px" data-i18n="loan.signTitle">请在此手写签名</div>
+      <div class="section-title" style="font-size:14px;margin:14px 0 8px" data-i18n="loan.sign.title">请在此手写签名</div>
       <div class="sign-canvas-wrap" id="signCanvasWrap">
         <div class="sign-toolbar">
-          <button class="sign-mini-btn" type="button" onclick="clearSignature()" data-i18n="loan.signClear">清除</button>
+          <button class="sign-mini-btn" type="button" onclick="clearSignature()" data-i18n="loan.sign.clear">清除</button>
           <span class="sign-flex-spacer"></span>
-          <button class="sign-mini-btn" id="signFullBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.signFullscreen">全屏签名</button>
+          <button class="sign-mini-btn" id="signFullBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.fullscreen">全屏签名</button>
         </div>
         <div class="sign-stage" id="signStage">
           <canvas id="signCanvas" class="sign-canvas"></canvas>
-          <span class="sign-placeholder" id="signPlaceholder" data-i18n="loan.signPlaceholder">在此手写签名</span>
+          <span class="sign-placeholder" id="signPlaceholder" data-i18n="loan.sign.placeholder">在此手写签名</span>
         </div>
-        <button class="btn-primary sign-done-btn" id="signDoneBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.signDone">完成签名</button>
+        <button class="btn-primary sign-done-btn" id="signDoneBtn" type="button" onclick="toggleSignFullscreen()" data-i18n="loan.sign.done">完成签名</button>
       </div>
     </div>
     <button class="finance-deposit-btn disabled" id="termsAcceptBtn" disabled onclick="acceptTerms()"></button>
