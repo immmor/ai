@@ -2591,14 +2591,6 @@
                 'realname': '认证管理'
             };
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
-
-            // 进入用户管理页不自动加载，需点击「刷新/查询」再拉取（节省免费额度）
-            if (pageName === 'users') {
-                const tb = document.getElementById('usersTableBody');
-                if (tb) tb.innerHTML = '<tr><td colspan="27" style="text-align:center;color:#999;">点击「刷新」加载用户数据</td></tr>';
-                const pg = document.getElementById('userPagination');
-                if (pg) pg.innerHTML = '';
-            }
             
         }
 
