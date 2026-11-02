@@ -22,6 +22,19 @@ const notifyAdmin = async (title, body) => {
   } catch (e) {}
 };
 
+// Supabase 实时消息桥接：把「客服→用户」的回复镜像进 Supabase，前端用 Realtime 接收（无配置则跳过）
+async function supabaseInsert(env, table, row) {
+  const url = env.SUPABASE_URL, key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  try {
+    await fetch(`${url}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': key, 'Authorization': `Bearer ${key}`, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(row),
+    });
+  } catch (_) {}
+}
+
 function fbChoiceLabel(_match, choice) {
   const map = { a: '主胜', draw: '平局', b: '客胜' };
   return map[choice] || choice;
@@ -3321,6 +3334,10 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             
             if (result.success) {
               await notifyAdmin('用户私信', `有用户向 ${username} 发送了私信：${content}`);
+              // 仅「客服→用户」的回复镜像到 Supabase（用户→客服由前端直接写，thread 用真实用户名）
+              if (!['admin', 'immmor'].includes(username)) {
+                await supabaseInsert(env, 'support_messages', { username, from_role: 'agent', content, is_read: false });
+              }
               return resJson({
                 code: 200,
                 msg: '发送成功',

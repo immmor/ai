@@ -986,9 +986,9 @@ export default {
           let where = '';
           const params = [];
           if (search) {
-            where = ' WHERE username LIKE ? OR invite_code LIKE ? OR invited_user LIKE ? OR source LIKE ? OR remark LIKE ?';
+            where = ' WHERE username LIKE ? OR v_expire_date LIKE ? OR v_link_clash LIKE ? OR fetch_link LIKE ?';
             const like = '%' + search + '%';
-            params.push(like, like, like, like, like);
+            params.push(like, like, like, like);
           }
 
           // 获取用户总数
