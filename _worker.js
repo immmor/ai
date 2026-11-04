@@ -87,22 +87,6 @@ export default {
       }
     }
 
-    // 工具函数：手机推送通知（与 worker.js 的 notifyAdmin 一致）
-    async function notifyAdmin(title, body) {
-      const form = new URLSearchParams();
-      form.set('title', title);
-      form.set('body', body);
-      form.set('group', 'Phantom');
-      form.set('ttl', '600');
-      try {
-        await fetch('https://notify.funbua.uk/W6qUt6AoVEN6nQYVnNnuQq', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: form.toString()
-        });
-      } catch (e) {}
-    }
-
     // 1. 处理自定义 API 接口（后台逻辑）
     if (url.pathname.startsWith('/api/')) {
       // 路由匹配：/api/register 注册接口（使用 D1 数据库）
@@ -292,7 +276,6 @@ export default {
           // 2) 订单创建成功后再发送通知（失败不影响主流程）
           try {
             await sendAdminMessage(`📝 新订单：${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}），订单号 ${finalOrderNo}`);
-            // await notifyAdmin('新订单', `${params.username} 充值 ¥${Number(amount).toFixed(2)}（${epayType}）\n订单号 ${finalOrderNo}`);
           } catch (e) { console.error('通知发送失败:', e); }
 
           return jsonResponse({
@@ -355,10 +338,7 @@ export default {
             } catch (error) {
               console.error('Supabase订单更新失败:', error);
             }
-
             await sendAdminMessage(`✅ 支付成功：${username} 充值 ¥${parseFloat(money).toFixed(2)}，订单号 ${order_no}`);
-            // await notifyAdmin('支付成功', `${username} 充值 ¥${parseFloat(money).toFixed(2)}\n订单号 ${order_no}`);
-
             return new Response('success', { status: 200 });
           } else {
             // 支付失败，更新订单状态到Supabase
@@ -447,7 +427,6 @@ export default {
             // 3) 发送通知（失败不影响主流程）
             try {
               await sendAdminMessage(`📝 新订单：${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}，订单号 ${order_no}`);
-              // await notifyAdmin('新订单', `${username} 信用卡充值 ¥${cnyAmount.toFixed(2)}\n订单号 ${order_no}`);
             } catch (e) { console.error('通知发送失败:', e); }
 
             return jsonResponse({
@@ -515,7 +494,6 @@ export default {
             }
 
             await sendAdminMessage(`✅ 支付成功：${username} 信用卡充值 ¥${amountCny.toFixed(2)}，订单号 ${order_no}`);
-            // await notifyAdmin('支付成功', `${username} 信用卡充值 ¥${amountCny.toFixed(2)}\n订单号 ${order_no}`);
           } else {
             console.log('缺少必要参数，无法更新');
           }
@@ -646,7 +624,6 @@ export default {
               .first();
             
             await sendAdminMessage(`✅ 支付成功：${username} 人工确认充值 ¥${parseFloat(amount).toFixed(2)}（${payment_type || '手动'}），订单号 ${order_no}`);
-            // await notifyAdmin('支付成功', `${username} 人工确认充值 ¥${parseFloat(amount).toFixed(2)}（${payment_type || '手动'}）\n订单号 ${order_no}`);
 
             return jsonResponse({ 
               success: true, 
@@ -682,7 +659,6 @@ export default {
           // 2) 订单创建成功后再发送通知（失败不影响主流程）
           try {
             await sendAdminMessage(`📝 新订单：${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}），订单号 ${orderData.order_no}`);
-            // await notifyAdmin('新订单', `${orderData.username} 充值 ¥${orderData.amount}（${orderData.payment_type || '手动'}）\n订单号 ${orderData.order_no}`);
           } catch (e) { console.error('通知发送失败:', e); }
 
           return jsonResponse({ success: true, message: '静态订单创建成功' });
