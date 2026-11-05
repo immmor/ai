@@ -1191,7 +1191,7 @@
                                 <label for="giftGameType">抽奖类型</label>
                                 <select id="giftGameType" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;" onchange="updateGiftPrizeOptions()">
                                     <option value="wheel">幸运转盘</option>
-                                    <option value="slot">老虎机</option>
+                                    <option value="slot">摇摇机</option>
                                     <option value="scratch">刮刮乐</option>
                                 </select>
                             </div>
@@ -1224,10 +1224,10 @@
                         </table>
                     </div>
 
-                    <!-- 老虎机记录 -->
+                    <!-- 摇摇机记录 -->
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
-                            <h3>老虎机记录</h3>
+                            <h3>摇摇机记录</h3>
                             <button class="add-btn" onclick="loadSlotBets()" style="background-color: #667eea;">刷新</button>
                         </div>
                         <table id="slotTable">
@@ -4635,10 +4635,10 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     slotBetsData = res.history;
                     renderSlotBets();
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无老虎机记录</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无摇摇机记录</td></tr>';
                     slotBetsData = [];
                 }
-            } catch (e) { console.error('加载老虎机记录失败:', e); }
+            } catch (e) { console.error('加载摇摇机记录失败:', e); }
         }
 
         function sortSlotBets(col) {
@@ -4657,7 +4657,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         function renderSlotBets() {
             const tbody = document.getElementById('slotBetBody');
             if (!slotBetsData.length) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无老虎机记录</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无摇摇机记录</td></tr>';
                 return;
             }
             const sorted = [...slotBetsData].sort((a, b) => {
