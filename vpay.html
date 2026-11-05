@@ -1180,6 +1180,35 @@ const FINANCE_API=API_BASE;
 let currentUser=null,currentPage='dashboard',payMethod='creem',creditAmount=5,cnyAmount=null,alipayAmount=null,
     orderPage=1,totalOrderPages=1,recordsPage=1,totalRecordPages=1;
 
+// ============ 登录态解码：p_token 内已打包 userInfo + pricePlan + exp（混淆，可逆，与 worker 同密钥） ============
+const LOGIN_OBF_KEY = 'PHANTOM_LOGIN_OBF_KEY_2024';
+const deobfuscateLoginToken = (b64) => {
+  try {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const key = new TextEncoder().encode(LOGIN_OBF_KEY);
+    const out = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) out[i] = bytes[i] ^ key[i % key.length];
+    return new TextDecoder().decode(out);
+  } catch (e) { return ''; }
+};
+// 把登录响应还原为 currentUser（含 p_token），兼容旧明文 userInfo
+const applyLoginData = (data) => {
+  if (!data) return null;
+  if (data.p_token) {
+    try {
+      const obj = JSON.parse(deobfuscateLoginToken(data.p_token));
+      const u = obj.u || {};
+      u.p_token = data.p_token; // 还原给后续鉴权使用
+      if (obj.p) u.pricePlan = obj.p;
+      return u;
+    } catch (e) { console.error('登录令牌解析失败', e); return null; }
+  }
+  if (data.userInfo) return Object.assign({}, data.userInfo); // 旧明文兼容
+  return null;
+};
+
 // Toast
 let toastTimer=null;
 function showToast(msg,type='success'){
@@ -1509,7 +1538,8 @@ async function handleLogin(){
   try{
     const r=await(await fetch(API_BASE+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})).json();
     if(r.success){
-      currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());
+      currentUser=applyLoginData(r);if(!currentUser){hideLoading();showToast(r.message||'登录失败','error');return}
+      localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());
       hideLoading();enterMain()
     }else{hideLoading();showToast(r.message||'登录失败','error')}
   }catch(e){hideLoading();showToast(t('alert.networkError'),'error')}
@@ -2766,7 +2796,7 @@ function initApp(){
     (async()=>{
       try{
         const r=await(await fetch(API_BASE+'/api/quick-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket})})).json();
-        if(r.success&&r.userInfo){currentUser=r.userInfo;localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());enterMain()}
+        if(r.success){currentUser=applyLoginData(r);if(currentUser){localStorage.setItem('vpay_user',JSON.stringify(currentUser));localStorage.setItem('vpay_login_time',Date.now().toString());enterMain()}}
       }catch(e){}
     })()
   }

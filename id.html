@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身份证姓名+号码识别</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 20px; max-width: 700px; margin: 0 auto; }
+        .upload-area { margin: 20px 0; padding: 20px; border: 2px dashed #ccc; border-radius: 8px; text-align: center; }
+        #status { margin: 15px 0; padding: 10px; background: #f0f8ff; border-left: 4px solid #1e90ff; white-space: pre-wrap; }
+        #result { margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 6px; white-space: pre-wrap; font-family: monospace; font-size: 14px; }
+        .error { background: #f8d7da !important; border-left-color: #dc3545 !important; }
+        .success { background: #d4edda !important; border-left-color: #28a745 !important; }
+        .field { font-size: 1.1rem; margin: 5px 0; }
+        .field strong { color: #1e90ff; }
+    </style>
+</head>
+<body>
+    <h1>上传身份证图片识别</h1>
+    <div class="upload-area">
+        <p>选择身份证正面图片（有姓名和号码的那面）</p>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+    <div id="status">正在加载 Tesseract.js...</div>
+    <div id="result"></div>
+
+    <!-- 引入 Tesseract.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const statusEl = document.getElementById('status');
+        const resultEl = document.getElementById('result');
+
+        function setStatus(msg, cls = '') {
+            statusEl.textContent = msg;
+            statusEl.className = cls;
+        }
+
+        // 从 OCR 原始文本中提取姓名和身份证号
+        function extractIdInfo(text) {
+            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+            let name = null;
+            let idNumber = null;
+
+            // 方法1：按“姓名”标签提取
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.includes('姓名')) {
+                    // 尝试从同一行提取冒号后的内容
+                    const parts = line.split(/[：:]/);
+                    if (parts.length > 1 && parts[1].trim()) {
+                        name = parts[1].trim();
+                    } else if (i + 1 < lines.length) {
+                        // 姓名可能在下一行
+                        name = lines[i + 1].trim();
+                    }
+                    break;
+                }
+            }
+
+            // 方法2：身份证号正则（18位，最后一位可能是X）
+            const idMatch = text.match(/\b\d{17}[\dXx]\b/);
+            if (idMatch) {
+                idNumber = idMatch[0].toUpperCase();
+            }
+
+            // 如果姓名没找到，尝试从常见布局中推测（姓名通常紧跟在“姓名”后面或前面）
+            if (!name) {
+                const nameLine = lines.find(l => l.includes('姓名'));
+                if (nameLine) {
+                    name = nameLine.replace(/姓名[：:\s]*/g, '').trim() || null;
+                }
+            }
+
+            return { name, idNumber, rawText: text };
+        }
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                setStatus('请选择图片文件。', 'error');
+                return;
+            }
+
+            resultEl.innerHTML = '';
+            setStatus('正在识别，首次使用会下载中文语言包（约十几 MB），请耐心等待...');
+
+            try {
+                // 使用 Tesseract.js 进行识别，指定简体中文+英文
+                const { data: { text } } = await Tesseract.recognize(
+                    file,
+                    'chi_sim+eng',
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                setStatus(`识别进度：${Math.round(m.progress * 100)}%`);
+                            }
+                        },
+                        // 识别参数优化：保留词间空格，自动页面分割
+                        preserve_interword_spaces: '1',
+                        tessedit_pageseg_mode: '6'
+                    }
+                );
+
+                console.log('原始识别文本：\n', text);
+
+                const info = extractIdInfo(text);
+
+                // 展示结果
+                let html = '';
+                if (info.name) {
+                    html += `<div class="field">姓名：<strong>${info.name}</strong></div>`;
+                } else {
+                    html += `<div class="field">姓名：<span style="color:#dc3545">未能提取，请查看下方原始文本</span></div>`;
+                }
+                if (info.idNumber) {
+                    html += `<div class="field">身份证号：<strong>${info.idNumber}</strong></div>`;
+                } else {
+                    html += `<div class="field">身份证号：<span style="color:#dc3545">未能提取</span></div>`;
+                }
+
+                // 展示原始文本供核对（折叠在下方）
+                html += `<details style="margin-top:15px"><summary style="cursor:pointer;color:#666">查看原始识别文本</summary><pre style="background:#fff;padding:10px;margin-top:8px;white-space:pre-wrap">${text}</pre></details>`;
+
+                resultEl.innerHTML = html;
+                setStatus('识别完成。', 'success');
+
+            } catch (err) {
+                console.error('识别失败:', err);
+                setStatus('识别失败：' + (err.message || err), 'error');
+            }
+        });
+    </script>
+</body>
+</html>
