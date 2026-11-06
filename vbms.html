@@ -1203,6 +1203,72 @@
                         </div>
                     </div>
 
+                    <!-- 优惠券管理 -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>🎟️ 优惠券管理</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="add-btn" onclick="resetCouponForm()">+ 新增优惠券</button>
+                                <button class="add-btn" onclick="loadCoupons()" style="background-color: #667eea;">刷新</button>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="couponCode">优惠码</label>
+                                    <input type="text" id="couponCode" placeholder="如 SAVE20" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="couponType">优惠类型</label>
+                                    <select id="couponType" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <option value="fixed">固定金额减免 (¥)</option>
+                                        <option value="percent">折扣百分比 (%)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="couponAmount">优惠值</label>
+                                    <input type="number" step="0.01" id="couponAmount" placeholder="如 20" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="couponMaxUses">最大使用次数 (0=不限)</label>
+                                    <input type="number" id="couponMaxUses" placeholder="0" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="couponExpires">有效期至</label>
+                                    <input type="datetime-local" id="couponExpires" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="couponActive">状态</label>
+                                    <select id="couponActive" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <option value="1">启用</option>
+                                        <option value="0">停用</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem; display: flex; gap: 10px; align-items: center;">
+                                <button type="button" class="btn" id="couponSaveBtn" onclick="saveCoupon()" style="width: auto;">保存</button>
+                                <button type="button" class="btn" onclick="resetCouponForm()" style="width: auto; background-color: #a0aec0;">取消</button>
+                                <span id="couponEditHint" style="color: #718096; font-size: 0.9rem;"></span>
+                            </div>
+                        </div>
+                        <table id="couponTable" style="margin-top: 0.5rem;">
+                            <thead>
+                                <tr>
+                                    <th>优惠码</th>
+                                    <th>类型</th>
+                                    <th>优惠值</th>
+                                    <th>状态</th>
+                                    <th>有效期至</th>
+                                    <th>已用/上限</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="couponBody">
+                                <tr><td colspan="7" style="text-align:center;">点击「刷新」加载优惠券</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <!-- 幸运转盘记录 -->
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
@@ -5289,6 +5355,130 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 document.getElementById('giftUsernames').value = '';
             } else {
                 alert(res.message || '赠送失败');
+            }
+        }
+
+        // ========== 优惠券管理 ==========
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
+
+        function toLocalInput(dt) {
+            // 将 YYYY-MM-DD HH:MM:SS 转 datetime-local 需要的 YYYY-MM-DDTHH:MM
+            try { return String(dt).replace(' ', 'T').slice(0, 16); } catch (e) { return ''; }
+        }
+
+        function resetCouponForm() {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponType').value = 'fixed';
+            document.getElementById('couponAmount').value = '';
+            document.getElementById('couponMaxUses').value = '';
+            document.getElementById('couponExpires').value = '';
+            document.getElementById('couponActive').value = '1';
+            document.getElementById('couponCode').readOnly = false;
+            window._editingCoupon = null;
+            document.getElementById('couponEditHint').textContent = '';
+            document.getElementById('couponSaveBtn').textContent = '保存';
+        }
+
+        async function loadCoupons() {
+            const tbody = document.getElementById('couponBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">加载中...</td></tr>';
+            try {
+                const res = await newApiRequest('/api/admin/coupons', 'POST', { action: 'list' });
+                if (!res.success) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#e53e3e;">${escapeHtml(res.message || '加载失败')}</td></tr>`;
+                    return;
+                }
+                const list = res.data || [];
+                if (list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">暂无优惠券</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = list.map(c => {
+                    const typeLabel = c.type === 'percent' ? '折扣 %' : '减免 ¥';
+                    const status = c.active ? '<span style="color:#38a169;">启用</span>' : '<span style="color:#a0aec0;">停用</span>';
+                    const exp = c.expires_at ? formatDateTime(c.expires_at) : '永久';
+                    const used = c.used_count || 0;
+                    const limit = (c.max_uses && c.max_uses > 0) ? c.max_uses : '∞';
+                    return `<tr>
+                        <td>${escapeHtml(c.code)}</td>
+                        <td>${typeLabel}</td>
+                        <td>${escapeHtml(c.discount_amount)}</td>
+                        <td>${status}</td>
+                        <td>${escapeHtml(exp)}</td>
+                        <td>${used} / ${limit}</td>
+                        <td>
+                            <button class="btn" style="padding: 0.3rem 0.7rem; width:auto;" onclick="editCoupon('${escapeHtml(c.code)}')">编辑</button>
+                            <button class="btn" style="padding: 0.3rem 0.7rem; width:auto; background-color:#e53e3e;" onclick="deleteCoupon('${escapeHtml(c.code)}')">删除</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#e53e3e;">请求失败</td></tr>';
+            }
+        }
+
+        function editCoupon(code) {
+            newApiRequest('/api/admin/coupons', 'GET').then(res => {
+                const list = (res && res.data) || [];
+                const c = list.find(x => x.code === code);
+                if (!c) { alert('未找到该优惠券'); return; }
+                document.getElementById('couponCode').value = c.code;
+                document.getElementById('couponCode').readOnly = true;
+                document.getElementById('couponType').value = c.type === 'percent' ? 'percent' : 'fixed';
+                document.getElementById('couponAmount').value = c.discount_amount;
+                document.getElementById('couponMaxUses').value = (c.max_uses && c.max_uses > 0) ? c.max_uses : '';
+                document.getElementById('couponExpires').value = c.expires_at ? toLocalInput(c.expires_at) : '';
+                document.getElementById('couponActive').value = c.active ? '1' : '0';
+                window._editingCoupon = c.code;
+                document.getElementById('couponEditHint').textContent = `正在编辑：${c.code}`;
+                document.getElementById('couponSaveBtn').textContent = '更新';
+            });
+        }
+
+        async function saveCoupon() {
+            const code = document.getElementById('couponCode').value.trim();
+            const type = document.getElementById('couponType').value;
+            const amount = document.getElementById('couponAmount').value;
+            const maxUses = document.getElementById('couponMaxUses').value;
+            const expires = document.getElementById('couponExpires').value;
+            const active = document.getElementById('couponActive').value;
+
+            if (!code) { alert('请填写优惠码'); return; }
+            if (amount === '' || isNaN(parseFloat(amount)) || parseFloat(amount) < 0) { alert('请填写有效的优惠值'); return; }
+
+            const editing = window._editingCoupon;
+            const body = {
+                action: 'save',
+                code,
+                discount_amount: parseFloat(amount),
+                type,
+                max_uses: maxUses === '' ? 0 : parseInt(maxUses),
+                expires_at: expires ? expires.replace('T', ' ') + ':00' : null,
+                active: active === '1' ? 1 : 0
+            };
+
+            // 新增/更新统一走 upsert 端点
+            const res = await newApiRequest('/api/admin/coupons', 'POST', body);
+            if (res.success) {
+                alert(res.message || '保存成功');
+                resetCouponForm();
+                loadCoupons();
+            } else {
+                alert(res.message || '保存失败');
+            }
+        }
+
+        async function deleteCoupon(code) {
+            if (!confirm(`确认删除优惠券「${code}」？`)) return;
+            const res = await newApiRequest('/api/admin/coupons', 'POST', { action: 'delete', code });
+            if (res.success) {
+                alert(res.message || '删除成功');
+                loadCoupons();
+            } else {
+                alert(res.message || '删除失败');
             }
         }
 
