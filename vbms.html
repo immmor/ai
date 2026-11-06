@@ -5421,7 +5421,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function editCoupon(code) {
-            newApiRequest('/api/admin/coupons', 'GET').then(res => {
+            newApiRequest('/api/admin/coupons', 'POST', { action: 'list' }).then(res => {
                 const list = (res && res.data) || [];
                 const c = list.find(x => x.code === code);
                 if (!c) { alert('未找到该优惠券'); return; }
