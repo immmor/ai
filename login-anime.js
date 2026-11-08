@@ -8,6 +8,11 @@
   'use strict';
 
   let overlay = null;
+  let shownAt = 0;
+  const SPIN_MS = 900;   // 每圈时长，须与 va-spin 动画一致
+  const MIN_SPINS = 3;   // 不管成功失败，至少转 3 圈
+  const MIN_MS = SPIN_MS * MIN_SPINS;
+  const FADE_MS = 420;
 
   function prefersLight() {
     try {
@@ -79,6 +84,7 @@
       overlay = build(light);
       API.setText(opts.text || '登录中…');
       document.body.appendChild(overlay);
+      shownAt = Date.now();
     },
     setText: function (t) {
       if (!overlay) return;
@@ -89,10 +95,14 @@
       if (!overlay) return;
       const o = overlay;
       overlay = null;
-      o.style.opacity = '0';
+      // 至少转满 MIN_SPINS 圈（不论登录成功或失败），再开始淡出
+      const wait = Math.max(0, MIN_MS - (Date.now() - shownAt));
       setTimeout(function () {
-        if (o.parentNode) o.parentNode.removeChild(o);
-      }, 420);
+        o.style.opacity = '0';
+        setTimeout(function () {
+          if (o.parentNode) o.parentNode.removeChild(o);
+        }, FADE_MS);
+      }, wait);
     }
   };
 
