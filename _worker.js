@@ -55,23 +55,62 @@ export default {
       });
     }
 
-    // 工具函数：检查订单是否已处理过（幂等性检查）
-    async function isOrderProcessed(order_no) {
-      try {
-        if (env.SUPABASE_URL && env.SUPABASE_KEY) {
-          const existingOrders = await supabaseFetch(
-            `orders?order_no=eq.${order_no}&status=eq.paid&select=id`,
-            createSupabaseConfig()
-          );
-          if (existingOrders && existingOrders.length > 0) {
-            console.log(`订单 ${order_no} 已处理过，跳过重复充值`);
-            return true;
-          }
-        }
-      } catch (checkError) {
-        console.error('幂等性检查失败:', checkError);
+    // 工具函数：原子认领订单（幂等性核心，仍基于 Supabase）
+    // 关键：用 Postgres 的一条「UPDATE ... WHERE status IN (pending, failed)」做原子认领。
+    // 同一 order_no 的并发回调中，只有最先执行该语句的请求会真正把状态改为 paid 并返回受影响行，
+    // 其余请求因状态已不是 pending/failed 而匹配 0 行 —— 从而不会被重复充值（彻底消除 TOCTOU 竞态）。
+    // 依赖 Supabase 表 orders 在 order_no 上有唯一约束。
+    // 返回 'claimed'（本次应充值）或 'already'（已被处理过）；无法确定时抛错（fail-closed，绝不擅自充值）。
+    async function claimOrderAndMaybeCredit({ order_no, patchBody, insertBody }) {
+      const oeq = encodeURIComponent(order_no);
+
+      // 1) 原子认领：仅当状态仍为 pending/failed 时才改为 paid
+      const claimed = await supabaseFetch(
+        `orders?order_no=eq.${oeq}&or=(status.eq.pending,status.eq.failed)`,
+        createSupabaseConfig('PATCH', patchBody)
+      );
+      if (Array.isArray(claimed) && claimed.length > 0) {
+        return 'claimed';
       }
-      return false;
+
+      // 2) 不是本次认领：确认是否已被标记为 paid（并发的另一请求已处理，或历史已处理）
+      const paid = await supabaseFetch(
+        `orders?order_no=eq.${oeq}&status=eq.paid&select=id`,
+        createSupabaseConfig()
+      );
+      if (Array.isArray(paid) && paid.length > 0) {
+        return 'already';
+      }
+
+      // 3) 订单尚不存在（如 confirm 未预创建订单的场景）：尝试插入，依赖 order_no 唯一约束
+      const created = await supabaseFetch('orders', createSupabaseConfig('POST', insertBody));
+      if (Array.isArray(created) && created.length > 0) {
+        return 'claimed';
+      }
+
+      // 4) 插入失败（唯一冲突，说明并发已插入并 paid）：再次确认
+      const paid2 = await supabaseFetch(
+        `orders?order_no=eq.${oeq}&status=eq.paid&select=id`,
+        createSupabaseConfig()
+      );
+      if (Array.isArray(paid2) && paid2.length > 0) {
+        return 'already';
+      }
+
+      // 5) 仍无法确定（Supabase 异常/网络问题）：安全拒绝，避免凭空充值
+      throw new Error('无法确定订单状态，已安全拒绝本次充值');
+    }
+
+    // 工具函数：充值失败后把订单回滚为 pending，使后续重试可以重新认领，避免「钱没加但订单已 paid」导致永久漏充
+    async function rollbackOrderPending(order_no) {
+      try {
+        await supabaseFetch(
+          `orders?order_no=eq.${encodeURIComponent(order_no)}`,
+          createSupabaseConfig('PATCH', { status: 'pending' })
+        );
+      } catch (e) {
+        console.error('订单回滚失败:', e);
+      }
     }
 
     // 工具函数：给管理员发站内消息（走 api.funbua.uk 的 send-message 接口）
@@ -316,28 +355,48 @@ export default {
           }
 
           if (trade_status === 'TRADE_SUCCESS') {
-            if (await isOrderProcessed(order_no)) {
+            // 原子认领订单：只有本次真正把 pending/failed -> paid 的请求才负责充值，杜绝并发重复充值
+            let claim;
+            try {
+              claim = await claimOrderAndMaybeCredit({
+                order_no,
+                patchBody: {
+                  status: 'paid',
+                  trade_no: trade_no,
+                  paid_at: new Date().toISOString()
+                },
+                insertBody: {
+                  order_no: order_no,
+                  username: username,
+                  amount: parseFloat(money),
+                  payment_type: 'epay',
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  description: '易支付回调'
+                }
+              });
+            } catch (e) {
+              console.error('幂等认领失败:', e);
+              return new Response('fail', { status: 500 });
+            }
+
+            if (claim === 'already') {
               return new Response('success', { status: 200 });
             }
 
-            // 更新用户余额
+            // claim === 'claimed'：本次负责充值
             const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
               .bind(parseFloat(money), username)
               .run();
 
-            // 更新订单状态到Supabase
-            try {
-              if (env.SUPABASE_URL && env.SUPABASE_KEY) {
-                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                  status: 'paid',
-                  trade_no: trade_no,
-                  paid_at: new Date().toISOString()
-                }));
-              }
-            } catch (error) {
-              console.error('Supabase订单更新失败:', error);
+            if (!result.success) {
+              // D1 余额更新失败，回滚订单状态以便重试
+              await rollbackOrderPending(order_no);
+              return new Response('fail', { status: 500 });
             }
+
             await sendAdminMessage(`✅ 支付成功：${username} 充值 ¥${parseFloat(money).toFixed(2)}，订单号 ${order_no}`);
             return new Response('success', { status: 200 });
           } else {
@@ -467,32 +526,50 @@ export default {
           console.log('收到支付回调:', { checkout_id, order_id, order_no, username, amount });
 
           if (order_no && username) {
-            if (await isOrderProcessed(order_no)) {
+            const amountCny = parseFloat(amount) || 140;
+
+            // 原子认领订单，杜绝并发重复充值
+            let claim;
+            try {
+              claim = await claimOrderAndMaybeCredit({
+                order_no,
+                patchBody: {
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  trade_no: order_id || checkout_id
+                },
+                insertBody: {
+                  order_no: order_no,
+                  username: username,
+                  amount: amountCny,
+                  payment_type: 'creem',
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  description: '信用卡支付'
+                }
+              });
+            } catch (e) {
+              console.error('幂等认领失败:', e);
+              return Response.redirect('https://funbua.uk/pay?err=1', 302);
+            }
+
+            if (claim === 'already') {
               return Response.redirect('https://funbua.uk/pay', 302);
             }
 
-            const amountCny = parseFloat(amount) || 140;
-
-            // 更新用户余额
-            await env.DB
+            // claim === 'claimed'：本次负责充值
+            const result = await env.DB
               .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
               .bind(amountCny, username)
               .run();
 
-            console.log(`余额更新成功: ${username} +${amountCny}`);
-
-            // 更新订单状态
-            try {
-              await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                status: 'paid',
-                paid_at: new Date().toISOString(),
-                trade_no: order_id || checkout_id
-              }));
-              console.log('订单状态更新成功');
-            } catch (supabaseError) {
-              console.error('Supabase订单更新失败:', supabaseError);
+            if (!result.success) {
+              await rollbackOrderPending(order_no);
+              return Response.redirect('https://funbua.uk/pay?err=1', 302);
             }
 
+            console.log(`余额更新成功: ${username} +${amountCny}`);
             await sendAdminMessage(`✅ 支付成功：${username} 信用卡充值 ¥${amountCny.toFixed(2)}，订单号 ${order_no}`);
           } else {
             console.log('缺少必要参数，无法更新');
@@ -574,49 +651,46 @@ export default {
             return jsonResponse({ success: false, message: '参数错误' }, 400);
           }
 
-          if (await isOrderProcessed(order_no)) {
-            const user = await env.DB
+          // 原子认领订单：并发/重复调用只会有一个请求真正充值
+          let claim;
+          try {
+            claim = await claimOrderAndMaybeCredit({
+              order_no,
+              patchBody: {
+                status: 'paid',
+                trade_no: order_no,
+                paid_at: new Date().toISOString()
+              },
+              insertBody: {
+                order_no: order_no,
+                username: username,
+                amount: amount,
+                payment_type: payment_type,
+                status: 'paid',
+                paid_at: new Date().toISOString(),
+                created_at: new Date().toISOString()
+              }
+            });
+          } catch (e) {
+            console.error('幂等认领失败:', e);
+            return jsonResponse({ success: false, message: '充值校验失败，请稍后重试' }, 500);
+          }
+
+          if (claim === 'already') {
+            const u = await env.DB
               .prepare('SELECT balance FROM user WHERE username = ?')
               .bind(username)
               .first();
-            return jsonResponse({ success: true, message: '充值成功（已处理过）', balance: user.balance });
+            return jsonResponse({ success: true, message: '充值成功（已处理过）', balance: u ? u.balance : null });
           }
 
-          // 更新用户余额
+          // claim === 'claimed'：本次负责充值
           const result = await env.DB
             .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
             .bind(amount, username)
             .run();
           
           if (result.success && result.meta.changes > 0) {
-            // 更新订单状态为已支付，如果订单不存在则创建新订单
-            try {
-              // 先尝试查询订单是否存在
-              const existingOrders = await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig());
-              
-              if (existingOrders && existingOrders.length > 0) {
-                // 订单已存在，更新状态
-                await supabaseFetch(`orders?order_no=eq.${order_no}`, createSupabaseConfig('PATCH', {
-                  status: 'paid',
-                  trade_no: order_no,
-                  paid_at: new Date().toISOString(),
-                }));
-              } else {
-                // 订单不存在，创建新订单
-                await supabaseFetch('orders', createSupabaseConfig('POST', {
-                  order_no: order_no,
-                  username: username,
-                  amount: amount,
-                  payment_type: payment_type,
-                  status: 'paid',
-                  paid_at: new Date().toISOString(),
-                  created_at: new Date().toISOString()
-                }));
-              }
-            } catch (error) {
-              console.error('订单状态更新或创建失败:', error);
-            }
-            
             // 获取更新后的余额
             const user = await env.DB
               .prepare('SELECT balance FROM user WHERE username = ?')
@@ -631,6 +705,8 @@ export default {
               balance: user.balance 
             });
           } else {
+            // 用户不存在：回滚订单状态，避免留下 paid 但余额未加
+            await rollbackOrderPending(order_no);
             return jsonResponse({ success: false, message: '用户不存在' }, 404);
           }
         } catch (err) {
