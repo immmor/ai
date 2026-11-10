@@ -1760,10 +1760,15 @@ function enterMain(){
     if(alipayOpt)alipayOpt.style.display='none';
   }
   updateBalance();loadRecentOrders();
-  // 带 plan 参数（来自 index 余额不足跳转）时直接进入充值页，而非总览页
-  switchPage(new URLSearchParams(location.search).get('plan')?'recharge':'dashboard');
+  // 带 plan/return 参数（来自 index 余额不足跳转）时直接进入充值页，而非总览页
+  const _jumpParams=new URLSearchParams(location.search);
+  const _isJump=!!_jumpParams.get('plan')||!!_jumpParams.get('return');
+  switchPage(_isJump?'recharge':'dashboard');
   loadRealNameHistory();
   applyPlanAndMethod();handleCreemReturn();
+  // 跳转场景：选好方式与最小额度后自动进入支付界面（支付宝静态弹二维码，creem 跳结账页）
+  // creem 支付完成回跳 /pay 时 URL 已无 plan/return，且 _creemReturnUrl 已消费，不会误触发
+  if(_isJump&&!_creemReturnUrl){setTimeout(handlePay,500);}
 }
 
 // Balance（默认隐藏金额，点眼睛切换）
