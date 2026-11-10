@@ -1759,7 +1759,10 @@ function enterMain(){
     const alipayOpt=document.querySelector('.method-option[data-method="alipay_static"]');
     if(alipayOpt)alipayOpt.style.display='none';
   }
-  updateBalance();loadRecentOrders();switchPage('dashboard');loadRealNameHistory();
+  updateBalance();loadRecentOrders();
+  // 带 plan 参数（来自 index 余额不足跳转）时直接进入充值页，而非总览页
+  switchPage(new URLSearchParams(location.search).get('plan')?'recharge':'dashboard');
+  loadRealNameHistory();
   applyPlanAndMethod();handleCreemReturn();
 }
 
@@ -1860,9 +1863,13 @@ function applyPlanAndMethod(){
   const urlMethod=params.get('method');
   const lastMethod=localStorage.getItem('lastRechargeMethod');
   const valid=['creem','alipay_static','usdt'];
-  let m='creem';
+  let m=null;
   if(urlMethod&&valid.includes(urlMethod))m=urlMethod;
   else if(lastMethod&&valid.includes(lastMethod))m=lastMethod;
+  if(!m){
+    // 没有上一次充值方式时：有静态支付（支付宝人工）选项的优先用静态，否则 creem
+    m=(currentUser&&currentUser.not_trusted!=='yes')?'alipay_static':'creem';
+  }
   // 不可信用户没有支付宝人工，回退到 creem
   if(m==='alipay_static'&&currentUser&&currentUser.not_trusted==='yes')m='creem';
   selectMethodFromDropdown(m);
