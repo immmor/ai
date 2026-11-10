@@ -1098,8 +1098,8 @@ export default {
             totalRevenue = paidOrdersResult.reduce((sum, order) => sum + parseFloat(order.amount || 0), 0);
           }
           
-          // 获取VIP用户数 (v_expire_date 未过期)
-          const now = new Date().toISOString();
+          // 获取VIP用户数 (v_expire_date 未过期)；now 用空格格式与存储的 "YYYY-MM-DD HH:MM:SS" 对齐，保证字符串比较正确
+          const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
           const vipUsersResult = await env.DB
             .prepare('SELECT COUNT(*) as total FROM user WHERE v_expire_date IS NOT NULL AND v_expire_date > ?')
             .bind(now)
