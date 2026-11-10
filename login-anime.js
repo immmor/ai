@@ -30,8 +30,7 @@
     const style = document.createElement('style');
     style.textContent =
       '@keyframes va-spin{to{transform:rotate(360deg)}}' +
-      '@keyframes va-pulse{0%,100%{transform:scale(.82);opacity:.65}50%{transform:scale(1.12);opacity:1}}' +
-      '@keyframes va-glow{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}';
+      '@keyframes va-pulse{0%,100%{transform:scale(.82);opacity:.65}50%{transform:scale(1.12);opacity:1}}';
 
     const wrap = document.createElement('div');
     wrap.id = 'vpay-login-anime';
@@ -48,7 +47,7 @@
     brand.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700;letter-spacing:1px;' +
       (light ? 'color:#1a1c23;' : 'color:#fff;');
     brand.innerHTML =
-      '<i class="fa-solid fa-gem" style="color:#a29bfe;font-size:30px;animation:va-glow 1.6s ease-in-out infinite"></i>' +
+      '<i class="fa-solid fa-gem" style="color:#a29bfe;font-size:30px"></i>' +
       '<span style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">FUNBUA</span>';
 
     // 旋转环 + 中心脉冲
