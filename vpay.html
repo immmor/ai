@@ -2838,7 +2838,11 @@ function initApp(){
   const params=new URLSearchParams(window.location.search),ticket=params.get('ticket');
   // 若 URL 带 ticket（来自 index 免密登录），优先用 ticket 登录，顶掉本地已有会话
   if(ticket){
-    window.history.replaceState({},document.title,window.location.pathname);
+    // 仅清理 ticket 参数，保留 return/plan/method/lang/theme 等其它参数
+    const _p=new URLSearchParams(window.location.search);
+    _p.delete('ticket');
+    const _newUrl=window.location.pathname+(_p.toString()?'?'+_p.toString():'')+window.location.hash;
+    window.history.replaceState({},document.title,_newUrl);
     // 跳转登录全程显示动画，登录成功才消失
     if(window.VpayLoginAnime)VpayLoginAnime.show({text:t('vpay.loggingIn')||'登录中…'});
     (async()=>{
