@@ -2684,16 +2684,25 @@
             const email = document.getElementById('mjEmail').value.trim();
             const password = document.getElementById('mjPassword').value.trim();
             if (!email || !password) return alert('请输入 email 和 password');
+            // 浏览器直连上游（走你本机 IP）。注意：浏览器禁止 JS 设置 Cookie 请求头，
+            // 所以 cw_conversation 令牌无法随请求发出，上游大概率仍回 1003；
+            // 另外上游若无 CORS 头，浏览器会直接拦截响应。
+            const MJ_LOGIN = 'https://47.242.128.61:8000/api/?action=login';
+            const body = `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
             try {
-                const r = await fetch(NEW_API_BASE + '/api/mj/login', {
+                const r = await fetch(MJ_LOGIN, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Origin': 'https://47.242.128.61:8000',
+                        'Referer': 'https://47.242.128.61:8000/login'
+                    },
+                    body
                 });
-                const data = await r.json();
-                document.getElementById('mjCookie').value = data.cookie || '';
-                document.getElementById('mjLoginOut').textContent = JSON.stringify(data, null, 2);
-            } catch (e) { alert('mj 登录失败: ' + e.message); }
+                const text = await r.text();
+                document.getElementById('mjLoginOut').textContent = 'HTTP ' + r.status + '\n' + text;
+                try { const j = JSON.parse(text); document.getElementById('mjCookie').value = j.cookie || ''; } catch (e) {}
+            } catch (e) { alert('mj 登录失败（多为 CORS 拦截或网络错误）: ' + e.message); }
         }
         async function mjRegister() {
             const email = document.getElementById('mjRegEmail').value.trim();
