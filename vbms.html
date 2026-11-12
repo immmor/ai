@@ -916,6 +916,11 @@
 
                 <!-- 节点订阅页面 -->
                 <div id="nodesPage" class="page-section" style="display: none;">
+                    <div style="display:flex; gap:10px; margin-bottom:1rem; border-bottom:2px solid #e2e8f0; padding-bottom:0.5rem;">
+                        <button class="add-btn" id="nodeSubTab-kuuu" onclick="nodeSubTab('kuuu')" style="background-color:#667eea;">kuuu</button>
+                        <button class="add-btn" id="nodeSubTab-mj" onclick="nodeSubTab('mj')" style="background-color:#a0aec0;">mj</button>
+                    </div>
+                    <div id="nodeTab-kuuu">
                     <div class="data-table">
                         <div class="table-header">
                             <h3>节点订阅链接生成</h3>
@@ -1056,6 +1061,54 @@
                             </div>
                             <div style="margin-top: 1rem;">
                                 <button class="add-btn" onclick="savePricePlan()" style="background-color: #667eea;">保存价格</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="nodeTab-mj" style="display:none;">
+                        <div class="data-table">
+                            <div class="table-header">
+                                <h3>mj 节点管理</h3>
+                            </div>
+                            <div style="padding:1.5rem;">
+                                <!-- ① 登录 -->
+                                <div style="margin-bottom:1.5rem; padding:1rem; background:#f7fafc; border-radius:8px;">
+                                    <h4 style="color:#4a5568; margin-bottom:.75rem;">① 登录（获取 cookie）</h4>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                        <input type="text" id="mjEmail" placeholder="email" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <input type="password" id="mjPassword" placeholder="password" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                    </div>
+                                    <button class="add-btn" onclick="mjLogin()" style="background-color:#667eea;">登录</button>
+                                    <div style="margin-top:.75rem;">
+                                        <label style="display:block; margin-bottom:.25rem; font-weight:500; color:#4a5568;">返回的 cookie（自动用于下方操作）</label>
+                                        <textarea id="mjCookie" rows="3" readonly style="width:100%; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px; font-family:monospace;"></textarea>
+                                    </div>
+                                    <pre id="mjLoginOut" style="margin-top:.5rem; white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:.5rem; max-height:200px; overflow:auto;"></pre>
+                                </div>
+
+                                <!-- ② 注册 -->
+                                <div style="margin-bottom:1.5rem; padding:1rem; background:#f7fafc; border-radius:8px;">
+                                    <h4 style="color:#4a5568; margin-bottom:.75rem;">② 注册</h4>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                        <input type="text" id="mjRegEmail" placeholder="email" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <input type="password" id="mjRegPassword" placeholder="password" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <input type="text" id="mjRegInvite" placeholder="invite_code（可选）" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <input type="text" id="mjRegCaptcha" placeholder="recaptcha_data（默认 0）" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                    </div>
+                                    <button class="add-btn" onclick="mjRegister()" style="background-color:#48bb78;">注册</button>
+                                    <pre id="mjRegisterOut" style="margin-top:.5rem; white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:.5rem; max-height:200px; overflow:auto;"></pre>
+                                </div>
+
+                                <!-- ③ 已登录操作 -->
+                                <div style="margin-bottom:1.5rem; padding:1rem; background:#f7fafc; border-radius:8px;">
+                                    <h4 style="color:#4a5568; margin-bottom:.75rem;">③ 已登录操作（需上方 cookie）</h4>
+                                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:.75rem;">
+                                        <button class="add-btn" onclick="mjOp('reset-security')" style="background-color:#e53e3e;">重置安全</button>
+                                        <button class="add-btn" onclick="mjOp('get-tips')" style="background-color:#dd6b20;">获取提示</button>
+                                        <button class="add-btn" onclick="mjOp('dashboard')" style="background-color:#319795;">仪表盘/用量</button>
+                                        <button class="add-btn" onclick="mjOp('subscribe')" style="background-color:#667eea;">订阅</button>
+                                    </div>
+                                    <pre id="mjOpOut" style="white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:.5rem; max-height:300px; overflow:auto;"></pre>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1879,7 +1932,7 @@
         let currentUserInfo = null;
         
         // 消息API基础地址
-        const NEW_API_BASE = 'https://api.immmor.com';
+        const NEW_API_BASE = 'https://api.funbua.uk';
         
         // API 请求工具函数
         async function apiRequest(endpoint, method = 'GET', data = null) {
@@ -2613,6 +2666,60 @@
             navigator.clipboard.writeText(names)
                 .then(() => alert('已复制 ' + insightData.segments[segKey].length + ' 个用户名到剪贴板'))
                 .catch(() => alert('复制失败'));
+        }
+
+        // 节点管理子 tab 切换（kuuu / mj）
+        function nodeSubTab(tab) {
+            ['kuuu', 'mj'].forEach(t => {
+                const content = document.getElementById('nodeTab-' + t);
+                if (content) content.style.display = (t === tab) ? '' : 'none';
+                const btn = document.getElementById('nodeSubTab-' + t);
+                if (btn) btn.style.backgroundColor = (t === tab) ? '#667eea' : '#a0aec0';
+            });
+        }
+
+        // ===== mj 节点管理（mojie 接口，基址复用 NEW_API_BASE） =====
+        async function mjLogin() {
+            const email = document.getElementById('mjEmail').value.trim();
+            const password = document.getElementById('mjPassword').value.trim();
+            if (!email || !password) return alert('请输入 email 和 password');
+            try {
+                const r = await fetch(NEW_API_BASE + '/api/mj/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await r.json();
+                document.getElementById('mjCookie').value = data.cookie || '';
+                document.getElementById('mjLoginOut').textContent = JSON.stringify(data, null, 2);
+            } catch (e) { alert('mj 登录失败: ' + e.message); }
+        }
+        async function mjRegister() {
+            const email = document.getElementById('mjRegEmail').value.trim();
+            const password = document.getElementById('mjRegPassword').value.trim();
+            const invite_code = document.getElementById('mjRegInvite').value.trim();
+            const recaptcha_data = document.getElementById('mjRegCaptcha').value.trim() || '0';
+            if (!email || !password) return alert('请输入 email 和 password');
+            const body = new URLSearchParams({ email, password, invite_code, recaptcha_data }).toString();
+            try {
+                const r = await fetch(NEW_API_BASE + '/api/mj/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body
+                });
+                document.getElementById('mjRegisterOut').textContent = 'HTTP ' + r.status + '\n' + await r.text();
+            } catch (e) { alert('mj 注册失败: ' + e.message); }
+        }
+        async function mjOp(action) {
+            const cookie = document.getElementById('mjCookie').value.trim();
+            if (!cookie) return alert('请先在①登录获取 cookie');
+            try {
+                const r = await fetch(NEW_API_BASE + '/api/mj/' + action, {
+                    method: 'GET',
+                    headers: { 'x-mj-cookie': cookie }
+                });
+                document.getElementById('mjOpOut').textContent = 'HTTP ' + r.status + '\n' + await r.text();
+            } catch (e) { alert('mj ' + action + ' 失败: ' + e.message); }
         }
 
         // 页面切换
