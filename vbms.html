@@ -1071,11 +1071,18 @@
                                 <h3>mj 节点管理</h3>
                             </div>
                             <div style="padding:1.5rem;">
-                                <!-- ① 手动粘贴 cookie -->
+                                <!-- ① 登录 -->
                                 <div style="margin-bottom:1.5rem; padding:1rem; background:#f7fafc; border-radius:8px;">
-                                    <h4 style="color:#4a5568; margin-bottom:.75rem;">① 手动粘贴 mojie cookie</h4>
-                                    <div style="margin-bottom:.5rem; color:#718096; font-size:13px;">从本地 login.js 或浏览器开发者工具复制登录后的 cookie 粘到这里，下方操作会带上它（worker 已自动补 cw_conversation 令牌）。</div>
-                                    <textarea id="mjCookie" rows="3" placeholder="auth=xxxx; cw_conversation=xxxx" style="width:100%; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px; font-family:monospace;"></textarea>
+                                    <h4 style="color:#4a5568; margin-bottom:.75rem;">① 登录（获取 cookie）</h4>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                        <input type="text" id="mjEmail" placeholder="email" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <input type="password" id="mjPassword" placeholder="password" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                    </div>
+                                    <button class="add-btn" onclick="mjLogin()" style="background-color:#667eea;">登录</button>
+                                    <div style="margin-top:.75rem;">
+                                        <label style="display:block; margin-bottom:.25rem; font-weight:500; color:#4a5568;">返回的 cookie（自动用于下方操作）</label>
+                                        <textarea id="mjCookie" rows="3" readonly style="width:100%; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px; font-family:monospace;"></textarea>
+                                    </div>
                                     <pre id="mjLoginOut" style="margin-top:.5rem; white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:.5rem; max-height:200px; overflow:auto;"></pre>
                                 </div>
 
@@ -2673,6 +2680,23 @@
         }
 
         // ===== mj 节点管理（mojie 接口，基址复用 NEW_API_BASE） =====
+        let mjCookie = '';
+        async function mjLogin() {
+            const email = document.getElementById('mjEmail').value.trim();
+            const password = document.getElementById('mjPassword').value.trim();
+            if (!email || !password) return alert('请输入 email 和 password');
+            try {
+                const r = await fetch(NEW_API_BASE + '/api/mj/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await r.json();
+                mjCookie = data.cookie || '';
+                document.getElementById('mjCookie').value = mjCookie;
+                document.getElementById('mjLoginOut').textContent = JSON.stringify(data, null, 2);
+            } catch (e) { alert('mj 登录失败: ' + e.message); }
+        }
         async function mjRegister() {
             const email = document.getElementById('mjRegEmail').value.trim();
             const password = document.getElementById('mjRegPassword').value.trim();
@@ -2690,12 +2714,11 @@
             } catch (e) { alert('mj 注册失败: ' + e.message); }
         }
         async function mjOp(action) {
-            const cookie = document.getElementById('mjCookie').value.trim();
-            if (!cookie) return alert('请先在①登录获取 cookie');
+            if (!mjCookie) return alert('请先在①登录获取 cookie');
             try {
                 const r = await fetch(NEW_API_BASE + '/api/mj/' + action, {
                     method: 'GET',
-                    headers: { 'x-mj-cookie': cookie }
+                    headers: { 'x-mj-cookie': mjCookie }
                 });
                 document.getElementById('mjOpOut').textContent = 'HTTP ' + r.status + '\n' + await r.text();
             } catch (e) { alert('mj ' + action + ' 失败: ' + e.message); }
