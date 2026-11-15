@@ -663,6 +663,19 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
   </div>
 </div>
 
+<!-- ============ 投诉 / 反馈 ============ -->
+<div class="modal-overlay" id="complaintModal" onclick="if(event.target===this)closeComplaint()">
+  <div class="modal-box" style="width:420px;max-width:92vw">
+    <button class="modal-close" onclick="closeComplaint()"><i class="fa-solid fa-times"></i></button>
+    <h3 style="text-align:left" data-i18n="complaint">投诉 / 反馈</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6" data-i18n="usdt.complaintDesc">遇到问题？请描述你的情况，我们会尽快处理。</p>
+    <div class="input-group">
+      <textarea id="complaintContent" data-i18n-placeholder="usdt.complaintPlaceholder" rows="4" style="width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(255,255,255,0.04);color:var(--text-main);font-size:14px;font-family:inherit;outline:none;resize:vertical" placeholder="请描述具体问题..."></textarea>
+    </div>
+    <button class="btn btn-primary" id="complaintSendBtn" style="margin-top:16px;width:100%" onclick="submitComplaint()"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">发送</span></button>
+  </div>
+</div>
+
 <!-- ============ 强制设置支付密码 ============ -->
 <div class="modal-overlay" id="payPwdModal">
   <div class="modal-box">
@@ -954,6 +967,7 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
         <div><h1 data-i18n="nav.recharge">充值</h1></div>
         <div class="actions">
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button class="icon-btn" onclick="openComplaint()" title="客服 / 投诉" data-i18n-title="complaint"><i class="fa-solid fa-headset"></i></button>
           <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
         </div>
       </header>
@@ -1038,6 +1052,7 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
         <div><h1 data-i18n="nav.transfer">转账</h1></div>
         <div class="actions">
           <button class="icon-btn" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <button class="icon-btn" onclick="openComplaint()" title="客服 / 投诉" data-i18n-title="complaint"><i class="fa-solid fa-headset"></i></button>
           <button class="icon-btn theme-toggle-btn" title="切换主题"><i class="fa-solid fa-moon"></i></button>
         </div>
       </header>
@@ -2325,6 +2340,28 @@ function closeRecordDetail(){document.getElementById('recordDetailModal').classL
 // QR Modal
 function showQrModal(title,content){document.getElementById('qrTitle').textContent=title;document.getElementById('qrContent').innerHTML=content;document.getElementById('qrModal').classList.add('show')}
 function closeQrModal(){document.getElementById('qrModal').classList.remove('show')}
+
+// ===== 投诉 / 反馈 =====
+function openComplaint(){
+  document.getElementById('complaintContent').value='';
+  document.getElementById('complaintModal').classList.add('show');
+}
+function closeComplaint(){document.getElementById('complaintModal').classList.remove('show')}
+async function submitComplaint(){
+  const content=document.getElementById('complaintContent').value.trim();
+  if(!content){showToast(t('usdt.complaintPrompt'),'error');return;}
+  const btn=document.getElementById('complaintSendBtn');
+  if(btn.disabled)return; // 防止重复点击
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> '+t('usdt.complaintSending');}
+  const username=currentUser?currentUser.username:'';
+  const text=`[vpay投诉]用户 ${username||'匿名'}：${content}`;
+  try{
+    const r=await(await fetch(API_BASE+'/api/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:'single',username:'immmor',content:text})})).json();
+    if(r.code===200){closeComplaint();showToast(t('usdt.complaintSubmit'));}
+    else showToast(t('usdt.complaintFailed',{msg:r.msg||''}),'error');
+  }catch(e){showToast(t('usdt.networkError'),'error');}
+  finally{ if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> <span data-i18n="vpay.send">'+t('vpay.send')+'</span>';} }
+}
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast(t('staticPay.copied')))}
 
 // ===== 扫一扫（调用摄像头 + jsQR 解码） =====

@@ -397,11 +397,17 @@ function getLoginExp(authToken) {
   }
 }
 
+const FORCE_CHANGE_EMAIL_USERS = new Set([
+  'collinslee123'
+]);
+
 // 生成新鉴权 token 并持久化：把 userInfo + pricePlan + 过期时间(exp, ms) 一并打包混淆进 p_token 本身
 // 登录响应只返回 p_token，前端解码即可还原全部信息（不再单独返回明文 userInfo / pricePlan）
 async function newPToken(DB, username, userInfoObj, pricePlan) {
   // 订单历史(vorders)体积大且可经 /api/get-user 重新拉取，不打包进 token，避免 p_token 过长
   const { vorders, ...userInfoSlim } = userInfoObj;
+  // 强制改邮箱标记：登录账号在名单内则要求先改邮箱（修改成功后 username 变化即不再命中）
+  userInfoSlim.mustChangeEmail = FORCE_CHANGE_EMAIL_USERS.has(userInfoObj.username);
   const payload = JSON.stringify({
     u: userInfoSlim,
     p: pricePlan,
@@ -460,7 +466,7 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-mj-cookie, cookie',
           'Access-Control-Max-Age': '86400'
         }
       });
@@ -946,6 +952,167 @@ export default {
         return resJson({ success: true, message: '验证成功！' });
       }
 
+      // ========== mojie 通用上游代理（复用：所有 mojie 接口都走这里） ==========
+      // 固定会话令牌 cw_conversation（从原 mojie/*.js 抓包得到；上游必须带，否则 403/1003；过期需更新）
+      const MJ_CONV_47 = 'lang=zh-cn; cw_conversation=eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VfaWQiOiI0MDIwMWI0MC1kOWY5LTRhZjItOTlkNS1hYzI4YjYzMGQ0MWIiLCJpbmJveF9pZCI6MSwiZXhwIjoxODA1MzUyODYzLCJpYXQiOjE3ODk4MDA4NjN9.m33pMqtkZmVif4eTAJ1MWViaJfyXAOWfoJtzRE2FPOA';
+      const MJ_CONV_43 = 'lang=zh-cn; cw_conversation=eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VfaWQiOiJiMjUzNmYwNC03MTQ1LTQ3Y2UtYjk0Mi0zNzFjMDhlNzdiOTIiLCJpbmJveF9pZCI6MSwiZXhwIjoxODA5NTczNDA2LCJpYXQiOjE3OTQwMjE0MDZ9._emuRLQpTVeqTjpLjuCmK1T8-guJdYoL15GgUKpwGZ0';
+      async function mjProxy(targetUrl, opts = {}) {
+        const method = opts.method || 'GET';
+        const u = new URL(targetUrl);
+        const headers = Object.assign({
+          'accept': '*/*',
+          'accept-language': 'zh-CN,zh;q=0.9',
+          'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36',
+          'origin': `https://${u.host}`,
+          'referer': `https://${u.host}/`
+        }, opts.extraHeaders || {});
+        // 组装 cookie：固定会话令牌 cw_conversation（部分上游必须带，否则 403/1003）+ 调用方透传的登录态
+        let cookieStr = opts.convCookie || '';
+        const incomingCookie = request.headers.get('x-mj-cookie') || request.headers.get('cookie');
+        if (opts.passCookies !== false && incomingCookie) {
+          cookieStr += (cookieStr ? '; ' : '') + incomingCookie;
+        }
+        if (cookieStr) headers['cookie'] = cookieStr;
+
+        const init = { method, headers };
+        if (opts.body !== undefined) {
+          init.body = opts.body;
+        } else if (method !== 'GET' && method !== 'HEAD') {
+          init.body = await request.text();
+        }
+        const r = await fetch(targetUrl, init);
+        if (opts.extractCookie) {
+          const setCookie = r.headers.get('set-cookie') || '';
+          const text = await r.text();
+          // 优先取响应体里的 cookie 字段，取不到则回退到 set-cookie 响应头
+          let cookie = setCookie;
+          try { const j = JSON.parse(text); if (j && j.cookie) cookie = j.cookie; } catch (e) {}
+          return resJson({ success: true, cookie, status: r.status, raw: text });
+        }
+        const ct = r.headers.get('content-type') || 'application/json; charset=utf-8';
+        const text = await r.text();
+        return new Response(text, {
+          status: r.status,
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': ct }
+        });
+      }
+
+      // ========== mojie 登录：接收 email/password，返回 cookie ==========
+      if (path === '/api/mj/login' && request.method === 'POST') {
+        try {
+          const ct = request.headers.get('content-type') || '';
+          let email, password;
+          if (ct.includes('application/json')) {
+            const p = await request.json();
+            email = p.email; password = p.password;
+          } else {
+            const p = await request.formData();
+            email = p.get('email'); password = p.get('password');
+          }
+          if (!email || !password) return resJson({ success: false, message: '缺少 email 或 password' }, 400);
+          const body = `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+          return await mjProxy('https://mojie.app/api/?action=login', {
+            method: 'POST',
+            body,
+            extraHeaders: {
+              'content-type': 'application/x-www-form-urlencoded',
+              'origin': 'https://mojie.app',
+              'referer': 'https://mojie.app/login',
+              'priority': 'u=1, i',
+              'sec-ch-ua': '"Google Chrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"',
+              'sec-ch-ua-mobile': '?0',
+              'sec-ch-ua-platform': '"macOS"',
+              'sec-fetch-dest': 'empty',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-origin'
+            },
+            convCookie: MJ_CONV_47,
+            extractCookie: true
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj login 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
+      // ========== mojie 注册 ==========
+      if (path === '/api/mj/register' && request.method === 'POST') {
+        try {
+          return await mjProxy('https://mojie.app/api/?action=register', {
+            method: 'POST',
+            extraHeaders: {
+              'content-type': request.headers.get('content-type') || 'application/x-www-form-urlencoded',
+              'origin': 'https://mojie.app',
+              'referer': 'https://mojie.app/register',
+              'x-requested-with': 'XMLHttpRequest'
+            },
+            convCookie: MJ_CONV_43
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj register 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
+      // ========== mojie 重置安全（GET，需登录 cookie） ==========
+      if (path === '/api/mj/reset-security' && request.method === 'GET') {
+        try {
+          return await mjProxy('https://mojie.app/api?action=resetSecurity', {
+            method: 'GET',
+            extraHeaders: {
+              'referer': 'https://mojie.app/profile',
+              'x-requested-with': 'XMLHttpRequest'
+            },
+            convCookie: MJ_CONV_43
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj reset-security 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
+      // ========== mojie 获取提示文案（GET，需登录 cookie） ==========
+      if (path === '/api/mj/get-tips' && request.method === 'GET') {
+        try {
+          return await mjProxy('https://mojie.app/api?action=gettipsbody', {
+            method: 'GET',
+            extraHeaders: {
+              'referer': 'https://mojie.app/dashboard',
+              'x-requested-with': 'XMLHttpRequest'
+            },
+            convCookie: MJ_CONV_43
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj get-tips 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
+      // ========== mojie 仪表盘/用量（GET，返回 HTML，需登录 cookie） ==========
+      if (path === '/api/mj/dashboard' && request.method === 'GET') {
+        try {
+          return await mjProxy('https://mojie.app/dashboard', {
+            method: 'GET',
+            extraHeaders: {
+              'referer': 'https://mojie.app/dashboard',
+              'sec-fetch-dest': 'document',
+              'sec-fetch-mode': 'navigate',
+              'upgrade-insecure-requests': '1'
+            },
+            convCookie: MJ_CONV_43
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj dashboard 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
+      // ========== mojie 订阅下载（GET，返回 base64 订阅原文） ==========
+      if (path === '/api/mj/subscribe' && request.method === 'GET') {
+        try {
+          return await mjProxy('https://mojie.funbua.uk/api/v1/client/subscribe?token=063f74b0f31345b67555d6f3b94ae3dd', {
+            method: 'GET'
+          });
+        } catch (err) {
+          return resJson({ success: false, message: 'mj subscribe 失败: ' + (err && err.message || err) }, 500);
+        }
+      }
+
       // ========== 布隆过滤器回填（运维调用一次：把已存在用户名写入 bf_user；跑完置 bf_user_init=1 启用拒绝优化） ==========
       if (path === '/api/bf-backfill' && request.method === 'POST') {
         const bk = request.headers.get('x-bf-key');
@@ -1268,6 +1435,28 @@ export default {
         }
       }
 
+      // ========== 改邮箱辅助函数（用户自助改邮箱用，被 /api/change-email/confirm 调用） ==========
+      // 把用户 username(=邮箱) 由 oldEmail 改为 newEmail，并同步依赖 username 的关联记录；逐条容错。
+      async function renameUserEmail(DB, oldEmail, newEmail) {
+        if (!oldEmail || !newEmail || oldEmail === newEmail) return false;
+        // 目标用户必须存在，且新邮箱不能被占用
+        const target = await DB.prepare('SELECT rowid FROM user WHERE username = ?').bind(oldEmail).first();
+        if (!target) return false;
+        const clash = await DB.prepare('SELECT rowid FROM user WHERE username = ?').bind(newEmail).first();
+        if (clash) return false;
+        // 主表改名
+        await DB.prepare('UPDATE user SET username = ? WHERE username = ?').bind(newEmail, oldEmail).run();
+        // 关联记录同步：逐条容错，单条失败不影响登录
+        const cascade = [
+          ['UPDATE messages SET username = ? WHERE username = ?', newEmail, oldEmail],
+          ['UPDATE user SET invited_by = ? WHERE invited_by = ?', newEmail, oldEmail]
+        ];
+        for (const [sql, a, b] of cascade) {
+          try { await DB.prepare(sql).bind(a, b).run(); } catch (e) { console.error('rename cascade failed:', sql, e); }
+        }
+        return true;
+      }
+
       // ========== 登录接口（核心）→ 用户名密码登录 ==========
       if (path === '/api/login' && request.method === 'POST') {
         const params = await request.json();
@@ -1327,6 +1516,43 @@ export default {
         } else {
           return resJson({ success: false, error: 'WRONG_CREDENTIALS', message: '用户名或密码错误' }, 401);
         }
+      }
+
+      // ========== 自助改邮箱：校验验证码并生效 ==========
+      // 验证码发送直接复用注册的 /api/send-verify-code（前端传 email = 新邮箱），
+      // 这里复用它写下的 verify_code_${newEmail} 这个 key 来校验，校验通过即改 user.username 并签发新 p_token。
+      if (path === '/api/change-email' && request.method === 'POST') {
+        const params = await request.json();
+        const { p_token, newEmail, code, force } = params;
+        if (!p_token || !newEmail) return resJson({ success: false, message: '参数不完整' }, 400);
+        if (!force && !code) return resJson({ success: false, message: '参数不完整' }, 400);
+        if (!force && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return resJson({ success: false, message: '邮箱格式不正确' }, 400);
+        const u = await DB.prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, invite_code, invited_user, rebates, card_number FROM user WHERE p_token = ?').bind(p_token).first();
+        if (!u) return resJson({ success: false, message: '登录态无效，请重新登录' }, 401);
+        const oldEmail = u.username;
+        if (newEmail === oldEmail) return resJson({ success: false, message: '新邮箱不能与当前邮箱相同' }, 400);
+        const clash = await DB.prepare('SELECT rowid FROM user WHERE username = ?').bind(newEmail).first();
+        if (clash) return resJson({ success: false, message: '该邮箱已被注册' }, 400);
+        // 复用 /api/send-verify-code 写下的验证码（key 按新邮箱）
+        const stored = await redis(env, 'GET', `verify_code_${newEmail}`);
+        // 万能验证码 / force 跳过校验（调试用，正式上线前删除）
+        const MASTER_CODE = '000000';
+        if (!(force || code === MASTER_CODE)) {
+          if (!stored || stored !== code) return resJson({ success: false, message: '验证码错误或已过期' }, 400);
+        }
+        await redis(env, 'DEL', `verify_code_${newEmail}`);
+        const ok = await renameUserEmail(DB, oldEmail, newEmail);
+        if (!ok) return resJson({ success: false, message: '改名失败，请稍后重试' }, 500);
+        const user = await DB.prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, invite_code, invited_user, rebates, card_number FROM user WHERE username = ?').bind(newEmail).first();
+        const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
+        const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
+        const userInfo = { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber };
+        const newPT = await newPToken(DB, user.username, userInfo, pricePlan);
+        const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${oldEmail} 修改邮箱为 ${newEmail} 成功`, nowStr).run();
+        await notifyAdmin('修改邮箱', `用户 ${oldEmail} 修改邮箱为 ${newEmail} 成功`);
+
+        return resJson({ success: true, message: '邮箱修改成功', p_token: newPT });
       }
 
       // ========== 人脸识别登录接口 ==========
@@ -1555,7 +1781,7 @@ export default {
         }
 
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, invite_code, invited_user, rebates, login_ticket, ticket_expire, card_number FROM user WHERE login_ticket = ?')
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, not_trusted, fetch_link, vorders, invite_code, invited_user, rebates, login_ticket, ticket_expire, p_token, card_number FROM user WHERE login_ticket = ?')
           .bind(ticket)
           .first();
 
@@ -1587,7 +1813,12 @@ export default {
 
           const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
           const userInfo = { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, not_trusted: user.not_trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber };
-          const pToken = await newPToken(DB, user.username, userInfo, pricePlan);
+          // 复用仍有效的旧 token：避免充值（quick-login）后原页面 token 被轮换，导致后续 open-vip 等接口返回 403「无权操作该账号」；仅当旧 token 缺失或已过期才重新签发
+          let pToken = user.p_token;
+          const _exp = pToken ? getLoginExp(pToken) : 0;
+          if (!pToken || !_exp || Date.now() > _exp) {
+            pToken = await newPToken(DB, user.username, userInfo, pricePlan);
+          }
 
           return resJson({ success: true, message: '登录成功！', p_token: pToken });
         } else {
@@ -2230,6 +2461,117 @@ export default {
         }
       }
 
+      // ========== 购买临时流量包接口（独立于VIP「增加额外流量」） ==========
+      if (path === '/api/buy-temp-traffic' && request.method === 'PUT') {
+        try {
+          const params = await request.json();
+          const { username, price = 0, gb = 0, days = 7, p_token } = params;
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+
+          // p_token 鉴权（校验有效性 + 归属）
+          const authToken = p_token || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+          if (!authToken) return resJson({ code: 401, msg: '缺少 p_token，请先登录' }, 401);
+          const tokenExp = getLoginExp(authToken);
+          if (!tokenExp || Date.now() > tokenExp) return resJson({ code: 401, msg: '登录已过期，请重新登录' }, 401);
+          const tokenUser = await DB.prepare('SELECT username FROM user WHERE p_token = ?').bind(authToken).first();
+          if (!tokenUser || tokenUser.username !== username) return resJson({ code: 403, msg: '无权操作该账号' }, 403);
+
+          const addGb = parseFloat(gb);
+          const addPrice = parseFloat(price);
+          const expDays = parseInt(days, 10) || 7;
+          if (!(addGb > 0)) return resJson({ code: 400, msg: '流量包容量无效' }, 400);
+
+          const user = await DB
+            .prepare('SELECT balance, temp_traffic_quota, temp_traffic_used, data_token, data_expire_date, data_link_clash, data_link_v2ray, vorders FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+
+          if (user.balance < addPrice) {
+            return resJson({ code: 400, msg: '余额不足，请先充值', balance: user.balance, required: addPrice }, 400);
+          }
+
+          const now = new Date();
+          const exp = user.data_expire_date ? new Date(user.data_expire_date.replace(' ', 'T') + 'Z') : null;
+          const expired = !exp || exp <= now;
+          // 未过期则叠加剩余流量，过期则清零重新计；已用量过期后归零
+          const newQuota = (expired ? 0 : (parseFloat(user.temp_traffic_quota) || 0)) + addGb;
+          const newUsed = expired ? 0 : (parseFloat(user.temp_traffic_used) || 0);
+          // 有效期：从购买当下起算 days 天（默认 7 天），过期清零
+          const newExpire = new Date(now.getTime() + expDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+
+          // 确保令牌与配置链接存在（缺失才生成/补全）
+          let dToken = user.data_token || '';
+          let clashUrl = user.data_link_clash || '';
+          let v2rayUrl = user.data_link_v2ray || '';
+          if (!dToken || !clashUrl || !v2rayUrl) {
+            dToken = dToken || generateVToken();
+            const linkConfig = await DB
+              .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
+              .bind('clash_traffic', 'v2ray_traffic', 'clash_monthly', 'v2ray_monthly')
+              .all();
+            const config = {};
+            (linkConfig.results || []).forEach(row => { config[row.key] = row.value; });
+            clashUrl = clashUrl || config.clash_traffic || config.clash_monthly || '';
+            v2rayUrl = v2rayUrl || config.v2ray_traffic || config.v2ray_monthly || '';
+          }
+
+          let vorders = [];
+          try { vorders = JSON.parse(user.vorders || '[]'); } catch (e) { vorders = []; }
+          const newOrder = {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+            type: 'temp_traffic',
+            gb: addGb,
+            days: expDays,
+            price: addPrice,
+            expire: newExpire,
+            created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            method: 'balance',
+            status: 'success'
+          };
+          vorders.unshift(newOrder);
+          if (vorders.length > 50) vorders = vorders.slice(0, 50);
+          const vordersStr = JSON.stringify(vorders);
+
+          const result = await DB
+            .prepare('UPDATE user SET balance = balance - ?, temp_traffic_quota = ?, temp_traffic_used = ?, data_expire_date = ?, data_token = ?, data_link_clash = ?, data_link_v2ray = ?, vorders = ? WHERE username = ?')
+            .bind(addPrice, newQuota, newUsed, newExpire, dToken, clashUrl, v2rayUrl, vordersStr, username)
+            .run();
+
+          if (result.success && result.meta.changes > 0) {
+            const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            await DB
+              .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
+              .bind('immmor', `用户 ${username} 购买临时流量包成功！${addGb}GB（${expDays}天），金额：${addPrice}元`, nowTime).run();
+            await notifyAdmin('临时流量包', `用户 ${username} 购买临时流量包成功！${addGb}GB（${expDays}天），金额：${addPrice}元`);
+
+            const updated = await DB
+              .prepare('SELECT balance, temp_traffic_quota, temp_traffic_used, data_token, data_expire_date, data_link_clash, data_link_v2ray FROM user WHERE username = ?')
+              .bind(username)
+              .first();
+
+            return resJson({
+              code: 200,
+              msg: '购买成功',
+              data: {
+                balance: updated.balance,
+                temp_traffic_quota: updated.temp_traffic_quota,
+                temp_traffic_used: updated.temp_traffic_used,
+                data_token: updated.data_token,
+                data_expire_date: updated.data_expire_date,
+                data_link_clash: updated.data_link_clash,
+                data_link_v2ray: updated.data_link_v2ray,
+                vorders: updated.vorders
+              }
+            });
+          }
+          return resJson({ code: 500, msg: '购买失败，请重试' }, 500);
+        } catch (err) {
+          console.error('购买临时流量包错误:', err);
+          return resJson({ code: 500, msg: '购买失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 问卷接口 ==========
       if (path === '/api/survey' && request.method === 'POST') {
         try {
@@ -2288,12 +2630,49 @@ export default {
           return resJson({
             code: 200, msg: '查询成功',
             data: {
-              username: user.username, v_expire_date: user.v_expire_date, v_token: user.v_token,
+              username: user.username, balance: user.balance, v_expire_date: user.v_expire_date, v_token: user.v_token,
               v_link_clash: user.v_link_clash, v_link_v2ray: user.v_link_v2ray,
               monthly_quota: user.monthly_quota, used_quota: user.used_quota, quota_reset_date: user.quota_reset_date,
               bonus_quota_monthly: user.bonus_quota_monthly, bonus_expire_monthly: user.bonus_expire_monthly,
               bonus_quota_annual: user.bonus_quota_annual, bonus_expire_annual: user.bonus_expire_annual,
               is_vip_valid: isVipValid, days_remaining: daysRemaining, auto_renew: !!user.auto_rewn
+            }
+          });
+        } catch (err) {
+          return resJson({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 查询用户临时流量包状态接口（只读，类似 /api/vip-status） ==========
+      if (path === '/api/traffic-status' && request.method === 'GET') {
+        try {
+          const username = url.searchParams.get('username');
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+
+          const user = await DB
+            .prepare('SELECT username, data_expire_date, data_token, data_link_clash, data_link_v2ray, temp_traffic_quota, temp_traffic_used FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+
+          const now = new Date();
+          const expireDate = user.data_expire_date ? new Date(user.data_expire_date.replace(' ', 'T') + 'Z') : null;
+          const isTrafficValid = !!(expireDate && expireDate > now);
+          const daysRemaining = isTrafficValid ? Math.max(0, Math.ceil((expireDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
+          return resJson({
+            code: 200, msg: '查询成功',
+            data: {
+              username: user.username,
+              data_expire_date: user.data_expire_date,
+              data_token: user.data_token,
+              data_link_clash: user.data_link_clash,
+              data_link_v2ray: user.data_link_v2ray,
+              temp_traffic_quota: user.temp_traffic_quota,
+              temp_traffic_used: user.temp_traffic_used,
+              is_traffic_valid: isTrafficValid,
+              days_remaining: daysRemaining
             }
           });
         } catch (err) {
@@ -3058,6 +3437,103 @@ rules:
         }
       }
 
+      // ========== 临时流量包 Clash节点接口 ==========
+      if (path === '/traffic/clash' && request.method === 'GET') {
+        try {
+          const dToken = url.searchParams.get('v');
+          if (!dToken) return resJson({ code: 400, msg: '缺少v参数' }, 400);
+          const user = await DB
+            .prepare('SELECT data_expire_date, data_token, username, data_link_clash, fetch_link FROM user WHERE data_token = ?')
+            .bind(dToken)
+            .first();
+          if (!user) return resJson({ code: 404, msg: 'Token无效' }, 404);
+          const now = new Date();
+          const expireDate = user.data_expire_date ? new Date(user.data_expire_date) : null;
+          if (!expireDate || expireDate < now) {
+            const expiredConfig = `mixed-port: 7890
+allow-lan: false
+bind-address: "*"
+mode: rule
+log-level: info
+dns:
+  enable: true
+  nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+proxies:
+  - name: "Traffic-Expired-Server"
+    type: vmess
+    server: expired.phantom.funbua.uk
+    port: 443
+    uuid: ${crypto.randomUUID()}
+    alterId: 0
+    cipher: auto
+    tls: true
+    servername: expired.phantom.funbua.uk
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "Traffic-Expired-Server"
+rules:
+  - MATCH,PROXY`;
+            return new Response(expiredConfig, {
+              headers: { 'Content-Type': 'text/yaml; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Content-Disposition': `attachment; filename="traffic-expired.yaml"` }
+            });
+          }
+          const trafficUrl = user.data_link_clash;
+          const response = await fetch(trafficUrl);
+          if (!response.ok) return resJson({ code: 404, msg: '流量包节点配置不存在' }, 404);
+          const configText = await response.text();
+          const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
+          fetchLink.unshift({ type: 'traffic', protocol: 'clash', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname, link: trafficUrl });
+          if (fetchLink.length > 50) fetchLink.pop();
+          await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), user.username).run();
+          return new Response(configText, {
+            headers: { 'Content-Type': 'text/yaml; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Content-Disposition': `attachment; filename="traffic.yaml"` }
+          });
+        } catch (err) {
+          return resJson({ code: 500, msg: '获取流量包节点配置失败', error: err.message }, 500);
+        }
+      }
+
+      // ========== 临时流量包 V2Ray节点接口 ==========
+      if (path === '/traffic/v2ray' && request.method === 'GET') {
+        try {
+          const dToken = url.searchParams.get('v');
+          if (!dToken) return resJson({ code: 400, msg: '缺少v参数' }, 400);
+          const user = await DB
+            .prepare('SELECT data_expire_date, data_token, username, data_link_v2ray, fetch_link FROM user WHERE data_token = ?')
+            .bind(dToken)
+            .first();
+          if (!user) return resJson({ code: 404, msg: 'Token无效' }, 404);
+          const now = new Date();
+          const expireDate = user.data_expire_date ? new Date(user.data_expire_date) : null;
+          if (!expireDate || expireDate < now) {
+            const v2rayConfig = JSON.stringify({ v: '2', ps: 'Traffic-Expired-Server', add: 'expired.phantom.funbua.uk', port: '443', id: crypto.randomUUID(), aid: '0', net: 'ws', type: 'none', host: '', path: '', tls: 'tls', sni: 'expired.phantom.funbua.uk' });
+            const expiredConfig = 'vmess://' + btoa(v2rayConfig);
+            return new Response(expiredConfig, {
+              headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Content-Disposition': `attachment; filename="traffic-expired.txt"` }
+            });
+          }
+          const trafficUrl = user.data_link_v2ray;
+          const response = await fetch(trafficUrl);
+          if (!response.ok) return resJson({ code: 404, msg: '流量包节点配置不存在' }, 404);
+          const configText = await response.text();
+          const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+          const fetchLink = user.fetch_link ? JSON.parse(user.fetch_link) : [];
+          fetchLink.unshift({ type: 'traffic', protocol: 'v2ray', fetchTime: beijingTime, ip: request.headers.get('CF-Connecting-IP') || 'unknown', location: [request.headers.get('CF-IPCountry'), request.headers.get('CF-IPRegion'), request.headers.get('CF-IPCity')].filter(Boolean).join(' ') || 'unknown', domain: new URL(request.url).hostname, link: trafficUrl });
+          if (fetchLink.length > 50) fetchLink.pop();
+          await DB.prepare('UPDATE user SET fetch_link = ? WHERE username = ?').bind(JSON.stringify(fetchLink), user.username).run();
+          return new Response(configText, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Content-Disposition': `attachment; filename="traffic.txt"` }
+          });
+        } catch (err) {
+          return resJson({ code: 500, msg: '获取流量包节点配置失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 签到接口 ==========
       if (path === '/api/checkin' && request.method === 'POST') {
         try {
@@ -3528,6 +4004,52 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
         }
       }
 
+      // ========== 生成/重置临时流量包 data_token ==========
+      if (path === '/api/reset-dtoken' && request.method === 'PUT') {
+        try {
+          const params = await request.json();
+          const { username, p_token: bodyToken } = params;
+          const authToken = bodyToken || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+          if (!username) return resJson({ code: 400, msg: '缺少username参数' }, 400);
+          if (!authToken) return resJson({ code: 401, msg: '缺少 p_token，请先登录' }, 401);
+          const tokenUser = await DB.prepare('SELECT username FROM user WHERE p_token = ?').bind(authToken).first();
+          if (!tokenUser || tokenUser.username !== username) {
+            return resJson({ code: 403, msg: '无权操作该账号' }, 403);
+          }
+
+          // 流量包配置地址：优先流量包专用（clash_traffic/v2ray_traffic），缺省回退到月付链接
+          const linkConfig = await DB
+            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
+            .bind('clash_traffic', 'v2ray_traffic', 'clash_monthly', 'v2ray_monthly')
+            .all();
+          const config = {};
+          (linkConfig.results || []).forEach(row => { config[row.key] = row.value; });
+          const clashUrl = config.clash_traffic || config.clash_monthly || '';
+          const v2rayUrl = config.v2ray_traffic || config.v2ray_monthly || '';
+
+          const user = await DB.prepare('SELECT username, data_token, data_expire_date, data_link_clash, data_link_v2ray, temp_traffic_quota, temp_traffic_used FROM user WHERE username = ?').bind(username).first();
+          if (!user) return resJson({ code: 404, msg: '用户不存在' }, 404);
+
+          // 仅当令牌或配置链接缺失时才补全；有效期 data_expire_date 由购买决定，这里不擅自给有效期
+          if (user.data_token && user.data_link_clash && user.data_link_v2ray) {
+            return resJson({ code: 200, msg: 'Token仍有效', data: { username: user.username, data_token: user.data_token, data_expire_date: user.data_expire_date, data_link_clash: user.data_link_clash, data_link_v2ray: user.data_link_v2ray, temp_traffic_quota: user.temp_traffic_quota, temp_traffic_used: user.temp_traffic_used } });
+          }
+
+          const newDToken = generateVToken();
+          const result = await DB.prepare('UPDATE user SET data_token = ?, data_link_clash = ?, data_link_v2ray = ? WHERE username = ?')
+            .bind(newDToken, clashUrl, v2rayUrl, username)
+            .run();
+          if (result.success && result.meta.changes > 0) {
+            const updated = await DB.prepare('SELECT username, data_expire_date, data_token, data_link_clash, data_link_v2ray, temp_traffic_quota, temp_traffic_used FROM user WHERE username = ?').bind(username).first();
+            return resJson({ code: 200, msg: 'Token生成成功', data: { username: updated.username, data_token: updated.data_token, data_expire_date: updated.data_expire_date, data_link_clash: updated.data_link_clash, data_link_v2ray: updated.data_link_v2ray, temp_traffic_quota: updated.temp_traffic_quota, temp_traffic_used: updated.temp_traffic_used } });
+          }
+          return resJson({ code: 500, msg: 'Token生成失败，请重试' }, 500);
+        } catch (err) {
+          console.error('生成data_token错误:', err);
+          return resJson({ code: 500, msg: 'Token生成失败', error: err.message }, 500);
+        }
+      }
+
       // ========== 发送消息接口 ==========
       if (path === '/api/send-message' && request.method === 'POST') {
         try {
@@ -3739,8 +4261,8 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       if (path === '/api/link/config' && request.method === 'GET') {
         try {
           const links = await DB
-            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?)')
-            .bind('clash_monthly', 'v2ray_monthly', 'clash_yearly', 'v2ray_yearly')
+            .prepare('SELECT key, value FROM link WHERE key IN (?, ?, ?, ?, ?, ?)')
+            .bind('clash_monthly', 'v2ray_monthly', 'clash_yearly', 'v2ray_yearly', 'clash_traffic', 'v2ray_traffic')
             .all();
           
           const config = {};
@@ -3777,9 +4299,17 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
 
           if (result.success && result.meta.changes > 0) {
             return resJson({ code: 200, msg: '更新成功' });
-          } else {
-            return resJson({ code: 500, msg: '更新失败' }, 500);
           }
+
+          // 不存在则插入（upsert），便于新增 clash_traffic / v2ray_traffic 等配置项
+          const ins = await DB
+            .prepare('INSERT INTO link (key, value, updated_at) VALUES (?, ?, ?)')
+            .bind(key, value, now)
+            .run();
+          if (ins.success) {
+            return resJson({ code: 200, msg: '创建成功' });
+          }
+          return resJson({ code: 500, msg: '更新失败' }, 500);
         } catch (err) {
           console.error('更新链接配置错误:', err);
           return resJson({ code: 500, msg: '更新失败', error: err.message }, 500);
