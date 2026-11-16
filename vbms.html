@@ -1998,6 +1998,8 @@
 
         function formatDateTime(str) {
             if (!str) return '-';
+            // 纯日期（YYYY-MM-DD，如 last_checkin）按字面显示：new Date() 会按 UTC 解析，东八区会显示成 08:00
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
             try {
                 const d = new Date(str);
                 if (isNaN(d.getTime())) return str;
