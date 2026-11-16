@@ -3279,7 +3279,8 @@
             document.getElementById('userFetchLink').value = user.fetch_link || '';
             document.getElementById('userSecurityAnswer').value = user.security_answer || '';
             document.getElementById('userFreeExpireDate').value = toDateInputValue(user.free_expire_date);
-            document.getElementById('userLastCheckin').value = user.last_checkin || '';
+            // date输入框只接受YYYY-MM-DD，ISO时间戳取日期部分回填
+            document.getElementById('userLastCheckin').value = user.last_checkin ? String(user.last_checkin).slice(0, 10) : '';
             document.getElementById('userAutoRewn').value = (user.auto_rewn === 1 || user.auto_rewn === '1' || user.auto_rewn === true) ? '1' : '0';
             document.getElementById('userRemark').value = user.remark || '';
             
