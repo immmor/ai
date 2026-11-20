@@ -845,6 +845,7 @@
                             <thead>
                                 <tr>
                                     <th onclick="sortUsers('id')" style="cursor:pointer;">ID <span class="sort-indicator" data-col="id"></span></th>
+                                    <th onclick="sortUsers('site')" style="cursor:pointer; min-width: 100px;">site <span class="sort-indicator" data-col="site"></span></th>
                                     <th onclick="sortUsers('username')" style="cursor:pointer;">用户名 <span class="sort-indicator" data-col="username"></span></th>
                                     <th onclick="sortUsers('password')" style="cursor:pointer;">密码 <span class="sort-indicator" data-col="password"></span></th>
                                     <th onclick="sortUsers('user_type')" style="cursor:pointer; min-width: 130px;">用户类型 <span class="sort-indicator" data-col="user_type"></span></th>
@@ -2878,7 +2879,7 @@
         async function loadUsers(page) {
             userPage = page || 1;
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="27" style="text-align:center;">加载中...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="28" style="text-align:center;">加载中...</td></tr>';
 
             const search = userSearchKeyword ? '&search=' + encodeURIComponent(userSearchKeyword) : '';
             // 派生列（用户类型 / 成功支付次数 / 成功支付金额）前端按当前页排序，其余交给后端
@@ -2980,7 +2981,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (usersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="27" style="text-align:center;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="28" style="text-align:center;">暂无用户数据</td></tr>';
                 return;
             }
             applyUserSort(usersData).forEach(user => {
@@ -2990,6 +2991,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
+                    <td>${user.site || '-'}</td>
                     <td>${user.username}</td>
                     <td>${user.password || '-'}</td>
                     <td style="min-width: 130px;">${parseVip(user.v_expire_date)?.getTime() > Date.now() ? 'VIP' : '普通用户'}</td>
@@ -3425,7 +3427,7 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;">未找到匹配的用户</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="28" style="text-align:center;">未找到匹配的用户</td></tr>';
                 return;
             }
             applyUserSort(data).forEach(user => {
@@ -3435,6 +3437,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.id}</td>
+                    <td>${user.site || '-'}</td>
                     <td>${user.username}</td>
                     <td>${user.password || '-'}</td>
                     <td style="min-width: 130px;">${parseVip(user.v_expire_date)?.getTime() > Date.now() ? 'VIP' : '普通用户'}</td>

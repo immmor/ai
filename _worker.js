@@ -1027,7 +1027,7 @@ export default {
             v_token:'v_token', invite_code:'invite_code', invited_user:'invited_user',
             v_link_clash:'v_link_clash', v_link_v2ray:'v_link_v2ray', login_info:'login_info',
             fetch_link:'fetch_link', price_plan:'price_plan', balance:'balance', monthly_quota:'monthly_quota',
-            survey:'survey', security_answer:'security_answer', source:'source',
+            survey:'survey', security_answer:'security_answer', source:'source', site:'site',
             free_expire_date:'free_expire_date', last_checkin:'last_checkin', auto_rewn:'auto_rewn', remark:'remark'
           };
           const reqSort = url.searchParams.get('sort');
@@ -1038,9 +1038,9 @@ export default {
           let where = '';
           const params = [];
           if (search) {
-            where = ' WHERE username LIKE ? OR v_expire_date LIKE ? OR v_link_clash LIKE ? OR fetch_link LIKE ?';
+            where = ' WHERE username LIKE ? OR v_expire_date LIKE ? OR v_link_clash LIKE ? OR fetch_link LIKE ? OR site LIKE ?';
             const like = '%' + search + '%';
-            params.push(like, like, like, like);
+            params.push(like, like, like, like, like);
           }
 
           // 获取用户总数
@@ -1052,7 +1052,7 @@ export default {
 
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user' + where + ' ORDER BY ' + orderBy + ' LIMIT ? OFFSET ?')
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, site, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user' + where + ' ORDER BY ' + orderBy + ' LIMIT ? OFFSET ?')
             .bind(...params, limit, offset)
             .all();
 
