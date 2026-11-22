@@ -2811,9 +2811,6 @@
                 activeMenuItem.classList.add('active');
             }
 
-            // 切到支付管理页时加载待审核列表
-            if(pageName==='payments'&&typeof loadPaymentReviews==='function')loadPaymentReviews();
-
             // 更新页面标题
             const pageTitles = {
                 'dashboard': '仪表盘',
