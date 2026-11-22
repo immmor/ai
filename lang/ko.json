@@ -256,6 +256,8 @@
         "payStep2": "결제 ¥{amount}",
         "payStep3": "주문 번호 메모",
         "payStep4": "이 화면으로 돌아가 충전 확인을 탭",
+        "payStep5Review": "관리자 승인을 기다려 주세요",
+        "checkAllSteps": "결제 안내를 모두 체크해 주세요",
         "noOrders": "주문 없음",
         "noRecords": "기록 없음",
         "loadFailed": "로드 실패",

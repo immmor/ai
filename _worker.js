@@ -239,7 +239,7 @@ export default {
 
         try {
           const user = await env.DB
-            .prepare('SELECT rowid, username, balance, not_trusted, vorders FROM user WHERE username = ? AND password = ?')
+            .prepare('SELECT rowid, username, balance, trusted, vorders FROM user WHERE username = ? AND password = ?')
             .bind(username, password)
             .first();
 
@@ -247,7 +247,7 @@ export default {
             return new Response(JSON.stringify({ 
               success: true, 
               message: '登录成功！', 
-              userInfo: { id: user.rowid, username: user.username, balance: user.balance, not_trusted: user.not_trusted || '', vorders: user.vorders } 
+              userInfo: { id: user.rowid, username: user.username, balance: user.balance, trusted: user.trusted || '', vorders: user.vorders } 
             }), {
               headers: { 'Content-Type': 'application/json' }
             });
@@ -671,7 +671,7 @@ export default {
       }
 
       // 路由匹配：/api/recharge/confirm 人工充值确认接口
-      // 可信用户直接到账；not_trusted=yes 的用户进入待审核，由后台「支付管理」审核后到账
+      // trusted=yes 直接到账；trusted=try 进入待审核由后台审核；trusted=no 前端隐藏支付宝人工方式
       if (url.pathname === '/api/recharge/confirm' && request.method === 'POST') {
         try {
           const params = await request.json();
@@ -685,10 +685,10 @@ export default {
 
           // 判断用户信任状态
           const userRow = await env.DB
-            .prepare('SELECT not_trusted FROM user WHERE username = ?')
+            .prepare('SELECT trusted FROM user WHERE username = ?')
             .bind(username)
             .first();
-          const needReview = !!userRow && String(userRow.not_trusted || '').toLowerCase() === 'yes';
+          const needReview = !!userRow && String(userRow.trusted || '').toLowerCase() === 'try';
 
           if (needReview) {
             // 不可信用户：提交审核（pending → pending_review），不立即到账
@@ -1129,7 +1129,7 @@ export default {
 
           // 获取用户列表
           const users = await env.DB
-            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, not_trusted, survey, invited_user, security_answer, source, site, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user' + where + ' ORDER BY ' + orderBy + ' LIMIT ? OFFSET ?')
+            .prepare('SELECT rowid as id, username, password, balance, v_expire_date, learn_vip_expire_date, quota_reset_date, used_quota, monthly_quota, invite_code, v_token, v_link_v2ray, v_link_clash, login_info, fetch_link, price_plan, trusted, survey, invited_user, security_answer, source, site, auto_rewn, vorders, remark, free_expire_date, last_checkin FROM user' + where + ' ORDER BY ' + orderBy + ' LIMIT ? OFFSET ?')
             .bind(...params, limit, offset)
             .all();
 

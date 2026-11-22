@@ -256,6 +256,8 @@
         "payStep2": "Thanh toán ¥{amount}",
         "payStep3": "Ghi chú số đơn hàng",
         "payStep4": "Quay lại trang này và nhấn xác nhận nạp",
+        "payStep5Review": "Chờ quản trị viên duyệt",
+        "checkAllSteps": "Vui lòng tick tất cả hướng dẫn thanh toán",
         "noOrders": "Chưa có đơn hàng",
         "noRecords": "Chưa có bản ghi",
         "loadFailed": "Tải thất bại",

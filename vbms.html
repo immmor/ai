@@ -858,7 +858,7 @@
                                     <th onclick="sortUsers('v_link_v2ray')" style="cursor:pointer; min-width: 150px;">V2Ray链接 <span class="sort-indicator" data-col="v_link_v2ray"></span></th>
                                     <th onclick="sortUsers('login_info')" style="cursor:pointer; min-width: 150px;">登录信息 <span class="sort-indicator" data-col="login_info"></span></th>
                                     <th onclick="sortUsers('fetch_link')" style="cursor:pointer; min-width: 150px;">fetch_link <span class="sort-indicator" data-col="fetch_link"></span></th>
-                                    <th onclick="sortUsers('not_trusted')" style="cursor:pointer; min-width: 120px;">不信任 <span class="sort-indicator" data-col="not_trusted"></span></th>
+                                    <th onclick="sortUsers('trusted')" style="cursor:pointer; min-width: 120px;">信任状态 <span class="sort-indicator" data-col="trusted"></span></th>
                                     <th onclick="sortUsers('price_plan')" style="cursor:pointer; min-width: 150px;">订阅价格 <span class="sort-indicator" data-col="price_plan"></span></th>
                                     <th onclick="sortUsers('balance')" style="cursor:pointer;">余额 <span class="sort-indicator" data-col="balance"></span></th>
                                     <th onclick="sortUsers('monthly_quota')" style="cursor:pointer; min-width: 110px;">流量额度 <span class="sort-indicator" data-col="monthly_quota"></span></th>
@@ -1700,8 +1700,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="userNotTrusted">不信任 (yes/否)</label>
-                        <input type="text" id="userNotTrusted" name="userNotTrusted" placeholder="留空或其他值表示正常">
+                        <label for="userNotTrusted">信任状态</label>
+                        <select id="userNotTrusted" name="userNotTrusted" style="padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;">
+                            <option value="yes">yes - 信任（直接到账）</option>
+                            <option value="try">try - 需审核</option>
+                            <option value="no">no - 隐藏支付宝人工支付</option>
+                        </select>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label for="userPricePlan">订阅价格</label>
@@ -3052,7 +3056,7 @@
                     <td style="vertical-align: top; max-width: 320px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.fetch_link || '-'}</div>
                     </td>
-                    <td>${user.not_trusted}</td>
+                    <td>${user.trusted}</td>
                     <td style="vertical-align: top; max-width: 320px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.price_plan || '-'}</div>
                     </td>
@@ -3312,7 +3316,7 @@
             document.getElementById('userInvitedUser').value = user.invited_user || '';
             document.getElementById('userVLinkClash').value = user.v_link_clash || '';
             document.getElementById('userVLinkV2ray').value = user.v_link_v2ray || '';
-            document.getElementById('userNotTrusted').value = user.not_trusted || '';
+            document.getElementById('userNotTrusted').value = user.trusted || '';
             document.getElementById('userPricePlan').value = user.price_plan || '';
             document.getElementById('userPricePreset').value = '';
             document.getElementById('userLoginInfo').value = user.login_info || '';
@@ -3358,7 +3362,7 @@
             const invite_code = document.getElementById('userInviteCode').value;
             const v_link_clash = document.getElementById('userVLinkClash').value;
             const v_link_v2ray = document.getElementById('userVLinkV2ray').value;
-            const not_trusted = document.getElementById('userNotTrusted').value;
+            const trusted = document.getElementById('userNotTrusted').value;
             const login_info = document.getElementById('userLoginInfo').value;
             const vorders = document.getElementById('userVorders').value;
             const fetch_link = document.getElementById('userFetchLink').value;
@@ -3385,7 +3389,7 @@
                     invite_code: invite_code || '',
                     v_link_clash: v_link_clash || '',
                     v_link_v2ray: v_link_v2ray || '',
-                    not_trusted: not_trusted || '',
+                    trusted: trusted || '',
                     price_plan: document.getElementById('userPricePlan').value || '',
                     login_info: login_info || '',
                     vorders: vorders || '',
@@ -3498,7 +3502,7 @@
                     <td style="vertical-align: top; max-width: 320px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.fetch_link || '-'}</div>
                     </td>
-                    <td>${user.not_trusted}</td>
+                    <td>${user.trusted}</td>
                     <td style="vertical-align: top; max-width: 320px;">
                         <div style="max-height: 120px; overflow: auto; word-break: break-all; white-space: pre-wrap;">${user.price_plan || '-'}</div>
                     </td>

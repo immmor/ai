@@ -1769,7 +1769,10 @@ function enterMain(){
   renderTierStatus();
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
   const ca=document.getElementById('cardAvatar');if(ca)ca.textContent=(currentUser.username||'U')[0].toUpperCase();
-  // 支付宝人工支付对所有用户可见（含 not_trusted 用户）
+  // trusted=no：隐藏支付宝静态人工支付方式（其它支付方式照常）
+  const _trusted=String((currentUser&&currentUser.trusted)||'').toLowerCase();
+  const _alipayOpt=document.querySelector('.method-option[data-method="alipay_static"]');
+  if(_alipayOpt)_alipayOpt.style.display=(_trusted==='no')?'none':'';
   updateBalance();loadRecentOrders();
   // 带 plan/return 参数（来自 index 余额不足跳转）时直接进入充值页，而非总览页
   const _jumpParams=new URLSearchParams(location.search);
@@ -1891,9 +1894,11 @@ function applyPlanAndMethod(){
   if(urlMethod&&valid.includes(urlMethod))m=urlMethod;
   else if(lastMethod&&valid.includes(lastMethod))m=lastMethod;
   if(!m){
-    // 没有上一次充值方式时：默认用支付宝人工支付（对所有用户开放）
+    // 默认用支付宝人工支付；trusted=no 的用户不显示该方式，回退到 creem
     m='alipay_static';
   }
+  const _trustedNow=String((currentUser&&currentUser.trusted)||'').toLowerCase();
+  if(_trustedNow==='no'&&m==='alipay_static')m='creem';
   selectMethodFromDropdown(m);
   const plan=params.get('plan');
   if(plan==='monthly'||plan==='annual'){
@@ -2786,6 +2791,10 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
   container.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;padding:20px;border-radius:12px;border:2px solid #6c5ce7;box-shadow:0 0 30px rgba(108,92,231,0.3);z-index:9999;text-align:right;width:min(350px,95vw);max-height:90vh;overflow-y:auto;box-sizing:border-box;';
   const origOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';
+  // 支付说明逐条带勾选框；需审核用户(trusted=try)多一条「等待客服审核」
+  const steps=[t('vpay.payStep1'),t('vpay.payStep2',{amount:amount}),t('vpay.payStep3'),t('vpay.payStep4')];
+  if(currentUser&&String(currentUser.trusted||'').toLowerCase()==='try')steps.push(t('vpay.payStep5Review'));
+  const stepsHtml=steps.map((s,i)=>`<label style="display:flex;align-items:flex-start;gap:8px;margin:6px 0;cursor:pointer"><input type="checkbox" class="pay-step-check" style="margin-top:2px;accent-color:#6c5ce7;width:15px;height:15px;flex-shrink:0"><span style="flex:1">${i+1}. ${s}</span></label>`).join('');
   container.innerHTML=`
     <h3 style="margin:0 0 20px;color:#a29bfe;font-size:20px;text-align:center">${t('vpay.alipayPayTitle')}</h3>
     <div id="orderNoRow" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
@@ -2796,11 +2805,8 @@ function showStaticQRCode(paymentName,imagePath,orderNo,amount,paymentType){
     <div style="font-size:18px;color:#00b894;margin-bottom:15px;font-weight:bold;text-align:center">¥ ${amount}</div>
     <img id="guideQr" src="${imagePath}" alt="${paymentName} QR" style="width:200px;height:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);margin:0 auto 20px;display:block">
     <div style="color:#999;font-size:12px;line-height:1.5;margin:0 10px 12px;text-align:left">
-      <strong>${t('staticPay.instruction')}</strong><br>
-      1. ${t('vpay.payStep1')}<br>
-      2. ${t('vpay.payStep2',{amount:amount})}<br>
-      3. ${t('vpay.payStep3')}<br>
-      4. ${t('vpay.payStep4')}
+      <strong>${t('staticPay.instruction')}</strong>
+      ${stepsHtml}
     </div>
     <div style="text-align:center;margin-bottom:14px"><a class="guide-link" onclick="startAlipayFocusGuide()"><i class="fa-solid fa-circle-question"></i> ${t('alipayGuide.viewGuide')}</a></div>
     <div style="display:flex;gap:10px">
@@ -2837,11 +2843,18 @@ async function createStaticOrderRecord(paymentType,amount,orderNo){
 }
 
 function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
+  const checks=Array.from(document.querySelectorAll('.pay-step-check'));
+  const allChecked=()=>checks.length>0&&checks.every(c=>c.checked);
+  const readyStyle='flex:6;padding:12px;background:#e17055;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;';
+  const waitStyle='flex:6;padding:12px;background:#666;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;opacity:0.6;';
+  // 勾选框变化：全部勾选时高亮按钮（未勾全仍可点，点击会提示）
+  checks.forEach(c=>c.addEventListener('change',()=>{
+    btn.style.cssText=allChecked()?readyStyle:waitStyle;
+  }));
   const lastRechargeTime=localStorage.getItem('lastRechargeTime');
   const now=Date.now();
   const COOLDOWN_TIME=86400000;
   if(lastRechargeTime&&(now-parseInt(lastRechargeTime))<COOLDOWN_TIME){
-    const remaining=COOLDOWN_TIME-(now-parseInt(lastRechargeTime));
     btn.textContent=t('vpay.cooldown');
     btn.style.background='#666';
     btn.disabled=true;
@@ -2853,10 +2866,11 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
     countdown--;
     if(countdown<0){
       clearInterval(timer);
-      btn.style.cssText='flex:6;padding:12px;background:#e17055;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;';
+      btn.style.cssText=allChecked()?readyStyle:waitStyle;
       btn.disabled=false;
       btn.textContent=t('staticPay.confirmRecharge');
       btn.onclick=function(){
+        if(!allChecked()){showToast(t('vpay.checkAllSteps'),'error');return;}
         this.disabled=true;
         this.textContent=t('vpay.processing');
         confirmRecharge(orderNo,amount,paymentType,onClose);

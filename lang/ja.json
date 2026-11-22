@@ -256,6 +256,8 @@
         "payStep2": "支払 ¥{amount}",
         "payStep3": "注文番号をメモ",
         "payStep4": "この画面に戻りチャージ確認をタップ",
+        "payStep5Review": "管理者の審査をお待ちください",
+        "checkAllSteps": "支払い説明をすべてチェックしてください",
         "noOrders": "注文なし",
         "noRecords": "記録なし",
         "loadFailed": "読み込み失敗",

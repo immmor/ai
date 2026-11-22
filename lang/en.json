@@ -255,6 +255,8 @@
         "payStep2": "Pay ¥{amount}",
         "payStep3": "Note the order number",
         "payStep4": "Return to this page and tap confirm recharge",
+        "payStep5Review": "Wait for admin review",
+        "checkAllSteps": "Please check all payment instructions first",
         "noOrders": "No orders",
         "noRecords": "No records",
         "loadFailed": "Failed to load",

@@ -256,6 +256,8 @@
         "payStep2": "Pague ¥{amount}",
         "payStep3": "Anote el número de pedido",
         "payStep4": "Vuelva a esta página y toque confirmar recarga",
+        "payStep5Review": "Espere la revisión del administrador",
+        "checkAllSteps": "Marque todas las instrucciones de pago",
         "noOrders": "Sin pedidos",
         "noRecords": "Sin registros",
         "loadFailed": "Error al cargar",

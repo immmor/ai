@@ -255,6 +255,8 @@
         "payStep2": "支付 ¥{amount}",
         "payStep3": "备注订单号",
         "payStep4": "回到当前界面点击确认充值",
+        "payStep5Review": "等待客服审核",
+        "checkAllSteps": "请先勾选全部支付说明",
         "noOrders": "暂无订单",
         "noRecords": "暂无记录",
         "loadFailed": "加载失败",
