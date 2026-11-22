@@ -2847,8 +2847,10 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
   const allChecked=()=>checks.length>0&&checks.every(c=>c.checked);
   const readyStyle='flex:6;padding:12px;background:#e17055;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;';
   const waitStyle='flex:6;padding:12px;background:#666;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;opacity:0.6;';
-  // 勾选框变化：全部勾选时高亮按钮（未勾全仍可点，点击会提示）
+  // 时间未就绪（倒计时/冷却中）时，勾选框变化不改变按钮颜色
+  let timeReady=false;
   checks.forEach(c=>c.addEventListener('change',()=>{
+    if(!timeReady)return;
     btn.style.cssText=allChecked()?readyStyle:waitStyle;
   }));
   const lastRechargeTime=localStorage.getItem('lastRechargeTime');
@@ -2866,6 +2868,7 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
     countdown--;
     if(countdown<0){
       clearInterval(timer);
+      timeReady=true;
       btn.style.cssText=allChecked()?readyStyle:waitStyle;
       btn.disabled=false;
       btn.textContent=t('staticPay.confirmRecharge');
