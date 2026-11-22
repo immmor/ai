@@ -455,6 +455,153 @@ async function pickUniqueCardNumber(DB) {
   return generateCardNumber();
 }
 
+// ===== talangya 代理：401 自动重新登录换 cookie 再试一次 =====
+// ponytail: 登录 POST 直接给 set-cookie（不像 smsactive 还要再 GET panel）
+let talCookie = '';
+const TAL_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36';
+const DEFAULT_TAL_COOKIE = 'ACG-SHOP=l9hhhl05jctiudp28lqm8ae4is; USER_SESSION=ZXlKMGVYQWlPaUpLVjFRaUxDSjFhV1FpT2pNNU16QXdMQ0poYkdjaU9pSklVekkxTmlKOS5leUpsZUhCcGNtVWlPakU0TWpNek1EVTJNelFzSW14dloybHVWR2x0WlNJNklqSXdNall0TVRBdE1USWdNRGs2TkRjNk1UUWlmUS5xMjAzbHN2VTZ1Q0JFVnpQbWJUYjAxX0ZZMUYweFVXQnJyRDZ6ZllOU1d3';
+
+async function talCookieRefresh(env) {
+  const r = await fetch('https://talangya.com/user/api/authentication/login', {
+    method: 'POST', signal: AbortSignal.timeout(10000),
+    headers: {
+      'accept': 'application/json, text/javascript, */*; q=0.01',
+      'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'origin': 'https://talangya.com', 'referer': 'https://talangya.com/',
+      'user-agent': TAL_UA, 'x-requested-with': 'XMLHttpRequest',
+      'cookie': 'ACG-SHOP=d4tuugthg3i49cj66fqnfo48p4'
+    },
+    body: new URLSearchParams({
+      username: env.TALANGYA_USERNAME || 'immmor@foxmail.com',
+      password: env.TALANGYA_PASSWORD || 'Wang123.',
+      remember: '1'
+    }).toString()
+  });
+  const sc = r.headers.get('set-cookie') || '';
+  const cookies = (sc.match(/(?:ACG-SHOP|USER_SESSION)=[^;,\s]+/g) || []).join('; ');
+  if (!cookies) throw new Error('talangya 重新登录未拿到有效 cookie');
+  talCookie = cookies + ';';
+  return talCookie;
+}
+
+async function talangyaFetch(env, apiPath, opts = {}) {
+  const call = () => fetch('https://talangya.com' + apiPath, {
+    method: opts.method || 'GET', body: opts.body, signal: AbortSignal.timeout(10000),
+    headers: {
+      'accept': opts.accept || '*/*', 'accept-language': 'zh-CN,zh;q=0.9',
+      'referer': 'https://talangya.com/', 'user-agent': TAL_UA, 'x-requested-with': 'XMLHttpRequest',
+      'cookie': talCookie || env.TALANGYA_COOKIE || DEFAULT_TAL_COOKIE,
+      ...(opts.body ? { 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8', 'origin': 'https://talangya.com' } : {})
+    }
+  });
+  let r = await call();
+  if (r.status === 401) {
+    try {
+      await talCookieRefresh(env);
+      r = await call();
+    } catch (e) {
+      console.error('talangya 重新登录失败:', e);
+    }
+  }
+  return r;
+}
+
+// ===== smsactivate 代理：cookie 共一份，上游 401 就重新登录换 cookie 再试一次 =====
+// ponytail: 单 isolate 共享即可（只有一个 smsactive 账号）；多账号再改成 per-env Map
+let smsCookie = '';
+const SMS_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36';
+const DEFAULT_SMS_COOKIE = '_ym_isad=2; cy_remember_token=24d2a573dc4a662c296966992bad4175ae746ec752ceb1fc396b7563d9c4da00; cy_soft_session=c8oqfis099digk97tl0ik02q08b63uu5';
+
+async function smsCookieRefresh(env) {
+  const h = {
+    'accept': '*/*', 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'origin': 'https://smsactive.org', 'referer': 'https://smsactive.org/index.php/',
+    'user-agent': SMS_UA, 'x-requested-with': 'XMLHttpRequest',
+    'cookie': 'cy_soft_session=jj6qg4qbdengu1v4jnnr48ga95nhhv2m;'
+  };
+  await fetch('https://smsactive.org/login', {
+    method: 'POST', headers: h, signal: AbortSignal.timeout(10000),
+    body: new URLSearchParams({
+      emailInput: env.SMSACTIVATE_EMAIL || 'ninenine000099@gmail.com',
+      passwordInput: env.SMSACTIVATE_PASSWORD || 'Wang123.'
+    }).toString()
+  });
+  // login.js: POST 不下发 cookie，登录后 GET panel 才拿到续期的 set-cookie
+  const r = await fetch('https://smsactive.org/index.php/panel', { headers: h, signal: AbortSignal.timeout(10000) });
+  const sc = r.headers.get('set-cookie') || '';
+  const cy = (sc.match(/cy_[a-z_]+=[^;,\s]+/g) || []).join('; ');
+  if (!cy) throw new Error('重新登录未拿到有效 cookie');
+  smsCookie = cy + ';';
+  return smsCookie;
+}
+
+async function smsFetch(env, apiPath) {
+  const call = () => fetch('https://smsactive.org' + apiPath, {
+    signal: AbortSignal.timeout(10000),
+    headers: {
+      'accept': '*/*', 'accept-language': 'zh-CN,zh;q=0.9', 'priority': 'u=1, i',
+      'referer': 'https://smsactive.org/panel',
+      'sec-ch-ua': '"Not:A-Brand";v="8", "Chromium";v="156", "Google Chrome";v="156"',
+      'sec-ch-ua-mobile': '?0', 'sec-ch-ua-platform': '"macOS"',
+      'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-origin',
+      'user-agent': SMS_UA,
+      'cookie': smsCookie || env.SMSACTIVATE_COOKIE || DEFAULT_SMS_COOKIE
+    }
+  });
+  let r = await call();
+  if (r.status === 401) {
+    try {
+      await smsCookieRefresh(env);
+      r = await call();
+    } catch (e) {
+      console.error('smsactivate 重新登录失败:', e);
+    }
+  }
+  return r;
+}
+
+// ===== 反爬签名校验（与 index.html 内前端算法保持一致） =====
+const rotl = (x, n) => ((x << n) | (x >>> (32 - n))) >>> 0;
+function mix(str, seed) {
+  let a = (seed ^ 0x9e3779b9) >>> 0;
+  let b = (seed ^ 0x85ebca6b) >>> 0;
+  let c = (seed ^ 0xc2b2ae35) >>> 0;
+  let d = (seed ^ 0x27d4eb2f) >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    a = (rotl((a ^ ch) >>> 0, 7) + Math.imul(a, 0x01000193)) >>> 0;
+    b = (rotl((b ^ a) >>> 0, 11) + Math.imul(b, 0x85ebca77)) >>> 0;
+    c = (rotl((c ^ b) >>> 0, 13) + Math.imul(c, 0xc2b2ae3d)) >>> 0;
+    d = (rotl((d ^ c) >>> 0, 17) + Math.imul(d, 0x27d4eb2f)) >>> 0;
+  }
+  return [a, b, c, d];
+}
+function diffuse(state, times) {
+  let [a, b, c, d] = state;
+  for (let r = 0; r < times; r++) {
+    a = rotl((a ^ b) >>> 0, 5) >>> 0;
+    b = rotl((b + c) >>> 0, 9) >>> 0;
+    c = rotl((c ^ d) >>> 0, 13) >>> 0;
+    d = rotl((d + a) >>> 0, 17) >>> 0;
+    a = (a ^ Math.imul(b, 0x9e3779b1)) >>> 0;
+    b = (b ^ Math.imul(c, 0x85ebca77)) >>> 0;
+    c = (c ^ Math.imul(d, 0xc2b2ae3d)) >>> 0;
+    d = (d ^ Math.imul(a, 0x27d4eb2f)) >>> 0;
+  }
+  return [a, b, c, d];
+}
+const toHex = (state) => state.map((n) => n.toString(16).padStart(8, '0')).join('');
+function verifySign(method, target, bodyStr, ts, nc, fp) {
+  const raw = [method.toUpperCase(), target, bodyStr, String(ts), nc, fp].join('\u0001');
+  let state = diffuse(mix(raw, (ts ^ 0x5a5a5a5a) >>> 0), 12);
+  const fpState = mix(fp, 0x1234567);
+  state = diffuse([
+    state[0] ^ fpState[1], state[1] ^ fpState[3],
+    state[2] ^ fpState[0], state[3] ^ fpState[2]
+  ], 8);
+  return toHex(state);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -466,7 +613,7 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-mj-cookie, cookie',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-mj-cookie, cookie, X-Phantom-Ts, X-Phantom-Nonce, X-Phantom-Sign, X-Phantom-Fp',
           'Access-Control-Max-Age': '86400'
         }
       });
@@ -482,6 +629,30 @@ export default {
       });
     };
 
+    // ========== 反爬签名校验：带头才验，缺头放行（兼容其它页面/旧缓存） ==========
+    if (path.startsWith('/api/')) {
+      const pTs = request.headers.get('X-Phantom-Ts');
+      const pNonce = request.headers.get('X-Phantom-Nonce');
+      const pSign = request.headers.get('X-Phantom-Sign');
+      const pFp = request.headers.get('X-Phantom-Fp');
+      if (pTs && pNonce && pSign && pFp) {
+        const ts = Number(pTs);
+        if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > 5 * 60 * 1000) {
+          return resJson({ code: 401, msg: '签名已过期' }, 401);
+        }
+        const clean = new URL(request.url);
+        clean.searchParams.delete('_ts');
+        clean.searchParams.delete('_nc');
+        clean.searchParams.delete('_sig');
+        const target = clean.pathname + clean.search;
+        const bodyStr = ['GET', 'HEAD'].includes(request.method) ? '' : await request.clone().text();
+        const expected = verifySign(request.method, target, bodyStr, ts, pNonce, pFp);
+        if (expected !== pSign.toLowerCase()) {
+          return resJson({ code: 401, msg: '签名校验失败' }, 401);
+        }
+      }
+    }
+
     try {
       // ========== ✅ 核心修复：数据库实例兜底（解决prepare undefined） ==========
       // 【关键】这里的 DB 必须和你Worker绑定D1的「Variable name」完全一致！！！
@@ -496,22 +667,7 @@ export default {
 
       // ========== talangya 商品代理（绕过CORS，原样返回） ==========
       if (path === '/api/talangya/commodity' && request.method === 'GET') {
-        const r = await fetch('https://talangya.com/user/api/index/commodity?categoryId=0&compact=1', {
-          headers: {
-            'accept': 'application/json, text/javascript, */*; q=0.01',
-            'accept-language': 'zh-CN,zh;q=0.9',
-            'referer': 'https://talangya.com/',
-            'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
-            'x-requested-with': 'XMLHttpRequest',
-            'cookie': 'ACG-SHOP=d4tuugthg3i49cj66fqnfo48p4'
-          }
-        });
+        const r = await talangyaFetch(env, '/user/api/index/commodity?categoryId=0&compact=1', { accept: 'application/json, text/javascript, */*; q=0.01' });
         const data = await r.text();
         return new Response(data, {
           headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json; charset=utf-8' }
@@ -525,23 +681,7 @@ export default {
           if (!commodityId) {
             return resJson({ code: 400, msg: '缺少 commodityId 参数' }, 400);
           }
-          const r = await fetch('https://talangya.com/user/api/index/commodityDetail?commodityId=' + encodeURIComponent(commodityId), {
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'priority': 'u=1, i',
-              'referer': 'https://talangya.com/',
-              'sec-ch-ua': '"Chromium";v="154", "Google Chrome";v="154", "Not A(Brand";v="99"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36',
-              'x-requested-with': 'XMLHttpRequest',
-              'cookie': 'ACG-SHOP=l9hhhl05jctiudp28lqm8ae4is; USER_SESSION=ZXlKMGVYQWlPaUpLVjFRaUxDSjFhV1FpT2pNNU16QXdMQ0poYkdjaU9pSklVekkxTmlKOS5leUpsZUhCcGNtVWlPakU0TWpNek1EVTJNelFzSW14dloybHVWR2x0WlNJNklqSXdNall0TVRBdE1USWdNRGs2TkRjNk1UUWlmUS5xMjAzbHN2VTZ1Q0JFVnpQbWJUYjAxX0ZZMUYweFVXQnJyRDZ6ZllOU1d3'
-            }
-          });
+          const r = await talangyaFetch(env, '/user/api/index/commodityDetail?commodityId=' + encodeURIComponent(commodityId));
           const text = await r.text();
           return new Response(text, {
             headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json; charset=utf-8' }
@@ -574,26 +714,7 @@ export default {
             password: p.password || '',
             captcha: p.captcha || ''
           }).toString();
-          const r = await fetch('https://talangya.com/user/api/order/trade', {
-            method: 'POST',
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-              'origin': 'https://talangya.com',
-              'referer': 'https://talangya.com/',
-              'sec-ch-ua': '"Chromium";v="154", "Google Chrome";v="154", "Not A(Brand";v="99"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36',
-              'x-requested-with': 'XMLHttpRequest',
-              'cookie': 'ACG-SHOP=l9hhhl05jctiudp28lqm8ae4is; USER_SESSION=ZXlKMGVYQWlPaUpLVjFRaUxDSjFhV1FpT2pNNU16QXdMQ0poYkdjaU9pSklVekkxTmlKOS5leUpsZUhCcGNtVWlPakU0TWpNek1EVTJNelFzSW14dloybHVWR2x0WlNJNklqSXdNall0TVRBdE1USWdNRGs2TkRjNk1UUWlmUS5xMjAzbHN2VTZ1Q0JFVnpQbWJUYjAxX0ZZMUYweFVXQnJyRDZ6ZllOU1d3'
-            },
-            body
-          });
+          const r = await talangyaFetch(env, '/user/api/order/trade', { method: 'POST', body });
           const text = await r.text();
           let json;
           try {
@@ -625,24 +746,7 @@ export default {
       if (path === '/api/smsactivate/countries' && request.method === 'GET') {
         try {
           const service = url.searchParams.get('service') || '34';
-          const cookie = (env.SMSACTIVATE_COOKIE || '_ga=GA1.1.746476336.1789351337; _ym_uid=1789351338698084716; _ym_d=1789351338; __stripe_mid=437de1c5-3fbe-46e9-a3cc-28a19328f276acc303; _ym_isad=2; cy_remember_token=24d2a573dc4a662c296966992bad4175ae746ec752ceb1fc396b7563d9c4da00; _ga_9SWF8WHWLW=GS2.1.s1793581225$o4$g0$t1793581233$j52$l0$h0; cy_soft_session=qb1d2m91q1kr57hr47m0k5ap5udcpcgo; __stripe_sid=af4a8246-0206-4146-af47-d0b70b5af15ab6f0e9');
-          const r = await fetch(`https://smsactive.org/api/getServices/${service}`, {
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'priority': 'u=1, i',
-              'referer': 'https://smsactive.org/panel',
-              'sec-ch-ua': '"Not:A-Brand";v="8", "Chromium";v="156", "Google Chrome";v="156"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36',
-              'cookie': cookie
-            }
-          });
+          const r = await smsFetch(env, `/api/getServices/${service}`);
           const text = await r.text();
           // 上游非 200（如 cookie 过期被踢到登录页）时不把登录页 HTML 当数据返回，给出明确错误
           if (!r.ok) {
@@ -670,24 +774,7 @@ export default {
           if (!id) {
             return resJson({ code: 400, msg: '缺少 id 参数（国家列表返回的 id）' }, 400);
           }
-          const cookie = (env.SMSACTIVATE_COOKIE || '_ga=GA1.1.746476336.1789351337; _ym_uid=1789351338698084716; _ym_d=1789351338; __stripe_mid=437de1c5-3fbe-46e9-a3cc-28a19328f276acc303; _ym_isad=2; cy_remember_token=24d2a573dc4a662c296966992bad4175ae746ec752ceb1fc396b7563d9c4da00; _ga_9SWF8WHWLW=GS2.1.s1793581225$o4$g0$t1793581233$j52$l0$h0; __stripe_sid=ac6c2e90-b6cb-470b-8c9d-b878a6761d882fbdfa; cy_soft_session=c8oqfis099digk97tl0ik02q08b63uu5');
-          const r = await fetch(`https://smsactive.org/api/getNumber/${id}`, {
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'priority': 'u=1, i',
-              'referer': 'https://smsactive.org/panel',
-              'sec-ch-ua': '"Not:A-Brand";v="8", "Chromium";v="156", "Google Chrome";v="156"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36',
-              'cookie': cookie
-            }
-          });
+          const r = await smsFetch(env, `/api/getNumber/${id}`);
           const text = await r.text();
           if (!r.ok) {
             console.error('smsactivate order upstream status:', r.status, text.slice(0, 200));
@@ -714,24 +801,7 @@ export default {
           if (!id) {
             return resJson({ code: 400, msg: '缺少 id 参数（下单返回的订单 id）' }, 400);
           }
-          const cookie = (env.SMSACTIVATE_COOKIE || '_ga=GA1.1.746476336.1789351337; _ym_uid=1789351338698084716; _ym_d=1789351338; __stripe_mid=437de1c5-3fbe-46e9-a3cc-28a19328f276acc303; _ym_isad=2; cy_remember_token=24d2a573dc4a662c296966992bad4175ae746ec752ceb1fc396b7563d9c4da00; _ga_9SWF8WHWLW=GS2.1.s1793581225$o4$g0$t1793581233$j52$l0$h0; __stripe_sid=ac6c2e90-b6cb-470b-8c9d-b878a6761d882fbdfa; cy_soft_session=rsuahclifrvgfq5jcam7eeov49ro6lh0');
-          const r = await fetch(`https://smsactive.org/api/cancelNumber/${id}`, {
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'priority': 'u=1, i',
-              'referer': 'https://smsactive.org/panel',
-              'sec-ch-ua': '"Not:A-Brand";v="8", "Chromium";v="156", "Google Chrome";v="156"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36',
-              'cookie': cookie
-            }
-          });
+          const r = await smsFetch(env, `/api/cancelNumber/${id}`);
           const text = await r.text();
           if (!r.ok) {
             console.error('smsactivate release upstream status:', r.status, text.slice(0, 200));
@@ -749,27 +819,10 @@ export default {
       // ========== smsactivate 号码列表/状态查询（绕过CORS，原样返回） ==========
       // GET /api/smsactivate/numbers  ->  返回账户下所有号码（含 number / code / status / id / service 等）
       // 严格按 smsactivate/numbers.js 的请求格式去请求上游 /api/numbers
-      // 注意：该接口用的是另一种 cookie（仅 cy_remember_token，无 cy_soft_session），与下单/取消不同
+      // ponytail: 与其余 smsactivate 接口共用 smsFetch，401 自动重新登录换 cookie
       if (path === '/api/smsactivate/numbers' && request.method === 'GET') {
         try {
-          const cookie = (env.SMSACTIVATE_NUMBERS_COOKIE || 'cy_remember_token=24d2a573dc4a662c296966992bad4175ae746ec752ceb1fc396b7563d9c4da00;');
-          const r = await fetch('https://smsactive.org/api/numbers', {
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              'accept': '*/*',
-              'accept-language': 'zh-CN,zh;q=0.9',
-              'priority': 'u=1, i',
-              'referer': 'https://smsactive.org/panel',
-              'sec-ch-ua': '"Not:A-Brand";v="8", "Chromium";v="156", "Google Chrome";v="156"',
-              'sec-ch-ua-mobile': '?0',
-              'sec-ch-ua-platform': '"macOS"',
-              'sec-fetch-dest': 'empty',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-origin',
-              'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36',
-              'cookie': cookie
-            }
-          });
+          const r = await smsFetch(env, '/api/numbers');
           const text = await r.text();
           if (!r.ok) {
             console.error('smsactivate numbers upstream status:', r.status, text.slice(0, 200));
@@ -847,7 +900,7 @@ export default {
       // ========== 发送邮箱验证码接口 ==========
       if (path === '/api/send-verify-code' && request.method === 'POST') {
         const params = await request.json();
-        const { email } = params;
+        const { email, site } = params;
 
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return resJson({ success: false, message: '请输入有效的邮箱地址！' }, 400);
@@ -864,15 +917,16 @@ export default {
           return resJson({ success: false, message: `请求过于频繁，请 ${rlSendIp.retryAfter} 秒后再试！` }, 429);
         }
 
-        // 频率限制：验证码 key 本身带 60s TTL，只要它还存活（TTL>0）就说明 60 秒内已发送过
-        const ttl = await redis(env, 'TTL', `verify_code_${email}`);
+        // 发送冷却（60s）：独立 key，不占用验证码本身的有效期
+        const ttl = await redis(env, 'TTL', `verify_code_cd_${email}`);
         if (ttl > 0) {
           return resJson({ success: false, message: `请 ${ttl} 秒后再试！` }, 429);
         }
 
-        // 生成6位数字验证码，存入同一个 key（1分钟自动过期，过期即等于冷却结束）
+        // 生成6位数字验证码：有效期 5 分钟；发送冷却 key 60 秒
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        await redis(env, 'SET', `verify_code_${email}`, verifyCode, 'EX', 60);
+        await redis(env, 'SET', `verify_code_${email}`, verifyCode, 'EX', 300);
+        await redis(env, 'SET', `verify_code_cd_${email}`, '1', 'EX', 60);
 
         // 通过 Resend 发送验证码
         const RESEND_API_KEY = env.RESEND_API_KEY;
@@ -915,8 +969,9 @@ export default {
           }
 
           const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
-          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', `用户 ${email} 点击了获取验证码`, nowStr).run();
-          await notifyAdmin('获取验证码', `用户 ${email} 点击了获取验证码`);
+          const verifyMsg = '用户 ' + email + ' 点击了获取验证码' + (site ? ' | site: ' + site : '');
+          await DB.prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)').bind('immmor', verifyMsg, nowStr).run();
+          await notifyAdmin('获取验证码', verifyMsg);
 
           return resJson({ success: true, message: '验证码已发送到您的邮箱！' });
         } catch (e) {
@@ -1132,7 +1187,7 @@ export default {
       // ========== 注册接口（核心）→ 用户名密码注册 ==========
       if (path === '/api/register' && request.method === 'POST') {
         const params = await request.json();
-        const { username, password, inviteCode, securityAnswer, source, priceParam, fromGoogle, fromGithub, web3Address, sliderVerified, textVerified, audioVerified, faceDescriptor } = params;
+        const { username, password, inviteCode, securityAnswer, source, site, priceParam, fromGoogle, fromGithub, web3Address, sliderVerified, textVerified, audioVerified, faceDescriptor } = params;
         
         // 滑动窗口限流：同一 IP 1 小时内最多注册 5 次，防批量注册/机器刷号
         const regIp = request.headers.get('CF-Connecting-IP') || 'unknown';
@@ -1315,8 +1370,8 @@ export default {
         let result;
         try {
           result = await DB
-            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, not_trusted, auto_rewn, vorders, web3_address, card_number) VALUES (?, ?, ?, NULL, NULL, 153600, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)')
-            .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', notTrustedValue, '[]', web3AddressLower || '', newCardNumber)
+            .prepare('INSERT INTO user (username, password, balance, v_expire_date, learn_vip_expire_date, monthly_quota, used_quota, quota_reset_date, invite_code, v_token, v_link_clash, v_link_v2ray, price_plan, survey, security_answer, fetch_link, source, site, not_trusted, auto_rewn, vorders, web3_address, card_number) VALUES (?, ?, ?, NULL, NULL, 153600, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)')
+            .bind(username, password, finalBalance, new Date().toISOString().slice(0, 19).replace('T', ' '), userInviteCode, '', '', '', pricePlanStr, '{}', securityAnswer || '', '[]', source || '', site || '', notTrustedValue, '[]', web3AddressLower || '', newCardNumber)
             .run();
         } catch (e) {
           // 捕获 UNIQUE 约束冲突 → 用户名已存在（并发注册竞争时触发）
@@ -1347,22 +1402,13 @@ export default {
             : audioVerified ? { cn: '声音验证', en: 'Audio verification', jp: '音声認証', kr: '음성 인증', es: 'Verificación de audio', vi: 'Xác minh bằng giọng nói', ar: 'التحقق الصوتي', ru: 'Аудио-верификация' }
             : { cn: '邮箱验证码', en: 'Email code', jp: 'メール認証コード', kr: '이메일 코드', es: 'Código de correo', vi: 'Mã email', ar: 'رمز البريد الإلكتروني', ru: 'Код по email' };
 
-          const msg = nt({
-            cn: `用户 ${username} 通过${verifyMethod.cn}注册成功！`,
-            en: `User ${username} registered successfully via ${verifyMethod.en}!`,
-            jp: `ユーザー ${username} が${verifyMethod.jp}で登録に成功しました！`,
-            kr: `사용자 ${username} 님이 ${verifyMethod.kr}로 등록했습니다!`,
-            es: `¡El usuario ${username} se registró exitosamente vía ${verifyMethod.es}!`,
-            vi: `Người dùng ${username} đã đăng ký thành công qua ${verifyMethod.vi}!`,
-            ar: `قام المستخدم ${username} بالتسجيل بنجاح عبر ${verifyMethod.ar}!`,
-            ru: `Пользователь ${username} успешно зарегистрировался через ${verifyMethod.ru}!`
-          });
+          const msg = `用户 ${username} 通过${verifyMethod.cn}注册成功！${site ? ` | site: ${site}` : ''}`;
 
           await DB
             .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
             .bind('immmor', msg, now)
             .run();
-          await notifyAdmin('新用户注册', `用户 ${username} 通过${verifyMethod.cn}注册成功！`);
+          await notifyAdmin('新用户注册', `用户 ${username} 通过${verifyMethod.cn}注册成功！${site ? ` | site: ${site}` : ''}`);
 
           await DB
             .prepare('INSERT INTO messages (username, content, created_at, is_read) VALUES (?, ?, ?, 0)')
@@ -3548,7 +3594,16 @@ rules:
           const localDate = new Date(now.getTime() - offset * 60 * 1000);
           const todayStr = localDate.toISOString().slice(0, 10);
 
-          if (user.last_checkin === todayStr) {
+          // 判重按"用户本地日期"：兼容老格式（YYYY-MM-DD 即本地日期）与新格式（ISO 时间戳）
+          let lastLocalDate = '';
+          if (user.last_checkin) {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(user.last_checkin)) lastLocalDate = user.last_checkin;
+            else {
+              const t = new Date(user.last_checkin).getTime();
+              if (!isNaN(t)) lastLocalDate = new Date(t - offset * 60 * 1000).toISOString().slice(0, 10);
+            }
+          }
+          if (lastLocalDate === todayStr) {
             return resJson({ code: 200, msg: '今日已签到', free_expire_date: user.free_expire_date });
           }
 
@@ -3556,10 +3611,11 @@ rules:
           localEndOfDay.setUTCHours(23, 59, 59, 999);
           const expireDate = new Date(localEndOfDay.getTime() + offset * 60 * 1000);
 
+          // last_checkin 改存完整时间戳（UTC ISO），后台可显示到分钟
           await DB.prepare('UPDATE user SET last_checkin = ?, free_expire_date = ? WHERE username = ?')
-            .bind(todayStr, expireDate.toISOString(), username).run();
+            .bind(now.toISOString(), expireDate.toISOString(), username).run();
 
-          return resJson({ code: 200, msg: '签到成功，免费节点有效期至今日23:59', free_expire_date: expireDate.toISOString() });
+          return resJson({ code: 200, msg: '签到成功，免费节点有效期至今日23:59', free_expire_date: expireDate.toISOString(), last_checkin: now.toISOString() });
         } catch (err) {
           return resJson({ code: 500, msg: '签到失败', error: err.message }, 500);
         }

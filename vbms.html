@@ -684,6 +684,7 @@
                 <a href="#insights" class="menu-item" onclick="showPage('insights')">智能运营</a>
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
+                <a href="#payments" class="menu-item" onclick="showPage('payments')">支付管理</a>
                 <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
@@ -910,6 +911,40 @@
                             </thead>
                             <tbody id="ordersTableBody">
                                 <!-- 订单数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 支付管理页面：人工充值审核 -->
+                <div id="paymentsPage" class="page-section" style="display: none;">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3>支付审核</h3>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="paymentStatusFilter" onchange="loadPaymentReviews()" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                    <option value="pending_review">待审核</option>
+                                    <option value="paid">已通过</option>
+                                    <option value="rejected">已拒绝</option>
+                                </select>
+                                <button class="add-btn" onclick="loadPaymentReviews()" style="background-color: #667eea;">刷新</button>
+                                <span id="paymentReviewInfo" style="color:#666;"></span>
+                            </div>
+                        </div>
+                        <table id="paymentsTable">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>用户</th>
+                                    <th>金额</th>
+                                    <th>支付方式</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th style="min-width:220px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr><td colspan="7" style="text-align:center;">点击「刷新」加载审核列表</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2772,12 +2807,16 @@
                 activeMenuItem.classList.add('active');
             }
 
+            // 切到支付管理页时加载待审核列表
+            if(pageName==='payments'&&typeof loadPaymentReviews==='function')loadPaymentReviews();
+
             // 更新页面标题
             const pageTitles = {
                 'dashboard': '仪表盘',
                 'insights': '智能运营',
                 'users': '用户管理',
                 'orders': '订单管理',
+                'payments': '支付管理',
                 'nodes': '节点管理',
                 'settings': '系统设置',
                 'messages': '消息管理',
@@ -3526,6 +3565,65 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 searchUserOrders(username);
             } else {
                 alert(result.message || '确认失败');
+            }
+        }
+
+        // ===== 支付管理：人工充值审核 =====
+        async function loadPaymentReviews(){
+            const tbody=document.getElementById('paymentsTableBody');
+            const status=document.getElementById('paymentStatusFilter')?.value||'pending_review';
+            tbody.innerHTML='<tr><td colspan="7" style="text-align:center;">加载中...</td></tr>';
+            const result=await apiRequest('/api/recharge/review/list?status='+encodeURIComponent(status),'GET');
+            if(result.code!==200){
+                tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:red;">加载失败：${result.msg||'未知错误'}</td></tr>`;
+                return;
+            }
+            const list=result.data?.orders||[];
+            document.getElementById('paymentReviewInfo').textContent='共 '+list.length+' 条';
+            if(list.length===0){
+                const empty={pending_review:'暂无待审核充值',paid:'暂无已通过记录',rejected:'暂无已拒绝记录'};
+                tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;">${empty[status]||'暂无数据'}</td></tr>`;
+                return;
+            }
+            const statusMap={pending_review:'<span style="color:#dd6b20">待审核</span>',paid:'<span style="color:#38a169">已通过</span>',rejected:'<span style="color:#a0aec0">已拒绝</span>'};
+            const payMap={alipay_static:'支付宝(人工)',alipay:'支付宝',wxpay:'微信支付',manual:'人工',usdt:'USDT'};
+            tbody.innerHTML=list.map(o=>{
+                const canReview=o.status==='pending_review';
+                const actions=canReview
+                    ? `<button class="add-btn" style="background:#48bb78;" onclick="reviewPayment(this,'${escHtml(o.order_no)}','approve')">通过</button>
+                       <button class="delete-btn" onclick="reviewPayment(this,'${escHtml(o.order_no)}','reject')">拒绝</button>`
+                    : '-';
+                return `<tr>
+                    <td style="word-break:break-all;max-width:220px;">${escHtml(o.order_no||'-')}</td>
+                    <td>${escHtml(o.username||'-')}</td>
+                    <td>¥${parseFloat(o.amount||0).toFixed(2)}</td>
+                    <td>${payMap[o.payment_type]||escHtml(o.payment_type||'-')}</td>
+                    <td>${statusMap[o.status]||escHtml(o.status||'-')}</td>
+                    <td style="min-width:180px;">${formatDateTime(o.created_at)}</td>
+                    <td>${actions}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function reviewPayment(btn,orderNo,action){
+            let rejectReason='';
+            if(action==='reject'){
+                const input=prompt('请输入拒绝原因（可留空）：');
+                if(input===null)return;
+                rejectReason=input.trim();
+            }
+            if(action==='approve'&&!confirm(`确认通过订单 ${orderNo} 的充值？通过后用户余额将立即增加。`))return;
+            if(btn){btn.disabled=true;btn.textContent='处理中...';}
+            const body={order_no:orderNo,action};
+            if(action==='reject')body.reject_reason=rejectReason;
+            try{
+                const result=await apiRequest('/api/recharge/review','POST',body);
+                alert(result.message||(action==='approve'?'审核完成':'操作完成'));
+                if(result.success)loadPaymentReviews();
+                else if(btn){btn.disabled=false;btn.textContent=action==='approve'?'通过':'拒绝';}
+            }catch(e){
+                alert('操作失败：'+e.message);
+                if(btn){btn.disabled=false;btn.textContent=action==='approve'?'通过':'拒绝';}
             }
         }
 

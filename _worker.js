@@ -61,12 +61,13 @@ export default {
     // 其余请求因状态已不是 pending/failed 而匹配 0 行 —— 从而不会被重复充值（彻底消除 TOCTOU 竞态）。
     // 依赖 Supabase 表 orders 在 order_no 上有唯一约束。
     // 返回 'claimed'（本次应充值）或 'already'（已被处理过）；无法确定时抛错（fail-closed，绝不擅自充值）。
-    async function claimOrderAndMaybeCredit({ order_no, patchBody, insertBody }) {
+    async function claimOrderAndMaybeCredit({ order_no, patchBody, insertBody, fromStatus }) {
       const oeq = encodeURIComponent(order_no);
 
-      // 1) 原子认领：仅当状态仍为 pending/failed 时才改为 paid
+      // 1) 原子认领：默认仅状态为 pending/failed；审核通过时可指定 pending_review
+      const claimFilter = fromStatus ? `status=eq.${fromStatus}` : 'or=(status.eq.pending,status.eq.failed)';
       const claimed = await supabaseFetch(
-        `orders?order_no=eq.${oeq}&or=(status.eq.pending,status.eq.failed)`,
+        `orders?order_no=eq.${oeq}&${claimFilter}`,
         createSupabaseConfig('PATCH', patchBody)
       );
       if (Array.isArray(claimed) && claimed.length > 0) {
@@ -111,6 +112,34 @@ export default {
       } catch (e) {
         console.error('订单回滚失败:', e);
       }
+    }
+
+    // 工具函数：认领订单并到账（confirm 直接充值 与 后台审核通过 共用），返回 jsonResponse
+    async function creditRecharge({ env, username, order_no, amount, payment_type, fromStatus }) {
+      let claim;
+      try {
+        claim = await claimOrderAndMaybeCredit({
+          order_no,
+          fromStatus,
+          patchBody: { status: 'paid', trade_no: order_no, paid_at: new Date().toISOString() },
+          insertBody: { order_no, username, amount, payment_type, status: 'paid', paid_at: new Date().toISOString(), created_at: new Date().toISOString() }
+        });
+      } catch (e) {
+        console.error('幂等认领失败:', e);
+        return jsonResponse({ success: false, message: '充值校验失败，请稍后重试' }, 500);
+      }
+      if (claim === 'already') {
+        const u = await env.DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+        return jsonResponse({ success: true, message: '充值成功（已处理过）', status: 'paid', balance: u ? u.balance : null });
+      }
+      const result = await env.DB.prepare('UPDATE user SET balance = balance + ? WHERE username = ?').bind(amount, username).run();
+      if (!result.success || result.meta.changes === 0) {
+        await supabaseFetch(`orders?order_no=eq.${encodeURIComponent(order_no)}&status=eq.paid`, createSupabaseConfig('PATCH', { status: fromStatus === 'pending_review' ? 'pending_review' : 'pending' }));
+        return jsonResponse({ success: false, message: '用户不存在' }, 404);
+      }
+      const u = await env.DB.prepare('SELECT balance FROM user WHERE username = ?').bind(username).first();
+      await sendAdminMessage(`✅ 充值到账：${username} ¥${parseFloat(amount).toFixed(2)}，订单号 ${order_no}`);
+      return jsonResponse({ success: true, message: '充值成功', status: 'paid', balance: u ? u.balance : null });
     }
 
     // 工具函数：给管理员发站内消息（走 api.funbua.uk 的 send-message 接口）
@@ -641,7 +670,8 @@ export default {
         }
       }
 
-      // 路由匹配：/api/recharge/confirm 人工审核充值确认接口
+      // 路由匹配：/api/recharge/confirm 人工充值确认接口
+      // 可信用户直接到账；not_trusted=yes 的用户进入待审核，由后台「支付管理」审核后到账
       if (url.pathname === '/api/recharge/confirm' && request.method === 'POST') {
         try {
           const params = await request.json();
@@ -651,67 +681,114 @@ export default {
             return jsonResponse({ success: false, message: '参数错误' }, 400);
           }
 
-          // 原子认领订单：并发/重复调用只会有一个请求真正充值
-          let claim;
-          try {
-            claim = await claimOrderAndMaybeCredit({
-              order_no,
-              patchBody: {
-                status: 'paid',
-                trade_no: order_no,
-                paid_at: new Date().toISOString()
-              },
-              insertBody: {
-                order_no: order_no,
-                username: username,
-                amount: amount,
-                payment_type: payment_type,
-                status: 'paid',
-                paid_at: new Date().toISOString(),
-                created_at: new Date().toISOString()
+          const oeq = encodeURIComponent(order_no);
+
+          // 判断用户信任状态
+          const userRow = await env.DB
+            .prepare('SELECT not_trusted FROM user WHERE username = ?')
+            .bind(username)
+            .first();
+          const needReview = !!userRow && String(userRow.not_trusted || '').toLowerCase() === 'yes';
+
+          if (needReview) {
+            // 不可信用户：提交审核（pending → pending_review），不立即到账
+            let claimed = await supabaseFetch(
+              `orders?order_no=eq.${oeq}&status=eq.pending`,
+              createSupabaseConfig('PATCH', { status: 'pending_review', payment_type: payment_type || 'alipay_static' })
+            );
+            if (!Array.isArray(claimed) || claimed.length === 0) {
+              const created = await supabaseFetch('orders', createSupabaseConfig('POST', {
+                order_no, username, amount: parseFloat(amount),
+                payment_type: payment_type || 'alipay_static',
+                status: 'pending_review', created_at: new Date().toISOString()
+              }));
+              if (!Array.isArray(created) || created.length === 0) {
+                const cur = await supabaseFetch(`orders?order_no=eq.${oeq}&select=status`, createSupabaseConfig());
+                const st = Array.isArray(cur) && cur[0] ? cur[0].status : null;
+                if (['pending_review', 'paid'].includes(st)) {
+                  return jsonResponse({ success: true, message: '已提交，请等待客服审核', status: st });
+                }
+                return jsonResponse({ success: false, message: '订单状态异常，请稍后重试' }, 409);
               }
+            }
+
+            await sendAdminMessage(`🕓 待审核充值：${username} 提交 ¥${parseFloat(amount).toFixed(2)}（${payment_type || '人工'}），订单号 ${order_no}，请在后台「支付管理」审核`);
+
+            return jsonResponse({
+              success: true,
+              message: '已提交，请等待客服审核',
+              status: 'pending_review'
             });
-          } catch (e) {
-            console.error('幂等认领失败:', e);
-            return jsonResponse({ success: false, message: '充值校验失败，请稍后重试' }, 500);
           }
 
-          if (claim === 'already') {
-            const u = await env.DB
-              .prepare('SELECT balance FROM user WHERE username = ?')
-              .bind(username)
-              .first();
-            return jsonResponse({ success: true, message: '充值成功（已处理过）', balance: u ? u.balance : null });
-          }
-
-          // claim === 'claimed'：本次负责充值
-          const result = await env.DB
-            .prepare('UPDATE user SET balance = balance + ? WHERE username = ?')
-            .bind(amount, username)
-            .run();
-          
-          if (result.success && result.meta.changes > 0) {
-            // 获取更新后的余额
-            const user = await env.DB
-              .prepare('SELECT balance FROM user WHERE username = ?')
-              .bind(username)
-              .first();
-            
-            await sendAdminMessage(`✅ 支付成功：${username} 人工确认充值 ¥${parseFloat(amount).toFixed(2)}（${payment_type || '手动'}），订单号 ${order_no}`);
-
-            return jsonResponse({ 
-              success: true, 
-              message: '充值成功', 
-              balance: user.balance 
-            });
-          } else {
-            // 用户不存在：回滚订单状态，避免留下 paid 但余额未加
-            await rollbackOrderPending(order_no);
-            return jsonResponse({ success: false, message: '用户不存在' }, 404);
-          }
+          // 可信用户：直接到账（复用 creditRecharge）
+          return await creditRecharge({ env, username, order_no, amount, payment_type });
         } catch (err) {
-          console.error('人工审核充值失败:', err);
+          console.error('充值确认失败:', err);
           return jsonResponse({ success: false, message: '充值失败', error: err.message }, 500);
+        }
+      }
+
+      // 路由匹配：/api/recharge/review/list 后台待审核充值列表
+      if (url.pathname === '/api/recharge/review/list' && request.method === 'GET') {
+        try {
+          const status = url.searchParams.get('status') || 'pending_review';
+          const safe = ['pending_review', 'paid', 'rejected'].includes(status) ? status : 'pending_review';
+          const rows = await supabaseFetch(
+            `orders?status=eq.${safe}&order=created_at.desc&limit=500`,
+            createSupabaseConfig()
+          );
+          return jsonResponse({ code: 200, msg: '查询成功', data: { orders: Array.isArray(rows) ? rows : [] } });
+        } catch (err) {
+          return jsonResponse({ code: 500, msg: '查询失败', error: err.message }, 500);
+        }
+      }
+
+      // 路由匹配：/api/recharge/review 后台审核（通过才充值到账 / 拒绝）
+      if (url.pathname === '/api/recharge/review' && request.method === 'POST') {
+        try {
+          const { order_no, action, reject_reason } = await request.json();
+          if (!order_no || !['approve', 'reject'].includes(action)) {
+            return jsonResponse({ success: false, message: '参数错误' }, 400);
+          }
+
+          const oeq = encodeURIComponent(order_no);
+
+          if (action === 'reject') {
+            const rejected = await supabaseFetch(
+              `orders?order_no=eq.${oeq}&status=eq.pending_review`,
+              createSupabaseConfig('PATCH', { status: 'rejected', reject_reason: reject_reason || '' })
+            );
+            if (!Array.isArray(rejected) || rejected.length === 0) {
+              return jsonResponse({ success: false, message: '订单不存在或已处理' }, 409);
+            }
+            const target = rejected[0];
+            try {
+              await supabaseFetch('messages', createSupabaseConfig('POST', {
+                username: target.username,
+                content: `❌ 您的充值 ¥${parseFloat(target.amount || 0).toFixed(2)} 未通过审核${reject_reason ? '（' + reject_reason + '）' : ''}`,
+                created_at: new Date().toISOString(), is_read: false
+              }));
+            } catch (e) { console.error('审核拒绝通知失败:', e); }
+            return jsonResponse({ success: true, message: '已拒绝' });
+          }
+
+          // approve：取订单信息后复用 creditRecharge 到账（认领 pending_review，防重复充值）
+          const orderRows = await supabaseFetch(`orders?order_no=eq.${oeq}&select=username,amount,payment_type,status`, createSupabaseConfig());
+          const order = Array.isArray(orderRows) && orderRows[0] ? orderRows[0] : null;
+          if (!order || !order.username) {
+            return jsonResponse({ success: false, message: '订单缺少用户信息' }, 400);
+          }
+          if (order.status !== 'pending_review') {
+            return jsonResponse({ success: true, message: '该订单已处理', status: 'paid' });
+          }
+          return await creditRecharge({
+            env, username: order.username, order_no, amount: order.amount,
+            payment_type: order.payment_type || 'alipay_static', fromStatus: 'pending_review'
+          });
+        } catch (err) {
+          console.error('充值审核失败:', err);
+          return jsonResponse({ success: false, message: '审核失败', error: err.message }, 500);
         }
       }
 

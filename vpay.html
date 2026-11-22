@@ -1769,11 +1769,7 @@ function enterMain(){
   renderTierStatus();
   document.getElementById('userAvatar').textContent=(currentUser.username||'U')[0].toUpperCase();
   const ca=document.getElementById('cardAvatar');if(ca)ca.textContent=(currentUser.username||'U')[0].toUpperCase();
-  // 不可信用户隐藏支付宝人工支付
-  if(currentUser.not_trusted==='yes'){
-    const alipayOpt=document.querySelector('.method-option[data-method="alipay_static"]');
-    if(alipayOpt)alipayOpt.style.display='none';
-  }
+  // 支付宝人工支付对所有用户可见（含 not_trusted 用户）
   updateBalance();loadRecentOrders();
   // 带 plan/return 参数（来自 index 余额不足跳转）时直接进入充值页，而非总览页
   const _jumpParams=new URLSearchParams(location.search);
@@ -1895,11 +1891,9 @@ function applyPlanAndMethod(){
   if(urlMethod&&valid.includes(urlMethod))m=urlMethod;
   else if(lastMethod&&valid.includes(lastMethod))m=lastMethod;
   if(!m){
-    // 没有上一次充值方式时：有静态支付（支付宝人工）选项的优先用静态，否则 creem
-    m=(currentUser&&currentUser.not_trusted!=='yes')?'alipay_static':'creem';
+    // 没有上一次充值方式时：默认用支付宝人工支付（对所有用户开放）
+    m='alipay_static';
   }
-  // 不可信用户没有支付宝人工，回退到 creem
-  if(m==='alipay_static'&&currentUser&&currentUser.not_trusted==='yes')m='creem';
   selectMethodFromDropdown(m);
   const plan=params.get('plan');
   if(plan==='monthly'||plan==='annual'){
@@ -2208,7 +2202,9 @@ async function loadRecentOrders(){
     if(all.length){
       list.innerHTML=all.map(item=>{
         if(item.type==='recharge'){
-          const sc=item.status==='paid'?'paid':item.status==='failed'?'failed':'pending',st=item.status==='paid'?t('orders.paid'):item.status==='failed'?t('orders.failed'):t('orders.pending');
+          const smap={paid:'paid',failed:'failed',rejected:'failed',pending_review:'pending',pending:'pending'};
+          const tmap={paid:t('orders.paid'),failed:t('orders.failed'),rejected:t('orders.rejected'),pending_review:t('orders.pendingReview'),pending:t('orders.pending')};
+          const sc=smap[item.status]||'pending',st=tmap[item.status]||t('orders.pending');
           const idx=_recentOrders.push(item)-1;
           return `<div class="order-item" style="cursor:pointer" onclick="openOrderDetail('recent',${idx})"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(item.amount||0).toFixed(2)}</h4><p>${item.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(item.time)}</p><span class="order-status ${sc}">${st}</span></div></div>`
         }else{
@@ -2240,7 +2236,9 @@ function renderOrders(orders){
   if(!orders.length){list.innerHTML=`<div class="empty-state"><div class="icon"><i class="fa-solid fa-receipt"></i></div><p>${t('vpay.noOrders')}</p></div>`;pg.style.display='none';return}
   window._historyOrders=[];
   list.innerHTML=orders.map(o=>{
-    const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
+    const smap={paid:'paid',failed:'failed',rejected:'failed',pending_review:'pending',pending:'pending'};
+    const tmap={paid:t('orders.paid'),failed:t('orders.failed'),rejected:t('orders.rejected'),pending_review:t('orders.pendingReview'),pending:t('orders.pending')};
+    const sc=smap[o.status]||'pending',st=tmap[o.status]||t('orders.pending');
     const idx=window._historyOrders.push(o)-1;
     return `<div class="order-item" style="cursor:pointer" onclick="openOrderDetail('history',${idx})"><div class="tx-info"><div class="asset-icon" style="background:rgba(0,184,148,0.15);color:var(--accent-green)"><i class="fa-solid fa-circle-plus"></i></div><div class="tx-name"><h4>${t('nav.recharge')} ¥${(o.amount||0).toFixed(2)}</h4><p>${o.order_no||o.id||''}</p></div></div><div style="text-align:right;flex-shrink:0"><p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">${formatDate(o.created_at)}</p><span class="order-status ${sc}">${st}</span></div></div>`
   }).join('');
@@ -2324,7 +2322,9 @@ async function markTransferMessageRead(messageId){
 function openOrderDetail(which,idx){
   const o=(which==='recent'?window._recentOrders:window._historyOrders)[idx];
   if(!o)return;
-  const sc=o.status==='paid'?'paid':o.status==='failed'?'failed':'pending',st=o.status==='paid'?t('orders.paid'):o.status==='failed'?t('orders.failed'):t('orders.pending');
+  const smap={paid:'paid',failed:'failed',rejected:'failed',pending_review:'pending',pending:'pending'};
+  const tmap={paid:t('orders.paid'),failed:t('orders.failed'),rejected:t('orders.rejected'),pending_review:t('orders.pendingReview'),pending:t('orders.pending')};
+  const sc=smap[o.status]||'pending',st=tmap[o.status]||t('orders.pending');
   const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:13px 2px;border-bottom:1px solid var(--panel-border)"><span style="color:var(--text-muted);font-size:13px;flex-shrink:0">${l}</span><span style="font-weight:600;text-align:right;${c?('color:'+c):''};word-break:break-all">${v}</span></div>`;
   document.getElementById('recordDetailTitle').textContent=t('records.rechargeDetail');
   document.getElementById('recordDetailContent').innerHTML=
@@ -2866,18 +2866,20 @@ function startRechargeTimer(btn,orderNo,amount,paymentType,onClose){
 }
 
 async function confirmRecharge(orderNo,amount,paymentType,onClose){
+  let paidNow=false;
   try{
     const r=await(await fetch(API_LEGACY+'/api/recharge/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_no:orderNo,username:currentUser.username,amount:parseFloat(amount),payment_type:paymentType})})).json();
     if(!r.success){const b=document.getElementById('confirmRechargeBtn');if(b){b.disabled=false;b.textContent=t('staticPay.confirmRecharge');}showToast(r.message||t('vpay.rechargeFailed'),'error');return}
+    paidNow=(r.status==='paid');
     localStorage.setItem('lastRechargeTime',Date.now().toString());
+    if(paidNow){showToast(t('vpay.rechargeSuccess'));updateBalance();}
+    else showToast(t('vpay.rechargeReviewPending'));
   }catch(e){const b=document.getElementById('confirmRechargeBtn');if(b){b.disabled=false;b.textContent=t('staticPay.confirmRecharge');}showToast(t('alert.networkError'),'error');return}
-  showToast(t('vpay.rechargeSuccess'));
-  updateBalance();
   loadOrders();
   if(onClose)onClose();
-  // 记住上一个充值方式；若带 return 参数（来自 index 余额不足跳转），则支付成功后返回原界面
+  // 记住上一个充值方式；只有真正到账时，才处理 return 跳转
   localStorage.setItem('lastRechargeMethod',payMethod);
-  if(returnUrl){setTimeout(()=>{window.location.href=returnUrl;},1200);}
+  if(paidNow&&returnUrl){setTimeout(()=>{window.location.href=returnUrl;},1200);}
 }
 
 function openAlipayApp(){
