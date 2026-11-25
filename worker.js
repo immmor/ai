@@ -602,6 +602,39 @@ function verifySign(method, target, bodyStr, ts, nc, fp) {
   return toHex(state);
 }
 
+// ========== App 更新配置：版本号与各平台下载链接由开发者手动维护 ==========
+// 发布新版本时，改 version / changelog，以及需要更新的平台/架构链接
+// 优先匹配 platform-arch，找不到时回退到 platform
+// 直链格式示例：https://github.com/chen08209/FlClash/releases/download/v1.2.1/FlClash-1.2.1-android-arm64-v8a.apk
+// iOS 暂无安装包，不放进下载表
+const APP_UPDATE = {
+  version: '1.2.1',
+  // 强制更新：设置版本号后，本地版本与之不一致时必须更新，弹窗不可关闭；留空表示不强制
+  // 例：forceUpdateVersion: '1.2.2' 表示低于/不等于 1.2.2 的用户必须更新
+  forceUpdateVersion: '',
+  downloads: {
+    // Android
+    'android-arm64': 'https://github.com/chen08209/FlClash/releases/latest',
+    'android-armv7': 'https://github.com/chen08209/FlClash/releases/latest',
+    'android-x64': 'https://github.com/chen08209/FlClash/releases/latest',
+    android: 'https://github.com/chen08209/FlClash/releases/latest',
+    // macOS
+    'macos-arm64': 'https://github.com/chen08209/FlClash/releases/latest',
+    'macos-x64': 'https://github.com/chen08209/FlClash/releases/latest',
+    macos: 'https://github.com/chen08209/FlClash/releases/latest',
+    // Windows
+    'windows-x64': 'https://github.com/chen08209/FlClash/releases/latest',
+    windows: 'https://github.com/chen08209/FlClash/releases/latest',
+    // Linux
+    'linux-x64': 'https://github.com/chen08209/FlClash/releases/latest',
+    linux: 'https://github.com/chen08209/FlClash/releases/latest'
+  },
+  changelog: [
+    '视觉与交互体验优化',
+    '修复已知问题'
+  ]
+};
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -663,6 +696,34 @@ export default {
           msg: "数据库绑定失败！请检查Worker的D1绑定配置",
           error: "D1 database instance is undefined"
         }, 500);
+      }
+
+      // ========== App 更新检查：版本号匹配检测，按平台+架构返回下载链接 ==========
+      // GET /api/app/update?version=1.2.1&platform=android&arch=arm64
+      if (path === '/api/app/update' && request.method === 'GET') {
+        const version = (url.searchParams.get('version') || '').replace(/^v/i, '');
+        const platform = (url.searchParams.get('platform') || '').toLowerCase();
+        const arch = (url.searchParams.get('arch') || '').toLowerCase();
+        const hasUpdate = version !== APP_UPDATE.version;
+        const forceUpdateVersion = (APP_UPDATE.forceUpdateVersion || '').replace(/^v/i, '');
+        const forceUpdate =
+          hasUpdate && !!forceUpdateVersion && version !== forceUpdateVersion;
+        const platformArch = arch ? `${platform}-${arch}` : platform;
+        const downloadUrl =
+          APP_UPDATE.downloads[platformArch] || APP_UPDATE.downloads[platform] || '';
+        return resJson({
+          success: true,
+          hasUpdate,
+          forceUpdate,
+          forceUpdateVersion,
+          currentVersion: version,
+          latestVersion: APP_UPDATE.version,
+          platform,
+          arch,
+          downloadKey: APP_UPDATE.downloads[platformArch] ? platformArch : platform,
+          downloadUrl,
+          changelog: APP_UPDATE.changelog
+        });
       }
 
       // ========== talangya 商品代理（绕过CORS，原样返回） ==========
@@ -1533,7 +1594,7 @@ export default {
         }
 
         const user = await DB
-          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, trusted, fetch_link, vorders, invite_code, invited_user, rebates, card_number FROM user WHERE username = ? AND password = ?')
+          .prepare('SELECT rowid, username, balance, v_expire_date, price_plan, v_token, trusted, fetch_link, vorders, invite_code, invited_user, rebates, card_number, monthly_quota FROM user WHERE username = ? AND password = ?')
           .bind(username, password)
           .first();
 
@@ -1556,7 +1617,7 @@ export default {
 
           const pricePlan = user.price_plan ? JSON.parse(user.price_plan) : { monthly_original: 12, monthly_discount: 10, annual_original: 144, annual_discount: 100, savings: 44 };
           const cardNumber = user.card_number || await ensureCardNumber(DB, user.rowid);
-          const userInfo = { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, trusted: user.trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber };
+          const userInfo = { id: user.rowid, username: user.username, balance: user.balance, v_token: user.v_token, v_expire_date: user.v_expire_date, trusted: user.trusted || '', vorders: user.vorders, invite_code: user.invite_code, invited_user: user.invited_user, rebates: user.rebates, card_number: cardNumber, monthly_quota: user.monthly_quota };
           const pToken = await newPToken(DB, username, userInfo, pricePlan);
 
           return resJson({ success: true, message: '登录成功！', p_token: pToken });
@@ -1867,7 +1928,7 @@ export default {
             pToken = await newPToken(DB, user.username, userInfo, pricePlan);
           }
 
-          return resJson({ success: true, message: '登录成功！', p_token: pToken });
+          return resJson({ success: true, message: '登录成功！', p_token: pToken, trusted: user.trusted || '' });
         } else {
           return resJson({ success: false, message: '用户不存在' }, 401);
         }
@@ -4748,6 +4809,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'wheel', cost, prize, `¥${prize}`, now).run();
+          ctx.waitUntil(notifyAdmin('游戏中心购买', `用户 ${username} 购买幸运转盘，花费 ¥${cost}，中奖 ¥${prize}`));
 
           return resJson({ success: true, prize, balance: user.balance - cost + prize });
         } catch (err) {
@@ -4794,6 +4856,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'slot', cost, prize, resultStr, now).run();
+          ctx.waitUntil(notifyAdmin('游戏中心购买', `用户 ${username} 购买摇摇机，花费 ¥${cost}，中奖 ¥${prize}`));
 
           return resJson({ success: true, prize, symbols: [s1, s2, s3], balance: user.balance - cost + prize });
         } catch (err) {
@@ -4835,6 +4898,7 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
           await DB.prepare('UPDATE user SET balance = balance - ? + ?, game_winnings = COALESCE(game_winnings, 0) + ? WHERE username = ?').bind(cost, prize, prize, username).run();
           await DB.prepare('INSERT INTO game_bet (username, game_type, cost, prize, result, created_at) VALUES (?, ?, ?, ?, ?, ?)')
             .bind(username, 'scratch', cost, prize, `¥${prize}`, now).run();
+          ctx.waitUntil(notifyAdmin('游戏中心购买', `用户 ${username} 购买刮刮乐，花费 ¥${cost}，中奖 ¥${prize}`));
 
           return resJson({ success: true, prize, balance: user.balance - cost + prize });
         } catch (err) {
@@ -4917,22 +4981,22 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
       // 下注
       if (path === '/api/predict/bet' && request.method === 'POST') {
         try {
-          const { username, topicId, optionIndex, optionName, amount } = await request.json();
-          if (!username) return resJson({ success: false, message: '请先登录' }, 401);
-          if (amount == null || amount <= 0) return resJson({ success: false, message: '金额无效' }, 400);
+          const { username, topicId, optionIndex, optionName, question, amount } = await request.json();
+          if (!username) return resJson({ success: false, message: t({ cn:'请先登录', en:'Please log in first', jp:'先にログインしてください', kr:'먼저 로그인해 주세요', es:'Inicia sesión primero', vi:'Vui lòng đăng nhập', ar:'يرجى تسجيل الدخول أولاً', ru:'Сначала войдите в систему' }) }, 401);
+          if (amount == null || amount <= 0) return resJson({ success: false, message: t({ cn:'金额无效', en:'Invalid amount', jp:'金額が無効です', kr:'금액이 유효하지 않습니다', es:'Monto inválido', vi:'Số tiền không hợp lệ', ar:'مبلغ غير صالح', ru:'Неверная сумма' }) }, 400);
 
           const user = await DB.prepare('SELECT rowid, username, balance FROM user WHERE username = ?').bind(username).first();
-          if (!user) return resJson({ success: false, message: '用户不存在' }, 404);
-          if (user.balance < amount) return resJson({ success: false, message: '余额不足' }, 400);
+          if (!user) return resJson({ success: false, message: t({ cn:'用户不存在', en:'User not found', jp:'ユーザーが見つかりません', kr:'사용자를 찾을 수 없습니다', es:'Usuario no encontrado', vi:'Không tìm thấy người dùng', ar:'المستخدم غير موجود', ru:'Пользователь не найден' }) }, 404);
+          if (user.balance < amount) return resJson({ success: false, message: t({ cn:'余额不足', en:'Insufficient balance', jp:'残高が不足しています', kr:'잔액이 부족합니다', es:'Saldo insuficiente', vi:'Số dư không đủ', ar:'الرصيد غير كافٍ', ru:'Недостаточно средств' }) }, 400);
 
           // 检查话题是否存在且有效
           const topicRow = await DB.prepare('SELECT value FROM link WHERE key = ?').bind('predict_topics').first();
           const topics = topicRow?.value ? JSON.parse(topicRow.value) : [];
           const topic = topics.find(t => t.id == topicId);
-          if (!topic) return resJson({ success: false, message: '话题不存在' }, 404);
-          if (topic.status !== 'active') return resJson({ success: false, message: '该话题已截止' }, 400);
+          if (!topic) return resJson({ success: false, message: t({ cn:'话题不存在', en:'Topic not found', jp:'トピックが見つかりません', kr:'주제를 찾을 수 없습니다', es:'Tema no encontrado', vi:'Không tìm thấy chủ đề', ar:'الموضوع غير موجود', ru:'Тема не найдена' }) }, 404);
+          if (topic.status !== 'active') return resJson({ success: false, message: t({ cn:'该话题已截止', en:'This topic has closed', jp:'このトピックは締め切りました', kr:'이 주제는 마감되었습니다', es:'Este tema ha finalizado', vi:'Chủ đề này đã kết thúc', ar:'انتهى هذا الموضوع', ru:'Эта тема закрыта' }) }, 400);
 
-          const result = JSON.stringify({ topic_id: topicId, option_index: optionIndex, option_name: optionName || '' });
+          const result = JSON.stringify({ topic_id: topicId, option_index: optionIndex, option_name: optionName || '', question: question || '' });
           const now = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
           await DB.prepare('UPDATE user SET balance = balance - ? WHERE username = ?').bind(amount, username).run();
@@ -4970,11 +5034,11 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
             const tid = String(t.id);
             t.total_pool = poolMap[tid] || 0;
             t.bettor_count = bettorMap[tid] ? bettorMap[tid].size : 0;
-            // 归一化 options 为数组（兼容 option_pools / options / choices 等多种字段名）
+            // 归一化 options 为数组（兼容多语言对象 / 旧字符串 / 多种字段名）
             const rawOpts = t.options ?? t.option_pools ?? t.choices ?? t.option_list;
             let opts;
             if (Array.isArray(rawOpts)) {
-              opts = rawOpts.map(s => String(s).trim()).filter(Boolean);
+              opts = rawOpts.map(s => (s && typeof s === 'object') ? s : String(s ?? '').trim()).filter(Boolean);
             } else if (typeof rawOpts === 'string') {
               opts = rawOpts.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
             } else {
@@ -5011,6 +5075,28 @@ ${contract.contract_content.replace(/<script[^>]*>.*?<\/script>/gi, '')}
               .all();
           }
           return resJson({ success: true, bets: bets.results || [] });
+        } catch (err) {
+          return resJson({ success: false, message: err.message }, 500);
+        }
+      }
+
+      // 管理端修改预测投注记录（多语言问题/选项快照、奖金）
+      if (path === '/api/predict/admin/bet-update' && request.method === 'POST') {
+        try {
+          const { id, question, option_name, prize } = await request.json();
+          if (!id) return resJson({ success: false, message: '缺少记录ID' }, 400);
+          const row = await DB.prepare('SELECT result FROM game_bet WHERE id = ? AND game_type = ?').bind(id, 'predict').first();
+          if (!row) return resJson({ success: false, message: '记录不存在' }, 404);
+          let result;
+          try { result = JSON.parse(row.result || '{}'); } catch (e) { result = {}; }
+          if (question !== undefined) result.question = question;
+          if (option_name !== undefined) result.option_name = option_name;
+          if (prize !== undefined && !Number.isNaN(Number(prize))) {
+            await DB.prepare('UPDATE game_bet SET prize = ?, result = ? WHERE id = ?').bind(Number(prize), JSON.stringify(result), id).run();
+          } else {
+            await DB.prepare('UPDATE game_bet SET result = ? WHERE id = ?').bind(JSON.stringify(result), id).run();
+          }
+          return resJson({ success: true });
         } catch (err) {
           return resJson({ success: false, message: err.message }, 500);
         }

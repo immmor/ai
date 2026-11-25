@@ -2936,6 +2936,7 @@ function initApp(){
         if(r.success){
           currentUser=applyLoginData(r);
           if(currentUser){
+            if(r.trusted !== undefined) currentUser.trusted = r.trusted;
             // 顶掉旧会话：覆盖本地登录态并进入主界面
             localStorage.setItem('vpay_user',JSON.stringify(currentUser));
             localStorage.setItem('vpay_login_time',Date.now().toString());
