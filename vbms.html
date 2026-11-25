@@ -801,15 +801,11 @@
         .page-content { padding: 2rem 2.2rem 3.2rem; background: var(--canvas); }
         .dashboard-grid { gap: 1.25rem; margin-bottom: 1.5rem; }
 
-        /* 统计卡片：顶部彩条 + 多层次阴影 */
+        /* 统计卡片：多层次阴影 */
         .stat-card {
             background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
             box-shadow: var(--shadow-sm); padding: 1.55rem; position: relative; overflow: hidden;
             transition: transform .2s, box-shadow .2s;
-        }
-        .stat-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, var(--accent), #60a5fa);
         }
         .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
         .stat-info h3 { color: var(--ink-900); font-size: 2rem; font-weight: 700; letter-spacing: -.03em; }
