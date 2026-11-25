@@ -193,7 +193,7 @@
         }
 
         /* 顶部搜索：tab + 页面标题 */
-        .nav-search-wrap { position: relative; flex: 1; max-width: 420px; margin: 0 1rem; }
+        .nav-search-wrap { position: relative; flex: 0 1 300px; margin: 0 0 0 1.25rem; }
         .nav-search-input { width: 100%; padding: 0.5rem 0.9rem; border: 1px solid #cbd5e0; border-radius: 20px; outline: none; font-size: 0.9rem; }
         .nav-search-input:focus { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
         .nav-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 340px; overflow-y: auto; z-index: 1000; display: none; }
@@ -747,6 +747,7 @@
             box-shadow: 0 1px 0 rgba(15,23,42,.02);
         }
         .top-nav h1 { font-size: 1.35rem; font-weight: 700; color: var(--ink-900); letter-spacing: -.3px; }
+        .top-nav .top-nav-logout { margin-left: auto; }
         .nav-search-input {
             border-radius: 10px; background: #f1f5f9; border: 1px solid transparent;
             padding: .6rem 1rem;
@@ -3062,7 +3063,7 @@
             box.innerHTML = res.map((it, i) => {
                 const pos = it.title.toLowerCase().indexOf(nq);
                 const name = pos >= 0 ? esc(it.title.slice(0,pos)) + '<mark>' + esc(it.title.slice(pos, pos+nq.length)) + '</mark>' + esc(it.title.slice(pos+nq.length)) : esc(it.title);
-                const path = it.isTab ? '菜单' : '页面标题';
+                const path = it.isTab ? '左侧菜单' : '页面标题';
                 return `<div class="nav-search-item" data-i="${i}"><span class="ns-title">${name}</span><span class="ns-path">${path}</span></div>`;
             }).join('');
             box.classList.add('show');
