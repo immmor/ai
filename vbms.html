@@ -671,15 +671,16 @@
            Design System v3 — Stripe / Notion 浅色清爽 + 精致质感
            ============================================================ */
         :root {
-            --accent: #635bff;        --accent-hover: #5148e0; --accent-soft: #eeecff;
-            --cyan: #00a7c4;          --amber: #e8912d;
-            --ink-900: #1a1f36; --ink-800: #323d5e; --ink-600: #5b6b8c; --ink-400: #8f9ab3;
-            --line: #e6ebf2; --line-soft: #f0f3f8;
-            --surface: #ffffff; --canvas: #f6f9fc;
+            --accent: #2563eb;        --accent-hover: #1d4ed8; --accent-soft: #eaf1ff;
+            --cyan: #0891b2;          --amber: #d97706;
+            --ink-900: #0f172a; --ink-800: #1e293b; --ink-600: #475569; --ink-400: #94a3b8;
+            --line: #e2e8f0; --line-soft: #f1f5f9;
+            --surface: #ffffff; --canvas: #f4f7fb;
+            --sidebar: #f8fafc;
             --radius: 12px;
-            --shadow-sm: 0 2px 4px rgba(50,50,110,.04), 0 4px 12px rgba(50,50,110,.05);
-            --shadow-md: 0 6px 16px rgba(50,50,110,.08), 0 12px 28px rgba(50,50,110,.06);
-            --shadow-lg: 0 16px 40px rgba(50,50,110,.16), 0 4px 12px rgba(50,50,110,.08);
+            --shadow-sm: 0 1px 3px rgba(15,23,42,.05), 0 2px 8px rgba(15,23,42,.04);
+            --shadow-md: 0 6px 18px rgba(15,23,42,.09), 0 2px 6px rgba(15,23,42,.05);
+            --shadow-lg: 0 18px 44px rgba(15,23,42,.16), 0 4px 12px rgba(15,23,42,.08);
         }
 
         * { -webkit-tap-highlight-color: transparent; }
@@ -693,12 +694,12 @@
         /* 登录：浅色渐变 + 卡片 */
         .login-container {
             position: relative;
-            background: linear-gradient(135deg, #eef2ff 0%, #f6f9fc 45%, #eaf6f8 100%);
+            background: linear-gradient(135deg, #e8f0ff 0%, #f4f7fb 45%, #e6f4f7 100%);
         }
         .login-container::before {
             content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: radial-gradient(560px 380px at 22% 28%, rgba(99,91,255,.16), transparent 70%),
-                        radial-gradient(520px 360px at 80% 72%, rgba(0,167,196,.12), transparent 70%);
+            background: radial-gradient(560px 380px at 22% 28%, rgba(37,99,235,.14), transparent 70%),
+                        radial-gradient(520px 360px at 80% 72%, rgba(8,145,178,.11), transparent 70%);
         }
         .login-form {
             position: relative; background: var(--surface); padding: 2.6rem 2.4rem;
@@ -710,13 +711,13 @@
         /* 按钮 */
         .btn {
             background: var(--accent); color: #fff; border-radius: 9px; font-weight: 600;
-            box-shadow: 0 4px 12px rgba(99,91,255,.28); transition: background .18s, transform .18s, box-shadow .18s;
+            box-shadow: 0 4px 12px rgba(37,99,235,.26); transition: background .18s, transform .18s, box-shadow .18s;
         }
-        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99,91,255,.34); }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,.32); }
 
-        /* 侧边栏：白底、彩色 logo、柔和选中 */
+        /* 侧边栏：浅灰蓝底、彩色 logo、柔和选中 */
         .sidebar {
-            width: 246px; background: var(--surface);
+            width: 246px; background: var(--sidebar);
             border-right: 1px solid var(--line);
         }
         .sidebar-header {
@@ -729,8 +730,8 @@
         }
         .sidebar-header h2::before {
             content: ''; width: 24px; height: 24px; border-radius: 7px; flex: none;
-            background: linear-gradient(135deg, var(--accent), #8b7bff);
-            box-shadow: 0 3px 8px rgba(99,91,255,.35), inset 0 1px 1px rgba(255,255,255,.5);
+            background: linear-gradient(135deg, var(--accent), #60a5fa);
+            box-shadow: 0 3px 8px rgba(37,99,235,.32), inset 0 1px 1px rgba(255,255,255,.5);
         }
         .sidebar-menu { padding: 1rem .7rem; }
         .menu-item {
@@ -741,12 +742,14 @@
         .menu-item:hover { background: var(--line-soft); color: var(--ink-900); }
         .menu-item.active {
             background: var(--accent-soft); color: var(--accent); font-weight: 650;
+            box-shadow: inset 3px 0 0 var(--accent);
         }
 
         /* 顶栏 */
         .top-nav {
             background: var(--surface); padding: 1rem 1.9rem;
-            border-bottom: 1px solid var(--line); box-shadow: 0 1px 3px rgba(50,50,110,.03);
+            border-bottom: 1px solid var(--line); box-shadow: 0 1px 3px rgba(15,23,42,.04);
+            position: relative; z-index: 1000;
         }
         .top-nav h1 { font-size: 1.25rem; font-weight: 700; color: var(--ink-900); letter-spacing: -.02em; }
         .top-nav .top-nav-logout { margin-left: auto; }
@@ -774,7 +777,7 @@
         }
         .stat-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, var(--accent), #9d8bff);
+            background: linear-gradient(90deg, var(--accent), #60a5fa);
         }
         .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
         .stat-info h3 { color: var(--ink-900); font-size: 2rem; font-weight: 700; letter-spacing: -.03em; }
@@ -802,7 +805,7 @@
         /* 操作按钮 */
         .add-btn {
             background: var(--accent); color: #fff; border-radius: 8px;
-            font-weight: 600; font-size: .84rem; box-shadow: 0 3px 9px rgba(99,91,255,.24);
+            font-weight: 600; font-size: .84rem; box-shadow: 0 3px 9px rgba(37,99,235,.22);
         }
         .add-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .action-btn { border-radius: 8px; font-weight: 600; font-size: .82rem; }
