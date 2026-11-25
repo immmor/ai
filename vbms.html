@@ -1492,7 +1492,7 @@
                                     <label for="adminEmail">管理员邮箱</label>
                                     <input type="email" id="adminEmail" name="adminEmail" value="admin@example.com">
                                 </div>
-                                <h4 style="margin:1.5rem 0 .5rem;border-top:1px solid #e2e8f0;padding-top:1.5rem;">AI 接口配置（用于预测模板生成，仅保存在本机浏览器）</h4>
+                                <h4 style="margin:1.5rem 0 .5rem;border-top:1px solid #e2e8f0;padding-top:1.5rem;">AI 接口配置（用于预测模板生成和消息翻译，仅保存在本机浏览器）</h4>
                                 <div class="form-group">
                                     <label for="vbmsAiUrl">API 地址（OpenAI 兼容 chat/completions 端点）</label>
                                     <input type="text" id="vbmsAiUrl" placeholder="https://api.example.com/v1/chat/completions">
@@ -1521,6 +1521,23 @@
                             <div class="form-group">
                                 <label for="messageContent">消息内容</label>
                                 <textarea id="messageContent" rows="5" placeholder="请输入消息内容" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px; resize: vertical;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="messageTranslateLang">AI 翻译消息</label>
+                                <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+                                    <select id="messageTranslateLang" style="flex:1; min-width:160px; padding:0.6rem; border:1px solid #e2e8f0; border-radius:8px;">
+                                        <option value="en">英文</option>
+                                        <option value="jp">日文</option>
+                                        <option value="kr">韩文</option>
+                                        <option value="es">西班牙语</option>
+                                        <option value="vi">越南语</option>
+                                        <option value="ar">阿拉伯语</option>
+                                        <option value="ru">俄语</option>
+                                        <option value="cn">中文（恢复原文）</option>
+                                    </select>
+                                    <button type="button" class="btn" onclick="aiTranslateMessage(this)" style="width:auto;">AI 翻译</button>
+                                </div>
+                                <div style="font-size:.8rem; color:var(--ink-400); margin-top:.45rem;">复用系统设置的 AI 配置；可重复选择不同语言翻译，特殊消息发送时会带上已翻译的多语言内容。</div>
                             </div>
                             <div class="form-group">
                                 <label for="messageTarget">发送对象</label>
@@ -1553,7 +1570,7 @@
                                 <label for="singleUsername">用户名</label>
                                 <input type="text" id="singleUsername" placeholder="请输入用户名" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                             </div>
-                            <button type="button" class="btn" onclick="sendMessage()" style="width: auto;">发送消息</button>
+                            <button type="button" id="sendMessageBtn" class="btn" onclick="sendMessage()" style="width: auto;">发送消息</button>
                         </div>
                     </div>
 
@@ -4971,12 +4988,62 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         });
 
+        const MESSAGE_LANG_LABELS = { cn:'中文', en:'英文', jp:'日文', kr:'韩文', es:'西班牙语', vi:'越南语', ar:'阿拉伯语', ru:'俄语' };
+        let messageAiSource = null;
+        let messageAiTranslations = {};
+        function getMessageSource() {
+            if (!messageAiSource) {
+                messageAiSource = {
+                    content: document.getElementById('messageContent').value.trim(),
+                    title: document.getElementById('messageTitle').value.trim()
+                };
+            }
+            return messageAiSource;
+        }
+        ['messageContent', 'messageTitle'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', () => {
+                messageAiSource = null;
+                messageAiTranslations = {};
+            });
+        });
+        async function aiTranslateMessage(btn) {
+            const lang = document.getElementById('messageTranslateLang').value;
+            const source = getMessageSource();
+            if (!source.content && !source.title) {
+                alert('请先输入消息内容');
+                return;
+            }
+            if (lang === 'cn') {
+                document.getElementById('messageContent').value = source.content;
+                document.getElementById('messageTitle').value = source.title;
+                return;
+            }
+            const label = MESSAGE_LANG_LABELS[lang] || lang;
+            if (btn) { btn.disabled = true; btn.textContent = '翻译中...'; }
+            try {
+                const prompt = `你是翻译助手。把下面的消息内容和标题翻译成${label}，只返回 JSON（不要代码块、不要解释），格式：{"content":"","title":""}\n原文：${JSON.stringify({ content: source.content, title: source.title })}`;
+                const text = await callUserAI(prompt);
+                const parsed = JSON.parse(text);
+                const content = (parsed.content || '').trim();
+                const title = (parsed.title || '').trim();
+                if (!content && !title) throw new Error('翻译结果为空');
+                if (content) document.getElementById('messageContent').value = content;
+                if (title) document.getElementById('messageTitle').value = title;
+                messageAiTranslations[lang] = { content, title };
+                alert('已翻译为' + label);
+            } catch (e) {
+                alert('AI 翻译失败: ' + e.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'AI 翻译'; }
+            }
+        }
+
         // 发送消息
         async function sendMessage() {
             const rawContent = document.getElementById('messageContent').value.trim();
             const target = document.getElementById('messageTarget').value;
             const msgType = document.getElementById('messageType').value;
-            const msgTitle = document.getElementById('messageTitle').value.trim();
             const msgKeyword = document.getElementById('messageKeyword').value.trim();
 
             if (!rawContent) {
@@ -5000,14 +5067,20 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     return;
                 }
                 const langs = ['cn', 'en', 'jp', 'kr', 'es', 'vi', 'ar', 'ru'];
+                const source = getMessageSource();
+                const pick = (lang, field) => (messageAiTranslations[lang] && messageAiTranslations[lang][field]) || source[field] || '';
                 const obj = { type: msgType };
                 if (msgType === 'must_input') obj.keyword = msgKeyword;
-                if (msgTitle) obj.title = { cn: msgTitle, en: msgTitle };
-                langs.forEach(l => { obj[l] = rawContent; });
+                const titleObj = {};
+                langs.forEach(l => {
+                    titleObj[l] = pick(l, 'title');
+                    obj[l] = pick(l, 'content');
+                });
+                if (Object.values(titleObj).some(Boolean)) obj.title = titleObj;
                 content = JSON.stringify(obj);
             }
 
-            const loadingBtn = document.querySelector('#messagesPage button.btn');
+            const loadingBtn = document.getElementById('sendMessageBtn');
             const originalText = loadingBtn.innerText;
             loadingBtn.innerText = '发送中...';
             loadingBtn.disabled = true;
@@ -5024,6 +5097,8 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     document.getElementById('messageContent').value = '';
                     document.getElementById('messageTitle').value = '';
                     document.getElementById('messageKeyword').value = '';
+                    messageAiSource = null;
+                    messageAiTranslations = {};
                     if (target === 'single') {
                         document.getElementById('singleUsername').value = '';
                     }
