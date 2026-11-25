@@ -205,8 +205,6 @@
         .nav-search-item .ns-path { color: #a0aec0; font-size: 0.78rem; margin-left: 6px; }
         .nav-search-item mark { background: #fef08a; padding: 0 1px; }
         .nav-search-empty { padding: 0.7rem 0.9rem; color: #a0aec0; font-size: 0.85rem; }
-        .title-flash { animation: titleFlash 1.6s ease-out; }
-        @keyframes titleFlash { 0%,40% { background: rgba(102,126,234,0.35); } 100% { background: transparent; } }
 
         .user-info {
             display: flex;
@@ -761,7 +759,12 @@
         .nav-search-input::placeholder { color: var(--ink-400); }
         .nav-search-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
         .nav-search-results { border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow-md); }
-        .nav-search-item:hover { background: var(--accent-soft); }
+        .nav-search-item { transition: background .14s, box-shadow .14s, color .14s; }
+        .nav-search-item:hover,
+        .nav-search-item[data-sel="1"] { background: #e8f1ff; box-shadow: inset 3px 0 0 var(--accent); }
+        .nav-search-item:hover .ns-title,
+        .nav-search-item[data-sel="1"] .ns-title { color: var(--accent); font-weight: 600; }
+        .nav-search-item .ns-title { color: var(--ink-900); }
         .nav-search-item mark { background: #fde9a9; }
         .logout-btn { background: #fff; color: var(--ink-600); border: 1px solid var(--line); border-radius: 9px; font-weight: 500; }
         .logout-btn:hover { background: #fef2f2; color: #d64545; border-color: #fadbd8; }
@@ -3064,6 +3067,7 @@
         function renderNavResults(q) {
             const box = document.getElementById('navSearchResults');
             const res = navSearchMatch(q);
+            box._items = res;
             if (!res.length) {
                 box.innerHTML = '<div class="nav-search-empty">无匹配项</div>';
                 box.classList.add('show');
@@ -3078,9 +3082,14 @@
                 return `<div class="nav-search-item" data-i="${i}"><span class="ns-title">${name}</span><span class="ns-path">${path}</span></div>`;
             }).join('');
             box.classList.add('show');
-            box._items = res;
-            box.querySelectorAll('.nav-search-item').forEach(el => {
-                el.addEventListener('mousedown', e => { e.preventDefault(); goNavResult(box._items[+el.dataset.i]); });
+            const setSel = target => {
+                box.querySelectorAll('.nav-search-item').forEach(x => x.dataset.sel = '0');
+                target.dataset.sel = '1';
+            };
+            box.querySelectorAll('.nav-search-item').forEach((el, i) => {
+                el.dataset.sel = i === 0 ? '1' : '0';
+                el.addEventListener('mouseenter', () => setSel(el));
+                el.addEventListener('mousedown', e => { e.preventDefault(); setSel(el); goNavResult(box._items[+el.dataset.i]); });
             });
         }
         function goNavResult(item) {
@@ -3093,9 +3102,6 @@
                 const target = item.el;
                 if (!target) return;
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                target.classList.remove('title-flash');
-                void target.offsetWidth;
-                target.classList.add('title-flash');
             }, 60);
         }
         (function initNavSearch() {
@@ -3110,11 +3116,13 @@
                 if (!items.length) return;
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     e.preventDefault();
-                    let cur = Array.from(items).findIndex(x => x.dataset.sel === '1');
-                    items.forEach(x => x.dataset.sel = '0');
-                    cur = e.key === 'ArrowDown' ? Math.min(cur + 1, items.length - 1) : Math.max(cur - 1, 0);
-                    items[cur].dataset.sel = '1';
-                    items[cur].scrollIntoView({ block: 'nearest' });
+                    const itemArray = Array.from(items);
+                    let cur = itemArray.findIndex(x => x.dataset.sel === '1');
+                    if (cur < 0) cur = e.key === 'ArrowDown' ? 0 : itemArray.length - 1;
+                    else cur = (cur + (e.key === 'ArrowDown' ? 1 : -1) + itemArray.length) % itemArray.length;
+                    itemArray.forEach(x => x.dataset.sel = '0');
+                    itemArray[cur].dataset.sel = '1';
+                    itemArray[cur].scrollIntoView({ block: 'nearest' });
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
                     const sel = Array.from(items).findIndex(x => x.dataset.sel === '1');
