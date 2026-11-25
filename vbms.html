@@ -2194,27 +2194,16 @@
             <form id="predictTopicForm" onsubmit="savePredictTopic(event)">
                 <input type="hidden" id="predictTopicEditId">
                 <div class="form-group">
-                    <label>语言</label>
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        <select id="predictTopicLang" onchange="switchPredictTopicLang()" style="flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e0;border-radius:4px;">
-                            <option value="cn">中文</option>
-                            <option value="en">English</option>
-                            <option value="jp">日本語</option>
-                            <option value="kr">한국어</option>
-                            <option value="es">Español</option>
-                            <option value="vi">Tiếng Việt</option>
-                            <option value="ar">العربية</option>
-                            <option value="ru">Русский</option>
-                        </select>
-                        <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;" onclick="aiGeneratePredictTopic(this)">AI 生成模板</button>
-                    </div>
+                    <label>多语言 JSON（AI 生成后显示在这里，可直接编辑）</label>
+                    <textarea id="predictTopicJson" rows="7" style="font-family:monospace;font-size:0.85rem;"></textarea>
+                    <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;margin-top:8px;" onclick="aiGeneratePredictTopic(this)">AI 生成模板</button>
                 </div>
                 <div class="form-group">
-                    <label>话题名称</label>
+                    <label>话题名称（中文，管理员填写）</label>
                     <input type="text" id="predictTopicQuestion">
                 </div>
                 <div class="form-group">
-                    <label>选项（每行一个，各语言顺序需一致）</label>
+                    <label>选项（中文，每行一个）</label>
                     <textarea id="predictTopicOptions" rows="4"></textarea>
                 </div>
                 <div class="form-group">
@@ -2243,27 +2232,16 @@
                     <input type="number" id="predictBetEditPrize" step="0.01" min="0">
                 </div>
                 <div class="form-group">
-                    <label>语言</label>
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        <select id="predictBetEditLang" onchange="switchPredictBetEditLang()" style="flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e0;border-radius:4px;">
-                            <option value="cn">中文</option>
-                            <option value="en">English</option>
-                            <option value="jp">日本語</option>
-                            <option value="kr">한국어</option>
-                            <option value="es">Español</option>
-                            <option value="vi">Tiếng Việt</option>
-                            <option value="ar">العربية</option>
-                            <option value="ru">Русский</option>
-                        </select>
-                        <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;" onclick="aiGeneratePredictBet(this)">AI 生成模板</button>
-                    </div>
+                    <label>多语言 JSON（AI 生成后显示在这里，可直接编辑）</label>
+                    <textarea id="predictBetJson" rows="5" style="font-family:monospace;font-size:0.85rem;"></textarea>
+                    <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;margin-top:8px;" onclick="aiGeneratePredictBet(this)">AI 生成模板</button>
                 </div>
                 <div class="form-group">
-                    <label>话题名称</label>
+                    <label>话题名称（中文，管理员填写）</label>
                     <input type="text" id="predictBetEditQuestion">
                 </div>
                 <div class="form-group">
-                    <label>投注选项</label>
+                    <label>投注选项（中文，管理员填写）</label>
                     <input type="text" id="predictBetEditOption">
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
@@ -5693,24 +5671,25 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function cachePredictTopicForm() {
-            const lang = document.getElementById('predictTopicLang').value;
-            const q = document.getElementById('predictTopicQuestion').value.split('\n')[0].trim();
-            const opts = document.getElementById('predictTopicOptions').value.split('\n').map(s => s.trim()).filter((s, i, arr) => s || i < arr.length - 1);
-            predictTopicI18n.question[lang] = q;
+            const jsonEl = document.getElementById('predictTopicJson');
+            try {
+                const parsed = JSON.parse(jsonEl.value.trim());
+                predictTopicI18n.question = predictLangObj(parsed.question);
+                predictTopicI18n.options = (Array.isArray(parsed.options) ? parsed.options : []).map(o => predictLangObj(o));
+            } catch (e) {}
+            const q = document.getElementById('predictTopicQuestion').value.trim();
+            const opts = document.getElementById('predictTopicOptions').value.split('\n').map(s => s.trim()).filter(Boolean);
+            if (q) predictTopicI18n.question.cn = q;
             opts.forEach((s, i) => {
                 if (!predictTopicI18n.options[i]) predictTopicI18n.options[i] = predictLangObj('');
-                predictTopicI18n.options[i][lang] = s;
+                predictTopicI18n.options[i].cn = s;
             });
+            jsonEl.value = JSON.stringify(predictTopicI18n, null, 2);
         }
         function renderPredictTopicForm() {
-            const lang = document.getElementById('predictTopicLang').value;
-            document.getElementById('predictTopicQuestion').value = predictTopicI18n.question[lang] || '';
-            document.getElementById('predictTopicOptions').value = predictTopicI18n.options.map(o => o[lang] || '').join('\n');
-        }
-        function switchPredictTopicLang() {
-            cachePredictTopicForm();
-            renderPredictTopicForm();
-            loadPredictTopics();
+            document.getElementById('predictTopicJson').value = JSON.stringify(predictTopicI18n, null, 2);
+            document.getElementById('predictTopicQuestion').value = predictTopicI18n.question.cn || '';
+            document.getElementById('predictTopicOptions').value = predictTopicI18n.options.map(o => o.cn || '').join('\n');
         }
         function openPredictTopicModal(id) {
             const blank = () => ({ question: predictLangObj(''), options: [] });
@@ -5774,7 +5753,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     });
                 });
                 renderPredictTopicForm();
-                alert('AI 模板已填充，可逐语言微调');
+                alert('AI 模板已生成到 JSON 文本框，可直接编辑后保存');
             } catch (e) {
                 alert('AI 生成失败: ' + e.message);
             } finally {
@@ -5787,16 +5766,23 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function cachePredictBetForm() {
-            const lang = document.getElementById('predictBetEditLang').value;
-            predictBetI18n.question[lang] = document.getElementById('predictBetEditQuestion').value.trim();
-            predictBetI18n.option_name[lang] = document.getElementById('predictBetEditOption').value.trim();
+            const jsonEl = document.getElementById('predictBetJson');
+            try {
+                const parsed = JSON.parse(jsonEl.value.trim());
+                predictBetI18n.question = predictLangObj(parsed.question);
+                predictBetI18n.option_name = predictLangObj(parsed.option_name);
+            } catch (e) {}
+            const q = document.getElementById('predictBetEditQuestion').value.trim();
+            const o = document.getElementById('predictBetEditOption').value.trim();
+            if (q) predictBetI18n.question.cn = q;
+            if (o) predictBetI18n.option_name.cn = o;
+            jsonEl.value = JSON.stringify(predictBetI18n, null, 2);
         }
         function renderPredictBetForm() {
-            const lang = document.getElementById('predictBetEditLang').value;
-            document.getElementById('predictBetEditQuestion').value = predictBetI18n.question[lang] || '';
-            document.getElementById('predictBetEditOption').value = predictBetI18n.option_name[lang] || '';
+            document.getElementById('predictBetJson').value = JSON.stringify(predictBetI18n, null, 2);
+            document.getElementById('predictBetEditQuestion').value = predictBetI18n.question.cn || '';
+            document.getElementById('predictBetEditOption').value = predictBetI18n.option_name.cn || '';
         }
-        function switchPredictBetEditLang() { cachePredictBetForm(); renderPredictBetForm(); loadPredictBets(); }
         function openPredictBetEdit(idx) {
             const b = (window._predictBets || [])[idx];
             if (!b) return;
