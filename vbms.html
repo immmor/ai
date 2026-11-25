@@ -777,6 +777,8 @@
         .theme-icon-sun { display: none; }
         [data-theme="dark"] .theme-icon-sun { display: block; }
         [data-theme="dark"] .theme-icon-moon { display: none; }
+        .sidebar-actions { display: none; align-items: center; gap: .45rem; }
+        .sidebar-theme-toggle { padding: .48rem; }
         .nav-search-input {
             border-radius: 9px; background: var(--canvas); border: 1px solid var(--line);
             padding: .6rem .95rem; font-size: .86rem;
@@ -923,8 +925,11 @@
         @media (max-width: 768px) {
             .sidebar { width: 100%; z-index: 500; }
             .sidebar-header { padding: .75rem 1rem; }
+            .sidebar-actions { display: flex; }
             .menu-item { white-space: nowrap; margin: 0; }
             .top-nav { padding: .75rem 1rem; gap: 1rem; z-index: 100; }
+            .top-nav .theme-toggle { display: none; }
+            .theme-label { display: none; }
             .page-content { padding: 0; }
         }
     </style>
@@ -963,7 +968,13 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>后台管理</h2>
-                <button class="logout-btn sidebar-logout" onclick="logout()">退出</button>
+                <div class="sidebar-actions">
+                    <button class="theme-toggle sidebar-theme-toggle" type="button" aria-label="切换主题">
+                        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+                        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+                    </button>
+                    <button class="logout-btn sidebar-logout" onclick="logout()">退出</button>
+                </div>
             </div>
             <nav class="sidebar-menu">
                 <a href="#dashboard" class="menu-item active" onclick="showPage('dashboard')">仪表盘</a>
@@ -3220,20 +3231,24 @@
             });
         })();
         (function initThemeToggle() {
-            const btn = document.getElementById('themeToggle');
-            if (!btn) return;
-            const label = btn.querySelector('.theme-label');
-            const syncLabel = () => {
+            const buttons = document.querySelectorAll('.theme-toggle');
+            if (!buttons.length) return;
+            const sync = () => {
                 const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-                label.textContent = dark ? '白天' : '黑夜';
-                btn.setAttribute('aria-label', dark ? '切换到白天模式' : '切换到黑夜模式');
+                buttons.forEach(btn => {
+                    const label = btn.querySelector('.theme-label');
+                    if (label) label.textContent = dark ? '白天' : '黑夜';
+                    btn.setAttribute('aria-label', dark ? '切换到白天模式' : '切换到黑夜模式');
+                });
             };
-            syncLabel();
-            btn.addEventListener('click', () => {
-                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', next);
-                try { localStorage.setItem('vbms-theme', next); } catch (e) {}
-                syncLabel();
+            sync();
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    try { localStorage.setItem('vbms-theme', next); } catch (e) {}
+                    sync();
+                });
             });
         })();
 
