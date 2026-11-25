@@ -1496,6 +1496,19 @@
                                     <label for="adminEmail">管理员邮箱</label>
                                     <input type="email" id="adminEmail" name="adminEmail" value="admin@example.com">
                                 </div>
+                                <h4 style="margin:1.5rem 0 .5rem;border-top:1px solid #e2e8f0;padding-top:1.5rem;">AI 接口配置（用于预测模板生成，仅保存在本机浏览器）</h4>
+                                <div class="form-group">
+                                    <label for="vbmsAiUrl">API 地址（OpenAI 兼容 chat/completions 端点）</label>
+                                    <input type="text" id="vbmsAiUrl" placeholder="https://api.example.com/v1/chat/completions">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vbmsAiModel">模型名称</label>
+                                    <input type="text" id="vbmsAiModel" placeholder="gpt-4o-mini">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vbmsAiKey">API Key</label>
+                                    <input type="password" id="vbmsAiKey" placeholder="sk-...">
+                                </div>
                                 <button type="submit" class="btn" style="width: auto;">保存设置</button>
                             </form>
                         </div>
@@ -1792,10 +1805,11 @@
                                     <th>金额</th>
                                     <th>奖金</th>
                                     <th>时间</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="predictBetBody">
-                                <tr><td colspan="6" style="text-align:center;">点击上方刷新加载</td></tr>
+                                <tr><td colspan="7" style="text-align:center;">点击上方刷新加载</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2180,12 +2194,28 @@
             <form id="predictTopicForm" onsubmit="savePredictTopic(event)">
                 <input type="hidden" id="predictTopicEditId">
                 <div class="form-group">
-                    <label>话题名称</label>
-                    <input type="text" id="predictTopicQuestion" required>
+                    <label>语言</label>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="predictTopicLang" onchange="switchPredictTopicLang()" style="flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e0;border-radius:4px;">
+                            <option value="cn">中文</option>
+                            <option value="en">English</option>
+                            <option value="jp">日本語</option>
+                            <option value="kr">한국어</option>
+                            <option value="es">Español</option>
+                            <option value="vi">Tiếng Việt</option>
+                            <option value="ar">العربية</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                        <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;" onclick="aiGeneratePredictTopic(this)">AI 生成模板</button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>选项（每行一个）</label>
-                    <textarea id="predictTopicOptions" rows="4" required></textarea>
+                    <label>话题名称</label>
+                    <input type="text" id="predictTopicQuestion">
+                </div>
+                <div class="form-group">
+                    <label>选项（每行一个，各语言顺序需一致）</label>
+                    <textarea id="predictTopicOptions" rows="4"></textarea>
                 </div>
                 <div class="form-group">
                     <label>截止日期</label>
@@ -2193,6 +2223,51 @@
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="action-btn edit-btn" onclick="closePredictTopicModal()">取消</button>
+                    <button type="submit" class="btn" style="width: auto;">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 预测投注记录编辑模态框 -->
+    <div id="predictBetEditModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>编辑投注记录</h3>
+                <button class="close-btn" onclick="closePredictBetEditModal()">&times;</button>
+            </div>
+            <form id="predictBetEditForm" onsubmit="savePredictBetEdit(event)">
+                <input type="hidden" id="predictBetEditId">
+                <div class="form-group">
+                    <label>奖金</label>
+                    <input type="number" id="predictBetEditPrize" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>语言</label>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="predictBetEditLang" onchange="switchPredictBetEditLang()" style="flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e0;border-radius:4px;">
+                            <option value="cn">中文</option>
+                            <option value="en">English</option>
+                            <option value="jp">日本語</option>
+                            <option value="kr">한국어</option>
+                            <option value="es">Español</option>
+                            <option value="vi">Tiếng Việt</option>
+                            <option value="ar">العربية</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                        <button type="button" class="action-btn" style="background:#9b59b6;color:#fff;" onclick="aiGeneratePredictBet(this)">AI 生成模板</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>话题名称</label>
+                    <input type="text" id="predictBetEditQuestion">
+                </div>
+                <div class="form-group">
+                    <label>投注选项</label>
+                    <input type="text" id="predictBetEditOption">
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="action-btn edit-btn" onclick="closePredictBetEditModal()">取消</button>
                     <button type="submit" class="btn" style="width: auto;">保存</button>
                 </div>
             </form>
@@ -4896,9 +4971,21 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             const siteDescription = document.getElementById('siteDescription').value;
             const adminEmail = document.getElementById('adminEmail').value;
 
-            // 保存设置（实际项目中应保存到后端）
+            localStorage.setItem('vbms_ai_config', JSON.stringify({
+                url: document.getElementById('vbmsAiUrl').value.trim(),
+                model: document.getElementById('vbmsAiModel').value.trim(),
+                key: document.getElementById('vbmsAiKey').value.trim()
+            }));
             alert('设置已保存！');
         });
+        (function loadAiConfig() {
+            try {
+                const c = JSON.parse(localStorage.getItem('vbms_ai_config') || '{}');
+                if (c.url) document.getElementById('vbmsAiUrl').value = c.url;
+                if (c.model) document.getElementById('vbmsAiModel').value = c.model;
+                if (c.key) document.getElementById('vbmsAiKey').value = c.key;
+            } catch (e) {}
+        })();
 
         // 切换发送对象
         document.getElementById('messageTarget').addEventListener('change', function() {
@@ -5511,6 +5598,21 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         // ========== 预测话题管理 ==========
+        const PREDICT_LANGS = ['cn','en','jp','kr','es','vi','ar','ru'];
+        const PREDICT_LANG_NAMES = { cn:'中文',en:'English',jp:'日本語',kr:'한국어',es:'Español',vi:'Tiếng Việt',ar:'العربية',ru:'Русский' };
+        function predictPick(v, lang) {
+            if (v && typeof v === 'object' && !Array.isArray(v)) return v[lang] || v.en || v.cn || '';
+            return v ?? '';
+        }
+        function predictLangObj(v, cnFallback) {
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+                const o = {}; PREDICT_LANGS.forEach(k => o[k] = v[k] || ''); return o;
+            }
+            const o = {}; PREDICT_LANGS.forEach(k => o[k] = k === 'cn' ? (v ?? '') : ''); return o;
+        }
+        let predictTopicI18n = {}; // { question:{cn..}, options:[{cn..},..] }
+        let predictBetI18n = {};
+
         async function loadPredictTopics() {
             const tbody = document.getElementById('predictTopicBody');
             try {
@@ -5520,36 +5622,34 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     body: JSON.stringify({})
                 }).then(r => r.json());
                 if (!data.success) throw new Error(data.message);
-                const topics = data.topics || [];
+                window._predictTopics = data.topics || [];
+                const topics = window._predictTopics;
+                const lang = document.getElementById('predictTopicLang')?.value || 'cn';
                 tbody.innerHTML = topics.length === 0
                     ? '<tr><td colspan="8" style="text-align:center;color:#999;">暂无预测话题，请新增</td></tr>'
                     : topics.map(t => {
-                        const question = t.question || t.title || t.topic || '-';
+                        const question = predictPick(t.question || t.title || t.topic || '-', lang);
                         const rawOpts = t.options || t.option_pools || t.choices || t.option_list;
-                        const opts = Array.isArray(rawOpts)
-                            ? rawOpts
-                            : (typeof rawOpts === 'string' && rawOpts
-                                ? rawOpts.split(/[,\n]/).map(s => s.trim()).filter(Boolean)
-                                : []);
+                        const opts = (Array.isArray(rawOpts) ? rawOpts : []).map(o => predictPick(o, lang));
                         const optionNames = opts.length ? opts.join(' / ') : '-';
                         const statusBadge = t.status === 'active'
                             ? '<span style="color:#27ae60;font-weight:bold;">进行中</span>'
                             : '<span style="color:#e74c3c;font-weight:bold;">已结算</span>';
                         const pool = (t.total_pool || 0).toLocaleString();
-                        const winnerText = t.winner != null && t.winner >= 0 ? opts[t.winner] || '未知' : '-';
+                        const winnerText = t.winner != null && t.winner >= 0 ? (opts[t.winner] || '未知') : '-';
                         const btns = t.status === 'active'
                             ? `<button class="action-btn edit-btn" onclick="editPredictTopic(${t.id})">编辑</button>
                                <button class="action-btn" style="background:#e74c3c;color:#fff;" onclick="openPredictResolve(${t.id})">结算</button>
                                <button class="action-btn delete-btn" onclick="deletePredictTopic(${t.id})">删除</button>`
-                            : `<span style="color:#999;font-size:0.85rem;">已结束</span>`;
+                            : `<button class="action-btn edit-btn" onclick="editPredictTopic(${t.id})">编辑</button><span style="color:#999;font-size:0.85rem;">已结束</span>`;
                         return `<tr>
                             <td>${t.id}</td>
                             <td>${escHtml(question)}</td>
-                            <td>${optionNames || '-'}</td>
+                            <td>${escHtml(optionNames || '-')}</td>
                             <td>${pool}</td>
                             <td>${new Date(t.end_time).toLocaleString()}</td>
                             <td>${statusBadge}</td>
-                            <td>${winnerText}</td>
+                            <td>${escHtml(winnerText)}</td>
                             <td style="white-space:nowrap;">${btns}</td>
                         </tr>`;
                     }).join('');
@@ -5569,79 +5669,194 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     body: JSON.stringify({ topicId: topicId || null })
                 }).then(r => r.json());
                 if (!data.success) throw new Error(data.message);
-                const bets = data.bets || [];
+                window._predictBets = data.bets || [];
+                const lang = document.getElementById('predictBetEditLang')?.value || 'cn';
+                const bets = window._predictBets;
                 tbody.innerHTML = bets.length === 0
-                    ? '<tr><td colspan="6" style="text-align:center;color:#999;">暂无投注记录</td></tr>'
-                    : bets.map(b => {
+                    ? '<tr><td colspan="7" style="text-align:center;color:#999;">暂无投注记录</td></tr>'
+                    : bets.map((b, idx) => {
                         let info;
                         try { info = JSON.parse(b.result); } catch { info = {}; }
                         return `<tr>
                             <td>${escHtml(b.username)}</td>
-                            <td>#${info.topic_id || ''}</td>
-                            <td>${escHtml(info.option_name || `选项${info.option_index}`)}</td>
+                            <td>${escHtml(predictPick(info.question, lang) || ('#' + (info.topic_id || '')))}</td>
+                            <td>${escHtml(predictPick(info.option_name, lang) || `选项${info.option_index}`)}</td>
                             <td>${Number(b.cost).toLocaleString()}</td>
                             <td style="color:${Number(b.prize) > 0 ? '#27ae60' : '#999'}">${Number(b.prize).toLocaleString()}</td>
                             <td>${b.created_at}</td>
+                            <td style="white-space:nowrap;"><button class="action-btn edit-btn" onclick="openPredictBetEdit(${idx})">编辑</button></td>
                         </tr>`;
                     }).join('');
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#e74c3c;">加载失败: ${escHtml(e.message)}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#e74c3c;">加载失败: ${escHtml(e.message)}</td></tr>`;
             }
         }
 
+        function cachePredictTopicForm() {
+            const lang = document.getElementById('predictTopicLang').value;
+            const q = document.getElementById('predictTopicQuestion').value.split('\n')[0].trim();
+            const opts = document.getElementById('predictTopicOptions').value.split('\n').map(s => s.trim()).filter((s, i, arr) => s || i < arr.length - 1);
+            predictTopicI18n.question[lang] = q;
+            opts.forEach((s, i) => {
+                if (!predictTopicI18n.options[i]) predictTopicI18n.options[i] = predictLangObj('');
+                predictTopicI18n.options[i][lang] = s;
+            });
+        }
+        function renderPredictTopicForm() {
+            const lang = document.getElementById('predictTopicLang').value;
+            document.getElementById('predictTopicQuestion').value = predictTopicI18n.question[lang] || '';
+            document.getElementById('predictTopicOptions').value = predictTopicI18n.options.map(o => o[lang] || '').join('\n');
+        }
+        function switchPredictTopicLang() {
+            cachePredictTopicForm();
+            renderPredictTopicForm();
+            loadPredictTopics();
+        }
         function openPredictTopicModal(id) {
-            document.getElementById('predictTopicModalTitle').textContent = id ? '编辑话题' : '新增话题';
-            document.getElementById('predictTopicEditId').value = id || '';
+            const blank = () => ({ question: predictLangObj(''), options: [] });
             if (!id) {
-                document.getElementById('predictTopicQuestion').value = '';
-                document.getElementById('predictTopicOptions').value = '';
+                predictTopicI18n = blank();
+                document.getElementById('predictTopicModalTitle').textContent = '新增话题';
+                document.getElementById('predictTopicEditId').value = '';
                 document.getElementById('predictTopicEndTime').value = '';
-            } else {
-                // 从表格中读取当前行数据
-                const row = document.querySelector(`#predictTopicBody tr`);
             }
             document.getElementById('predictTopicModal').style.display = 'flex';
+            renderPredictTopicForm();
         }
-
         function editPredictTopic(id) {
-            // 需要从后端重新获取数据
-            fetch('https://api.immmor.com/api/predict/admin/list', {
+            const t = (window._predictTopics || []).find(x => x.id == id);
+            if (!t) return alert('未找到话题，请刷新后重试');
+            const rawOpts = t.options || t.option_pools || t.choices || t.option_list;
+            const opts = Array.isArray(rawOpts) ? rawOpts : [];
+            predictTopicI18n = {
+                question: predictLangObj(t.question || t.title || t.topic || ''),
+                options: opts.map(o => predictLangObj(o))
+            };
+            document.getElementById('predictTopicModalTitle').textContent = '编辑话题';
+            document.getElementById('predictTopicEditId').value = id;
+            document.getElementById('predictTopicEndTime').value = new Date(t.end_time).toISOString().slice(0, 16);
+            document.getElementById('predictTopicModal').style.display = 'flex';
+            renderPredictTopicForm();
+        }
+        // 调用用户自配置的 OpenAI 兼容接口，返回文本回复
+        async function callUserAI(prompt) {
+            let cfg;
+            try { cfg = JSON.parse(localStorage.getItem('vbms_ai_config') || '{}'); } catch (e) { cfg = {}; }
+            if (!cfg.url || !cfg.model || !cfg.key) throw new Error('请先在「网站配置」中填写 AI 地址、模型和 Key');
+            const res = await fetch(cfg.url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    const t = data.topics.find(x => x.id == id);
-                    if (t) {
-                        document.getElementById('predictTopicModalTitle').textContent = '编辑话题';
-                        document.getElementById('predictTopicEditId').value = id;
-                        document.getElementById('predictTopicQuestion').value = t.question || t.title || t.topic || '';
-                        const opts = Array.isArray(t.options)
-                            ? t.options
-                            : (typeof t.options === 'string' && t.options ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean) : []);
-                        document.getElementById('predictTopicOptions').value = opts.join('\n');
-                        const d = new Date(t.end_time);
-                        document.getElementById('predictTopicEndTime').value = d.toISOString().slice(0, 16);
-                        document.getElementById('predictTopicModal').style.display = 'flex';
-                    }
-                }
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+                body: JSON.stringify({ model: cfg.model, messages: [{ role: 'user', content: prompt }] })
             });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error?.message || ('AI 请求失败 ' + res.status));
+            const text = data?.choices?.[0]?.message?.content;
+            if (!text) throw new Error('AI 返回内容为空');
+            return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        }
+        async function aiGeneratePredictTopic(btn) {
+            cachePredictTopicForm();
+            const cnQ = predictTopicI18n.question.cn || '';
+            const cnOpts = predictTopicI18n.options.map(o => o.cn).filter(Boolean);
+            if (!cnQ || !cnOpts.length) return alert('请先在中文栏填写话题和选项，AI 会据此生成其它语言模板');
+            if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+            try {
+                const prompt = `你是翻译助手。把下面的预测话题和选项翻译成 8 种语言，只返回 JSON（不要代码块、不要解释），格式：\n{"en":{"question":"","options":[]},"jp":{"question":"","options":[]},"kr":{"question":"","options":[]},"es":{"question":"","options":[]},"vi":{"question":"","options":[]},"ar":{"question":"","options":[]},"ru":{"question":"","options":[]}}\n中文话题：${cnQ}\n中文选项：${JSON.stringify(cnOpts)}`;
+                const text = await callUserAI(prompt);
+                const parsed = JSON.parse(text);
+                PREDICT_LANGS.forEach(k => {
+                    const src = k === 'cn' ? { question: cnQ, options: cnOpts } : parsed[k];
+                    if (!src) return;
+                    predictTopicI18n.question[k] = src.question || '';
+                    (src.options || []).forEach((o, i) => {
+                        if (!predictTopicI18n.options[i]) predictTopicI18n.options[i] = predictLangObj('');
+                        predictTopicI18n.options[i][k] = o;
+                    });
+                });
+                renderPredictTopicForm();
+                alert('AI 模板已填充，可逐语言微调');
+            } catch (e) {
+                alert('AI 生成失败: ' + e.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'AI 生成模板'; }
+            }
         }
 
         function closePredictTopicModal() {
             document.getElementById('predictTopicModal').style.display = 'none';
         }
 
+        function cachePredictBetForm() {
+            const lang = document.getElementById('predictBetEditLang').value;
+            predictBetI18n.question[lang] = document.getElementById('predictBetEditQuestion').value.trim();
+            predictBetI18n.option_name[lang] = document.getElementById('predictBetEditOption').value.trim();
+        }
+        function renderPredictBetForm() {
+            const lang = document.getElementById('predictBetEditLang').value;
+            document.getElementById('predictBetEditQuestion').value = predictBetI18n.question[lang] || '';
+            document.getElementById('predictBetEditOption').value = predictBetI18n.option_name[lang] || '';
+        }
+        function switchPredictBetEditLang() { cachePredictBetForm(); renderPredictBetForm(); loadPredictBets(); }
+        function openPredictBetEdit(idx) {
+            const b = (window._predictBets || [])[idx];
+            if (!b) return;
+            let info; try { info = JSON.parse(b.result); } catch { info = {}; }
+            predictBetI18n = { question: predictLangObj(info.question, ''), option_name: predictLangObj(info.option_name, '') };
+            document.getElementById('predictBetEditId').value = b.id;
+            document.getElementById('predictBetEditPrize').value = b.prize;
+            document.getElementById('predictBetEditModal').style.display = 'flex';
+            renderPredictBetForm();
+        }
+        function closePredictBetEditModal() { document.getElementById('predictBetEditModal').style.display = 'none'; }
+        async function savePredictBetEdit(e) {
+            e.preventDefault();
+            cachePredictBetForm();
+            const id = document.getElementById('predictBetEditId').value;
+            const prize = document.getElementById('predictBetEditPrize').value;
+            try {
+                const data = await fetch('https://api.immmor.com/api/predict/admin/bet-update', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(id), question: predictBetI18n.question, option_name: predictBetI18n.option_name, prize: Number(prize) })
+                }).then(r => r.json());
+                if (!data.success) throw new Error(data.message || '保存失败');
+                alert('保存成功');
+                closePredictBetEditModal();
+                await loadPredictBets();
+            } catch (err) { alert('保存失败: ' + err.message); }
+        }
+        async function aiGeneratePredictBet(btn) {
+            cachePredictBetForm();
+            const cnQ = predictBetI18n.question.cn;
+            const cnOpt = predictBetI18n.option_name.cn;
+            if (!cnQ || !cnOpt) return alert('请先在中文栏填写话题和选项');
+            if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+            try {
+                const prompt = `你是翻译助手。把下面的预测话题和投注选项翻译成 8 种语言，只返回 JSON（不要代码块、不要解释），格式：\n{"en":{"question":"","option":""},"jp":{"question":"","option":""},"kr":{"question":"","option":""},"es":{"question":"","option":""},"vi":{"question":"","option":""},"ar":{"question":"","option":""},"ru":{"question":"","option":""}}\n中文话题：${cnQ}\n中文选项：${cnOpt}`;
+                const text = await callUserAI(prompt);
+                const parsed = JSON.parse(text);
+                PREDICT_LANGS.forEach(k => {
+                    const src = k === 'cn' ? { question: cnQ, option: cnOpt } : parsed[k];
+                    if (!src) return;
+                    predictBetI18n.question[k] = src.question || '';
+                    predictBetI18n.option_name[k] = src.option || '';
+                });
+                renderPredictBetForm();
+                alert('AI 模板已填充');
+            } catch (e) { alert('AI 生成失败: ' + e.message); }
+            finally { if (btn) { btn.disabled = false; btn.textContent = 'AI 生成模板'; } }
+        }
+
         async function savePredictTopic(e) {
             e.preventDefault();
+            cachePredictTopicForm();
             const id = document.getElementById('predictTopicEditId').value;
-            const question = document.getElementById('predictTopicQuestion').value.trim();
-            const options = document.getElementById('predictTopicOptions').value.trim().split('\n').filter(o => o.trim());
             const endTime = document.getElementById('predictTopicEndTime').value;
-            if (!question || !options.length || !endTime) return alert('请填写完整');
+            const question = predictTopicI18n.question;
+            const options = predictTopicI18n.options.filter(o => PREDICT_LANGS.some(k => o[k]));
+            if (!question.cn || !options.length || !endTime) return alert('请填写完整（中文话题和至少一个选项必填）');
             try {
                 let data;
-                const predictApi = (path, body) => fetch('https://api.funbua.uk' + path, {
+                const predictApi = (path, body) => fetch('https://api.immmor.com' + path, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
@@ -5679,29 +5894,18 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
 
         function openPredictResolve(id) {
-            fetch('https://api.immmor.com/api/predict/admin/list', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    const t = data.topics.find(x => x.id == id);
-                    if (t) {
-                        document.getElementById('predictResolveId').value = id;
-                        document.getElementById('predictResolveQuestion').textContent = t.question;
-                        const optsDiv = document.getElementById('predictResolveOptions');
-                        const opts = Array.isArray(t.options)
-                            ? t.options
-                            : (typeof t.options === 'string' && t.options ? t.options.split(/[,\n]/).map(s => s.trim()).filter(Boolean) : []);
-                        optsDiv.innerHTML = opts.map((o, i) =>
-                            `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border:1px solid #ddd;border-radius:4px;">
-                                <input type="radio" name="predictWinner" value="${i}" required> ${escHtml(o)}
-                            </label>`
-                        ).join('');
-                        document.getElementById('predictResolveModal').style.display = 'flex';
-                    }
-                }
-            });
+            const t = (window._predictTopics || []).find(x => x.id == id);
+            if (!t) return alert('未找到话题，请刷新后重试');
+            document.getElementById('predictResolveId').value = id;
+            document.getElementById('predictResolveQuestion').textContent = predictPick(t.question || t.title || t.topic || '', 'cn');
+            const optsDiv = document.getElementById('predictResolveOptions');
+            const opts = Array.isArray(t.options) ? t.options : [];
+            optsDiv.innerHTML = opts.map((o, i) =>
+                `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border:1px solid #ddd;border-radius:4px;">
+                    <input type="radio" name="predictWinner" value="${i}" required> ${escHtml(predictPick(o, 'cn'))}
+                </label>`
+            ).join('');
+            document.getElementById('predictResolveModal').style.display = 'flex';
         }
 
         function closePredictResolveModal() {
