@@ -733,6 +733,7 @@
         .sidebar-header {
             background: var(--surface); padding: 1.7rem 1.4rem;
             border-bottom: 1px solid var(--line);
+            position: relative; z-index: 2;
         }
         .sidebar-header h2 {
             font-size: 1.1rem; font-weight: 700; letter-spacing: -.01em; color: var(--ink-900);
@@ -777,7 +778,7 @@
         .theme-icon-sun { display: none; }
         [data-theme="dark"] .theme-icon-sun { display: block; }
         [data-theme="dark"] .theme-icon-moon { display: none; }
-        .sidebar-actions { display: none; align-items: center; gap: .45rem; }
+        .sidebar-actions { display: none; align-items: center; gap: .45rem; order: 1; }
         .sidebar-theme-toggle { padding: .48rem; }
         .nav-search-input {
             border-radius: 9px; background: var(--canvas); border: 1px solid var(--line);
@@ -923,12 +924,11 @@
 
         /* 移动端还原 */
         @media (max-width: 768px) {
-            .sidebar { width: 100%; z-index: 500; }
-            .sidebar-header { padding: .75rem 1rem; }
+            .sidebar { width: 100%; z-index: 500; overflow: visible; }
+            .sidebar-header { padding: .75rem 1rem; flex-wrap: wrap; row-gap: .6rem; }
             .sidebar-actions { display: flex; }
             .menu-item { white-space: nowrap; margin: 0; }
-            .top-nav { padding: .75rem 1rem; gap: 1rem; z-index: 100; }
-            .top-nav .theme-toggle { display: none; }
+            .top-nav { display: none; }
             .theme-label { display: none; }
             .page-content { padding: 0; }
         }
@@ -968,6 +968,10 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>后台管理</h2>
+                <div class="nav-search-wrap">
+                    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="搜索菜单或页面标题..." autocomplete="off">
+                    <div id="navSearchResults" class="nav-search-results"></div>
+                </div>
                 <div class="sidebar-actions">
                     <button class="theme-toggle sidebar-theme-toggle" type="button" aria-label="切换主题">
                         <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
@@ -996,10 +1000,6 @@
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
                 <h1 id="pageTitle">仪表盘</h1>
-                <div class="nav-search-wrap">
-                    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="搜索菜单或页面标题..." autocomplete="off">
-                    <div id="navSearchResults" class="nav-search-results"></div>
-                </div>
                 <div class="top-nav-actions">
                     <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换到黑夜模式">
                         <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
