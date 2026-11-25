@@ -666,6 +666,182 @@
                 font-size: 0.85rem;
             }
         }
+
+        /* ============================================================
+           现代化设计系统（统一覆盖层，保留原有布局与响应式）
+           ============================================================ */
+        :root {
+            --brand-50: #eef2ff;  --brand-100: #e0e7ff;
+            --brand-500: #6366f1; --brand-600: #4f46e5; --brand-700: #4338ca;
+            --ink-900: #0f172a; --ink-700: #334155; --ink-500: #64748b; --ink-400: #94a3b8;
+            --line: #e8edf3; --surface: #ffffff; --canvas: #f5f7fb;
+            --ok: #10b981; --warn: #f59e0b; --danger: #ef4444;
+            --radius: 14px;
+            --shadow: 0 1px 2px rgba(15,23,42,.04), 0 10px 28px rgba(15,23,42,.06);
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--canvas);
+            color: var(--ink-700);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 登录：深色高级背景 + 精致卡片 */
+        .login-container {
+            background: radial-gradient(1200px 620px at 12% 18%, #4f46e5 0%, #312e81 52%, #0b1020 100%);
+        }
+        .login-form {
+            background: rgba(255,255,255,.97);
+            padding: 2.4rem;
+            border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(2,6,23,.35);
+            border: 1px solid rgba(255,255,255,.7);
+        }
+        .login-form h2 { color: var(--ink-900); font-weight: 700; letter-spacing: .5px; }
+
+        /* 主按钮 */
+        .btn {
+            background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(79,70,229,.25);
+        }
+        .btn:hover { background: linear-gradient(135deg, var(--brand-600), var(--brand-700)); transform: translateY(-1px); }
+
+        /* 侧边栏：深蓝渐变 + 精致选中态 */
+        .sidebar {
+            width: 248px;
+            background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+            border-right: 1px solid rgba(255,255,255,.06);
+        }
+        .sidebar-header { background: transparent; padding: 1.6rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .sidebar-header h2 {
+            font-size: 1.15rem; font-weight: 700; letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #a5b4fc);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .sidebar-menu { padding: .8rem .6rem; }
+        .menu-item {
+            padding: .78rem 1rem; margin: .15rem .35rem;
+            border-radius: 10px; color: #cbd5e1; font-size: .92rem; font-weight: 500;
+            position: relative;
+        }
+        .menu-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(99,102,241,.95), rgba(79,70,229,.95));
+            color: #fff; box-shadow: 0 6px 18px rgba(79,70,229,.35);
+        }
+        .menu-item.active::before {
+            content: ''; position: absolute; left: -.35rem; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 22px; border-radius: 2px; background: #a5b4fc;
+        }
+
+        /* 顶部导航：毛玻璃 + 细腻边框 */
+        .top-nav {
+            background: rgba(255,255,255,.86);
+            backdrop-filter: blur(16px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 1px 0 rgba(15,23,42,.02);
+        }
+        .top-nav h1 { font-size: 1.35rem; font-weight: 700; color: var(--ink-900); letter-spacing: -.3px; }
+        .nav-search-input {
+            border-radius: 10px; background: #f1f5f9; border: 1px solid transparent;
+            padding: .6rem 1rem;
+        }
+        .nav-search-input:focus { background: #fff; border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+        .nav-search-results { border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 16px 42px rgba(15,23,42,.14); }
+        .nav-search-item:hover { background: var(--brand-50); }
+        .logout-btn { background: #fee2e2; color: #dc2626; border-radius: 9px; font-weight: 600; }
+        .logout-btn:hover { background: #fecaca; }
+
+        /* 内容区 */
+        .page-content { padding: 1.8rem 2rem 3rem; background: var(--canvas); }
+        .dashboard-grid { gap: 1.25rem; margin-bottom: 1.5rem; }
+
+        /* 卡片 */
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 1.5rem;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(15,23,42,.09); }
+        .stat-info h3 { color: var(--ink-900); font-size: 2rem; font-weight: 700; letter-spacing: -1px; }
+        .stat-info p { color: var(--ink-500); font-size: .85rem; }
+        .stat-icon { color: var(--brand-500); }
+
+        /* 表格 */
+        .data-table {
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: var(--radius); box-shadow: var(--shadow);
+        }
+        .table-header {
+            background: linear-gradient(180deg, #fff, #fafbff);
+            padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--line);
+        }
+        .table-header h3 { color: var(--ink-900); font-weight: 700; font-size: 1.05rem; }
+        th {
+            background: #f8fafc; color: var(--ink-500); font-size: .8rem; font-weight: 600;
+            letter-spacing: .3px; padding: 1rem 1.25rem; white-space: nowrap;
+        }
+        td { padding: .95rem 1.25rem; font-size: .9rem; color: var(--ink-700); }
+        th, td { border-bottom: 1px solid #eef2f7; }
+        tbody tr:hover { background: #f8fafc; }
+
+        /* 操作按钮 */
+        .add-btn {
+            background: linear-gradient(135deg, #34d399, var(--ok));
+            border-radius: 8px; font-weight: 600;
+            box-shadow: 0 3px 10px rgba(16,185,129,.2);
+        }
+        .add-btn:hover { background: linear-gradient(135deg, var(--ok), #059669); transform: translateY(-1px); }
+        .action-btn { border-radius: 8px; font-weight: 600; font-size: .85rem; }
+        .edit-btn { background: #eff6ff; color: #2563eb; }
+        .edit-btn:hover { background: #dbeafe; }
+        .delete-btn { background: #fee2e2; color: #dc2626; box-shadow: none; border-radius: 8px; font-weight: 600; }
+        .delete-btn:hover { background: #fecaca; }
+
+        /* 表单 */
+        .form-group label { color: var(--ink-700); font-weight: 600; font-size: .88rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            border: 1px solid #dbe3ec; border-radius: 9px; padding: .65rem .85rem;
+            background: #fff; font-size: .92rem; font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        }
+
+        /* 弹窗 */
+        .modal { background: rgba(15,23,42,.55); backdrop-filter: blur(4px); }
+        .modal-content {
+            background: #fff; border: 1px solid rgba(255,255,255,.7);
+            border-radius: 18px; box-shadow: 0 24px 72px rgba(15,23,42,.28); padding: 1.8rem;
+        }
+        .modal-header { border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 1.25rem; }
+        .modal-header h3 { color: var(--ink-900); font-weight: 700; }
+        .close-btn { color: var(--ink-400); border-radius: 8px; }
+        .close-btn:hover { background: #f1f5f9; color: var(--ink-700); }
+
+        /* 排序指示 */
+        .sort-indicator.asc::after, .sort-indicator.desc::after { color: var(--brand-500); }
+
+        /* 全局滚动条美化 */
+        ::-webkit-scrollbar { width: 9px; height: 9px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+
+        /* 移动端还原（覆盖层会覆盖原响应式，这里显式恢复） */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; }
+            .sidebar-header { padding: .75rem 1rem; }
+            .menu-item { white-space: nowrap; margin: 0; }
+            .top-nav { padding: .75rem 1rem; gap: 1rem; }
+            .page-content { padding: 0; }
+        }
     </style>
 </head>
 <body>
