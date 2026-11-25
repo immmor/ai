@@ -192,6 +192,22 @@
             color: #4a5568;
         }
 
+        /* 顶部搜索：tab + 页面标题 */
+        .nav-search-wrap { position: relative; flex: 1; max-width: 420px; margin: 0 1rem; }
+        .nav-search-input { width: 100%; padding: 0.5rem 0.9rem; border: 1px solid #cbd5e0; border-radius: 20px; outline: none; font-size: 0.9rem; }
+        .nav-search-input:focus { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+        .nav-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 340px; overflow-y: auto; z-index: 1000; display: none; }
+        .nav-search-results.show { display: block; }
+        .nav-search-item { padding: 0.55rem 0.9rem; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+        .nav-search-item:last-child { border-bottom: none; }
+        .nav-search-item:hover { background: #f0f4ff; }
+        .nav-search-item .ns-title { color: #2d3748; }
+        .nav-search-item .ns-path { color: #a0aec0; font-size: 0.78rem; margin-left: 6px; }
+        .nav-search-item mark { background: #fef08a; padding: 0 1px; }
+        .nav-search-empty { padding: 0.7rem 0.9rem; color: #a0aec0; font-size: 0.85rem; }
+        .title-flash { animation: titleFlash 1.6s ease-out; }
+        @keyframes titleFlash { 0%,40% { background: rgba(102,126,234,0.35); } 100% { background: transparent; } }
+
         .user-info {
             display: flex;
             align-items: center;
@@ -699,6 +715,10 @@
             <!-- 顶部导航栏 -->
             <nav class="top-nav">
                 <h1 id="pageTitle">仪表盘</h1>
+                <div class="nav-search-wrap">
+                    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="搜索菜单或页面标题..." autocomplete="off">
+                    <div id="navSearchResults" class="nav-search-results"></div>
+                </div>
                 <button class="logout-btn top-nav-logout" onclick="logout()">退出登录</button>
             </nav>
 
@@ -2828,6 +2848,95 @@
             document.getElementById('pageTitle').textContent = pageTitles[pageName] || pageName;
             
         }
+
+        // ===== 顶部搜索：菜单 tab + 各页面标题 =====
+        function buildNavSearchIndex() {
+            const idx = [];
+            document.querySelectorAll('.sidebar-menu .menu-item').forEach(a => {
+                const name = (a.textContent || '').trim();
+                const m = (a.getAttribute('onclick') || '').match(/showPage\('([^']+)'\)/);
+                if (name && m) idx.push({ title: name, page: m[1], el: document.getElementById(m[1] + 'Page'), isTab: true });
+            });
+            document.querySelectorAll('.page-section').forEach(sec => {
+                const page = sec.id.replace(/Page$/, '');
+                sec.querySelectorAll('h1,h2,h3,h4').forEach(h => {
+                    const txt = (h.textContent || '').trim();
+                    if (!txt || /^[-—\d\s]+$/.test(txt)) return;
+                    idx.push({ title: txt, page, el: h, isTab: false });
+                });
+            });
+            return idx;
+        }
+        function navSearchMatch(q) {
+            const norm = s => (s || '').toLowerCase().replace(/\s+/g, '');
+            const nq = norm(q);
+            if (!nq) return [];
+            return (window._navSearchIndex || []).filter(it => norm(it.title).includes(nq)).slice(0, 20);
+        }
+        function renderNavResults(q) {
+            const box = document.getElementById('navSearchResults');
+            const res = navSearchMatch(q);
+            if (!res.length) {
+                box.innerHTML = '<div class="nav-search-empty">无匹配项</div>';
+                box.classList.add('show');
+                return;
+            }
+            const esc = s => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+            const nq = q.toLowerCase();
+            box.innerHTML = res.map((it, i) => {
+                const pos = it.title.toLowerCase().indexOf(nq);
+                const name = pos >= 0 ? esc(it.title.slice(0,pos)) + '<mark>' + esc(it.title.slice(pos, pos+nq.length)) + '</mark>' + esc(it.title.slice(pos+nq.length)) : esc(it.title);
+                const path = it.isTab ? '菜单' : '页面标题';
+                return `<div class="nav-search-item" data-i="${i}"><span class="ns-title">${name}</span><span class="ns-path">${path}</span></div>`;
+            }).join('');
+            box.classList.add('show');
+            box._items = res;
+            box.querySelectorAll('.nav-search-item').forEach(el => {
+                el.addEventListener('mousedown', e => { e.preventDefault(); goNavResult(box._items[+el.dataset.i]); });
+            });
+        }
+        function goNavResult(item) {
+            if (!item) return;
+            const box = document.getElementById('navSearchResults');
+            showPage(item.page);
+            box.classList.remove('show');
+            document.getElementById('navSearchInput').value = '';
+            setTimeout(() => {
+                const target = item.el;
+                if (!target) return;
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.remove('title-flash');
+                void target.offsetWidth;
+                target.classList.add('title-flash');
+            }, 60);
+        }
+        (function initNavSearch() {
+            const input = document.getElementById('navSearchInput');
+            const box = document.getElementById('navSearchResults');
+            if (!input || !box) return;
+            window._navSearchIndex = buildNavSearchIndex();
+            input.addEventListener('input', () => renderNavResults(input.value.trim()));
+            input.addEventListener('keydown', e => {
+                const items = box.querySelectorAll('.nav-search-item');
+                if (e.key === 'Escape') { box.classList.remove('show'); return; }
+                if (!items.length) return;
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    let cur = Array.from(items).findIndex(x => x.dataset.sel === '1');
+                    items.forEach(x => x.dataset.sel = '0');
+                    cur = e.key === 'ArrowDown' ? Math.min(cur + 1, items.length - 1) : Math.max(cur - 1, 0);
+                    items[cur].dataset.sel = '1';
+                    items[cur].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const sel = Array.from(items).findIndex(x => x.dataset.sel === '1');
+                    goNavResult(box._items[sel < 0 ? 0 : sel]);
+                }
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.nav-search-wrap')) box.classList.remove('show');
+            });
+        })();
 
         async function loadPricePlan() {
             try {
