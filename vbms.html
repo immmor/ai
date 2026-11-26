@@ -981,7 +981,6 @@
                 <a href="#insights" class="menu-item" onclick="showPage('insights')">智能运营</a>
                 <a href="#users" class="menu-item" onclick="showPage('users')">用户管理</a>
                 <a href="#orders" class="menu-item" onclick="showPage('orders')">订单管理</a>
-                <a href="#payments" class="menu-item" onclick="showPage('payments')">支付管理</a>
                 <a href="#nodes" class="menu-item" onclick="showPage('nodes')">节点管理</a>
                 <a href="#settings" class="menu-item" onclick="showPage('settings')">系统设置</a>
                 <a href="#messages" class="menu-item" onclick="showPage('messages')">消息管理</a>
@@ -1218,11 +1217,9 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
 
-                <!-- 支付管理页面：人工充值审核 -->
-                <div id="paymentsPage" class="page-section" style="display: none;">
-                    <div class="data-table">
+                    <!-- 支付审核（人工充值审核） -->
+                    <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>支付审核</h3>
                             <div style="display: flex; gap: 10px; align-items: center;">
@@ -3174,7 +3171,6 @@
                 'insights': '智能运营',
                 'users': '用户管理',
                 'orders': '订单管理',
-                'payments': '支付管理',
                 'nodes': '节点管理',
                 'settings': '系统设置',
                 'messages': '消息管理',
@@ -4041,7 +4037,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
             }
         }
 
-        // ===== 支付管理：人工充值审核 =====
+        // ===== 订单管理 - 支付审核：人工充值审核 =====
         async function loadPaymentReviews(){
             const tbody=document.getElementById('paymentsTableBody');
             const status=document.getElementById('paymentStatusFilter')?.value||'pending_review';
