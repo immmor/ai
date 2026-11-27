@@ -356,19 +356,6 @@
             }
         }
 
-        /* 用户管理：大屏下让列表区撑满可视高度，分页贴底，避免底部大块留白 */
-        @media (min-width: 769px) {
-            #usersPage { height: 100%; }
-            #usersPage .data-table {
-                height: 100%;
-                max-height: none;
-                display: flex;
-                flex-direction: column;
-            }
-            #usersPage .data-table > table { flex: 0 0 auto; }
-            #usersPage #userPagination { margin-top: auto; }
-        }
-
         .data-table.collapsed > :not(.table-header) {
             display: none !important;
         }
@@ -811,7 +798,7 @@
         .logout-btn:hover { background: #fef2f2; color: #d64545; border-color: #fadbd8; }
 
         /* 内容区 */
-        .page-content { padding: 2rem 2.2rem 3.2rem; background: var(--canvas); }
+        .page-content { padding: 2rem 2.2rem 1.2rem; background: var(--canvas); }
         .dashboard-grid { gap: 1.25rem; margin-bottom: 1.5rem; }
 
         /* 统计卡片：多层次阴影 */
