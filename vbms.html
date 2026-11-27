@@ -356,6 +356,13 @@
             }
         }
 
+        /* 用户管理：大屏下按可视高度撑满列表区，避免与底部留白过大 */
+        @media (min-width: 769px) {
+            #usersPage .data-table {
+                max-height: calc(100vh - 190px);
+            }
+        }
+
         .data-table.collapsed > :not(.table-header) {
             display: none !important;
         }
