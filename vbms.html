@@ -918,6 +918,69 @@
             border-color: var(--line) !important;
         }
 
+        /* AI 供应商管理：小清新粉色 */
+        .ai-provider-zone {
+            --pink: #ec4899;
+            --pink-deep: #db2777;
+            --pink-soft: #fdf2f8;
+            --pink-line: #fbcfe8;
+            --pink-text: #be185d;
+        }
+        [data-theme="dark"] .ai-provider-zone {
+            --pink: #f472b6;
+            --pink-deep: #ec4899;
+            --pink-soft: rgba(236,72,153,.1);
+            --pink-line: rgba(244,114,182,.32);
+            --pink-text: #f9a8d4;
+        }
+        .ai-provider-zone h4 { color: var(--pink-text) !important; border-top-color: var(--pink-line) !important; }
+        .ai-provider-tabs {
+            display: flex; gap: .5rem; overflow-x: auto; flex-wrap: nowrap;
+            margin-bottom: .9rem; padding-bottom: .5rem;
+            border-bottom: 1px solid var(--pink-line);
+        }
+        .ai-provider-tab {
+            flex: none; white-space: nowrap; cursor: pointer;
+            padding: .42rem 1rem; border-radius: 999px;
+            border: 1px solid var(--pink-line);
+            background: var(--pink-soft); color: var(--pink-text);
+            font-size: .84rem; font-weight: 600;
+            transition: background .18s, box-shadow .18s, transform .18s;
+        }
+        .ai-provider-tab:hover { background: var(--pink-line); transform: translateY(-1px); }
+        .ai-provider-tab.active {
+            background: linear-gradient(135deg, #f9a8d4, #ec4899);
+            color: #fff; border-color: transparent;
+            box-shadow: 0 4px 12px rgba(236,72,153,.3);
+        }
+        .ai-provider-card {
+            border: 1px solid var(--pink-line) !important;
+            border-radius: 16px !important;
+            padding: 1.25rem !important;
+            background: linear-gradient(135deg, var(--pink-soft), var(--surface)) !important;
+            box-shadow: 0 6px 22px rgba(236,72,153,.09);
+        }
+        .ai-provider-card .form-group label { color: var(--pink-text); }
+        .ai-provider-card input[type="text"],
+        .ai-provider-card input[type="password"] {
+            border: 1px solid var(--pink-line) !important;
+            border-radius: 10px !important;
+            background: var(--surface) !important;
+        }
+        .ai-provider-card input[type="text"]:focus,
+        .ai-provider-card input[type="password"]:focus {
+            border-color: var(--pink) !important;
+            box-shadow: 0 0 0 3px rgba(236,72,153,.14) !important;
+        }
+        .ai-provider-card input[type="radio"] { accent-color: var(--pink); }
+        .ai-provider-zone .add-provider-btn,
+        .ai-provider-card .edit-btn {
+            background: var(--pink) !important; border-color: var(--pink) !important; color: #fff !important;
+        }
+        .ai-provider-zone .add-provider-btn:hover,
+        .ai-provider-card .edit-btn:hover { background: var(--pink-deep) !important; }
+        .ai-provider-zone .hint { color: var(--pink-text) !important; opacity: .8; }
+
         /* 移动端还原 */
         @media (max-width: 768px) {
             .sidebar { width: 100%; z-index: 500; overflow: visible; }
@@ -1489,10 +1552,13 @@
                                     <label for="adminEmail">管理员邮箱</label>
                                     <input type="email" id="adminEmail" name="adminEmail" value="admin@example.com">
                                 </div>
-                                <h4 style="margin:1.5rem 0 .5rem;border-top:1px solid #e2e8f0;padding-top:1.5rem;">AI 供应商管理（用于预测模板生成和消息翻译，仅保存在本机浏览器）</h4>
-                                <div id="aiProviderList" style="display:flex; flex-direction:column; gap:.9rem;"></div>
-                                <button type="button" class="btn" onclick="addAiProvider()" style="width:auto; margin-top:.8rem;">+ 添加供应商</button>
-                                <div style="font-size:.8rem; color:var(--ink-400); margin-top:.45rem;">同一时间只有一个供应商生效；请求失败不会自动切换或重试。</div>
+                                <div class="ai-provider-zone">
+                                    <h4 style="margin:1.5rem 0 .5rem;border-top:1px solid #e2e8f0;padding-top:1.5rem;">AI 供应商管理（用于预测模板生成和消息翻译，仅保存在本机浏览器）</h4>
+                                    <div id="aiProviderTabs" class="ai-provider-tabs"></div>
+                                    <div id="aiProviderList"></div>
+                                    <button type="button" class="btn add-provider-btn" onclick="addAiProvider()" style="width:auto; margin-top:.8rem;">+ 添加供应商</button>
+                                    <div class="hint" style="font-size:.8rem; color:var(--ink-400); margin-top:.45rem;">同一时间只有一个供应商生效；请求失败不会自动切换或重试。</div>
+                                </div>
                                 <button type="submit" class="btn" style="width: auto; margin-top:1.2rem;">保存设置</button>
                             </form>
                         </div>
@@ -4942,6 +5008,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
 
         const AI_PROVIDERS_KEY = 'vbms_ai_providers';
         const AI_LEGACY_KEY = 'vbms_ai_config';
+        let aiProviderCurrentId = null;
         function aiEsc(s) {
             return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
@@ -4980,16 +5047,21 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
         }
         function renderAiProviders() {
             const box = document.getElementById('aiProviderList');
-            if (!box) return;
+            const tabs = document.getElementById('aiProviderTabs');
+            if (!box || !tabs) return;
             const list = loadAiProviders();
             if (!list.length) {
-                box.innerHTML = '<div style="padding:1rem; border:1px dashed var(--line); border-radius:10px; color:var(--ink-400);">暂无 AI 供应商，请点击「添加供应商」。</div>';
+                tabs.innerHTML = '';
+                box.innerHTML = '<div style="padding:1rem; border:1px dashed var(--pink-line); border-radius:10px; color:var(--pink-text);">暂无 AI 供应商，请点击「添加供应商」。</div>';
                 return;
             }
+            if (!list.some(p => p.id === aiProviderCurrentId)) aiProviderCurrentId = list[0].id;
+            tabs.innerHTML = list.map((p, i) => `
+                <button type="button" class="ai-provider-tab${p.id === aiProviderCurrentId ? ' active' : ''}" data-id="${p.id}" onclick="switchAiProviderTab('${p.id}')">${aiEsc(p.name || '供应商 ' + (i + 1))}${p.active ? ' ✓' : ''}</button>`).join('');
             box.innerHTML = list.map(p => `
-                <div class="ai-provider-card" data-id="${p.id}" style="border:1px solid var(--line); border-radius:12px; padding:1rem; background:var(--canvas);">
+                <div class="ai-provider-card" data-id="${p.id}" style="${p.id === aiProviderCurrentId ? '' : 'display:none;'}">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:.8rem; margin-bottom:.75rem;">
-                        <label style="display:flex; align-items:center; gap:.45rem; font-weight:600; color:var(--ink-800);">
+                        <label style="display:flex; align-items:center; gap:.45rem; font-weight:600; color:var(--pink-text);">
                             <input type="radio" name="aiProviderActive" ${p.active ? 'checked' : ''} onchange="activateAiProvider('${p.id}')">
                             激活
                         </label>
@@ -5014,13 +5086,21 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                     <button type="button" class="action-btn edit-btn" onclick="saveAiProvider('${p.id}')" style="margin-top:.5rem;">保存</button>
                 </div>`).join('');
         }
+        function switchAiProviderTab(id) {
+            aiProviderCurrentId = id;
+            document.querySelectorAll('#aiProviderTabs .ai-provider-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.id === id);
+            });
+            document.querySelectorAll('#aiProviderList .ai-provider-card').forEach(card => {
+                card.style.display = card.dataset.id === id ? '' : 'none';
+            });
+        }
         function addAiProvider() {
             const list = collectAiProvidersFromDom();
-            list.push({
-                id: 'ai_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-                name: '', url: '', model: '', key: '', active: list.length === 0
-            });
+            const id = 'ai_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+            list.push({ id, name: '', url: '', model: '', key: '', active: list.length === 0 });
             saveAiProviders(list);
+            aiProviderCurrentId = id;
             renderAiProviders();
         }
         function saveAiProvider() {
