@@ -26,7 +26,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #e4739c 0%, #d45c88 100%);
+            background: linear-gradient(135deg, #5b8a9e 0%, #4a7386 100%);
             backdrop-filter: blur(10px);
         }
 
@@ -68,14 +68,14 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #e4739c;
+            border-color: #5b8a9e;
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
 
         .btn {
             width: 100%;
             padding: 0.75rem;
-            background-color: #e4739c;
+            background-color: #5b8a9e;
             color: white;
             border: none;
             border-radius: 4px;
@@ -85,7 +85,7 @@
         }
 
         .btn:hover {
-            background-color: #d45c88;
+            background-color: #4a7386;
         }
 
         /* 主页面样式 */
@@ -163,7 +163,7 @@
         }
 
         .menu-item.active {
-            background-color: #e4739c;
+            background-color: #5b8a9e;
         }
 
         /* 主内容区域 */
@@ -195,15 +195,15 @@
         /* 顶部搜索：tab + 页面标题 */
         .nav-search-wrap { position: relative; flex: 0 1 300px; margin: 0 0 0 1.25rem; }
         .nav-search-input { width: 100%; padding: 0.5rem 0.9rem; border: 1px solid #cbd5e0; border-radius: 20px; outline: none; font-size: 0.9rem; }
-        .nav-search-input:focus { border-color: #e4739c; box-shadow: 0 0 0 2px rgba(228,115,156,0.2); }
+        .nav-search-input:focus { border-color: #5b8a9e; box-shadow: 0 0 0 2px rgba(91,138,158,0.2); }
         .nav-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 340px; overflow-y: auto; z-index: 1000; display: none; }
         .nav-search-results.show { display: block; }
         .nav-search-item { padding: 0.55rem 0.9rem; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
         .nav-search-item:last-child { border-bottom: none; }
-        .nav-search-item:hover { background: #fdeaf1; }
+        .nav-search-item:hover { background: #eaf2f5; }
         .nav-search-item .ns-title { color: #2d3748; }
         .nav-search-item .ns-path { color: #a0aec0; font-size: 0.78rem; margin-left: 6px; }
-        .nav-search-item mark { background: #ffdcea; padding: 0 1px; }
+        .nav-search-item mark { background: #ffe6a8; padding: 0 1px; }
         .nav-search-empty { padding: 0.7rem 0.9rem; color: #a0aec0; font-size: 0.85rem; }
 
         .user-info {
@@ -247,8 +247,8 @@
             margin-left: 4px;
             color: #999;
         }
-        .sort-indicator.asc::after { content: '▲'; color: #e4739c; }
-        .sort-indicator.desc::after { content: '▼'; color: #e4739c; }
+        .sort-indicator.asc::after { content: '▲'; color: #5b8a9e; }
+        .sort-indicator.desc::after { content: '▼'; color: #5b8a9e; }
 
         /* 页面内容 */
         .page-content {
@@ -289,7 +289,7 @@
 
         .stat-icon {
             font-size: 2.5rem;
-            color: #e4739c;
+            color: #5b8a9e;
         }
         
         .dashboard-grid canvas {
@@ -316,7 +316,7 @@
             }
             .os-windows .data-table {
                 scrollbar-width: thin;
-                scrollbar-color: #e4739c #e2e8f0;
+                scrollbar-color: #5b8a9e #e2e8f0;
             }
             .os-windows .data-table::-webkit-scrollbar {
                 height: 12px;
@@ -327,11 +327,11 @@
                 border-radius: 6px;
             }
             .os-windows .data-table::-webkit-scrollbar-thumb {
-                background: #e4739c;
+                background: #5b8a9e;
                 border-radius: 6px;
             }
             .os-windows .data-table::-webkit-scrollbar-thumb:hover {
-                background: #d45c88;
+                background: #4a7386;
             }
 
             /* 其它带 overflow-x:auto 的表格容器（如链接检测表、智能运营表） */
@@ -351,7 +351,7 @@
             }
             .os-windows div[style*="overflow-x:auto"]::-webkit-scrollbar-thumb,
             .os-windows div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
-                background: #e4739c;
+                background: #5b8a9e;
                 border-radius: 6px;
             }
         }
@@ -666,28 +666,28 @@
         }
 
         /* ============================================================
-           Design System v3 — 小清新 · 粉色系
+           Design System v3 — 清爽中性 · 少量粉色点缀
            ============================================================ */
         :root {
-            --accent: #e4739c;        --accent-hover: #d45c88; --accent-soft: #fdeaf1;
-            --cyan: #6fb7c4;          --amber: #d99b5c;
-            --ink-900: #4a3b42; --ink-800: #634e58; --ink-600: #8c7480; --ink-400: #b9a5ae;
-            --line: #f0dce5; --line-soft: #fbf2f6;
-            --surface: #ffffff; --canvas: #fdf7fa;
-            --sidebar: #fdf4f8;
-            --radius: 16px;
-            --shadow-sm: 0 1px 3px rgba(180,90,125,.06), 0 2px 10px rgba(180,90,125,.05);
-            --shadow-md: 0 6px 20px rgba(180,90,125,.10), 0 2px 6px rgba(180,90,125,.05);
-            --shadow-lg: 0 18px 46px rgba(180,90,125,.16), 0 4px 12px rgba(180,90,125,.08);
+            --accent: #5b8a9e;        --accent-hover: #4a7386; --accent-soft: #eaf2f5;
+            --blush: #e0a0b4;         --cyan: #6fb7c4;          --amber: #d99b5c;
+            --ink-900: #2f3e45; --ink-800: #465860; --ink-600: #6b7c83; --ink-400: #9aaab0;
+            --line: #e3eaed; --line-soft: #f4f7f8;
+            --surface: #ffffff; --canvas: #f7f9fa;
+            --sidebar: #f3f6f7;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(40,70,90,.06), 0 2px 8px rgba(40,70,90,.05);
+            --shadow-md: 0 6px 20px rgba(40,70,90,.09), 0 2px 6px rgba(40,70,90,.05);
+            --shadow-lg: 0 18px 46px rgba(40,70,90,.14), 0 4px 12px rgba(40,70,90,.08);
         }
         [data-theme="dark"] {
             color-scheme: dark;
-            --accent: #f472b6;        --accent-hover: #ec4899; --accent-soft: rgba(236,72,153,.18);
-            --cyan: #5eead4;          --amber: #fbbf24;
-            --ink-900: #fdf2f7; --ink-800: #f3e4ec; --ink-600: #cbb4c0; --ink-400: #8f7682;
-            --line: #4a3540; --line-soft: #2e2029;
-            --surface: #1f1720; --canvas: #17111a;
-            --sidebar: #1a131c;
+            --accent: #7fb3c7;        --accent-hover: #6a9db4; --accent-soft: rgba(127,179,199,.16);
+            --blush: #d98fa8;         --cyan: #5eead4;          --amber: #fbbf24;
+            --ink-900: #eef3f5; --ink-800: #d3dfe4; --ink-600: #9fb0b8; --ink-400: #71838c;
+            --line: #344650; --line-soft: #222f36;
+            --surface: #18232a; --canvas: #111a20;
+            --sidebar: #141d23;
             --shadow-sm: 0 1px 3px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.24);
             --shadow-md: 0 6px 18px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3);
             --shadow-lg: 0 18px 44px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.35);
@@ -701,14 +701,14 @@
             font-size: 14px; letter-spacing: -.01em;
         }
 
-        /* 登录：粉色渐变 + 卡片 */
+        /* 登录：清爽渐变 + 卡片 */
         .login-container {
             position: relative;
-            background: linear-gradient(135deg, #ffeef5 0%, #fdf7fa 45%, #eef7f7 100%);
+            background: linear-gradient(135deg, #eaf2f5 0%, #f7f9fa 45%, #f2f6f7 100%);
         }
         .login-container::before {
             content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: radial-gradient(560px 380px at 22% 28%, rgba(228,115,156,.16), transparent 70%),
+            background: radial-gradient(560px 380px at 22% 28%, rgba(91,138,158,.16), transparent 70%),
                         radial-gradient(520px 360px at 80% 72%, rgba(111,183,196,.12), transparent 70%);
         }
         .login-form {
@@ -721,9 +721,9 @@
         /* 按钮 */
         .btn {
             background: var(--accent); color: #fff; border-radius: 9px; font-weight: 600;
-            box-shadow: 0 4px 12px rgba(228,115,156,.26); transition: background .18s, box-shadow .18s;
+            box-shadow: 0 4px 12px rgba(91,138,158,.26); transition: background .18s, box-shadow .18s;
         }
-        .btn:hover { background: var(--accent-hover); box-shadow: 0 6px 16px rgba(228,115,156,.32); }
+        .btn:hover { background: var(--accent-hover); box-shadow: 0 6px 16px rgba(91,138,158,.32); }
 
         /* 侧边栏：浅灰蓝底、彩色 logo、柔和选中 */
         .sidebar {
@@ -741,8 +741,8 @@
         }
         .sidebar-header h2::before {
             content: ''; width: 24px; height: 24px; border-radius: 7px; flex: none;
-            background: linear-gradient(135deg, var(--accent), #f7a8c4);
-            box-shadow: 0 3px 8px rgba(228,115,156,.32), inset 0 1px 1px rgba(255,255,255,.5);
+            background: linear-gradient(135deg, var(--accent), var(--blush));
+            box-shadow: 0 3px 8px rgba(91,138,158,.32), inset 0 1px 1px rgba(255,255,255,.5);
         }
         .sidebar-menu { padding: 1rem .7rem; }
         .menu-item {
@@ -789,13 +789,13 @@
         .nav-search-results { border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow-md); }
         .nav-search-item { transition: background .14s, box-shadow .14s, color .14s; }
         .nav-search-item:hover,
-        .nav-search-item[data-sel="1"] { background: #fdeaf1; box-shadow: inset 3px 0 0 var(--accent); }
+        .nav-search-item[data-sel="1"] { background: #eaf2f5; box-shadow: inset 3px 0 0 var(--accent); }
         .nav-search-item:hover .ns-title,
         .nav-search-item[data-sel="1"] .ns-title { color: var(--accent); font-weight: 600; }
         .nav-search-item .ns-title { color: var(--ink-900); }
-        .nav-search-item mark { background: #ffdcea; }
+        .nav-search-item mark { background: #ffe6a8; }
         .logout-btn { background: #fff; color: var(--ink-600); border: 1px solid var(--line); border-radius: 9px; font-weight: 500; }
-        .logout-btn:hover { background: #fdeaf1; color: #d45c88; border-color: #f7c9d9; }
+        .logout-btn:hover { background: #eaf2f5; color: #4a7386; border-color: #cfe0e7; }
 
         /* 内容区 */
         .page-content { padding: 2rem 2.2rem 3.2rem; background: var(--canvas); }
@@ -806,10 +806,6 @@
             background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
             box-shadow: var(--shadow-sm); padding: 1.55rem; position: relative; overflow: hidden;
             transition: transform .2s, box-shadow .2s;
-        }
-        .stat-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, var(--accent), #f7a8c4);
         }
         .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
         .stat-info h3 { color: var(--ink-900); font-size: 2rem; font-weight: 700; letter-spacing: -.03em; }
@@ -822,8 +818,8 @@
             border-radius: var(--radius); box-shadow: var(--shadow-sm);
         }
         .table-header {
-            background: linear-gradient(180deg, var(--line-soft), var(--surface));
-            padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--line);
+            background: var(--surface); padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--line);
         }
         .table-header h3 { color: var(--ink-900); font-weight: 700; font-size: 1.02rem; letter-spacing: -.01em; }
         th {
@@ -832,19 +828,19 @@
         }
         td { padding: .85rem 1.15rem; font-size: .87rem; color: var(--ink-800); }
         th, td { border-bottom: 1px solid var(--line-soft); }
-        tbody tr:hover { background: #fdf2f7; }
+        tbody tr:hover { background: #f4f9fb; }
 
         /* 操作按钮 */
         .add-btn {
             background: var(--accent); color: #fff; border-radius: 8px;
-            font-weight: 600; font-size: .84rem; box-shadow: 0 3px 9px rgba(228,115,156,.22);
+            font-weight: 600; font-size: .84rem; box-shadow: 0 3px 9px rgba(91,138,158,.22);
         }
         .add-btn:hover { background: var(--accent-hover); }
         .action-btn { border-radius: 8px; font-weight: 600; font-size: .82rem; }
         .edit-btn { background: var(--accent-soft); color: var(--accent); }
-        .edit-btn:hover { background: #f7d6e5; }
-        .delete-btn { background: #fdeaf1; color: #d45c88; box-shadow: none; border-radius: 8px; font-weight: 600; }
-        .delete-btn:hover { background: #fbd4e2; }
+        .edit-btn:hover { background: #eaf2f5; }
+        .delete-btn { background: #eaf2f5; color: #4a7386; box-shadow: none; border-radius: 8px; font-weight: 600; }
+        .delete-btn:hover { background: #dbe9ef; }
 
         /* 表单 */
         .form-group label { color: var(--ink-600); font-weight: 600; font-size: .84rem; }
@@ -882,15 +878,15 @@
         /* 全局滚动条 */
         ::-webkit-scrollbar { width: 9px; height: 9px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #edc9d9; border-radius: 9px; }
-        ::-webkit-scrollbar-thumb:hover { background: #dba6bf; }
+        ::-webkit-scrollbar-thumb { background: #d3e0e6; border-radius: 9px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b8cdd6; }
 
         /* 夜间模式补充覆盖 */
         [data-theme="dark"] .login-container {
             background: linear-gradient(135deg, #17111a 0%, #1f1720 45%, #2a1826 100%);
         }
         [data-theme="dark"] .login-container::before {
-            background: radial-gradient(560px 380px at 22% 28%, rgba(244,114,182,.18), transparent 70%),
+            background: radial-gradient(560px 380px at 22% 28%, rgba(127,179,199,.18), transparent 70%),
                         radial-gradient(520px 360px at 80% 72%, rgba(94,234,212,.12), transparent 70%);
         }
         [data-theme="dark"] .nav-search-input:focus,
@@ -900,15 +896,15 @@
         [data-theme="dark"] .modal-content { background: var(--surface); border-color: var(--line); }
         [data-theme="dark"] .nav-search-results { background: var(--surface); }
         [data-theme="dark"] .nav-search-item:hover,
-        [data-theme="dark"] .nav-search-item[data-sel="1"] { background: rgba(244,114,182,.16); }
+        [data-theme="dark"] .nav-search-item[data-sel="1"] { background: rgba(127,179,199,.16); }
         [data-theme="dark"] .logout-btn { background: var(--surface); }
-        [data-theme="dark"] .logout-btn:hover { background: rgba(244,114,182,.12); color: #f9a8d4; border-color: rgba(244,114,182,.35); }
-        [data-theme="dark"] tbody tr:hover { background: rgba(244,114,182,.07); }
-        [data-theme="dark"] .edit-btn:hover { background: rgba(244,114,182,.24); }
-        [data-theme="dark"] .delete-btn { background: rgba(244,114,182,.12); color: #f9a8d4; }
-        [data-theme="dark"] .delete-btn:hover { background: rgba(244,114,182,.2); }
-        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #5c4152; }
-        [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #7b566e; }
+        [data-theme="dark"] .logout-btn:hover { background: rgba(127,179,199,.12); color: #a8cfe0; border-color: rgba(127,179,199,.35); }
+        [data-theme="dark"] tbody tr:hover { background: rgba(127,179,199,.07); }
+        [data-theme="dark"] .edit-btn:hover { background: rgba(127,179,199,.24); }
+        [data-theme="dark"] .delete-btn { background: rgba(127,179,199,.12); color: #a8cfe0; }
+        [data-theme="dark"] .delete-btn:hover { background: rgba(127,179,199,.2); }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #344650; }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #4a606c; }
         [data-theme="dark"] [style*="background:#f7fafc"],
         [data-theme="dark"] [style*="background: #f7fafc"],
         [data-theme="dark"] [style*="background-color:#f7fafc"],
@@ -1014,7 +1010,7 @@
                 <!-- 仪表盘页面 -->
                 <div id="dashboardPage" class="page-section">
                     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-                        <button class="add-btn" onclick="loadDashboardData()" style="background-color:#e4739c;">刷新</button>
+                        <button class="add-btn" onclick="loadDashboardData()" style="background-color:#5b8a9e;">刷新</button>
                     </div>
                     <div class="dashboard-grid">
                         <div class="stat-card">
@@ -1115,7 +1111,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>💡 智能运营策略建议</h3>
-                            <button class="add-btn" style="background-color:#e4739c;" onclick="loadInsights()">🔄 刷新分析</button>
+                            <button class="add-btn" style="background-color:#5b8a9e;" onclick="loadInsights()">🔄 刷新分析</button>
                         </div>
                         <div id="insightAdvice" style="padding: 1.5rem;">正在分析用户数据...</div>
                     </div>
@@ -1142,9 +1138,9 @@
                         <div class="table-header">
                             <h3>用户列表</h3>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <button class="add-btn" style="background-color: #e4739c;" onclick="toggleFixedColumns('usersTable')">固定</button>
+                                <button class="add-btn" style="background-color: #5b8a9e;" onclick="toggleFixedColumns('usersTable')">固定</button>
                                 <input type="text" id="userSearchInput" placeholder="搜索用户" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <button class="add-btn" onclick="filterUsers()" style="background-color: #e4739c;">搜索</button>
+                                <button class="add-btn" onclick="filterUsers()" style="background-color: #5b8a9e;">搜索</button>
                                 <button class="add-btn" onclick="userSearchKeyword=''; document.getElementById('userSearchInput').value=''; loadUsers(1);" style="background-color: #4299e1;">刷新</button>
                                 <span id="searchResultInfo" style="color: #666;"></span>
                             </div>
@@ -1196,7 +1192,7 @@
                         <div class="table-header">
                             <h3>订单列表</h3>
                             <div style="display: flex; gap: 10px;">
-                                <button class="add-btn" style="background-color: #e4739c;" onclick="toggleFixedColumns('ordersTable')">固定</button>
+                                <button class="add-btn" style="background-color: #5b8a9e;" onclick="toggleFixedColumns('ordersTable')">固定</button>
                                 <input type="text" id="orderSearchInput" placeholder="输入用户名筛选订单" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
                                 <button class="add-btn" onclick="filterOrders()">筛选</button>
                                 <button class="delete-btn" onclick="deleteAllPendingOrders()">删除待支付</button>
@@ -1232,7 +1228,7 @@
                                     <option value="paid">已通过</option>
                                     <option value="rejected">已拒绝</option>
                                 </select>
-                                <button class="add-btn" onclick="loadPaymentReviews()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadPaymentReviews()" style="background-color: #5b8a9e;">刷新</button>
                                 <span id="paymentReviewInfo" style="color:#666;"></span>
                             </div>
                         </div>
@@ -1258,7 +1254,7 @@
                 <!-- 节点订阅页面 -->
                 <div id="nodesPage" class="page-section" style="display: none;">
                     <div style="display:flex; gap:10px; margin-bottom:1rem; border-bottom:2px solid #e2e8f0; padding-bottom:0.5rem;">
-                        <button class="add-btn" id="nodeSubTab-kuuu" onclick="nodeSubTab('kuuu')" style="background-color:#e4739c;">kuuu</button>
+                        <button class="add-btn" id="nodeSubTab-kuuu" onclick="nodeSubTab('kuuu')" style="background-color:#5b8a9e;">kuuu</button>
                         <button class="add-btn" id="nodeSubTab-mj" onclick="nodeSubTab('mj')" style="background-color:#a0aec0;">mj</button>
                     </div>
                     <div id="nodeTab-kuuu">
@@ -1267,7 +1263,7 @@
                             <h3>节点订阅链接生成</h3>
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="nodeSearchInput" placeholder="输入用户名生成订阅链接" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                                <button class="add-btn" onclick="generateNodeLink(document.getElementById('nodeSearchInput').value)" style="background-color: #e4739c;">生成链接</button>
+                                <button class="add-btn" onclick="generateNodeLink(document.getElementById('nodeSearchInput').value)" style="background-color: #5b8a9e;">生成链接</button>
                                 <button class="add-btn" onclick="checkAllClashLinks()" style="background-color:#e53e3e;">检测链接</button>
                             </div>
                         </div>
@@ -1328,7 +1324,7 @@
                                 </div>
                             </div>
                             <div style="margin-top: 1rem;">
-                                <button class="add-btn" onclick="saveLinkConfig()" style="background-color: #e4739c;">保存订阅链接</button>
+                                <button class="add-btn" onclick="saveLinkConfig()" style="background-color: #5b8a9e;">保存订阅链接</button>
                             </div>
                         </div>
                     </div>
@@ -1401,7 +1397,7 @@
                                 </div>
                             </div>
                             <div style="margin-top: 1rem;">
-                                <button class="add-btn" onclick="savePricePlan()" style="background-color: #e4739c;">保存价格</button>
+                                <button class="add-btn" onclick="savePricePlan()" style="background-color: #5b8a9e;">保存价格</button>
                             </div>
                         </div>
                     </div>
@@ -1419,7 +1415,7 @@
                                         <input type="text" id="mjEmail" placeholder="email" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
                                         <input type="password" id="mjPassword" placeholder="password" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:4px;">
                                     </div>
-                                    <button class="add-btn" onclick="mjLogin()" style="background-color:#e4739c;">登录</button>
+                                    <button class="add-btn" onclick="mjLogin()" style="background-color:#5b8a9e;">登录</button>
                                     <div style="margin-top:.75rem;">
                                         <label style="display:block; margin-bottom:.25rem; font-weight:500; color:#4a5568;">返回的 cookie（自动用于下方操作）</label>
                                         <textarea id="mjCookie" rows="3" readonly style="width:100%; padding:.5rem; border:1px solid #e2e8f0; border-radius:4px; font-family:monospace;"></textarea>
@@ -1447,7 +1443,7 @@
                                         <button class="add-btn" onclick="mjOp('reset-security')" style="background-color:#e53e3e;">重置安全</button>
                                         <button class="add-btn" onclick="mjOp('get-tips')" style="background-color:#dd6b20;">获取提示</button>
                                         <button class="add-btn" onclick="mjOp('dashboard')" style="background-color:#319795;">仪表盘/用量</button>
-                                        <button class="add-btn" onclick="mjOp('subscribe')" style="background-color:#e4739c;">订阅</button>
+                                        <button class="add-btn" onclick="mjOp('subscribe')" style="background-color:#5b8a9e;">订阅</button>
                                     </div>
                                     <pre id="mjOpOut" style="white-space:pre-wrap; word-break:break-all; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:.5rem; max-height:300px; overflow:auto;"></pre>
                                 </div>
@@ -1466,7 +1462,7 @@
                                         </div>
                                     </div>
                                     <div style="font-size:.8rem; color:#718096; margin-bottom:.75rem;">前端购买临时流量包 / 生成 data_token 时优先使用这两项；留空则回退到「月度链接」。</div>
-                                    <button class="add-btn" onclick="saveTrafficLinkConfig()" style="background-color:#e4739c;">保存流量包链接</button>
+                                    <button class="add-btn" onclick="saveTrafficLinkConfig()" style="background-color:#5b8a9e;">保存流量包链接</button>
                                 </div>
                             </div>
                         </div>
@@ -1568,7 +1564,7 @@
                                     <option value="single">指定用户</option>
                                 </select>
                                 <input type="text" id="viewMessageUsername" placeholder="输入用户名" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; display: none;">
-                                <button class="add-btn" onclick="loadMessages()" style="background-color: #e4739c;">查询</button>
+                                <button class="add-btn" onclick="loadMessages()" style="background-color: #5b8a9e;">查询</button>
                             </div>
                         </div>
                         <table id="messagesTable">
@@ -1634,7 +1630,7 @@
                             <h3>🎟️ 优惠券管理</h3>
                             <div style="display: flex; gap: 10px;">
                                 <button class="add-btn" onclick="resetCouponForm()">+ 新增优惠券</button>
-                                <button class="add-btn" onclick="loadCoupons()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadCoupons()" style="background-color: #5b8a9e;">刷新</button>
                             </div>
                         </div>
                         <div style="padding: 1.5rem;">
@@ -1698,7 +1694,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>幸运转盘记录</h3>
-                            <button class="add-btn" onclick="loadWheelBets()" style="background-color: #e4739c;">刷新</button>
+                            <button class="add-btn" onclick="loadWheelBets()" style="background-color: #5b8a9e;">刷新</button>
                         </div>
                         <table id="wheelTable">
                             <thead>
@@ -1719,7 +1715,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>摇摇机记录</h3>
-                            <button class="add-btn" onclick="loadSlotBets()" style="background-color: #e4739c;">刷新</button>
+                            <button class="add-btn" onclick="loadSlotBets()" style="background-color: #5b8a9e;">刷新</button>
                         </div>
                         <table id="slotTable">
                             <thead>
@@ -1740,7 +1736,7 @@
                     <div class="data-table" style="margin-top: 1.5rem;">
                         <div class="table-header">
                             <h3>刮刮乐记录</h3>
-                            <button class="add-btn" onclick="loadScratchBets()" style="background-color: #e4739c;">刷新</button>
+                            <button class="add-btn" onclick="loadScratchBets()" style="background-color: #5b8a9e;">刷新</button>
                         </div>
                         <table id="scratchTable">
                             <thead>
@@ -1763,7 +1759,7 @@
                             <h3>预测话题管理</h3>
                             <div style="display: flex; gap: 10px;">
                                 <button class="add-btn" onclick="openPredictTopicModal()">+ 新增话题</button>
-                                <button class="add-btn" onclick="loadPredictTopics()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadPredictTopics()" style="background-color: #5b8a9e;">刷新</button>
                             </div>
                         </div>
                         <table id="predictTopicTable">
@@ -1790,7 +1786,7 @@
                         <div class="table-header">
                             <h3>预测投注记录 <span id="predictBetTopicLabel" style="font-weight:normal;color:#999;"></span></h3>
                             <div style="display: flex; gap: 10px;">
-                                <button class="add-btn" onclick="loadPredictBets()" style="background-color: #e4739c;">全部记录</button>
+                                <button class="add-btn" onclick="loadPredictBets()" style="background-color: #5b8a9e;">全部记录</button>
                             </div>
                         </div>
                         <table id="predictBetTable">
@@ -1816,8 +1812,8 @@
                             <h3>比赛管理</h3>
                             <div style="display: flex; gap: 10px;">
                                 <button class="add-btn" onclick="openMatchModal()">+ 新增比赛</button>
-                                <button class="add-btn" onclick="loadFootballMatches()" style="background-color: #e4739c;">刷新</button>
-                                <button class="add-btn" onclick="toggleFixedColumns('footballTable')" style="background-color: #e4739c;">固定</button>
+                                <button class="add-btn" onclick="loadFootballMatches()" style="background-color: #5b8a9e;">刷新</button>
+                                <button class="add-btn" onclick="toggleFixedColumns('footballTable')" style="background-color: #5b8a9e;">固定</button>
                             </div>
                         </div>
                         <table id="footballTable">
@@ -1870,7 +1866,7 @@
                                     <option value="rejected">已拒绝</option>
                                     <option value="cancelled">已取消</option>
                                 </select>
-                                <button class="add-btn" onclick="loadWithdrawals()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadWithdrawals()" style="background-color: #5b8a9e;">刷新</button>
                             </div>
                         </div>
                         <table id="withdrawTable">
@@ -1903,7 +1899,7 @@
                                     <option value="approved">已通过</option>
                                     <option value="rejected">已驳回</option>
                                 </select>
-                                <button class="add-btn" onclick="loadRebates()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadRebates()" style="background-color: #5b8a9e;">刷新</button>
                             </div>
                         </div>
                         <table id="rebateTable">
@@ -1937,7 +1933,7 @@
                                     <option value="approved">已通过</option>
                                     <option value="rejected">已拒绝</option>
                                 </select>
-                                <button class="add-btn" onclick="loadRealnames()" style="background-color: #e4739c;">刷新</button>
+                                <button class="add-btn" onclick="loadRealnames()" style="background-color: #5b8a9e;">刷新</button>
                             </div>
                         </div>
                         <table id="realnameTable">
@@ -2531,7 +2527,7 @@
         let charts = {};
         
         function renderAllCharts(m, d) {
-            const COLORS = ['#e4739c', '#48bb78', '#ed8936', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181', '#9f7aea', '#38b2ac'];
+            const COLORS = ['#5b8a9e', '#48bb78', '#ed8936', '#f6ad55', '#68d391', '#4fd1c5', '#90cdf4', '#fc8181', '#9f7aea', '#38b2ac'];
 
             if (charts.orders) charts.orders.destroy();
             if (charts.users) charts.users.destroy();
@@ -2544,7 +2540,7 @@
                     type: 'line',
                     data: {
                         labels: m.orderLabels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                        datasets: [{ label: '订单数', data: m.orderData || [12, 19, 15, 25, 22, 30, 28], borderColor: '#e4739c', backgroundColor: 'rgba(228,115,156,0.1)', tension: 0.4, fill: true }]
+                        datasets: [{ label: '订单数', data: m.orderData || [12, 19, 15, 25, 22, 30, 28], borderColor: '#5b8a9e', backgroundColor: 'rgba(91,138,158,0.1)', tension: 0.4, fill: true }]
                     },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
                 });
@@ -2555,7 +2551,7 @@
             if (uctx) {
                 charts.users = new Chart(uctx.getContext('2d'), {
                     type: 'doughnut',
-                    data: { labels: ['普通用户', 'VIP用户'], datasets: [{ data: [m.normalUsers || 100, m.vipUsers || 20], backgroundColor: ['#e4739c', '#48bb78'] }] },
+                    data: { labels: ['普通用户', 'VIP用户'], datasets: [{ data: [m.normalUsers || 100, m.vipUsers || 20], backgroundColor: ['#5b8a9e', '#48bb78'] }] },
                     options: { responsive: true, maintainAspectRatio: false }
                 });
             }
@@ -2579,7 +2575,7 @@
                     data: {
                         labels: d.gameLabels || [],
                         datasets: [
-                            { label: '下注金额', data: d.gameBetData || [], borderColor: '#e4739c', backgroundColor: 'rgba(228,115,156,0.1)', tension: 0.4, fill: true },
+                            { label: '下注金额', data: d.gameBetData || [], borderColor: '#5b8a9e', backgroundColor: 'rgba(91,138,158,0.1)', tension: 0.4, fill: true },
                             { label: '派奖金额', data: d.gameWinData || [], borderColor: '#48bb78', backgroundColor: 'rgba(72,187,120,0.1)', tension: 0.4, fill: true }
                         ]
                     },
@@ -2651,7 +2647,7 @@
             const box = document.getElementById('balanceOverview');
             if (box) {
                 const rows = [
-                    { label: '平台总余额', value: '¥' + (d.totalBalance || 0), color: '#e4739c' },
+                    { label: '平台总余额', value: '¥' + (d.totalBalance || 0), color: '#5b8a9e' },
                     { label: 'VIP 人数', value: d.vipUsers || 0, color: '#48bb78' },
                     { label: '代理人数', value: d.agentUsers || 0, color: '#ed8936' },
                     { label: '游戏总下注', value: '¥' + (d.gameTotalBet || 0), color: '#f6ad55' },
@@ -2866,7 +2862,7 @@
         function renderInsightMetrics(data) {
             const m = data.metrics;
             const cards = [
-                { icon: '🎯', label: '潜在可转化用户', value: data.segments.potential.length, color: '#e4739c' },
+                { icon: '🎯', label: '潜在可转化用户', value: data.segments.potential.length, color: '#5b8a9e' },
                 { icon: '⏰', label: '7天内待续费', value: data.segments.expiring.length, color: '#ed8936' },
                 { icon: '🔁', label: '可召回流失用户', value: data.segments.winback.length, color: '#e53e3e' },
                 { icon: '👑', label: '高价值VIP', value: data.segments.highvalue.length, color: '#48bb78' },
@@ -2953,7 +2949,7 @@
             });
 
             document.getElementById('insightAdvice').innerHTML = advices.map(a => `
-                <div style="margin-bottom:1.25rem; padding:1rem 1.25rem; background:#f7fafc; border-radius:8px; border-left:4px solid #e4739c;">
+                <div style="margin-bottom:1.25rem; padding:1rem 1.25rem; background:#f7fafc; border-radius:8px; border-left:4px solid #5b8a9e;">
                     <div style="font-weight:600; color:#2d3748; margin-bottom:.5rem;">${a.t}</div>
                     <div style="color:#4a5568; margin-bottom:.6rem;">${a.d}</div>
                     <ul style="margin:0; padding-left:1.2rem; color:#4a5568;">
@@ -2964,7 +2960,7 @@
 
         // 分群配置
         const INSIGHT_SEG_META = {
-            potential: { name: '🎯 潜在用户', color: '#e4739c', tpl: '体验还满意吗？现在开通VIP享首单专属优惠，解锁全部高速节点，先到先得~' },
+            potential: { name: '🎯 潜在用户', color: '#5b8a9e', tpl: '体验还满意吗？现在开通VIP享首单专属优惠，解锁全部高速节点，先到先得~' },
             expiring:  { name: '⏰ 即将到期', color: '#ed8936', tpl: '您的VIP会员即将到期，现在续费立享优惠并可开启自动续费再送时长，避免服务中断哦~' },
             winback:   { name: '🔁 可召回流失', color: '#e53e3e', tpl: '好久不见！您的会员已过期，专属回归福利已就位：续费享折扣，节点已全面升级，欢迎回来~' },
             highvalue: { name: '👑 高价值VIP', color: '#48bb78', tpl: '感谢您的一路支持！专属老用户礼遇已送达，续费享忠诚价+额外时长，尊享更快节点~' }
@@ -3092,7 +3088,7 @@
                 const content = document.getElementById('nodeTab-' + t);
                 if (content) content.style.display = (t === tab) ? '' : 'none';
                 const btn = document.getElementById('nodeSubTab-' + t);
-                if (btn) btn.style.backgroundColor = (t === tab) ? '#e4739c' : '#a0aec0';
+                if (btn) btn.style.backgroundColor = (t === tab) ? '#5b8a9e' : '#a0aec0';
             });
         }
 
@@ -4395,7 +4391,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                                 <input type="radio" name="${type}_link" id="${radioId}" value="${linkValue.replace(/"/g, '&quot;')}" data-id="${node.id}" style="margin-top: 0.25rem;">
                                 <div style="flex: 1; min-width: 0;">
                                     <div style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">${node.email}</div>
-                                    <div style="font-size: 0.8rem; word-break: break-all; color: #e4739c;">${linkValue}</div>
+                                    <div style="font-size: 0.8rem; word-break: break-all; color: #5b8a9e;">${linkValue}</div>
                                     <div style="font-size: 0.75rem; color: #718096; margin-top: 0.25rem;">${expireText}</div>
                                 </div>
                             </div>
@@ -4495,14 +4491,14 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 linkDisplay.innerHTML = `
                     <div style="margin-bottom: 1rem; padding: 1rem; background: #fff; border-radius: 4px;">
                         <p style="margin: 0.5rem 0; font-weight: bold;">Clash 订阅链接：</p>
-                        <code style="word-break: break-all; color: #e4739c;">${clashLink}</code>
+                        <code style="word-break: break-all; color: #5b8a9e;">${clashLink}</code>
                         <div style="margin-top: 0.5rem;">
                             <button class="add-btn" onclick="copyToClipboardClash()" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">复制 Clash 链接</button>
                         </div>
                     </div>
                     <div style="padding: 1rem; background: #fff; border-radius: 4px;">
                         <p style="margin: 0.5rem 0; font-weight: bold;">V2Ray 订阅链接：</p>
-                        <code style="word-break: break-all; color: #e4739c;">${v2rayLink}</code>
+                        <code style="word-break: break-all; color: #5b8a9e;">${v2rayLink}</code>
                         <div style="margin-top: 0.5rem;">
                             <button class="add-btn" onclick="copyToClipboardV2ray()" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">复制 V2Ray 链接</button>
                         </div>
@@ -6573,7 +6569,7 @@ ${order.paid_at ? '支付时间: ' + new Date(new Date(order.paid_at).getTime() 
                 </div>
                 <div style="display: flex; gap: 20px;">
                     <div style="flex: 1; min-width: 80px;">
-                        <div style="font-size: 0.85rem; color: #e4739c; margin-bottom: 8px; text-align: center;">左侧固定</div>
+                        <div style="font-size: 0.85rem; color: #5b8a9e; margin-bottom: 8px; text-align: center;">左侧固定</div>
                         <div style="max-height: 200px; overflow-y: auto;">
                             ${headers.map((th, index) => {
                                 const text = th.textContent.replace(/[▲▼]/g, '').trim();
