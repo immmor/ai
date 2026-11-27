@@ -356,11 +356,17 @@
             }
         }
 
-        /* 用户管理：大屏下按可视高度撑满列表区，避免与底部留白过大 */
+        /* 用户管理：大屏下让列表区撑满可视高度，分页贴底，避免底部大块留白 */
         @media (min-width: 769px) {
+            #usersPage { height: 100%; }
             #usersPage .data-table {
-                max-height: calc(100vh - 190px);
+                height: 100%;
+                max-height: none;
+                display: flex;
+                flex-direction: column;
             }
+            #usersPage .data-table > table { flex: 0 0 auto; }
+            #usersPage #userPagination { margin-top: auto; }
         }
 
         .data-table.collapsed > :not(.table-header) {
