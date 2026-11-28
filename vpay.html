@@ -432,6 +432,8 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .pk-key:active,.pk-key.pressed{background:rgba(108,92,231,.35);box-shadow:0 0 0 2px rgba(108,92,231,.5) inset}
 .kb-open .modal-overlay{align-items:flex-end;padding-bottom:330px}
 .kb-open .modal-box{max-height:calc(100vh - 330px);padding-bottom:16px}
+/* 安全键盘弹出时，处理中提示上移到键盘上方，避免被遮挡 */
+body.kb-open .loading-overlay.show{align-items:flex-end;padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 /* Empty state */
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
@@ -1235,29 +1237,8 @@ function showToast(msg,type='success'){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;
   t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000)
 }
-// 计算被键盘遮挡的高度（自定义安全键盘 + 系统键盘取较大值）
-function getKeyboardCoverHeight(){
-  let h=0;
-  const kb=document.getElementById('pwdKeyboard');
-  if(kb&&kb.classList.contains('show'))h=kb.getBoundingClientRect().height||0;
-  const vv=window.visualViewport;
-  if(vv){
-    const hidden=window.innerHeight-(vv.height+vv.offsetTop);
-    if(hidden>h)h=hidden;
-  }
-  return Math.max(0,h);
-}
-function showLoading(t){
-  document.getElementById('loadingText').textContent=t||'处理中...';
-  const ov=document.getElementById('loadingOverlay');
-  // 预留键盘高度，让 loading 居中于非键盘区域
-  ov.style.paddingBottom=getKeyboardCoverHeight()+'px';
-  ov.classList.add('show');
-}
-function hideLoading(){
-  const ov=document.getElementById('loadingOverlay');
-  ov.classList.remove('show');ov.style.paddingBottom='';
-}
+function showLoading(t){document.getElementById('loadingText').textContent=t||'处理中...';document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
 function formatDate(d){
   if(!d)return'';
   const date=new Date(d);
