@@ -432,8 +432,8 @@ body.theme-light .user-menu{background:rgba(255,255,255,.97);box-shadow:0 8px 32
 .pk-key:active,.pk-key.pressed{background:rgba(108,92,231,.35);box-shadow:0 0 0 2px rgba(108,92,231,.5) inset}
 .kb-open .modal-overlay{align-items:flex-end;padding-bottom:330px}
 .kb-open .modal-box{max-height:calc(100vh - 330px);padding-bottom:16px}
-/* 安全键盘弹出时，处理中提示上移到键盘上方，避免被遮挡 */
-body.kb-open .loading-overlay.show{align-items:flex-end;padding-bottom:calc(330px + env(safe-area-inset-bottom))}
+/* 安全键盘弹出时，处理中提示上移到键盘上方，间距随屏幕高度按固定比例缩放 */
+body.kb-open .loading-overlay.show{align-items:flex-end;padding-bottom:calc(330px + 8vh + env(safe-area-inset-bottom))}
 /* Empty state */
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:0.5}
